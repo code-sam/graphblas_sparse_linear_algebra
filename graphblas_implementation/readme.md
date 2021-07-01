@@ -1,1 +1,1 @@
-This folder shall contain the compiled graphblas.a binary. For build instructions, see: https://github.com/DrTimothyAldenDavis/GraphBLAS
+This folder shall contain the compiled graphblas.a binary and its header file GraphBLAS.h. For build instructions, see: https://github.com/DrTimothyAldenDavis/GraphBLAS
