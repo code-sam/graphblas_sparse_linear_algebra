@@ -1,0 +1,7 @@
+mod matrix_multiplication;
+mod matrix_vector_multiplication;
+mod vector_matrix_multiplication;
+
+pub use matrix_multiplication::MatrixMultiplicationOperator;
+pub use matrix_vector_multiplication::MatrixVectorMultiplicationOperator;
+pub use vector_matrix_multiplication::VectorMatrixMultiplicationOperator;

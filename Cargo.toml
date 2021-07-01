@@ -1,0 +1,28 @@
+[package]
+name = "graphblas_sparse_linear_algebra"
+version = "0.1.0"
+authors = ["code_sam <mail@samdekker.nl>"]
+edition = "2018"
+links = "graphblas"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+once_cell = {version = "1.7"}
+# redisgraph_client = {path = "../../utilities/embedded_redis_client/embedded_redis_client", version = "0.1"}
+
+[build-dependencies]
+bindgen = "0.58"
+
+# [build]
+# rustflags = ["-C", "link-args=-lc"]
+
+[build]
+# rustflags = ["-C", "target-feature=+crt-static"]
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "insert_scalar_into_matrix"
+harness = false
