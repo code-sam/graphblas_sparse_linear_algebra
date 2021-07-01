@@ -2,23 +2,22 @@
 name = "graphblas_sparse_linear_algebra"
 version = "0.1.0"
 authors = ["code_sam <mail@samdekker.nl>"]
+description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2018"
-links = "graphblas"
+keywords = ["GraphBLAS", "sparse linear algebra"]
+license = "AGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 once_cell = {version = "1.7"}
-# redisgraph_client = {path = "../../utilities/embedded_redis_client/embedded_redis_client", version = "0.1"}
 
 [build-dependencies]
 bindgen = "0.58"
 
-# [build]
-# rustflags = ["-C", "link-args=-lc"]
-
 [build]
-# rustflags = ["-C", "target-feature=+crt-static"]
 
 [dev-dependencies]
 criterion = "0.3"
