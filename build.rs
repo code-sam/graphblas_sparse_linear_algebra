@@ -39,8 +39,10 @@ fn main() {
     // TODO: find directory with openMP archive gomp automatically
     println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/7/");
 
-    println!("cargo:rustc-link-lib=static=graphblas");
-    println!("cargo:rustc-link-lib=static=gomp");
+    println!("cargo:rustc-link-lib=graphblas");
+    println!("cargo:rustc-link-lib=gomp");
+    // println!("cargo:rustc-link-lib=static=graphblas");
+    // println!("cargo:rustc-link-lib=static=gomp");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!(
@@ -65,7 +67,7 @@ fn main() {
         "cargo:rerun-if-changed = {}",
         path_with_graphblas_implementation
             .clone()
-            .join("libgraphblas.a")
+            .join("libgraphblas.so")
             .to_str()
             .unwrap()
             .to_owned()
@@ -110,8 +112,7 @@ fn main() {
 
     // Write the bindings to the bindings.rs file.
     let mut bindings_target_path = std::env::current_dir().unwrap();
-    bindings_target_path.push("src");
-    bindings_target_path.push("bindings_to_graphblas_implementation");
+    bindings_target_path.push("graphblas_implementation");
     bindings_target_path.push("bindings.rs");
     bindings
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())

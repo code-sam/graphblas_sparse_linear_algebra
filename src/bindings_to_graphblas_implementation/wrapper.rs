@@ -6,4 +6,4 @@
 // TODO: only expose what is actually used
 #![allow(dead_code)]
 
-include!("bindings.rs");
+include!("../../graphblas_implementation/bindings.rs");
