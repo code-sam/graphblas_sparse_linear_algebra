@@ -9,8 +9,10 @@ graphblas_sparse_linear_algebra uses the SuiteSparse:GraphBLAS GraphBLAS impleme
 
 graphblas_sparse_linear_algebra requires the following files present in the graphblas_implementation/ directory:
 - graphblas_implementation/GraphBLAS.h
-- graphblas_implementation/libgraphblas.so
+- graphblas_implementation/libgraphblas.a
 
 For the source code and build instructions of SuiteSparse:GraphBLAS, see: https://github.com/DrTimothyAldenDavis/GraphBLAS
+
+graphblas_sparse_linear_algebra builds these dependencies automatically.
 
 graphblas_sparse_linear_algebra also requires gomp to be installed locally in /usr/lib/gcc/x86_64-linux-gnu/7/
