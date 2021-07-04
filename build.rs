@@ -61,10 +61,8 @@ fn main() {
     );
     println!("cargo:rustc-link-lib=static=graphblas");
 
-    // TODO: find directory with openMP archive gomp automatically
-    println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/7/");
-    println!("cargo:rustc-link-lib=gomp");
-    // println!("cargo:rustc-link-lib=static=gomp");
+    // TODO: consider to add build instructions for libgomp
+    println!("cargo:rustc-link-lib=static=gomp");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!(
@@ -85,7 +83,8 @@ fn main() {
             .unwrap()
             .to_owned()
     );
-    let mut path_with_graphblas_implementation_header_file = path_with_graphblas_implementation.clone();
+    let mut path_with_graphblas_implementation_header_file =
+        path_with_graphblas_implementation.clone();
     path_with_graphblas_implementation_header_file.push("SuiteSparse_GraphBLAS");
     path_with_graphblas_implementation_header_file.push("Include");
     path_with_graphblas_implementation_header_file.push("GraphBLAS.h");
@@ -98,6 +97,15 @@ fn main() {
     //         .unwrap()
     //         .to_owned()
     // );
+    println!(
+        "cargo:rerun-if-changed = {}",
+        path_with_graphblas_implementation
+            .clone()
+            .join("libgomp.a")
+            .to_str()
+            .unwrap()
+            .to_owned()
+    );
     println!("cargo:rerun-if-changed=build.rs");
 
     let ignored_macros = IgnoreMacros(
