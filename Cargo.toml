@@ -16,6 +16,7 @@ once_cell = {version = "1.7"}
 
 [build-dependencies]
 bindgen = "0.58"
+cmake = "0.1"
 
 [build]
 

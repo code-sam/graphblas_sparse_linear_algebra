@@ -9,7 +9,7 @@ graphblas_sparse_linear_algebra uses the SuiteSparse:GraphBLAS GraphBLAS impleme
 
 graphblas_sparse_linear_algebra requires the following files present in the graphblas_implementation/ directory:
 - graphblas_implementation/GraphBLAS.h
-- graphblas_implementation/libgaphblas.so
+- graphblas_implementation/libgraphblas.so
 
 For the source code and build instructions of SuiteSparse:GraphBLAS, see: https://github.com/DrTimothyAldenDavis/GraphBLAS
 
