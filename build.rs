@@ -131,5 +131,3 @@ fn main() {
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())
         .expect("Couldn't write bindings!");
 }
-
-suitesparse_graphblas_bindings
