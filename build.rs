@@ -37,10 +37,7 @@ fn main() {
         .define("JOBS", "32")
         .define("BUILD_GRB_STATIC_LIBRARY", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
-        .define(
-            "CMAKE_INSTALL_INCLUDEDIR",
-            cargo_build_directory.clone(),
-        )
+        .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.clone())
         .build();
 
     let mut path_with_graphblas_header_file = path_with_graphblas_implementation.clone();
@@ -52,7 +49,7 @@ fn main() {
     // shared library.
     println!(
         "cargo:rustc-link-search=native={}",
-        cargo_build_directory.clone()
+        cargo_build_directory.clone().to_str().unwrap().to_owned()
     );
     println!("cargo:rustc-link-lib=static=graphblas");
 
@@ -85,7 +82,11 @@ fn main() {
     // path_with_graphblas_implementation_header_file.push("GraphBLAS.h");
     println!(
         "cargo:rerun-if-changed = {}",
-        path_with_graphblas_header_file.clone().to_str().unwrap().to_owned()
+        path_with_graphblas_header_file
+            .clone()
+            .to_str()
+            .unwrap()
+            .to_owned()
     );
     println!(
         "cargo:rerun-if-changed = {}",
