@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::env;
-use std::path::{Path, PathBuf};
+// use std::path::{Path, PathBuf};
 
 extern crate bindgen;
 extern crate cmake;
@@ -18,8 +18,6 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
     }
 }
 
-// https://kornel.ski/rust-sys-crate
-
 // NOTE: update linker cache before running: (when using dynamic linking to shared object)
 // https://itsfoss.com/solve-open-shared-object-file-quick-tip/
 // "sudo /sbin/ldconfig -v"
@@ -33,31 +31,28 @@ fn main() {
         .unwrap()
         .to_owned();
 
-    let mut dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
+    let cargo_build_directory = let out_dir = env::var_os("OUT_DIR").unwrap();
+
+    let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
         .define("JOBS", "32")
         .define("BUILD_GRB_STATIC_LIBRARY", "true")
-        .define("CMAKE_INSTALL_LIBDIR", graphblas_build_target_path.clone())
+        .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
         .define(
             "CMAKE_INSTALL_INCLUDEDIR",
-            graphblas_build_target_path.clone(),
+            cargo_build_directory.clone(),
         )
         .build();
 
-    // println!("cargo:rustc-link-search=native={}", dst.display());
-    // let directory_with_build_output = env::var_os("OUT_DIR").unwrap();
-    // println!("cargo:rustc-link-search=native={}", directory_with_build_output.to_str().unwrap().to_owned());
-
     let mut path_with_graphblas_header_file = path_with_graphblas_implementation.clone();
-    // path_with_graphblas_header_file.push("graphblas_implementation");
-    // path_with_graphblas_header_file.push("SuiteSparse_GraphBLAS");
-    // path_with_graphblas_header_file.push("Include");
+    path_with_graphblas_header_file.push("SuiteSparse_GraphBLAS");
+    path_with_graphblas_header_file.push("Include");
     path_with_graphblas_header_file.push("GraphBLAS.h");
     //
     // Tell cargo to tell rustc to link the system GrapBLAS
     // shared library.
     println!(
         "cargo:rustc-link-search=native={}",
-        graphblas_build_target_path.clone()
+        cargo_build_directory.clone()
     );
     println!("cargo:rustc-link-lib=static=graphblas");
 
@@ -83,20 +78,15 @@ fn main() {
             .unwrap()
             .to_owned()
     );
-    let mut path_with_graphblas_implementation_header_file =
-        path_with_graphblas_implementation.clone();
-    path_with_graphblas_implementation_header_file.push("SuiteSparse_GraphBLAS");
-    path_with_graphblas_implementation_header_file.push("Include");
-    path_with_graphblas_implementation_header_file.push("GraphBLAS.h");
-    // println!(
-    //     "cargo:rerun-if-changed = {}",
-    //     path_with_graphblas_implementation
-    //         .clone()
-    //         .join("libgraphblas.a")
-    //         .to_str()
-    //         .unwrap()
-    //         .to_owned()
-    // );
+    // let mut path_with_graphblas_implementation_header_file =
+    //     path_with_graphblas_implementation.clone();
+    // path_with_graphblas_implementation_header_file.push("SuiteSparse_GraphBLAS");
+    // path_with_graphblas_implementation_header_file.push("Include");
+    // path_with_graphblas_implementation_header_file.push("GraphBLAS.h");
+    println!(
+        "cargo:rerun-if-changed = {}",
+        path_with_graphblas_header_file.clone().to_str().unwrap().to_owned()
+    );
     println!(
         "cargo:rerun-if-changed = {}",
         path_with_graphblas_implementation
