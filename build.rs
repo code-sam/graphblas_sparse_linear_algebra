@@ -25,11 +25,6 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
 fn main() {
     let mut path_with_graphblas_implementation = std::env::current_dir().unwrap();
     path_with_graphblas_implementation.push("graphblas_implementation");
-    let graphblas_build_target_path = path_with_graphblas_implementation
-        .clone()
-        .to_str()
-        .unwrap()
-        .to_owned();
 
     let cargo_build_directory = env::var_os("OUT_DIR").unwrap();
 
