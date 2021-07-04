@@ -49,6 +49,10 @@ fn main() {
     println!("cargo:rustc-link-lib=static=graphblas");
 
     // TODO: consider to add build instructions for libgomp
+    println!(
+        "cargo:rustc-link-search=native={}",
+        path_with_graphblas_implementation.clone().to_str().unwrap().to_owned()
+    );
     println!("cargo:rustc-link-lib=static=gomp");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
