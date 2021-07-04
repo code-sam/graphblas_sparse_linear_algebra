@@ -126,7 +126,7 @@ fn main() {
 
     // Write the bindings to the bindings.rs file.
     let mut bindings_target_path = cargo_build_directory.clone();
-    bindings_target_path.push("suitesparse_graphblas_bindings.rs");
+    bindings_target_path.push("/suitesparse_graphblas_bindings.rs");
     bindings
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())
         .expect("Couldn't write bindings!");
