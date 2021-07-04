@@ -6,4 +6,5 @@
 // TODO: only expose what is actually used
 #![allow(dead_code)]
 
-include!("../../graphblas_implementation/bindings.rs");
+// include!("../../graphblas_implementation/bindings.rs");
+include!(concat!(env!("OUT_DIR"), "/", "suitesparse_graphblas_bindings.rs"));

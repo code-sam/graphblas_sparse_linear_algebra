@@ -125,12 +125,11 @@ fn main() {
         .expect("Unable to generate bindings");
 
     // Write the bindings to the bindings.rs file.
-    let mut bindings_target_path = std::env::current_dir().unwrap();
-    bindings_target_path.push("graphblas_implementation");
-    bindings_target_path.push("bindings.rs");
+    let mut bindings_target_path = cargo_build_directory.clone();
+    bindings_target_path.push("suitesparse_graphblas_bindings.rs");
     bindings
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())
         .expect("Couldn't write bindings!");
 }
 
-// https://github.com/gcc-mirror/gcc/tree/master/libgomp
+suitesparse_graphblas_bindings
