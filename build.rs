@@ -33,6 +33,7 @@ fn main() {
         .define("BUILD_GRB_STATIC_LIBRARY", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.clone())
+        .define("PROJECT_SOURCE_DIR", cargo_build_directory.clone()) // prevent modifying config files outside of the cargo output directory
         .build();
 
     let mut path_with_graphblas_header_file = path_with_graphblas_implementation.clone();
@@ -51,7 +52,11 @@ fn main() {
     // TODO: consider to add build instructions for libgomp
     println!(
         "cargo:rustc-link-search=native={}",
-        path_with_graphblas_implementation.clone().to_str().unwrap().to_owned()
+        path_with_graphblas_implementation
+            .clone()
+            .to_str()
+            .unwrap()
+            .to_owned()
     );
     println!("cargo:rustc-link-lib=static=gomp");
 
@@ -65,20 +70,6 @@ fn main() {
             .unwrap()
             .to_owned()
     );
-    println!(
-        "cargo:rerun-if-changed = {}",
-        path_with_graphblas_implementation
-            .clone()
-            .join("GraphBLAS.h")
-            .to_str()
-            .unwrap()
-            .to_owned()
-    );
-    // let mut path_with_graphblas_implementation_header_file =
-    //     path_with_graphblas_implementation.clone();
-    // path_with_graphblas_implementation_header_file.push("SuiteSparse_GraphBLAS");
-    // path_with_graphblas_implementation_header_file.push("Include");
-    // path_with_graphblas_implementation_header_file.push("GraphBLAS.h");
     println!(
         "cargo:rerun-if-changed = {}",
         path_with_graphblas_header_file
@@ -124,15 +115,6 @@ fn main() {
                 .unwrap()
                 .to_owned(),
         )
-        // .header(
-        //     path_with_graphblas_implementation
-        //         .clone()
-        //         .join("wrapper.h")
-        //         .to_str()
-        //         .unwrap()
-        //         .to_owned(),
-        // )
-        // .header("GraphBLAS/wrapper.h")
         .parse_callbacks(Box::new(ignored_macros))
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
