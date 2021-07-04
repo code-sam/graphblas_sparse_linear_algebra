@@ -31,7 +31,7 @@ fn main() {
         .unwrap()
         .to_owned();
 
-    let cargo_build_directory = let out_dir = env::var_os("OUT_DIR").unwrap();
+    let cargo_build_directory = env::var_os("OUT_DIR").unwrap();
 
     let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
         .define("JOBS", "32")
