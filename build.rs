@@ -20,8 +20,9 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
 }
 
 fn main() {
-    // do not build any dependencies as this would time out the docs.rs build server
     if let Ok(_) = std::env::var("DOCS_RS") {
+        // do not build any dependencies as this would time out the docs.rs build server
+    } else {
         #[cfg(feature = "build_static_graphblas_dependencies")]
         build_and_link_dependencies();
 
