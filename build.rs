@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::env;
-// use std::path::{Path, PathBuf};
+use std::ffi::OsString;
+use std::path::PathBuf;
 
 extern crate bindgen;
 extern crate cmake;
@@ -18,38 +19,42 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
     }
 }
 
-// NOTE: update linker cache before running: (when using dynamic linking to shared object)
-// https://itsfoss.com/solve-open-shared-object-file-quick-tip/
-// "sudo /sbin/ldconfig -v"
-
 fn main() {
-    let mut path_with_graphblas_implementation = std::env::current_dir().unwrap();
-    path_with_graphblas_implementation.push("graphblas_implementation");
+    // do not build any dependencies as this would time out the docs.rs build server
+    if let Ok(_) = std::env::var("DOCS_RS") {
+        #[cfg(feature = "build_static_graphblas_dependencies")]
+        build_and_link_dependencies();
 
-    let cargo_build_directory = env::var_os("OUT_DIR").unwrap();
+        #[cfg(feature = "generate_new_bindings_to_graphblas_implementation")]
+        generate_bindings_to_graphblas_implementation();
+    }
+}
 
-    let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
-        .define("JOBS", "32")
-        .define("BUILD_GRB_STATIC_LIBRARY", "true")
-        .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
-        .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.clone())
-        .define("PROJECT_SOURCE_DIR", cargo_build_directory.clone()) // prevent modifying config files outside of the cargo output directory
-        .build();
-
-    let mut path_with_graphblas_header_file = path_with_graphblas_implementation.clone();
+fn path_with_graphblas_header_file() -> PathBuf {
+    let mut path_with_graphblas_header_file = path_with_graphblas_implementation();
     path_with_graphblas_header_file.push("SuiteSparse_GraphBLAS");
     path_with_graphblas_header_file.push("Include");
     path_with_graphblas_header_file.push("GraphBLAS.h");
-    //
-    // Tell cargo to tell rustc to link the system GrapBLAS
-    // shared library.
-    println!(
-        "cargo:rustc-link-search=native={}",
-        cargo_build_directory.clone().to_str().unwrap().to_owned()
-    );
-    println!("cargo:rustc-link-lib=static=graphblas");
+    return path_with_graphblas_header_file;
+}
 
-    // TODO: consider to add build instructions for libgomp
+fn path_with_graphblas_implementation() -> PathBuf {
+    let mut path_with_graphblas_implementation = std::env::current_dir().unwrap();
+    path_with_graphblas_implementation.push("graphblas_implementation");
+    return path_with_graphblas_implementation;
+}
+
+#[cfg(feature = "build_static_graphblas_dependencies")]
+fn build_and_link_dependencies() {
+    let cargo_build_directory = env::var_os("OUT_DIR").unwrap();
+    let path_with_graphblas_header_file = path_with_graphblas_header_file();
+    let path_with_graphblas_implementation = path_with_graphblas_implementation();
+
+    #[cfg(feature = "build_static_graphblas_dependencies")]
+    build_static_graphblas_implementation(&cargo_build_directory);
+
+    // add directory containing libgomp.a to search path.
+    // This directory should also contain libgraphblas.a, if it is not build from source or otherwise in the search path
     println!(
         "cargo:rustc-link-search=native={}",
         path_with_graphblas_implementation
@@ -58,9 +63,36 @@ fn main() {
             .unwrap()
             .to_owned()
     );
+
+    println!("cargo:rustc-link-lib=static=graphblas");
     println!("cargo:rustc-link-lib=static=gomp");
 
-    // Tell cargo to invalidate the built crate whenever the wrapper changes
+    declare_build_invalidation_conditions(
+        &path_with_graphblas_implementation,
+        &path_with_graphblas_header_file,
+    );
+}
+
+// #[cfg(feature = "build_static_graphblas_dependencies")]
+fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
+    let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
+        .define("JOBS", "32")
+        .define("BUILD_GRB_STATIC_LIBRARY", "true")
+        .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
+        .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.clone())
+        .define("PROJECT_SOURCE_DIR", cargo_build_directory.clone()) // prevent modifying config files outside of the cargo output directory
+        .build();
+
+    println!(
+        "cargo:rustc-link-search=native={}",
+        cargo_build_directory.clone().to_str().unwrap().to_owned()
+    );
+}
+
+fn declare_build_invalidation_conditions(
+    path_with_graphblas_implementation: &PathBuf,
+    path_with_graphblas_header_file: &PathBuf,
+) {
     println!(
         "cargo:rerun-if-changed = {}",
         path_with_graphblas_implementation
@@ -88,6 +120,11 @@ fn main() {
             .to_owned()
     );
     println!("cargo:rerun-if-changed=build.rs");
+}
+
+fn generate_bindings_to_graphblas_implementation() {
+    let path_with_graphblas_header_file = path_with_graphblas_header_file();
+    let path_with_graphblas_implementation = path_with_graphblas_implementation();
 
     let ignored_macros = IgnoreMacros(
         vec![
@@ -102,12 +139,7 @@ fn main() {
         .collect(),
     );
 
-    // The bindgen::Builder is the main entry point
-    // to bindgen, and lets you build up options for
-    // the resulting bindings.
     let bindings = bindgen::Builder::default()
-        // The input header we would like to generate
-        // bindings for.
         .header(
             path_with_graphblas_header_file
                 .clone()
@@ -116,17 +148,11 @@ fn main() {
                 .to_owned(),
         )
         .parse_callbacks(Box::new(ignored_macros))
-        // Tell cargo to invalidate the built crate whenever any of the
-        // included header files changed.
-        // .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        // Finish the builder and generate the bindings.
         .generate()
-        // Unwrap the Result and panic on failure.
         .expect("Unable to generate bindings");
 
-    // Write the bindings to the bindings.rs file.
-    let mut bindings_target_path = cargo_build_directory.clone();
-    bindings_target_path.push("/suitesparse_graphblas_bindings.rs");
+    let mut bindings_target_path = path_with_graphblas_implementation.clone();
+    bindings_target_path.push("suitesparse_graphblas_bindings.rs");
     bindings
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())
         .expect("Couldn't write bindings!");

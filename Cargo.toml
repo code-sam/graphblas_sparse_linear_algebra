@@ -1,6 +1,6 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2018"
@@ -13,6 +13,11 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 
 [dependencies]
 once_cell = {version = "1.7"}
+
+[features]
+default = ["build_static_graphblas_dependencies", "generate_new_bindings_to_graphblas_implementation"]
+build_static_graphblas_dependencies = []
+generate_new_bindings_to_graphblas_implementation = []
 
 [build-dependencies]
 bindgen = "0.58"
