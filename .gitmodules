@@ -1,0 +1,7 @@
+[submodule "graphblas_implementation/SuiteSparse_GraphBLAS"]
+	path = graphblas_implementation/SuiteSparse_GraphBLAS
+	url = https://github.com/DrTimothyAldenDavis/GraphBLAS
+
+[submodule "graphblas_implementation/gcc_openmp"]
+	path = graphblas_implementation/gcc_openmp
+	url = https://github.com/gcc-mirror/gcc/tree/master/libgomp
