@@ -76,7 +76,7 @@ impl<T> RegisteredCustomValueType<T> {
 }
 
 // TODO: consider to use a generic type like CustomType<T>(T). This should enable generic trait implementation for all custom types.
-#[macro_export]
+// #[macro_export]
 macro_rules! implement_value_type_for_custom_type {
     ($value_type: ty) => {
         impl ValueType for $value_type {}
