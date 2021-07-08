@@ -2,7 +2,10 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{BinaryOperator, MatrixMask, Monoid, OperatorOptions, Semiring};
+use crate::operators::{
+    binary_operator::BinaryOperator, mask::MatrixMask, monoid::Monoid, options::OperatorOptions,
+    semiring::Semiring,
+};
 use crate::sparse_matrix::SparseMatrix;
 use crate::value_type::{AsBoolean, ValueType};
 

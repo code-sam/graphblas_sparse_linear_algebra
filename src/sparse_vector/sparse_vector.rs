@@ -31,8 +31,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_setElement_UINT8, GrB_Vector_size,
 };
 use crate::context::Context;
-use crate::operators::BinaryOperator;
-
+use crate::operators::binary_operator::BinaryOperator;
 use crate::util::{ElementIndex, IndexConversion};
 use crate::value_type::{BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType};
 
@@ -518,8 +517,7 @@ mod tests {
     use super::*;
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::First;
-    // use crate::value_type::{GraphblasFloat32, GraphblasInt32};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn new_vector() {

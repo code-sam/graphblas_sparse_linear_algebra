@@ -1,10 +1,11 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use super::OperatorOptions;
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{BinaryOperator, MatrixMask};
+use crate::operators::{
+    binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
+};
 use crate::sparse_matrix::SparseMatrix;
 use crate::value_type::{AsBoolean, ValueType};
 

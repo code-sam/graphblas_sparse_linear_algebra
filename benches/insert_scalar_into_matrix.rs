@@ -6,7 +6,8 @@ use graphblas_sparse_linear_algebra::context::Context;
 
 // use graphblas_sparse_linear_algebra::operators::BinaryOperatorType;
 use graphblas_sparse_linear_algebra::operators::{
-    BinaryOperator, MatrixMask, Monoid, OperatorOptions, Semiring, VectorMask,
+    binary_operator::BinaryOperator, mask::MatrixMask, mask::VectorMask, monoid::Monoid,
+    options::OperatorOptions, semiring::Semiring,
 };
 use graphblas_sparse_linear_algebra::sparse_matrix::SparseMatrix;
 
@@ -14,8 +15,8 @@ use graphblas_sparse_linear_algebra::util::{ElementIndex, ElementIndexSelector};
 
 use graphblas_sparse_linear_algebra::context::Mode;
 
-use graphblas_sparse_linear_algebra::operators::First;
-use graphblas_sparse_linear_algebra::operators::{
+use graphblas_sparse_linear_algebra::operators::binary_operator::First;
+use graphblas_sparse_linear_algebra::operators::insert::{
     InsertScalarIntoMatrix, InsertScalarIntoMatrixTrait,
 };
 use graphblas_sparse_linear_algebra::sparse_matrix::{

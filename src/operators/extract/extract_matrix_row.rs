@@ -1,6 +1,7 @@
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    BinaryOperator, MatrixColumnExtractor, MatrixTranspose, OperatorOptions, VectorMask,
+    binary_operator::BinaryOperator, extract::MatrixColumnExtractor, mask::VectorMask,
+    options::OperatorOptions, transpose::MatrixTranspose,
 };
 use crate::sparse_matrix::{Size, SparseMatrix};
 use crate::sparse_vector::SparseVector;

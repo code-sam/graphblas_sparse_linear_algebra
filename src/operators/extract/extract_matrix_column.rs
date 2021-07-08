@@ -2,7 +2,9 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{BinaryOperator, OperatorOptions, VectorMask};
+use crate::operators::{
+    binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
+};
 use crate::sparse_matrix::SparseMatrix;
 use crate::sparse_vector::SparseVector;
 use crate::util::{
