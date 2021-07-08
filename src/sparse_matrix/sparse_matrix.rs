@@ -32,7 +32,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
 use crate::context::Context;
-use crate::operators::BinaryOperator;
+use crate::operators::binary_operator::BinaryOperator;
 
 use crate::util::{ElementIndex, IndexConversion};
 use crate::value_type::{BuiltInValueType, ValueType};
@@ -576,7 +576,7 @@ mod tests {
     use super::*;
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::First;
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn new_matrix() {

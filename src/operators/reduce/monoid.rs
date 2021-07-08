@@ -3,7 +3,9 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{BinaryOperator, Monoid, OperatorOptions, VectorMask};
+use crate::operators::{
+    binary_operator::BinaryOperator, mask::VectorMask, monoid::Monoid, options::OperatorOptions,
+};
 
 use crate::sparse_matrix::SparseMatrix;
 use crate::sparse_vector::SparseVector;

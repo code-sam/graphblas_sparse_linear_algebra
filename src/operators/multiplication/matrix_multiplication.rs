@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::semiring::Semiring;
-use crate::operators::{MatrixMask, OperatorOptions};
+use crate::operators::{mask::MatrixMask, options::OperatorOptions};
 use crate::sparse_matrix::SparseMatrix;
 use crate::value_type::{AsBoolean, ValueType};
 
