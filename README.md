@@ -13,7 +13,7 @@ The git repository uses submodules, and can be cloned using:
 ```git clone --recurse-submodules https://github.com/code-sam/graphblas_sparse_linear_algebra.git```
 
 ## Compatibility
-graphblas_sparse_linear_algebra is mostly compatible with the GraphBLAS specification version 1.3.
+graphblas_sparse_linear_algebra is mostly compatible with the GraphBLAS specification version 1.3 and uses SuiteSparse:GraphBLAS v4.0.3.
 
 ## Contributing
 Awesome, contributions are welcome. Graphblas_sparse_linear_algebra and your contribution may be relicensed and integrated into commercial software in the future. Therefore, you will be asked to agree to the Contributor License Agreement when you make a pull request.
