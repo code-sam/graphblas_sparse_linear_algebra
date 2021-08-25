@@ -4,7 +4,7 @@ Rust wrapper for SuiteSparse:GraphBLAS
 ## Dependencies
 graphblas_sparse_linear_algebra uses the SuiteSparse:GraphBLAS GraphBLAS implementation developed by Timothy A. Davis.
 
-by default, graphblas_sparse_linear_algebra makes a new build of SuiteSparse:GraphBLAS and links to it as a static dependency. For the source code and custom build instructions for SuiteSparse:GraphBLAS, see: https://github.com/DrTimothyAldenDavis/GraphBLAS.
+By default, graphblas_sparse_linear_algebra makes a new build of SuiteSparse:GraphBLAS and links to it as a static dependency. For the source code and custom build instructions for SuiteSparse:GraphBLAS, see: https://github.com/DrTimothyAldenDavis/GraphBLAS.
 
 ## Building from source
 To build graphblas_sparse_linear_algebra from source, Cmake and a C compiler must be installed. 
