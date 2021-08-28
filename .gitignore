@@ -1,4 +1,4 @@
-signatures/
-target/
 *.lock
 graphblas_implementation/SuiteSparse_GraphBLAS/GraphBLAS/
+signatures/
+target/
