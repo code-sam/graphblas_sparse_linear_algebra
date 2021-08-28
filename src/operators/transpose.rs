@@ -6,8 +6,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
 pub struct MatrixTranspose<Applicant, Product>
@@ -93,7 +93,7 @@ mod tests {
     use super::*;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{FromMatrixElementList, GetMatrixElementValue, MatrixElementList};
+    use crate::value_types::sparse_matrix::{FromMatrixElementList, GetMatrixElementValue, MatrixElementList};
 
     #[test]
     fn test_transpose() {

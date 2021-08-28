@@ -6,12 +6,12 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Row_subassign,
@@ -221,10 +221,10 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::sparse_vector::{FromVectorElementList, VectorElementList};
+    use crate::value_types::sparse_vector::{FromVectorElementList, VectorElementList};
     use crate::util::ElementIndex;
 
     #[test]

@@ -7,10 +7,10 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, monoid::Monoid, options::OperatorOptions,
 };
 
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
 
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32,
@@ -180,8 +180,8 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::monoid::Plus as MonoidPlus;
 
-    use crate::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::value_types::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
 
     #[test]
     fn test_monoid_to_vector_reducer() {

@@ -6,9 +6,9 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_assign_BOOL, GrB_Matrix_assign_FP32,
@@ -314,7 +314,7 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
     use crate::util::ElementIndex;

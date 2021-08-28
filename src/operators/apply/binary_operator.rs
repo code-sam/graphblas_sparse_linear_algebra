@@ -7,9 +7,9 @@ use crate::operators::{
     mask::{MatrixMask, VectorMask},
     options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply_BinaryOp1st_BOOL,
@@ -471,10 +471,10 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
 
     #[test]
     fn test_matrix_binary_operator_application() {

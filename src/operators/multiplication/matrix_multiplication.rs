@@ -6,8 +6,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::semiring::Semiring;
 use crate::operators::{mask::MatrixMask, options::OperatorOptions};
-use crate::sparse_matrix::SparseMatrix;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_mxm,
@@ -119,7 +119,7 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::binary_operator::{Plus, Times};
     use crate::operators::semiring::PlusTimes;
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 

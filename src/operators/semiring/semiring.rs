@@ -1,5 +1,5 @@
 use crate::operators::binary_operator::{Plus, Times};
-use crate::value_type::ValueType;
+use crate::value_types::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::*;
 

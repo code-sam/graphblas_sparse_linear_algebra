@@ -7,10 +7,10 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
 
-use crate::sparse_scalar::{SetScalarValue, SparseScalar};
-use crate::sparse_vector::SparseVector;
+use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
+use crate::value_types::sparse_vector::SparseVector;
 
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
@@ -750,7 +750,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
 
     #[test]
     fn test_zero_scalar_selector() {

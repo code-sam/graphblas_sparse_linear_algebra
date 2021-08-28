@@ -35,13 +35,41 @@ use crate::context::Context;
 use crate::operators::binary_operator::BinaryOperator;
 
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_type::{BuiltInValueType, ValueType};
+use crate::value_types::value_type::{BuiltInValueType, ValueType};
 
 pub struct SparseMatrix<T: ValueType> {
     context: Arc<Context>,
     matrix: GrB_Matrix,
     value_type: PhantomData<T>,
 }
+
+// Send and Sync implementaioms should be ok, since mutable access to GrB_Matrix 
+// must occur through a mut SparseMatrix. Method providing a copy or reference to 
+// GrB_Matrix will result in undefined behaviour though. Code review must consider this.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+// unsafe impl Send for SparseMatrix<bool> {}
+// unsafe impl Send for SparseMatrix<u8> {}
+// unsafe impl Send for SparseMatrix<u16> {}
+// unsafe impl Send for SparseMatrix<u32> {}
+// unsafe impl Send for SparseMatrix<u64> {}
+// unsafe impl Send for SparseMatrix<i8> {}
+// unsafe impl Send for SparseMatrix<i16> {}
+// unsafe impl Send for SparseMatrix<i32> {}
+// unsafe impl Send for SparseMatrix<i64> {}
+// unsafe impl Send for SparseMatrix<f32> {}
+// unsafe impl Send for SparseMatrix<f64> {}
+
+// unsafe impl Sync for SparseMatrix<bool> {}
+// unsafe impl Sync for SparseMatrix<u8> {}
+// unsafe impl Sync for SparseMatrix<u16> {}
+// unsafe impl Sync for SparseMatrix<u32> {}
+// unsafe impl Sync for SparseMatrix<u64> {}
+// unsafe impl Sync for SparseMatrix<i8> {}
+// unsafe impl Sync for SparseMatrix<i16> {}
+// unsafe impl Sync for SparseMatrix<i32> {}
+// unsafe impl Sync for SparseMatrix<i64> {}
+// unsafe impl Sync for SparseMatrix<f32> {}
+// unsafe impl Sync for SparseMatrix<f64> {}
 
 impl<T: ValueType + BuiltInValueType<T>> SparseMatrix<T> {
     pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {
@@ -60,7 +88,7 @@ impl<T: ValueType + BuiltInValueType<T>> SparseMatrix<T> {
             )
         })?;
 
-        let matrix = unsafe { matrix.assume_init() };
+        let matrix = unsafe{ matrix.assume_init() };
         return Ok(SparseMatrix {
             context,
             matrix,

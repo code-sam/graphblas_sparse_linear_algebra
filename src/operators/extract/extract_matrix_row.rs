@@ -3,10 +3,10 @@ use crate::operators::{
     binary_operator::BinaryOperator, extract::MatrixColumnExtractor, mask::VectorMask,
     options::OperatorOptions, transpose::MatrixTranspose,
 };
-use crate::sparse_matrix::{Size, SparseMatrix};
-use crate::sparse_vector::SparseVector;
+use crate::value_types::sparse_matrix::{Size, SparseMatrix};
+use crate::value_types::sparse_vector::SparseVector;
 use crate::util::{ElementIndex, ElementIndexSelector};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
 pub struct MatrixRowExtractor<Matrix, Column>
@@ -111,8 +111,8 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{FromMatrixElementList, MatrixElementList};
-    use crate::sparse_vector::GetVectorElementValue;
+    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::value_types::sparse_vector::GetVectorElementValue;
 
     #[test]
     fn test_row_extraction() {

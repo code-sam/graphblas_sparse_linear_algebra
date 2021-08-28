@@ -22,13 +22,41 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_type::{BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType};
+use crate::value_types::value_type::{BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType};
 
 pub struct SparseScalar<T: ValueType> {
     context: Arc<Context>,
     scalar: GxB_Scalar,
     value_type: PhantomData<T>,
 }
+
+// Send and Sync implementaioms should be ok, since mutable access to GxB_Scalar 
+// must occur through a mut SparseScalar. Method providing a copy or reference to 
+// GxB_Scalar will result in undefined behaviour though. Code review must consider this.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+// unsafe impl Send for SparseScalar<bool> {}
+// unsafe impl Send for SparseScalar<u8> {}
+// unsafe impl Send for SparseScalar<u16> {}
+// unsafe impl Send for SparseScalar<u32> {}
+// unsafe impl Send for SparseScalar<u64> {}
+// unsafe impl Send for SparseScalar<i8> {}
+// unsafe impl Send for SparseScalar<i16> {}
+// unsafe impl Send for SparseScalar<i32> {}
+// unsafe impl Send for SparseScalar<i64> {}
+// unsafe impl Send for SparseScalar<f32> {}
+// unsafe impl Send for SparseScalar<f64> {}
+
+// unsafe impl Sync for SparseScalar<bool> {}
+// unsafe impl Sync for SparseScalar<u8> {}
+// unsafe impl Sync for SparseScalar<u16> {}
+// unsafe impl Sync for SparseScalar<u32> {}
+// unsafe impl Sync for SparseScalar<u64> {}
+// unsafe impl Sync for SparseScalar<i8> {}
+// unsafe impl Sync for SparseScalar<i16> {}
+// unsafe impl Sync for SparseScalar<i32> {}
+// unsafe impl Sync for SparseScalar<i64> {}
+// unsafe impl Sync for SparseScalar<f32> {}
+// unsafe impl Sync for SparseScalar<f64> {}
 
 impl<T: ValueType + BuiltInValueType<T>> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {

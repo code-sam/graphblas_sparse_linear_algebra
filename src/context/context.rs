@@ -138,7 +138,7 @@ impl Context {
         F: FnMut() -> GrB_Info,
     {
         // thread::sleep(time::Duration::from_secs(2));
-        let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+        // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
         graphblas_result(function_to_call())
     }
 }
@@ -339,6 +339,9 @@ extern "C" {
 mod tests {
     use super::*;
 
+    use crate::value_types::sparse_matrix::{Size, SparseMatrix};
+    use rayon::prelude::*;
+
     // #[test]
     // fn init_graphblas() {
     //     let info = unsafe { GrB_init(GrB_Mode_GrB_NONBLOCKING) };
@@ -439,5 +442,20 @@ mod tests {
         // // To compensate this test-specific error, manually increase the context count
         // let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         // number_of_ready_contexts.fetch_add(1, Ordering::SeqCst);
+    }
+
+    #[test]
+    fn parallel_calls_to_graphblas() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let number_of_matrices = 100;
+        let mut matrices: Vec<SparseMatrix<i32>> = Vec::with_capacity(number_of_matrices);
+
+        let matrix_size = Size::new(10, 5);
+        // TODO: use into_par_iter()
+        let mut matrices: Vec<Arc<SparseMatrix<i32>>> = (0..number_of_matrices)
+            .into_iter()
+            .map(|_| Arc::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap()))
+            .collect();
     }
 }

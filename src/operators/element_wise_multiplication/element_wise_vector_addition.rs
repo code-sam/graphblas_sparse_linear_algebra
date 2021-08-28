@@ -6,8 +6,8 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, monoid::Monoid, options::OperatorOptions,
     semiring::Semiring,
 };
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Monoid, GrB_Semiring, GrB_Vector_eWiseAdd_BinaryOp,
@@ -279,7 +279,7 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
-    use crate::sparse_vector::{
+    use crate::value_types::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
 
