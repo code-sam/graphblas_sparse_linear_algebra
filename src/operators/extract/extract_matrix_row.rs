@@ -3,9 +3,9 @@ use crate::operators::{
     binary_operator::BinaryOperator, extract::MatrixColumnExtractor, mask::VectorMask,
     options::OperatorOptions, transpose::MatrixTranspose,
 };
+use crate::util::{ElementIndex, ElementIndexSelector};
 use crate::value_types::sparse_matrix::{Size, SparseMatrix};
 use crate::value_types::sparse_vector::SparseVector;
-use crate::util::{ElementIndex, ElementIndexSelector};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]

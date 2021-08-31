@@ -61,15 +61,18 @@ macro_rules! implement_selector_with_diagonal {
                 let context = product.context();
                 let diagonal_index = diagional.to_graphblas_type(&context)?;
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 match diagonal_index {
                     DiagonalIndexGraphblasType::Index(index) => {
                         context.call(|| unsafe {
                             GxB_Matrix_select(
-                                product.graphblas_matrix(),
+                                *product_with_write_lock,
                                 ptr::null_mut(),
                                 self.accumulator,
                                 $graphblas_operator,
-                                argument.graphblas_matrix(),
+                                *argument_with_read_lock,
                                 index.graphblas_scalar(),
                                 self.options,
                             )
@@ -78,11 +81,11 @@ macro_rules! implement_selector_with_diagonal {
                     DiagonalIndexGraphblasType::Default => {
                         context.call(|| unsafe {
                             GxB_Matrix_select(
-                                product.graphblas_matrix(),
+                                *product_with_write_lock,
                                 ptr::null_mut(),
                                 self.accumulator,
                                 $graphblas_operator,
-                                argument.graphblas_matrix(),
+                                *argument_with_read_lock,
                                 ptr::null_mut(),
                                 self.options,
                             )
@@ -107,15 +110,19 @@ macro_rules! implement_selector_with_diagonal {
                 let context = product.context();
                 let diagonal_index = diagional.to_graphblas_type(&context)?;
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let mask_with_read_lock = mask.get_read_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 match diagonal_index {
                     DiagonalIndexGraphblasType::Index(index) => {
                         context.call(|| unsafe {
                             GxB_Matrix_select(
-                                product.graphblas_matrix(),
-                                mask.graphblas_matrix(),
+                                *product_with_write_lock,
+                                *mask_with_read_lock,
                                 self.accumulator,
                                 $graphblas_operator,
-                                argument.graphblas_matrix(),
+                                *argument_with_read_lock,
                                 index.graphblas_scalar(),
                                 self.options,
                             )
@@ -124,11 +131,11 @@ macro_rules! implement_selector_with_diagonal {
                     DiagonalIndexGraphblasType::Default => {
                         context.call(|| unsafe {
                             GxB_Matrix_select(
-                                product.graphblas_matrix(),
-                                mask.graphblas_matrix(),
+                                *product_with_write_lock,
+                                *mask_with_read_lock,
                                 self.accumulator,
                                 $graphblas_operator,
-                                argument.graphblas_matrix(),
+                                *argument_with_read_lock,
                                 ptr::null_mut(),
                                 self.options,
                             )
@@ -160,13 +167,16 @@ macro_rules! implement_scalar_selector {
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
                 sparse_scalar.set_value(scalar)?;
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     GxB_Matrix_select(
-                        product.graphblas_matrix(),
+                        *product_with_write_lock,
                         ptr::null_mut(),
                         self.accumulator,
                         $graphblas_operator,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         sparse_scalar.graphblas_scalar(),
                         self.options,
                     )
@@ -189,13 +199,16 @@ macro_rules! implement_scalar_selector {
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
                 sparse_scalar.set_value(scalar)?;
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     GxB_Matrix_select(
-                        product.graphblas_matrix(),
+                        *product_with_write_lock,
                         ptr::null_mut(),
                         self.accumulator,
                         $graphblas_operator,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         sparse_scalar.graphblas_scalar(),
                         self.options,
                     )
@@ -793,13 +806,16 @@ macro_rules! implement_selector_with_zero {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     GxB_Matrix_select(
-                        product.graphblas_matrix(),
+                        *product_with_write_lock,
                         ptr::null_mut(),
                         self.accumulator,
                         $graphblas_operator,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         ptr::null_mut(),
                         self.options,
                     )
@@ -819,13 +835,17 @@ macro_rules! implement_selector_with_zero {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let mask_with_read_lock = mask.get_read_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     GxB_Matrix_select(
-                        product.graphblas_matrix(),
-                        mask.graphblas_matrix(),
+                        *product_with_write_lock,
+                        *mask_with_read_lock,
                         self.accumulator,
                         $graphblas_operator,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         ptr::null_mut(),
                         self.options,
                     )

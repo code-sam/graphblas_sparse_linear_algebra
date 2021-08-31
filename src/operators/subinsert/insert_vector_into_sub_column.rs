@@ -6,11 +6,11 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -112,11 +112,13 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                 let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
                 let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
+                let matrix_to_insert_into_with_write_lock = matrix_to_insert_into.get_write_lock()?;
+
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
+                                *matrix_to_insert_into_with_write_lock,
                                 ptr::null_mut(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -131,7 +133,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                     ElementIndexSelectorGraphblasType::All(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
+                                *matrix_to_insert_into_with_write_lock,
                                 ptr::null_mut(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -165,11 +167,13 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                 let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
                 let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
+                let matrix_to_insert_into_with_write_lock = matrix_to_insert_into.get_write_lock()?;
+
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
+                                *matrix_to_insert_into_with_write_lock,
                                 mask_for_column_to_insert_into.graphblas_vector(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -184,7 +188,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                     ElementIndexSelectorGraphblasType::All(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
+                                *matrix_to_insert_into_with_write_lock,
                                 mask_for_column_to_insert_into.graphblas_vector(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -221,12 +225,12 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
+    use crate::util::ElementIndex;
     use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
     use crate::value_types::sparse_vector::FromVectorElementList;
     use crate::value_types::sparse_vector::VectorElementList;
-    use crate::util::ElementIndex;
 
     #[test]
     fn test_insert_vector_into_column() {

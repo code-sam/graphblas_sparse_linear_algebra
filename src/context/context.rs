@@ -452,10 +452,10 @@ mod tests {
         let mut matrices: Vec<SparseMatrix<i32>> = Vec::with_capacity(number_of_matrices);
 
         let matrix_size = Size::new(10, 5);
-        // TODO: use into_par_iter()
         let mut matrices: Vec<Arc<SparseMatrix<i32>>> = (0..number_of_matrices)
-            .into_iter()
+            .into_par_iter()
             .map(|_| Arc::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap()))
             .collect();
+
     }
 }

@@ -5,11 +5,11 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
@@ -73,6 +73,8 @@ where
 
         let column_index_to_extract = column_index_to_extract.to_graphblas_index()?;
 
+        let matrix_to_extract_from_with_read_lock = matrix_to_extract_from.get_read_lock()?;
+
         match indices_to_extract {
             ElementIndexSelectorGraphblasType::Index(index) => {
                 context.call(|| unsafe {
@@ -80,7 +82,7 @@ where
                         column_vector.graphblas_vector(),
                         ptr::null_mut(),
                         self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
+                        *matrix_to_extract_from_with_read_lock,
                         index.as_ptr(),
                         number_of_indices_to_extract,
                         column_index_to_extract,
@@ -94,7 +96,7 @@ where
                         column_vector.graphblas_vector(),
                         ptr::null_mut(),
                         self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
+                        *matrix_to_extract_from_with_read_lock,
                         index,
                         number_of_indices_to_extract,
                         column_index_to_extract,
@@ -130,6 +132,8 @@ where
 
         let column_index_to_extract = column_index_to_extract.to_graphblas_index()?;
 
+        let matrix_to_extract_from_with_read_lock = matrix_to_extract_from.get_read_lock()?;
+
         match indices_to_extract {
             ElementIndexSelectorGraphblasType::Index(index) => {
                 context.call(|| unsafe {
@@ -137,7 +141,7 @@ where
                         column_vector.graphblas_vector(),
                         mask.graphblas_vector(),
                         self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
+                        *matrix_to_extract_from_with_read_lock,
                         index.as_ptr(),
                         number_of_indices_to_extract,
                         column_index_to_extract,
@@ -151,7 +155,7 @@ where
                         column_vector.graphblas_vector(),
                         mask.graphblas_vector(),
                         self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
+                        *matrix_to_extract_from_with_read_lock,
                         index,
                         number_of_indices_to_extract,
                         column_index_to_extract,

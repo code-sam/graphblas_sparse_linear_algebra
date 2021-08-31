@@ -70,6 +70,8 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
+        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
+
         context.call(|| unsafe {
             GrB_vxm(
                 product.graphblas_vector(),
@@ -77,7 +79,7 @@ where
                 self.accumulator,
                 self.semiring,
                 multiplier.graphblas_vector(),
-                multiplicant.graphblas_matrix(),
+                *multiplicant_with_read_lock,
                 self.options,
             )
         })?;
@@ -94,6 +96,8 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
+        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
+
         context.call(|| unsafe {
             GrB_vxm(
                 product.graphblas_vector(),
@@ -101,7 +105,7 @@ where
                 self.accumulator,
                 self.semiring,
                 multiplier.graphblas_vector(),
-                multiplicant.graphblas_matrix(),
+                *multiplicant_with_read_lock,
                 self.options,
             )
         })?;

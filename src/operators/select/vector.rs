@@ -750,7 +750,9 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::value_types::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_zero_scalar_selector() {

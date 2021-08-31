@@ -137,13 +137,16 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     GrB_Matrix_apply(
-                        product.graphblas_matrix(),
+                        *product_with_write_lock,
                         ptr::null_mut(),
                         self.accumulator,
                         self.unary_operator,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         self.options,
                     )
                 })?;
@@ -162,13 +165,17 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
+                let product_with_write_lock = product.get_write_lock()?;
+                let mask_with_read_lock = mask.get_read_lock()?;
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     GrB_Matrix_apply(
-                        product.graphblas_matrix(),
-                        mask.graphblas_matrix(),
+                        *product_with_write_lock,
+                        *mask_with_read_lock,
                         self.accumulator,
                         self.unary_operator,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         self.options,
                     )
                 })?;
@@ -199,7 +206,9 @@ mod tests {
     use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::value_types::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_matrix_unary_operator() {

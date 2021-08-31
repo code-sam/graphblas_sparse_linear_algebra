@@ -77,13 +77,15 @@ impl<T: ValueType> MonoidReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
+        let argument_with_read_lock = argument.get_read_lock()?;
+
         context.call(|| unsafe {
             GrB_Matrix_reduce_Monoid(
                 product.graphblas_vector(),
                 ptr::null_mut(),
                 self.accumulator,
                 self.monoid,
-                argument.graphblas_matrix(),
+                *argument_with_read_lock,
                 self.options,
             )
         })?;
@@ -99,13 +101,15 @@ impl<T: ValueType> MonoidReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
+        let argument_with_read_lock = argument.get_read_lock()?;
+
         context.call(|| unsafe {
             GrB_Matrix_reduce_Monoid(
                 product.graphblas_vector(),
                 mask.graphblas_vector(),
                 self.accumulator,
                 self.monoid,
-                argument.graphblas_matrix(),
+                *argument_with_read_lock,
                 self.options,
             )
         })?;
@@ -124,12 +128,14 @@ macro_rules! implement_monoid_reducer {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
+                let argument_with_read_lock = argument.get_read_lock()?;
+
                 context.call(|| unsafe {
                     $matrix_reducer_operator(
                         product,
                         self.accumulator,
                         self.monoid,
-                        argument.graphblas_matrix(),
+                        *argument_with_read_lock,
                         self.options,
                     )
                 })?;
@@ -181,7 +187,9 @@ mod tests {
     use crate::operators::monoid::Plus as MonoidPlus;
 
     use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
-    use crate::value_types::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_monoid_to_vector_reducer() {

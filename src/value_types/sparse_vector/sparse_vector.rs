@@ -33,7 +33,9 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_types::value_type::{BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType};
+use crate::value_types::value_type::{
+    BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType,
+};
 
 pub struct SparseVector<T: ValueType> {
     context: Arc<Context>,
@@ -41,8 +43,8 @@ pub struct SparseVector<T: ValueType> {
     value_type: PhantomData<T>,
 }
 
-// Send and Sync implementaioms should be ok, since mutable access to GrB_Vector 
-// must occur through a mut SparseVector. Method providing a copy or reference to 
+// Send and Sync implementaioms should be ok, since mutable access to GrB_Vector
+// must occur through a mut SparseVector. Method providing a copy or reference to
 // GrB_Vector will result in undefined behaviour though. Code review must consider this.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
 // unsafe impl Send for SparseVector<bool> {}
