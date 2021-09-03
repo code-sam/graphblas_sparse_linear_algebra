@@ -18,29 +18,29 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for SubVectorExtractor<bool,bool> {}
-unsafe impl Send for SubVectorExtractor<u8,u8> {}
-unsafe impl Send for SubVectorExtractor<u16,u16> {}
-unsafe impl Send for SubVectorExtractor<u32,u32> {}
-unsafe impl Send for SubVectorExtractor<u64,u64> {}
-unsafe impl Send for SubVectorExtractor<i8,i8> {}
-unsafe impl Send for SubVectorExtractor<i16,i16> {}
-unsafe impl Send for SubVectorExtractor<i32,i32> {}
-unsafe impl Send for SubVectorExtractor<i64,i64> {}
-unsafe impl Send for SubVectorExtractor<f32,f32> {}
-unsafe impl Send for SubVectorExtractor<f64,f64> {}
+unsafe impl Send for SubVectorExtractor<bool, bool> {}
+unsafe impl Send for SubVectorExtractor<u8, u8> {}
+unsafe impl Send for SubVectorExtractor<u16, u16> {}
+unsafe impl Send for SubVectorExtractor<u32, u32> {}
+unsafe impl Send for SubVectorExtractor<u64, u64> {}
+unsafe impl Send for SubVectorExtractor<i8, i8> {}
+unsafe impl Send for SubVectorExtractor<i16, i16> {}
+unsafe impl Send for SubVectorExtractor<i32, i32> {}
+unsafe impl Send for SubVectorExtractor<i64, i64> {}
+unsafe impl Send for SubVectorExtractor<f32, f32> {}
+unsafe impl Send for SubVectorExtractor<f64, f64> {}
 
-unsafe impl Sync for SubVectorExtractor<bool,bool> {}
-unsafe impl Sync for SubVectorExtractor<u8,u8> {}
-unsafe impl Sync for SubVectorExtractor<u16,u16> {}
-unsafe impl Sync for SubVectorExtractor<u32,u32> {}
-unsafe impl Sync for SubVectorExtractor<u64,u64> {}
-unsafe impl Sync for SubVectorExtractor<i8,i8> {}
-unsafe impl Sync for SubVectorExtractor<i16,i16> {}
-unsafe impl Sync for SubVectorExtractor<i32,i32> {}
-unsafe impl Sync for SubVectorExtractor<i64,i64> {}
-unsafe impl Sync for SubVectorExtractor<f32,f32> {}
-unsafe impl Sync for SubVectorExtractor<f64,f64> {}
+unsafe impl Sync for SubVectorExtractor<bool, bool> {}
+unsafe impl Sync for SubVectorExtractor<u8, u8> {}
+unsafe impl Sync for SubVectorExtractor<u16, u16> {}
+unsafe impl Sync for SubVectorExtractor<u32, u32> {}
+unsafe impl Sync for SubVectorExtractor<u64, u64> {}
+unsafe impl Sync for SubVectorExtractor<i8, i8> {}
+unsafe impl Sync for SubVectorExtractor<i16, i16> {}
+unsafe impl Sync for SubVectorExtractor<i32, i32> {}
+unsafe impl Sync for SubVectorExtractor<i64, i64> {}
+unsafe impl Sync for SubVectorExtractor<f32, f32> {}
+unsafe impl Sync for SubVectorExtractor<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct SubVectorExtractor<Argument, Product>

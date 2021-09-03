@@ -22,29 +22,29 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertScalarIntoMatrix<bool,bool> {}
-unsafe impl Send for InsertScalarIntoMatrix<u8,u8> {}
-unsafe impl Send for InsertScalarIntoMatrix<u16,u16> {}
-unsafe impl Send for InsertScalarIntoMatrix<u32,u32> {}
-unsafe impl Send for InsertScalarIntoMatrix<u64,u64> {}
-unsafe impl Send for InsertScalarIntoMatrix<i8,i8> {}
-unsafe impl Send for InsertScalarIntoMatrix<i16,i16> {}
-unsafe impl Send for InsertScalarIntoMatrix<i32,i32> {}
-unsafe impl Send for InsertScalarIntoMatrix<i64,i64> {}
-unsafe impl Send for InsertScalarIntoMatrix<f32,f32> {}
-unsafe impl Send for InsertScalarIntoMatrix<f64,f64> {}
+unsafe impl Send for InsertScalarIntoMatrix<bool, bool> {}
+unsafe impl Send for InsertScalarIntoMatrix<u8, u8> {}
+unsafe impl Send for InsertScalarIntoMatrix<u16, u16> {}
+unsafe impl Send for InsertScalarIntoMatrix<u32, u32> {}
+unsafe impl Send for InsertScalarIntoMatrix<u64, u64> {}
+unsafe impl Send for InsertScalarIntoMatrix<i8, i8> {}
+unsafe impl Send for InsertScalarIntoMatrix<i16, i16> {}
+unsafe impl Send for InsertScalarIntoMatrix<i32, i32> {}
+unsafe impl Send for InsertScalarIntoMatrix<i64, i64> {}
+unsafe impl Send for InsertScalarIntoMatrix<f32, f32> {}
+unsafe impl Send for InsertScalarIntoMatrix<f64, f64> {}
 
-unsafe impl Sync for InsertScalarIntoMatrix<bool,bool> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u8,u8> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u16,u16> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u32,u32> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u64,u64> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i8,i8> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i16,i16> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i32,i32> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i64,i64> {}
-unsafe impl Sync for InsertScalarIntoMatrix<f32,f32> {}
-unsafe impl Sync for InsertScalarIntoMatrix<f64,f64> {}
+unsafe impl Sync for InsertScalarIntoMatrix<bool, bool> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u8, u8> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u16, u16> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u32, u32> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u64, u64> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i8, i8> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i16, i16> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i32, i32> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i64, i64> {}
+unsafe impl Sync for InsertScalarIntoMatrix<f32, f32> {}
+unsafe impl Sync for InsertScalarIntoMatrix<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct InsertScalarIntoMatrix<MatrixToInsertInto: ValueType, ScalarToInsert: ValueType> {

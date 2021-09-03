@@ -17,29 +17,29 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<bool,bool,bool> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<u8,u8,u8> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<u16,u16,u16> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<u32,u32,u32> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<u64,u64,u64> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<i8,i8,i8> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<i16,i16,i16> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<i32,i32,i32> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<i64,i64,i64> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<f32,f32,f32> {}
-unsafe impl Send for ElementWiseMatrixAdditionSemiring<f64,f64,f64> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<bool, bool, bool> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u8, u8, u8> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u16, u16, u16> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u32, u32, u32> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u64, u64, u64> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i8, i8, i8> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i16, i16, i16> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i32, i32, i32> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i64, i64, i64> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<f32, f32, f32> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<f64, f64, f64> {}
 
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<bool,bool,bool> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u8,u8,u8> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u16,u16,u16> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u32,u32,u32> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u64,u64,u64> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i8,i8,i8> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i16,i16,i16> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i32,i32,i32> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i64,i64,i64> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<f32,f32,f32> {}
-unsafe impl Sync for ElementWiseMatrixAdditionSemiring<f64,f64,f64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<bool, bool, bool> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u8, u8, u8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u16, u16, u16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u32, u32, u32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u64, u64, u64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i8, i8, i8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i16, i16, i16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i32, i32, i32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i64, i64, i64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<f32, f32, f32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseMatrixAdditionSemiring<Multiplier, Multiplicant, Product>
@@ -260,29 +260,29 @@ impl<T: ValueType> ElementWiseMatrixAdditionMonoidOperator<T> {
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<bool,bool,bool> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u8,u8,u8> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u16,u16,u16> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u32,u32,u32> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u64,u64,u64> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i8,i8,i8> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i16,i16,i16> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i32,i32,i32> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i64,i64,i64> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<f32,f32,f32> {}
-unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<f64,f64,f64> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<bool, bool, bool> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u8, u8, u8> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u16, u16, u16> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u32, u32, u32> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u64, u64, u64> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i8, i8, i8> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i16, i16, i16> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i32, i32, i32> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i64, i64, i64> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<f32, f32, f32> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<f64, f64, f64> {}
 
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<bool,bool,bool> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u8,u8,u8> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u16,u16,u16> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u32,u32,u32> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u64,u64,u64> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i8,i8,i8> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i16,i16,i16> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i32,i32,i32> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i64,i64,i64> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<f32,f32,f32> {}
-unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<f64,f64,f64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<bool, bool, bool> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u8, u8, u8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u16, u16, u16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u32, u32, u32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u64, u64, u64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i8, i8, i8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i16, i16, i16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i32, i32, i32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i64, i64, i64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<f32, f32, f32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseMatrixAdditionBinaryOperator<Multiplier, Multiplicant, Product> {

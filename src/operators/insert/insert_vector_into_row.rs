@@ -20,29 +20,29 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertVectorIntoRow<bool,bool> {}
-unsafe impl Send for InsertVectorIntoRow<u8,u8> {}
-unsafe impl Send for InsertVectorIntoRow<u16,u16> {}
-unsafe impl Send for InsertVectorIntoRow<u32,u32> {}
-unsafe impl Send for InsertVectorIntoRow<u64,u64> {}
-unsafe impl Send for InsertVectorIntoRow<i8,i8> {}
-unsafe impl Send for InsertVectorIntoRow<i16,i16> {}
-unsafe impl Send for InsertVectorIntoRow<i32,i32> {}
-unsafe impl Send for InsertVectorIntoRow<i64,i64> {}
-unsafe impl Send for InsertVectorIntoRow<f32,f32> {}
-unsafe impl Send for InsertVectorIntoRow<f64,f64> {}
+unsafe impl Send for InsertVectorIntoRow<bool, bool> {}
+unsafe impl Send for InsertVectorIntoRow<u8, u8> {}
+unsafe impl Send for InsertVectorIntoRow<u16, u16> {}
+unsafe impl Send for InsertVectorIntoRow<u32, u32> {}
+unsafe impl Send for InsertVectorIntoRow<u64, u64> {}
+unsafe impl Send for InsertVectorIntoRow<i8, i8> {}
+unsafe impl Send for InsertVectorIntoRow<i16, i16> {}
+unsafe impl Send for InsertVectorIntoRow<i32, i32> {}
+unsafe impl Send for InsertVectorIntoRow<i64, i64> {}
+unsafe impl Send for InsertVectorIntoRow<f32, f32> {}
+unsafe impl Send for InsertVectorIntoRow<f64, f64> {}
 
-unsafe impl Sync for InsertVectorIntoRow<bool,bool> {}
-unsafe impl Sync for InsertVectorIntoRow<u8,u8> {}
-unsafe impl Sync for InsertVectorIntoRow<u16,u16> {}
-unsafe impl Sync for InsertVectorIntoRow<u32,u32> {}
-unsafe impl Sync for InsertVectorIntoRow<u64,u64> {}
-unsafe impl Sync for InsertVectorIntoRow<i8,i8> {}
-unsafe impl Sync for InsertVectorIntoRow<i16,i16> {}
-unsafe impl Sync for InsertVectorIntoRow<i32,i32> {}
-unsafe impl Sync for InsertVectorIntoRow<i64,i64> {}
-unsafe impl Sync for InsertVectorIntoRow<f32,f32> {}
-unsafe impl Sync for InsertVectorIntoRow<f64,f64> {}
+unsafe impl Sync for InsertVectorIntoRow<bool, bool> {}
+unsafe impl Sync for InsertVectorIntoRow<u8, u8> {}
+unsafe impl Sync for InsertVectorIntoRow<u16, u16> {}
+unsafe impl Sync for InsertVectorIntoRow<u32, u32> {}
+unsafe impl Sync for InsertVectorIntoRow<u64, u64> {}
+unsafe impl Sync for InsertVectorIntoRow<i8, i8> {}
+unsafe impl Sync for InsertVectorIntoRow<i16, i16> {}
+unsafe impl Sync for InsertVectorIntoRow<i32, i32> {}
+unsafe impl Sync for InsertVectorIntoRow<i64, i64> {}
+unsafe impl Sync for InsertVectorIntoRow<f32, f32> {}
+unsafe impl Sync for InsertVectorIntoRow<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoRow<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {

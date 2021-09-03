@@ -20,29 +20,29 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertMatrixIntoSubMatrix<bool,bool> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u8,u8> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u16,u16> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u32,u32> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u64,u64> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i8,i8> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i16,i16> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i32,i32> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i64,i64> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<f32,f32> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<f64,f64> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<bool, bool> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<u8, u8> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<u16, u16> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<u32, u32> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<u64, u64> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<i8, i8> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<i16, i16> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<i32, i32> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<i64, i64> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<f32, f32> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix<f64, f64> {}
 
-unsafe impl Sync for InsertMatrixIntoSubMatrix<bool,bool> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u8,u8> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u16,u16> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u32,u32> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u64,u64> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i8,i8> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i16,i16> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i32,i32> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i64,i64> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<f32,f32> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<f64,f64> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<bool, bool> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<u8, u8> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<u16, u16> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<u32, u32> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<u64, u64> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<i8, i8> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<i16, i16> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<i32, i32> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<i64, i64> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<f32, f32> {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct InsertMatrixIntoSubMatrix<MatrixToInsertInto: ValueType, MatrixToInsert: ValueType> {

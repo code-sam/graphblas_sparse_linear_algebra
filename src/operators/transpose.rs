@@ -25,29 +25,29 @@ where
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for MatrixTranspose<bool,bool> {}
-unsafe impl Send for MatrixTranspose<u8,u8> {}
-unsafe impl Send for MatrixTranspose<u16,u16> {}
-unsafe impl Send for MatrixTranspose<u32,u32> {}
-unsafe impl Send for MatrixTranspose<u64,u64> {}
-unsafe impl Send for MatrixTranspose<i8,i8> {}
-unsafe impl Send for MatrixTranspose<i16,i16> {}
-unsafe impl Send for MatrixTranspose<i32,i32> {}
-unsafe impl Send for MatrixTranspose<i64,i64> {}
-unsafe impl Send for MatrixTranspose<f32,f32> {}
-unsafe impl Send for MatrixTranspose<f64,f64> {}
+unsafe impl Send for MatrixTranspose<bool, bool> {}
+unsafe impl Send for MatrixTranspose<u8, u8> {}
+unsafe impl Send for MatrixTranspose<u16, u16> {}
+unsafe impl Send for MatrixTranspose<u32, u32> {}
+unsafe impl Send for MatrixTranspose<u64, u64> {}
+unsafe impl Send for MatrixTranspose<i8, i8> {}
+unsafe impl Send for MatrixTranspose<i16, i16> {}
+unsafe impl Send for MatrixTranspose<i32, i32> {}
+unsafe impl Send for MatrixTranspose<i64, i64> {}
+unsafe impl Send for MatrixTranspose<f32, f32> {}
+unsafe impl Send for MatrixTranspose<f64, f64> {}
 
-unsafe impl Sync for MatrixTranspose<bool,bool> {}
-unsafe impl Sync for MatrixTranspose<u8,u8> {}
-unsafe impl Sync for MatrixTranspose<u16,u16> {}
-unsafe impl Sync for MatrixTranspose<u32,u32> {}
-unsafe impl Sync for MatrixTranspose<u64,u64> {}
-unsafe impl Sync for MatrixTranspose<i8,i8> {}
-unsafe impl Sync for MatrixTranspose<i16,i16> {}
-unsafe impl Sync for MatrixTranspose<i32,i32> {}
-unsafe impl Sync for MatrixTranspose<i64,i64> {}
-unsafe impl Sync for MatrixTranspose<f32,f32> {}
-unsafe impl Sync for MatrixTranspose<f64,f64> {}
+unsafe impl Sync for MatrixTranspose<bool, bool> {}
+unsafe impl Sync for MatrixTranspose<u8, u8> {}
+unsafe impl Sync for MatrixTranspose<u16, u16> {}
+unsafe impl Sync for MatrixTranspose<u32, u32> {}
+unsafe impl Sync for MatrixTranspose<u64, u64> {}
+unsafe impl Sync for MatrixTranspose<i8, i8> {}
+unsafe impl Sync for MatrixTranspose<i16, i16> {}
+unsafe impl Sync for MatrixTranspose<i32, i32> {}
+unsafe impl Sync for MatrixTranspose<i64, i64> {}
+unsafe impl Sync for MatrixTranspose<f32, f32> {}
+unsafe impl Sync for MatrixTranspose<f64, f64> {}
 
 impl<Applicant, Product> MatrixTranspose<Applicant, Product>
 where
