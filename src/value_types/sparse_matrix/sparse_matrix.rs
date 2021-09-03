@@ -53,8 +53,7 @@ pub struct SparseMatrix<T: ValueType> {
 //     }
 // }
 
-// Send and Sync implementaioms should be ok, since mutable access to GrB_Matrix
-// should occur through a write lock on RwLock<GrB_Matrix>. 
+// Mutable access to GrB_Matrix should occurs through a write lock on RwLock<GrB_Matrix>.
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
@@ -125,13 +124,15 @@ impl<T: ValueType> SparseMatrix<T> {
             Err(_) => {
                 return Err(SparseLinearAlgebraError::SystemError(SystemError::new(
                     SystemErrorType::PoisonedData,
-                    String::from("RwLock on GrB_Matrix was poisoned, data may have been corrupted."),
+                    String::from(
+                        "RwLock on GrB_Matrix was poisoned, data may have been corrupted.",
+                    ),
                     None,
                 )))
             }
         };
     }
-    
+
     pub(crate) fn get_read_lock(
         &self,
     ) -> Result<std::sync::RwLockReadGuard<GrB_Matrix>, SparseLinearAlgebraError> {
@@ -140,7 +141,9 @@ impl<T: ValueType> SparseMatrix<T> {
             Err(_) => {
                 return Err(SparseLinearAlgebraError::SystemError(SystemError::new(
                     SystemErrorType::PoisonedData,
-                    String::from("RwLock on GrB_Matrix was poisoned, data may have been corrupted."),
+                    String::from(
+                        "RwLock on GrB_Matrix was poisoned, data may have been corrupted.",
+                    ),
                     None,
                 )))
             }
@@ -175,8 +178,9 @@ impl<T: ValueType> SparseMatrix<T> {
     pub fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         let matrix_with_read_lock = self.get_read_lock()?;
-        self.context
-            .call(|| unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), *matrix_with_read_lock) })?;
+        self.context.call(|| unsafe {
+            GrB_Matrix_nrows(row_height.as_mut_ptr(), *matrix_with_read_lock)
+        })?;
         let row_height = unsafe { row_height.assume_init() };
         Ok(ElementIndex::from_graphblas_index(row_height)?)
     }
@@ -184,8 +188,9 @@ impl<T: ValueType> SparseMatrix<T> {
     pub fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         let matrix_with_read_lock = self.get_read_lock()?;
-        self.context
-            .call(|| unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), *matrix_with_read_lock) })?;
+        self.context.call(|| unsafe {
+            GrB_Matrix_ncols(column_width.as_mut_ptr(), *matrix_with_read_lock)
+        })?;
         let column_width = unsafe { column_width.assume_init() };
         Ok(ElementIndex::from_graphblas_index(column_width)?)
     }
@@ -197,8 +202,9 @@ impl<T: ValueType> SparseMatrix<T> {
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         let matrix_with_read_lock = self.get_read_lock()?;
-        self.context
-            .call(|| unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), *matrix_with_read_lock) })?;
+        self.context.call(|| unsafe {
+            GrB_Matrix_nvals(number_of_values.as_mut_ptr(), *matrix_with_read_lock)
+        })?;
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
@@ -210,7 +216,11 @@ impl<T: ValueType> SparseMatrix<T> {
         let context = self.context.clone();
         let matrix_with_write_lock = self.get_write_lock()?;
         context.call(|| unsafe {
-            GrB_Matrix_removeElement(*matrix_with_write_lock, row_index_to_delete, column_index_to_delete)
+            GrB_Matrix_removeElement(
+                *matrix_with_write_lock,
+                row_index_to_delete,
+                column_index_to_delete,
+            )
         })?;
         Ok(())
     }
@@ -219,8 +229,7 @@ impl<T: ValueType> SparseMatrix<T> {
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
         let context = self.context.clone();
-        let _ = context
-            .call(|| unsafe { GrB_Matrix_free(self.matrix.get_mut().unwrap()) });
+        let _ = context.call(|| unsafe { GrB_Matrix_free(self.matrix.get_mut().unwrap()) });
     }
 }
 
@@ -234,7 +243,7 @@ impl<T: ValueType> Clone for SparseMatrix<T> {
 
         SparseMatrix {
             context: self.context.clone(),
-            matrix: RwLock::new( unsafe { matrix_copy.assume_init() } ),
+            matrix: RwLock::new(unsafe { matrix_copy.assume_init() }),
             value_type: PhantomData,
         }
     }

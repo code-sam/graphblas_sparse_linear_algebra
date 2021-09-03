@@ -14,6 +14,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_eWiseAdd_Monoid, GrB_Vector_eWiseAdd_Semiring,
 };
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseVectorAdditionSemiring<bool,bool,bool> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<u8,u8,u8> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<u16,u16,u16> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<u32,u32,u32> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<u64,u64,u64> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<i8,i8,i8> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<i16,i16,i16> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<i32,i32,i32> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<i64,i64,i64> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<f32,f32,f32> {}
+unsafe impl Send for ElementWiseVectorAdditionSemiring<f64,f64,f64> {}
+
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<bool,bool,bool> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<u8,u8,u8> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<u16,u16,u16> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<u32,u32,u32> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<u64,u64,u64> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<i8,i8,i8> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<i16,i16,i16> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<i32,i32,i32> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<i64,i64,i64> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<f32,f32,f32> {}
+unsafe impl Sync for ElementWiseVectorAdditionSemiring<f64,f64,f64> {}
+
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product>
 where
@@ -107,6 +134,33 @@ where
     }
 }
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<bool> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<u8> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<u16> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<u32> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<u64> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<i8> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<i16> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<i32> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<i64> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<f32> {}
+unsafe impl Send for ElementWiseVectorAdditionMonoidOperator<f64> {}
+
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<bool> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<u8> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<u16> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<u32> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<u64> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<i8> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<i16> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<i32> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<i64> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<f32> {}
+unsafe impl Sync for ElementWiseVectorAdditionMonoidOperator<f64> {}
+
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType> {
     _value: PhantomData<T>,
@@ -184,6 +238,33 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
         Ok(())
     }
 }
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<bool,bool,bool> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u8,u8,u8> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u16,u16,u16> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u32,u32,u32> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u64,u64,u64> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i8,i8,i8> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i16,i16,i16> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i32,i32,i32> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i64,i64,i64> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<f32,f32,f32> {}
+unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<f64,f64,f64> {}
+
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<bool,bool,bool> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u8,u8,u8> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u16,u16,u16> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u32,u32,u32> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u64,u64,u64> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i8,i8,i8> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i16,i16,i16> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i32,i32,i32> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i64,i64,i64> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<f32,f32,f32> {}
+unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<f64,f64,f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product> {

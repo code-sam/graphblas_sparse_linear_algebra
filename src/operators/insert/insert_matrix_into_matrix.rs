@@ -15,6 +15,33 @@ use crate::bindings_to_graphblas_implementation::{
 
 // TODO: explicitly define how dupicates are handled
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for InsertMatrixIntoMatrix<bool,bool> {}
+unsafe impl Send for InsertMatrixIntoMatrix<u8,u8> {}
+unsafe impl Send for InsertMatrixIntoMatrix<u16,u16> {}
+unsafe impl Send for InsertMatrixIntoMatrix<u32,u32> {}
+unsafe impl Send for InsertMatrixIntoMatrix<u64,u64> {}
+unsafe impl Send for InsertMatrixIntoMatrix<i8,i8> {}
+unsafe impl Send for InsertMatrixIntoMatrix<i16,i16> {}
+unsafe impl Send for InsertMatrixIntoMatrix<i32,i32> {}
+unsafe impl Send for InsertMatrixIntoMatrix<i64,i64> {}
+unsafe impl Send for InsertMatrixIntoMatrix<f32,f32> {}
+unsafe impl Send for InsertMatrixIntoMatrix<f64,f64> {}
+
+unsafe impl Sync for InsertMatrixIntoMatrix<bool,bool> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<u8,u8> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<u16,u16> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<u32,u32> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<u64,u64> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<i8,i8> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<i16,i16> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<i32,i32> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<i64,i64> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<f32,f32> {}
+unsafe impl Sync for InsertMatrixIntoMatrix<f64,f64> {}
+
 #[derive(Debug, Clone)]
 pub struct InsertMatrixIntoMatrix<MatrixToInsertInto: ValueType, MatrixToInsert: ValueType> {
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
@@ -111,7 +138,8 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
                 let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
 
-                let matrix_to_insert_into_with_write_lock = matrix_to_insert_into.get_write_lock()?;
+                let matrix_to_insert_into_with_write_lock =
+                    matrix_to_insert_into.get_write_lock()?;
                 let matrix_to_insert_with_read_lock = matrix_to_insert.get_read_lock()?;
 
                 match (rows_to_insert_into, columns_to_insert_into) {
@@ -214,8 +242,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
                 let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
 
-                let matrix_to_insert_into_with_write_lock = matrix_to_insert_into.get_write_lock()?;
-                let mask_for_matrix_to_insert_into_with_read_lock = mask_for_matrix_to_insert_into.get_read_lock()?;
+                let matrix_to_insert_into_with_write_lock =
+                    matrix_to_insert_into.get_write_lock()?;
+                let mask_for_matrix_to_insert_into_with_read_lock =
+                    mask_for_matrix_to_insert_into.get_read_lock()?;
                 let matrix_to_insert_with_read_lock = matrix_to_insert.get_read_lock()?;
 
                 match (rows_to_insert_into, columns_to_insert_into) {

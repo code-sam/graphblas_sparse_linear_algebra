@@ -18,6 +18,33 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_NONZERO, GxB_Vector_select,
 };
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for VectorSelector<bool> {}
+unsafe impl Send for VectorSelector<u8> {}
+unsafe impl Send for VectorSelector<u16> {}
+unsafe impl Send for VectorSelector<u32> {}
+unsafe impl Send for VectorSelector<u64> {}
+unsafe impl Send for VectorSelector<i8> {}
+unsafe impl Send for VectorSelector<i16> {}
+unsafe impl Send for VectorSelector<i32> {}
+unsafe impl Send for VectorSelector<i64> {}
+unsafe impl Send for VectorSelector<f32> {}
+unsafe impl Send for VectorSelector<f64> {}
+
+unsafe impl Sync for VectorSelector<bool> {}
+unsafe impl Sync for VectorSelector<u8> {}
+unsafe impl Sync for VectorSelector<u16> {}
+unsafe impl Sync for VectorSelector<u32> {}
+unsafe impl Sync for VectorSelector<u64> {}
+unsafe impl Sync for VectorSelector<i8> {}
+unsafe impl Sync for VectorSelector<i16> {}
+unsafe impl Sync for VectorSelector<i32> {}
+unsafe impl Sync for VectorSelector<i64> {}
+unsafe impl Sync for VectorSelector<f32> {}
+unsafe impl Sync for VectorSelector<f64> {}
+
 #[derive(Debug, Clone)]
 pub struct VectorSelector<T: ValueType> {
     _value: PhantomData<T>,

@@ -14,6 +14,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_mxv,
 };
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for MatrixVectorMultiplicationOperator<bool,bool,bool> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<u8,u8,u8> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<u16,u16,u16> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<u32,u32,u32> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<u64,u64,u64> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<i8,i8,i8> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<i16,i16,i16> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<i32,i32,i32> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<i64,i64,i64> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<f32,f32,f32> {}
+unsafe impl Send for MatrixVectorMultiplicationOperator<f64,f64,f64> {}
+
+unsafe impl Sync for MatrixVectorMultiplicationOperator<bool,bool,bool> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<u8,u8,u8> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<u16,u16,u16> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<u32,u32,u32> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<u64,u64,u64> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<i8,i8,i8> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<i16,i16,i16> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<i32,i32,i32> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<i64,i64,i64> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<f32,f32,f32> {}
+unsafe impl Sync for MatrixVectorMultiplicationOperator<f64,f64,f64> {}
+
 // TODO: review the use of &'a dyn Trait, removing dynamic dispatch could provide a performance gain. (it might be negated if cloning is necessary though)
 // https://www.joshmcguigan.com/blog/cost-of-indirection-rust/
 #[derive(Debug, Clone)]

@@ -19,6 +19,33 @@ use crate::bindings_to_graphblas_implementation::{
 
 // TODO: explicitly define how dupicates are handled
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for InsertVectorIntoSubColumn<bool,bool> {}
+unsafe impl Send for InsertVectorIntoSubColumn<u8,u8> {}
+unsafe impl Send for InsertVectorIntoSubColumn<u16,u16> {}
+unsafe impl Send for InsertVectorIntoSubColumn<u32,u32> {}
+unsafe impl Send for InsertVectorIntoSubColumn<u64,u64> {}
+unsafe impl Send for InsertVectorIntoSubColumn<i8,i8> {}
+unsafe impl Send for InsertVectorIntoSubColumn<i16,i16> {}
+unsafe impl Send for InsertVectorIntoSubColumn<i32,i32> {}
+unsafe impl Send for InsertVectorIntoSubColumn<i64,i64> {}
+unsafe impl Send for InsertVectorIntoSubColumn<f32,f32> {}
+unsafe impl Send for InsertVectorIntoSubColumn<f64,f64> {}
+
+unsafe impl Sync for InsertVectorIntoSubColumn<bool,bool> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<u8,u8> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<u16,u16> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<u32,u32> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<u64,u64> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<i8,i8> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<i16,i16> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<i32,i32> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<i64,i64> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<f32,f32> {}
+unsafe impl Sync for InsertVectorIntoSubColumn<f64,f64> {}
+
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
@@ -112,7 +139,8 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                 let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
                 let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
-                let matrix_to_insert_into_with_write_lock = matrix_to_insert_into.get_write_lock()?;
+                let matrix_to_insert_into_with_write_lock =
+                    matrix_to_insert_into.get_write_lock()?;
 
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
@@ -167,7 +195,8 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                 let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
                 let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
-                let matrix_to_insert_into_with_write_lock = matrix_to_insert_into.get_write_lock()?;
+                let matrix_to_insert_into_with_write_lock =
+                    matrix_to_insert_into.get_write_lock()?;
 
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {

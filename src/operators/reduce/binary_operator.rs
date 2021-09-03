@@ -16,6 +16,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BinaryOp,
 };
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for BinaryOperatorReducer<bool> {}
+unsafe impl Send for BinaryOperatorReducer<u8> {}
+unsafe impl Send for BinaryOperatorReducer<u16> {}
+unsafe impl Send for BinaryOperatorReducer<u32> {}
+unsafe impl Send for BinaryOperatorReducer<u64> {}
+unsafe impl Send for BinaryOperatorReducer<i8> {}
+unsafe impl Send for BinaryOperatorReducer<i16> {}
+unsafe impl Send for BinaryOperatorReducer<i32> {}
+unsafe impl Send for BinaryOperatorReducer<i64> {}
+unsafe impl Send for BinaryOperatorReducer<f32> {}
+unsafe impl Send for BinaryOperatorReducer<f64> {}
+
+unsafe impl Sync for BinaryOperatorReducer<bool> {}
+unsafe impl Sync for BinaryOperatorReducer<u8> {}
+unsafe impl Sync for BinaryOperatorReducer<u16> {}
+unsafe impl Sync for BinaryOperatorReducer<u32> {}
+unsafe impl Sync for BinaryOperatorReducer<u64> {}
+unsafe impl Sync for BinaryOperatorReducer<i8> {}
+unsafe impl Sync for BinaryOperatorReducer<i16> {}
+unsafe impl Sync for BinaryOperatorReducer<i32> {}
+unsafe impl Sync for BinaryOperatorReducer<i64> {}
+unsafe impl Sync for BinaryOperatorReducer<f32> {}
+unsafe impl Sync for BinaryOperatorReducer<f64> {}
+
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorReducer<T: ValueType> {
     _value: PhantomData<T>,

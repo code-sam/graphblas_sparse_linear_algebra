@@ -1,5 +1,6 @@
 pub mod apply;
 pub mod binary_operator;
+pub mod element_wise_addition;
 pub mod element_wise_multiplication;
 pub mod extract;
 pub mod insert;

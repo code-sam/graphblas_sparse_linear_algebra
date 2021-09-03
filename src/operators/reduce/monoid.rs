@@ -23,6 +23,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for MonoidReducer<bool> {}
+unsafe impl Send for MonoidReducer<u8> {}
+unsafe impl Send for MonoidReducer<u16> {}
+unsafe impl Send for MonoidReducer<u32> {}
+unsafe impl Send for MonoidReducer<u64> {}
+unsafe impl Send for MonoidReducer<i8> {}
+unsafe impl Send for MonoidReducer<i16> {}
+unsafe impl Send for MonoidReducer<i32> {}
+unsafe impl Send for MonoidReducer<i64> {}
+unsafe impl Send for MonoidReducer<f32> {}
+unsafe impl Send for MonoidReducer<f64> {}
+
+unsafe impl Sync for MonoidReducer<bool> {}
+unsafe impl Sync for MonoidReducer<u8> {}
+unsafe impl Sync for MonoidReducer<u16> {}
+unsafe impl Sync for MonoidReducer<u32> {}
+unsafe impl Sync for MonoidReducer<u64> {}
+unsafe impl Sync for MonoidReducer<i8> {}
+unsafe impl Sync for MonoidReducer<i16> {}
+unsafe impl Sync for MonoidReducer<i32> {}
+unsafe impl Sync for MonoidReducer<i64> {}
+unsafe impl Sync for MonoidReducer<f32> {}
+unsafe impl Sync for MonoidReducer<f64> {}
+
 #[derive(Debug, Clone)]
 pub struct MonoidReducer<T: ValueType> {
     _value: PhantomData<T>,

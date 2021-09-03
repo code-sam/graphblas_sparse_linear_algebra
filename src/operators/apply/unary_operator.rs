@@ -16,6 +16,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply, GrB_UnaryOp, GrB_Vector_apply,
 };
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for UnaryOperatorApplier<bool> {}
+unsafe impl Send for UnaryOperatorApplier<u8> {}
+unsafe impl Send for UnaryOperatorApplier<u16> {}
+unsafe impl Send for UnaryOperatorApplier<u32> {}
+unsafe impl Send for UnaryOperatorApplier<u64> {}
+unsafe impl Send for UnaryOperatorApplier<i8> {}
+unsafe impl Send for UnaryOperatorApplier<i16> {}
+unsafe impl Send for UnaryOperatorApplier<i32> {}
+unsafe impl Send for UnaryOperatorApplier<i64> {}
+unsafe impl Send for UnaryOperatorApplier<f32> {}
+unsafe impl Send for UnaryOperatorApplier<f64> {}
+
+unsafe impl Sync for UnaryOperatorApplier<bool> {}
+unsafe impl Sync for UnaryOperatorApplier<u8> {}
+unsafe impl Sync for UnaryOperatorApplier<u16> {}
+unsafe impl Sync for UnaryOperatorApplier<u32> {}
+unsafe impl Sync for UnaryOperatorApplier<u64> {}
+unsafe impl Sync for UnaryOperatorApplier<i8> {}
+unsafe impl Sync for UnaryOperatorApplier<i16> {}
+unsafe impl Sync for UnaryOperatorApplier<i32> {}
+unsafe impl Sync for UnaryOperatorApplier<i64> {}
+unsafe impl Sync for UnaryOperatorApplier<f32> {}
+unsafe impl Sync for UnaryOperatorApplier<f64> {}
+
 #[derive(Debug, Clone)]
 pub struct UnaryOperatorApplier<T: ValueType> {
     _result: PhantomData<T>,

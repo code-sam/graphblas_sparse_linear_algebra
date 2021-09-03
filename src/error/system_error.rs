@@ -55,7 +55,7 @@ impl error::Error for SystemError {
         match self.source {
             Some(ref error) => match error {
                 SystemErrorSource::GraphBLAS(error) => Some(error),
-                SystemErrorSource::PoisonedData => None
+                SystemErrorSource::PoisonedData => None,
             },
             None => None,
         }

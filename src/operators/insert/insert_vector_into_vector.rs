@@ -17,6 +17,33 @@ use crate::bindings_to_graphblas_implementation::{
 
 // TODO: explicitly define how dupicates are handled
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for InsertVectorIntoVector<bool,bool> {}
+unsafe impl Send for InsertVectorIntoVector<u8,u8> {}
+unsafe impl Send for InsertVectorIntoVector<u16,u16> {}
+unsafe impl Send for InsertVectorIntoVector<u32,u32> {}
+unsafe impl Send for InsertVectorIntoVector<u64,u64> {}
+unsafe impl Send for InsertVectorIntoVector<i8,i8> {}
+unsafe impl Send for InsertVectorIntoVector<i16,i16> {}
+unsafe impl Send for InsertVectorIntoVector<i32,i32> {}
+unsafe impl Send for InsertVectorIntoVector<i64,i64> {}
+unsafe impl Send for InsertVectorIntoVector<f32,f32> {}
+unsafe impl Send for InsertVectorIntoVector<f64,f64> {}
+
+unsafe impl Sync for InsertVectorIntoVector<bool,bool> {}
+unsafe impl Sync for InsertVectorIntoVector<u8,u8> {}
+unsafe impl Sync for InsertVectorIntoVector<u16,u16> {}
+unsafe impl Sync for InsertVectorIntoVector<u32,u32> {}
+unsafe impl Sync for InsertVectorIntoVector<u64,u64> {}
+unsafe impl Sync for InsertVectorIntoVector<i8,i8> {}
+unsafe impl Sync for InsertVectorIntoVector<i16,i16> {}
+unsafe impl Sync for InsertVectorIntoVector<i32,i32> {}
+unsafe impl Sync for InsertVectorIntoVector<i64,i64> {}
+unsafe impl Sync for InsertVectorIntoVector<f32,f32> {}
+unsafe impl Sync for InsertVectorIntoVector<f64,f64> {}
+
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoVector<VectorToInsertInto: ValueType, VectorToInsert: ValueType> {
     _vector_to_insert_into: PhantomData<VectorToInsertInto>,
