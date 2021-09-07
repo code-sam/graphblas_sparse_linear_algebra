@@ -9,7 +9,7 @@ use graphblas_sparse_linear_algebra::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, mask::VectorMask, monoid::Monoid,
     options::OperatorOptions, semiring::Semiring,
 };
-use graphblas_sparse_linear_algebra::sparse_matrix::SparseMatrix;
+use graphblas_sparse_linear_algebra::value_types::sparse_matrix::SparseMatrix;
 
 use graphblas_sparse_linear_algebra::util::{ElementIndex, ElementIndexSelector};
 
@@ -19,11 +19,11 @@ use graphblas_sparse_linear_algebra::operators::binary_operator::First;
 use graphblas_sparse_linear_algebra::operators::insert::{
     InsertScalarIntoMatrix, InsertScalarIntoMatrixTrait,
 };
-use graphblas_sparse_linear_algebra::sparse_matrix::{
+use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
     FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElement,
     MatrixElementList, SetMatrixElement, Size,
 };
-use graphblas_sparse_linear_algebra::sparse_vector::FromVectorElementList;
+use graphblas_sparse_linear_algebra::value_types::sparse_vector::FromVectorElementList;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 

@@ -5,14 +5,41 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for MatrixColumnExtractor<bool, bool> {}
+unsafe impl Send for MatrixColumnExtractor<u8, u8> {}
+unsafe impl Send for MatrixColumnExtractor<u16, u16> {}
+unsafe impl Send for MatrixColumnExtractor<u32, u32> {}
+unsafe impl Send for MatrixColumnExtractor<u64, u64> {}
+unsafe impl Send for MatrixColumnExtractor<i8, i8> {}
+unsafe impl Send for MatrixColumnExtractor<i16, i16> {}
+unsafe impl Send for MatrixColumnExtractor<i32, i32> {}
+unsafe impl Send for MatrixColumnExtractor<i64, i64> {}
+unsafe impl Send for MatrixColumnExtractor<f32, f32> {}
+unsafe impl Send for MatrixColumnExtractor<f64, f64> {}
+
+unsafe impl Sync for MatrixColumnExtractor<bool, bool> {}
+unsafe impl Sync for MatrixColumnExtractor<u8, u8> {}
+unsafe impl Sync for MatrixColumnExtractor<u16, u16> {}
+unsafe impl Sync for MatrixColumnExtractor<u32, u32> {}
+unsafe impl Sync for MatrixColumnExtractor<u64, u64> {}
+unsafe impl Sync for MatrixColumnExtractor<i8, i8> {}
+unsafe impl Sync for MatrixColumnExtractor<i16, i16> {}
+unsafe impl Sync for MatrixColumnExtractor<i32, i32> {}
+unsafe impl Sync for MatrixColumnExtractor<i64, i64> {}
+unsafe impl Sync for MatrixColumnExtractor<f32, f32> {}
+unsafe impl Sync for MatrixColumnExtractor<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct MatrixColumnExtractor<Matrix, Column>
@@ -171,8 +198,8 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{FromMatrixElementList, MatrixElementList};
-    use crate::sparse_vector::GetVectorElementValue;
+    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::value_types::sparse_vector::GetVectorElementValue;
 
     #[test]
     fn test_column_extraction() {

@@ -6,13 +6,40 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, monoid::Monoid, options::OperatorOptions,
     semiring::Semiring,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_eWiseAdd_BinaryOp, GrB_Matrix_eWiseAdd_Monoid,
     GrB_Matrix_eWiseAdd_Semiring, GrB_Monoid, GrB_Semiring,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<bool, bool, bool> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u8, u8, u8> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u16, u16, u16> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u32, u32, u32> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<u64, u64, u64> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i8, i8, i8> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i16, i16, i16> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i32, i32, i32> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<i64, i64, i64> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<f32, f32, f32> {}
+unsafe impl Send for ElementWiseMatrixAdditionSemiring<f64, f64, f64> {}
+
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<bool, bool, bool> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u8, u8, u8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u16, u16, u16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u32, u32, u32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<u64, u64, u64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i8, i8, i8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i16, i16, i16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i32, i32, i32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<i64, i64, i64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<f32, f32, f32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionSemiring<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseMatrixAdditionSemiring<Multiplier, Multiplicant, Product>
@@ -102,10 +129,36 @@ where
                 self.options,
             )
         })?;
-
         Ok(())
     }
 }
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<bool> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<u8> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<u16> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<u32> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<u64> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<i8> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<i16> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<i32> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<i64> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<f32> {}
+unsafe impl Send for ElementWiseMatrixAdditionMonoidOperator<f64> {}
+
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<bool> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<u8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<u16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<u32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<u64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<i8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<i16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<i32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<i64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<f32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionMonoidOperator<f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseMatrixAdditionMonoidOperator<T: ValueType> {
@@ -184,6 +237,33 @@ impl<T: ValueType> ElementWiseMatrixAdditionMonoidOperator<T> {
         Ok(())
     }
 }
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<bool, bool, bool> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u8, u8, u8> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u16, u16, u16> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u32, u32, u32> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<u64, u64, u64> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i8, i8, i8> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i16, i16, i16> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i32, i32, i32> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<i64, i64, i64> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<f32, f32, f32> {}
+unsafe impl Send for ElementWiseMatrixAdditionBinaryOperator<f64, f64, f64> {}
+
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<bool, bool, bool> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u8, u8, u8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u16, u16, u16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u32, u32, u32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<u64, u64, u64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i8, i8, i8> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i16, i16, i16> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i32, i32, i32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<i64, i64, i64> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<f32, f32, f32> {}
+unsafe impl Sync for ElementWiseMatrixAdditionBinaryOperator<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseMatrixAdditionBinaryOperator<Multiplier, Multiplicant, Product> {
@@ -279,12 +359,12 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 
     #[test]
-    fn create_matrix_multiplier() {
+    fn create_matrix_adder() {
         let operator = Times::<i64, i64, i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
@@ -302,7 +382,7 @@ mod tests {
     }
 
     #[test]
-    fn test_element_wisemultiplication() {
+    fn test_element_wise_multiplication() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
         let operator = Times::<i32, i32, i32>::new();
@@ -414,6 +494,74 @@ mod tests {
         assert_eq!(product.get_element_value(&(1, 0).into()).unwrap(), 0);
         assert_eq!(product.get_element_value(&(0, 1).into()).unwrap(), 0);
         assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), 32);
+    }
+
+    #[test]
+    fn test_element_wise_addition() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let operator = Plus::<i32, i32, i32>::new();
+        let options = OperatorOptions::new_default();
+        let element_wise_matrix_adder =
+            ElementWiseMatrixAdditionBinaryOperator::<i32, i32, i32>::new(
+                &operator, &options, None,
+            );
+
+        let height = 2;
+        let width = 2;
+        let size: Size = (height, width).into();
+
+        let multiplier = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let multiplicant = multiplier.clone();
+        let mut product = multiplier.clone();
+
+        // Test multiplication of empty matrices
+        element_wise_matrix_adder
+            .apply(&multiplier, &multiplicant, &mut product)
+            .unwrap();
+        let element_list = product.get_element_list().unwrap();
+
+        assert_eq!(product.number_of_stored_elements().unwrap(), 0);
+        assert_eq!(element_list.length(), 0);
+        assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), 0); // NoValue
+
+        let multiplier_element_list = MatrixElementList::<i32>::from_element_vector(vec![
+            (0, 0, 1).into(),
+            (1, 0, 2).into(),
+            (0, 1, 3).into(),
+            (1, 1, 4).into(),
+        ]);
+        let multiplier = SparseMatrix::<i32>::from_element_list(
+            &context,
+            &size,
+            &multiplier_element_list,
+            &First::<i32, i32, i32>::new(),
+        )
+        .unwrap();
+
+        let multiplicant_element_list = MatrixElementList::<i32>::from_element_vector(vec![
+            (0, 0, 5).into(),
+            (1, 0, 6).into(),
+            (0, 1, 7).into(),
+            (1, 1, 8).into(),
+        ]);
+        let multiplicant = SparseMatrix::<i32>::from_element_list(
+            &context,
+            &size,
+            &multiplicant_element_list,
+            &First::<i32, i32, i32>::new(),
+        )
+        .unwrap();
+
+        // Test multiplication of full matrices
+        element_wise_matrix_adder
+            .apply(&multiplier, &multiplicant, &mut product)
+            .unwrap();
+
+        assert_eq!(product.get_element_value(&(0, 0).into()).unwrap(), 6);
+        assert_eq!(product.get_element_value(&(1, 0).into()).unwrap(), 8);
+        assert_eq!(product.get_element_value(&(0, 1).into()).unwrap(), 10);
+        assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), 12);
     }
 }
 

@@ -2,9 +2,9 @@ use std::convert::From;
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 pub struct MatrixMask<T, MaskValueType>
 where

@@ -4,7 +4,6 @@ use crate::error::{
 };
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-
 use std::sync::Arc;
 
 use super::coordinate::Coordinate;
@@ -14,7 +13,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
     GrB_Matrix_build_INT16, GrB_Matrix_build_INT32, GrB_Matrix_build_INT64, GrB_Matrix_build_INT8,
     GrB_Matrix_build_UINT16, GrB_Matrix_build_UINT32, GrB_Matrix_build_UINT64,
-    GrB_Matrix_build_UINT8, GrB_Matrix_dup, GrB_Matrix_extractElement_BOOL,
+    GrB_Matrix_build_UINT8, GrB_Matrix_clear, GrB_Matrix_dup, GrB_Matrix_extractElement_BOOL,
     GrB_Matrix_extractElement_FP32, GrB_Matrix_extractElement_FP64,
     GrB_Matrix_extractElement_INT16, GrB_Matrix_extractElement_INT32,
     GrB_Matrix_extractElement_INT64, GrB_Matrix_extractElement_INT8,
@@ -35,13 +34,51 @@ use crate::context::Context;
 use crate::operators::binary_operator::BinaryOperator;
 
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_type::{BuiltInValueType, ValueType};
+use crate::value_types::value_type::{BuiltInValueType, ValueType};
 
 pub struct SparseMatrix<T: ValueType> {
     context: Arc<Context>,
     matrix: GrB_Matrix,
     value_type: PhantomData<T>,
 }
+
+// struct GraphBlasSparseMatrix {
+//     matrix: GrB_Matrix,
+// }
+
+// impl GraphBlasSparseMatrix {
+//     fn getMatrix(&self) -> GrB_Matrix {
+//         self.matrix
+//     }
+// }
+
+// Mutable access to GrB_Matrix shall occur through a write lock on RwLock<GrB_Matrix>.
+// Code review must consider that the correct lock is made via
+// SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for SparseMatrix<bool> {}
+unsafe impl Send for SparseMatrix<u8> {}
+unsafe impl Send for SparseMatrix<u16> {}
+unsafe impl Send for SparseMatrix<u32> {}
+unsafe impl Send for SparseMatrix<u64> {}
+unsafe impl Send for SparseMatrix<i8> {}
+unsafe impl Send for SparseMatrix<i16> {}
+unsafe impl Send for SparseMatrix<i32> {}
+unsafe impl Send for SparseMatrix<i64> {}
+unsafe impl Send for SparseMatrix<f32> {}
+unsafe impl Send for SparseMatrix<f64> {}
+
+unsafe impl Sync for SparseMatrix<bool> {}
+unsafe impl Sync for SparseMatrix<u8> {}
+unsafe impl Sync for SparseMatrix<u16> {}
+unsafe impl Sync for SparseMatrix<u32> {}
+unsafe impl Sync for SparseMatrix<u64> {}
+unsafe impl Sync for SparseMatrix<i8> {}
+unsafe impl Sync for SparseMatrix<i16> {}
+unsafe impl Sync for SparseMatrix<i32> {}
+unsafe impl Sync for SparseMatrix<i64> {}
+unsafe impl Sync for SparseMatrix<f32> {}
+unsafe impl Sync for SparseMatrix<f64> {}
 
 impl<T: ValueType + BuiltInValueType<T>> SparseMatrix<T> {
     pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {
@@ -63,19 +100,28 @@ impl<T: ValueType + BuiltInValueType<T>> SparseMatrix<T> {
         let matrix = unsafe { matrix.assume_init() };
         return Ok(SparseMatrix {
             context,
-            matrix,
+            matrix: matrix,
             value_type: PhantomData,
         });
     }
 }
 
 impl<T: ValueType> SparseMatrix<T> {
+    pub fn context(&self) -> Arc<Context> {
+        self.context.clone()
+    }
+
+    pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
+        self.matrix
+    }
+
     /// All elements of self with an index coordinate outside of the new size are dropped.
     pub fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
         let new_row_height = new_size.row_height().to_graphblas_index()?;
         let new_column_width = new_size.column_width().to_graphblas_index()?;
 
-        self.context
+        let context = self.context.clone();
+        context
             .call(|| unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) })?;
         Ok(())
     }
@@ -112,26 +158,25 @@ impl<T: ValueType> SparseMatrix<T> {
         let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
         let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
 
-        self.context.call(|| unsafe {
+        let context = self.context.clone();
+        context.call(|| unsafe {
             GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
         })?;
         Ok(())
     }
 
-    pub fn context(&self) -> Arc<Context> {
-        self.context.clone()
-    }
-
-    pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
-        self.matrix
+    /// remove all elements in th matrix
+    pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
+        self.context
+            .call(|| unsafe { GrB_Matrix_clear(self.matrix) })?;
+        Ok(())
     }
 }
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
-        let _ = self
-            .context
-            .call(|| unsafe { GrB_Matrix_free(&mut self.matrix.clone()) });
+        let context = self.context.clone();
+        let _ = context.call(|| unsafe { GrB_Matrix_free(&mut self.matrix) });
     }
 }
 
@@ -279,17 +324,19 @@ macro_rules! sparse_matrix_from_element_vector {
                     graphblas_column_indices.push(elements.column_index(i)?.to_graphblas_index()?);
                 }
 
-                let number_of_elements = elements.length().to_graphblas_index()?;
-                matrix.context.call(|| unsafe {
-                    $build_function(
-                        matrix.matrix,
-                        graphblas_row_indices.as_ptr(),
-                        graphblas_column_indices.as_ptr(),
-                        elements.value_vec().as_ptr(),
-                        number_of_elements,
-                        reduction_operator_for_duplicates.graphblas_type(),
-                    )
-                })?;
+                {
+                    let number_of_elements = elements.length().to_graphblas_index()?;
+                    context.call(|| unsafe {
+                        $build_function(
+                            matrix.matrix,
+                            graphblas_row_indices.as_ptr(),
+                            graphblas_column_indices.as_ptr(),
+                            elements.value_vec().as_ptr(),
+                            number_of_elements,
+                            reduction_operator_for_duplicates.graphblas_type(),
+                        )
+                    })?;
+                }
                 Ok(matrix)
             }
         }
@@ -335,7 +382,8 @@ macro_rules! implement_set_element {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
                 let column_index_to_set = element.column_index().to_graphblas_index()?;
-                self.context.call(|| unsafe {
+                let context = self.context.clone();
+                context.call(|| unsafe {
                     $add_element_function(
                         self.matrix,
                         element.value(),

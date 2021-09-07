@@ -7,10 +7,10 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, monoid::Monoid, options::OperatorOptions,
 };
 
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
 
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32,
@@ -22,6 +22,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for MonoidReducer<bool> {}
+unsafe impl Send for MonoidReducer<u8> {}
+unsafe impl Send for MonoidReducer<u16> {}
+unsafe impl Send for MonoidReducer<u32> {}
+unsafe impl Send for MonoidReducer<u64> {}
+unsafe impl Send for MonoidReducer<i8> {}
+unsafe impl Send for MonoidReducer<i16> {}
+unsafe impl Send for MonoidReducer<i32> {}
+unsafe impl Send for MonoidReducer<i64> {}
+unsafe impl Send for MonoidReducer<f32> {}
+unsafe impl Send for MonoidReducer<f64> {}
+
+unsafe impl Sync for MonoidReducer<bool> {}
+unsafe impl Sync for MonoidReducer<u8> {}
+unsafe impl Sync for MonoidReducer<u16> {}
+unsafe impl Sync for MonoidReducer<u32> {}
+unsafe impl Sync for MonoidReducer<u64> {}
+unsafe impl Sync for MonoidReducer<i8> {}
+unsafe impl Sync for MonoidReducer<i16> {}
+unsafe impl Sync for MonoidReducer<i32> {}
+unsafe impl Sync for MonoidReducer<i64> {}
+unsafe impl Sync for MonoidReducer<f32> {}
+unsafe impl Sync for MonoidReducer<f64> {}
 
 #[derive(Debug, Clone)]
 pub struct MonoidReducer<T: ValueType> {
@@ -180,8 +207,10 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::monoid::Plus as MonoidPlus;
 
-    use crate::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_monoid_to_vector_reducer() {

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
 
-use crate::value_type::ValueType;
+use crate::value_types::value_type::ValueType;
 
 pub trait UnaryOperator<T>
 where

@@ -6,18 +6,45 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Row_subassign,
 };
 
 // TODO: explicitly define how dupicates are handled
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for InsertVectorIntoSubRow<bool, bool> {}
+unsafe impl Send for InsertVectorIntoSubRow<u8, u8> {}
+unsafe impl Send for InsertVectorIntoSubRow<u16, u16> {}
+unsafe impl Send for InsertVectorIntoSubRow<u32, u32> {}
+unsafe impl Send for InsertVectorIntoSubRow<u64, u64> {}
+unsafe impl Send for InsertVectorIntoSubRow<i8, i8> {}
+unsafe impl Send for InsertVectorIntoSubRow<i16, i16> {}
+unsafe impl Send for InsertVectorIntoSubRow<i32, i32> {}
+unsafe impl Send for InsertVectorIntoSubRow<i64, i64> {}
+unsafe impl Send for InsertVectorIntoSubRow<f32, f32> {}
+unsafe impl Send for InsertVectorIntoSubRow<f64, f64> {}
+
+unsafe impl Sync for InsertVectorIntoSubRow<bool, bool> {}
+unsafe impl Sync for InsertVectorIntoSubRow<u8, u8> {}
+unsafe impl Sync for InsertVectorIntoSubRow<u16, u16> {}
+unsafe impl Sync for InsertVectorIntoSubRow<u32, u32> {}
+unsafe impl Sync for InsertVectorIntoSubRow<u64, u64> {}
+unsafe impl Sync for InsertVectorIntoSubRow<i8, i8> {}
+unsafe impl Sync for InsertVectorIntoSubRow<i16, i16> {}
+unsafe impl Sync for InsertVectorIntoSubRow<i32, i32> {}
+unsafe impl Sync for InsertVectorIntoSubRow<i64, i64> {}
+unsafe impl Sync for InsertVectorIntoSubRow<f32, f32> {}
+unsafe impl Sync for InsertVectorIntoSubRow<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoSubRow<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -221,11 +248,11 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::sparse_matrix::{
+    use crate::util::ElementIndex;
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::sparse_vector::{FromVectorElementList, VectorElementList};
-    use crate::util::ElementIndex;
+    use crate::value_types::sparse_vector::{FromVectorElementList, VectorElementList};
 
     #[test]
     fn test_insert_vector_into_column() {

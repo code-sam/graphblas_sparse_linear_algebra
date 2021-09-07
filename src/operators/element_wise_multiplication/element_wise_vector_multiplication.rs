@@ -6,13 +6,40 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, monoid::Monoid, options::OperatorOptions,
     semiring::Semiring,
 };
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Monoid, GrB_Semiring, GrB_Vector_eWiseMult_BinaryOp,
     GrB_Vector_eWiseMult_Monoid, GrB_Vector_eWiseMult_Semiring,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<bool, bool, bool> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<u8, u8, u8> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<u16, u16, u16> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<u32, u32, u32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<u64, u64, u64> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<i8, i8, i8> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<i16, i16, i16> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<i32, i32, i32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<i64, i64, i64> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<f32, f32, f32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationSemiring<f64, f64, f64> {}
+
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<bool, bool, bool> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<u8, u8, u8> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<u16, u16, u16> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<u32, u32, u32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<u64, u64, u64> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<i8, i8, i8> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<i16, i16, i16> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<i32, i32, i32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<i64, i64, i64> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<f32, f32, f32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationSemiring<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorMultiplicationSemiring<Multiplier, Multiplicant, Product>
@@ -107,6 +134,33 @@ where
     }
 }
 
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<bool> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<u8> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<u16> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<u32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<u64> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<i8> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<i16> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<i32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<i64> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<f32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationMonoidOperator<f64> {}
+
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<bool> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<u8> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<u16> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<u32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<u64> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<i8> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<i16> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<i32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<i64> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<f32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationMonoidOperator<f64> {}
+
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorMultiplicationMonoidOperator<T: ValueType> {
     _value: PhantomData<T>,
@@ -184,6 +238,33 @@ impl<T: ValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
         Ok(())
     }
 }
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<bool, bool, bool> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<u8, u8, u8> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<u16, u16, u16> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<u32, u32, u32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<u64, u64, u64> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<i8, i8, i8> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<i16, i16, i16> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<i32, i32, i32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<i64, i64, i64> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<f32, f32, f32> {}
+unsafe impl Send for ElementWiseVectorMultiplicationBinaryOperator<f64, f64, f64> {}
+
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<bool, bool, bool> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<u8, u8, u8> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<u16, u16, u16> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<u32, u32, u32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<u64, u64, u64> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<i8, i8, i8> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<i16, i16, i16> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<i32, i32, i32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<i64, i64, i64> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<f32, f32, f32> {}
+unsafe impl Sync for ElementWiseVectorMultiplicationBinaryOperator<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorMultiplicationBinaryOperator<Multiplier, Multiplicant, Product> {
@@ -279,7 +360,7 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
-    use crate::sparse_vector::{
+    use crate::value_types::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
 

@@ -1,8 +1,6 @@
-// Look here for an example on how to implement error types: https://doc.rust-lang.org/src/std/io/error.rs.html#42
 use std::error;
 use std::error::Error;
 use std::fmt;
-// use std::num::TryFromIntError;
 
 use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
 
@@ -15,33 +13,18 @@ pub struct SystemError {
 
 #[derive(Debug)]
 pub enum SystemErrorSource {
-    GraphBlas(GraphBlasError),
+    GraphBLAS(GraphBlasError),
+    PoisonedData,
 }
-
-// impl error::Error for SystemErrorSource {
-//     fn source(&self) ->  Option<&(dyn error::Error + 'static)> {
-//         match self {
-//             SystemErrorSource::GraphBlas(error) => Some(error)
-//         }
-//     }
-// }
-
-// impl fmt::Display for SystemErrorSource {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         match self {
-//             SystemErrorSource::GraphBlas(error) => {writeln!(f, "{}", error);}
-//         }
-//         Ok(())
-//     }
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemErrorType {
-    GraphBlas(GraphBlasErrorType),
+    GraphBLAS(GraphBlasErrorType),
     CreateGraphBlasErrorOnSuccessValue,
     UnsupportedGraphBlasErrorValue,
     UninitialisedContext,
     ContextAlreadyInitialized,
+    PoisonedData,
     IndexOutOfBounds,
     Other,
 }
@@ -71,7 +54,8 @@ impl error::Error for SystemError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self.source {
             Some(ref error) => match error {
-                SystemErrorSource::GraphBlas(error) => Some(error),
+                SystemErrorSource::GraphBLAS(error) => Some(error),
+                SystemErrorSource::PoisonedData => None,
             },
             None => None,
         }
@@ -81,7 +65,6 @@ impl error::Error for SystemError {
 impl fmt::Display for SystemError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.error_type {
-            // LogicErrorType::GraphBlas(_err) => writeln!(f, "Context:\n{}", &self.context)?,
             _ => writeln!(f, "Context:\n{}", &self.context)?,
         };
 
@@ -96,18 +79,9 @@ impl fmt::Display for SystemError {
 impl From<GraphBlasError> for SystemError {
     fn from(error: GraphBlasError) -> Self {
         Self {
-            error_type: SystemErrorType::GraphBlas(error.error_type()),
+            error_type: SystemErrorType::GraphBLAS(error.error_type()),
             context: String::new(),
-            source: Some(SystemErrorSource::GraphBlas(error)),
+            source: Some(SystemErrorSource::GraphBLAS(error)),
         }
     }
 }
-
-// impl From<TryFromIntError> for SystemError {
-//     fn from(error: TryFromIntError) -> Self {
-//         Self {
-//             error_type: SystemErrorType::IndexOutOfBounds,
-//             context: format!("{}", error),
-//         }
-//     }
-// }

@@ -8,13 +8,40 @@ use crate::operators::{
     options::OperatorOptions,
     unary_operator::UnaryOperator,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply, GrB_UnaryOp, GrB_Vector_apply,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for UnaryOperatorApplier<bool> {}
+unsafe impl Send for UnaryOperatorApplier<u8> {}
+unsafe impl Send for UnaryOperatorApplier<u16> {}
+unsafe impl Send for UnaryOperatorApplier<u32> {}
+unsafe impl Send for UnaryOperatorApplier<u64> {}
+unsafe impl Send for UnaryOperatorApplier<i8> {}
+unsafe impl Send for UnaryOperatorApplier<i16> {}
+unsafe impl Send for UnaryOperatorApplier<i32> {}
+unsafe impl Send for UnaryOperatorApplier<i64> {}
+unsafe impl Send for UnaryOperatorApplier<f32> {}
+unsafe impl Send for UnaryOperatorApplier<f64> {}
+
+unsafe impl Sync for UnaryOperatorApplier<bool> {}
+unsafe impl Sync for UnaryOperatorApplier<u8> {}
+unsafe impl Sync for UnaryOperatorApplier<u16> {}
+unsafe impl Sync for UnaryOperatorApplier<u32> {}
+unsafe impl Sync for UnaryOperatorApplier<u64> {}
+unsafe impl Sync for UnaryOperatorApplier<i8> {}
+unsafe impl Sync for UnaryOperatorApplier<i16> {}
+unsafe impl Sync for UnaryOperatorApplier<i32> {}
+unsafe impl Sync for UnaryOperatorApplier<i64> {}
+unsafe impl Sync for UnaryOperatorApplier<f32> {}
+unsafe impl Sync for UnaryOperatorApplier<f64> {}
 
 #[derive(Debug, Clone)]
 pub struct UnaryOperatorApplier<T: ValueType> {
@@ -196,10 +223,12 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::unary_operator::{Identity, One};
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_matrix_unary_operator() {

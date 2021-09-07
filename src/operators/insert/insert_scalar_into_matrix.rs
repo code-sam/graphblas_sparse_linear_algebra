@@ -6,9 +6,9 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_assign_BOOL, GrB_Matrix_assign_FP32,
@@ -18,6 +18,33 @@ use crate::bindings_to_graphblas_implementation::{
 };
 
 // TODO: explicitly define how dupicates are handled
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for InsertScalarIntoMatrix<bool, bool> {}
+unsafe impl Send for InsertScalarIntoMatrix<u8, u8> {}
+unsafe impl Send for InsertScalarIntoMatrix<u16, u16> {}
+unsafe impl Send for InsertScalarIntoMatrix<u32, u32> {}
+unsafe impl Send for InsertScalarIntoMatrix<u64, u64> {}
+unsafe impl Send for InsertScalarIntoMatrix<i8, i8> {}
+unsafe impl Send for InsertScalarIntoMatrix<i16, i16> {}
+unsafe impl Send for InsertScalarIntoMatrix<i32, i32> {}
+unsafe impl Send for InsertScalarIntoMatrix<i64, i64> {}
+unsafe impl Send for InsertScalarIntoMatrix<f32, f32> {}
+unsafe impl Send for InsertScalarIntoMatrix<f64, f64> {}
+
+unsafe impl Sync for InsertScalarIntoMatrix<bool, bool> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u8, u8> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u16, u16> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u32, u32> {}
+unsafe impl Sync for InsertScalarIntoMatrix<u64, u64> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i8, i8> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i16, i16> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i32, i32> {}
+unsafe impl Sync for InsertScalarIntoMatrix<i64, i64> {}
+unsafe impl Sync for InsertScalarIntoMatrix<f32, f32> {}
+unsafe impl Sync for InsertScalarIntoMatrix<f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct InsertScalarIntoMatrix<MatrixToInsertInto: ValueType, ScalarToInsert: ValueType> {
@@ -314,10 +341,10 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{
+    use crate::util::ElementIndex;
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::util::ElementIndex;
 
     #[test]
     fn test_insert_scalar_into_matrix() {

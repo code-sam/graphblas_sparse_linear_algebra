@@ -6,13 +6,40 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::semiring::Semiring;
 use crate::operators::{mask::VectorMask, options::OperatorOptions};
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_vxm,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for VectorMatrixMultiplicationOperator<bool, bool, bool> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<u8, u8, u8> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<u16, u16, u16> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<u32, u32, u32> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<u64, u64, u64> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<i8, i8, i8> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<i16, i16, i16> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<i32, i32, i32> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<i64, i64, i64> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<f32, f32, f32> {}
+unsafe impl Send for VectorMatrixMultiplicationOperator<f64, f64, f64> {}
+
+unsafe impl Sync for VectorMatrixMultiplicationOperator<bool, bool, bool> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<u8, u8, u8> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<u16, u16, u16> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<u32, u32, u32> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<u64, u64, u64> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<i8, i8, i8> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<i16, i16, i16> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<i32, i32, i32> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<i64, i64, i64> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<f32, f32, f32> {}
+unsafe impl Sync for VectorMatrixMultiplicationOperator<f64, f64, f64> {}
 
 // TODO: review the use of &'a dyn Trait, removing dynamic dispatch could provide a performance gain. (it might be negated if cloning is necessary though)
 // https://www.joshmcguigan.com/blog/cost-of-indirection-rust/
@@ -118,8 +145,8 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::binary_operator::Plus;
     use crate::operators::semiring::PlusTimes;
-    use crate::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
-    use crate::sparse_vector::{
+    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::value_types::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
 

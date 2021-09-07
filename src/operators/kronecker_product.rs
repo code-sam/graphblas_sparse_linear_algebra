@@ -7,13 +7,40 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, monoid::Monoid, options::OperatorOptions,
     semiring::Semiring,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_kronecker_BinaryOp, GrB_Matrix_kronecker_Monoid,
     GrB_Matrix_kronecker_Semiring, GrB_Monoid, GrB_Semiring,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for SemiringKroneckerProduct<bool, bool, bool> {}
+unsafe impl Send for SemiringKroneckerProduct<u8, u8, u8> {}
+unsafe impl Send for SemiringKroneckerProduct<u16, u16, u16> {}
+unsafe impl Send for SemiringKroneckerProduct<u32, u32, u32> {}
+unsafe impl Send for SemiringKroneckerProduct<u64, u64, u64> {}
+unsafe impl Send for SemiringKroneckerProduct<i8, i8, i8> {}
+unsafe impl Send for SemiringKroneckerProduct<i16, i16, i16> {}
+unsafe impl Send for SemiringKroneckerProduct<i32, i32, i32> {}
+unsafe impl Send for SemiringKroneckerProduct<i64, i64, i64> {}
+unsafe impl Send for SemiringKroneckerProduct<f32, f32, f32> {}
+unsafe impl Send for SemiringKroneckerProduct<f64, f64, f64> {}
+
+unsafe impl Sync for SemiringKroneckerProduct<bool, bool, bool> {}
+unsafe impl Sync for SemiringKroneckerProduct<u8, u8, u8> {}
+unsafe impl Sync for SemiringKroneckerProduct<u16, u16, u16> {}
+unsafe impl Sync for SemiringKroneckerProduct<u32, u32, u32> {}
+unsafe impl Sync for SemiringKroneckerProduct<u64, u64, u64> {}
+unsafe impl Sync for SemiringKroneckerProduct<i8, i8, i8> {}
+unsafe impl Sync for SemiringKroneckerProduct<i16, i16, i16> {}
+unsafe impl Sync for SemiringKroneckerProduct<i32, i32, i32> {}
+unsafe impl Sync for SemiringKroneckerProduct<i64, i64, i64> {}
+unsafe impl Sync for SemiringKroneckerProduct<f32, f32, f32> {}
+unsafe impl Sync for SemiringKroneckerProduct<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
@@ -280,7 +307,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Times};
 
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 

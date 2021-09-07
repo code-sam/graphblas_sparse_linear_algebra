@@ -138,7 +138,7 @@ impl Context {
         F: FnMut() -> GrB_Info,
     {
         // thread::sleep(time::Duration::from_secs(2));
-        let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+        // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
         graphblas_result(function_to_call())
     }
 }
@@ -181,14 +181,14 @@ pub struct Ready {
 // }
 
 impl Ready {
-    fn call<F>(&self, mut function_to_call: F) -> Result<Status, SparseLinearAlgebraError>
-    where
-        F: FnMut() -> GrB_Info,
-    {
-        // thread::sleep(time::Duration::from_secs(2));
-        let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
-        graphblas_result(function_to_call())
-    }
+    // fn call<F>(&self, mut function_to_call: F) -> Result<Status, SparseLinearAlgebraError>
+    // where
+    //     F: FnMut() -> GrB_Info,
+    // {
+    //     // thread::sleep(time::Duration::from_secs(2));
+    //     let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+    //     graphblas_result(function_to_call())
+    // }
 }
 
 impl Ready {

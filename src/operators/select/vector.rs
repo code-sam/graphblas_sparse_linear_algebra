@@ -7,16 +7,43 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
 };
 
-use crate::sparse_scalar::{SetScalarValue, SparseScalar};
-use crate::sparse_vector::SparseVector;
+use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
+use crate::value_types::sparse_vector::SparseVector;
 
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
     GxB_GT_THUNK, GxB_GT_ZERO, GxB_LE_THUNK, GxB_LE_ZERO, GxB_LT_THUNK, GxB_LT_ZERO, GxB_NE_THUNK,
     GxB_NONZERO, GxB_Vector_select,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for VectorSelector<bool> {}
+unsafe impl Send for VectorSelector<u8> {}
+unsafe impl Send for VectorSelector<u16> {}
+unsafe impl Send for VectorSelector<u32> {}
+unsafe impl Send for VectorSelector<u64> {}
+unsafe impl Send for VectorSelector<i8> {}
+unsafe impl Send for VectorSelector<i16> {}
+unsafe impl Send for VectorSelector<i32> {}
+unsafe impl Send for VectorSelector<i64> {}
+unsafe impl Send for VectorSelector<f32> {}
+unsafe impl Send for VectorSelector<f64> {}
+
+unsafe impl Sync for VectorSelector<bool> {}
+unsafe impl Sync for VectorSelector<u8> {}
+unsafe impl Sync for VectorSelector<u16> {}
+unsafe impl Sync for VectorSelector<u32> {}
+unsafe impl Sync for VectorSelector<u64> {}
+unsafe impl Sync for VectorSelector<i8> {}
+unsafe impl Sync for VectorSelector<i16> {}
+unsafe impl Sync for VectorSelector<i32> {}
+unsafe impl Sync for VectorSelector<i64> {}
+unsafe impl Sync for VectorSelector<f32> {}
+unsafe impl Sync for VectorSelector<f64> {}
 
 #[derive(Debug, Clone)]
 pub struct VectorSelector<T: ValueType> {
@@ -750,7 +777,9 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_zero_scalar_selector() {

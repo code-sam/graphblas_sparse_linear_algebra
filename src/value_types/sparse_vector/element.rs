@@ -1,6 +1,6 @@
 use crate::error::{GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType};
 use crate::util::ElementIndex;
-use crate::value_type::ValueType;
+use crate::value_types::value_type::ValueType;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct VectorElement<T: ValueType> {

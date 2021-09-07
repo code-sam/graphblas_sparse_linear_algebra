@@ -112,7 +112,10 @@ macro_rules! implement_value_type_for_custom_type {
                 let graphblas_type = unsafe { graphblas_type.assume_init() };
 
                 Ok(Arc::new(
-                    $crate::value_type::RegisteredCustomValueType::new(context, graphblas_type),
+                    $crate::value_types::value_type::RegisteredCustomValueType::new(
+                        context,
+                        graphblas_type,
+                    ),
                 ))
             }
         }

@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-
 use std::sync::Arc;
 
 use crate::error::{
@@ -22,13 +21,43 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_type::{BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType};
+use crate::value_types::value_type::{
+    BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType,
+};
 
 pub struct SparseScalar<T: ValueType> {
     context: Arc<Context>,
     scalar: GxB_Scalar,
     value_type: PhantomData<T>,
 }
+
+// Mutable access to GrB_Vector shall occur through a write lock on RwLock<GrB_Matrix>.
+// Code review must consider that the correct lock is made via
+// SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for SparseScalar<bool> {}
+unsafe impl Send for SparseScalar<u8> {}
+unsafe impl Send for SparseScalar<u16> {}
+unsafe impl Send for SparseScalar<u32> {}
+unsafe impl Send for SparseScalar<u64> {}
+unsafe impl Send for SparseScalar<i8> {}
+unsafe impl Send for SparseScalar<i16> {}
+unsafe impl Send for SparseScalar<i32> {}
+unsafe impl Send for SparseScalar<i64> {}
+unsafe impl Send for SparseScalar<f32> {}
+unsafe impl Send for SparseScalar<f64> {}
+
+unsafe impl Sync for SparseScalar<bool> {}
+unsafe impl Sync for SparseScalar<u8> {}
+unsafe impl Sync for SparseScalar<u16> {}
+unsafe impl Sync for SparseScalar<u32> {}
+unsafe impl Sync for SparseScalar<u64> {}
+unsafe impl Sync for SparseScalar<i8> {}
+unsafe impl Sync for SparseScalar<i16> {}
+unsafe impl Sync for SparseScalar<i32> {}
+unsafe impl Sync for SparseScalar<i64> {}
+unsafe impl Sync for SparseScalar<f32> {}
+unsafe impl Sync for SparseScalar<f64> {}
 
 impl<T: ValueType + BuiltInValueType<T>> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
@@ -68,6 +97,10 @@ impl<T: ValueType + CustomValueType> SparseScalar<T> {
 }
 
 impl<T: ValueType> SparseScalar<T> {
+    pub fn context(&self) -> Arc<Context> {
+        self.context.clone()
+    }
+
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         self.context
@@ -80,10 +113,6 @@ impl<T: ValueType> SparseScalar<T> {
         self.context
             .call(|| unsafe { GxB_Scalar_clear(self.scalar) })?;
         Ok(())
-    }
-
-    pub fn context(&self) -> Arc<Context> {
-        self.context.clone()
     }
 
     pub(crate) fn graphblas_scalar(&self) -> GxB_Scalar {

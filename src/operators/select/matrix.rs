@@ -7,10 +7,10 @@ use crate::operators::{
     binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
 };
 
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_scalar::{SetScalarValue, SparseScalar};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
 
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_DIAG, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
@@ -19,6 +19,33 @@ use crate::bindings_to_graphblas_implementation::{
 };
 
 use super::diagonal_index::{DiagonalIndex, DiagonalIndexGraphblasType};
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for MatrixSelector<bool> {}
+unsafe impl Send for MatrixSelector<u8> {}
+unsafe impl Send for MatrixSelector<u16> {}
+unsafe impl Send for MatrixSelector<u32> {}
+unsafe impl Send for MatrixSelector<u64> {}
+unsafe impl Send for MatrixSelector<i8> {}
+unsafe impl Send for MatrixSelector<i16> {}
+unsafe impl Send for MatrixSelector<i32> {}
+unsafe impl Send for MatrixSelector<i64> {}
+unsafe impl Send for MatrixSelector<f32> {}
+unsafe impl Send for MatrixSelector<f64> {}
+
+unsafe impl Sync for MatrixSelector<bool> {}
+unsafe impl Sync for MatrixSelector<u8> {}
+unsafe impl Sync for MatrixSelector<u16> {}
+unsafe impl Sync for MatrixSelector<u32> {}
+unsafe impl Sync for MatrixSelector<u64> {}
+unsafe impl Sync for MatrixSelector<i8> {}
+unsafe impl Sync for MatrixSelector<i16> {}
+unsafe impl Sync for MatrixSelector<i32> {}
+unsafe impl Sync for MatrixSelector<i64> {}
+unsafe impl Sync for MatrixSelector<f32> {}
+unsafe impl Sync for MatrixSelector<f64> {}
 
 #[derive(Debug, Clone)]
 pub struct MatrixSelector<T: ValueType> {
@@ -851,7 +878,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 

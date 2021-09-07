@@ -7,9 +7,9 @@ use crate::operators::{
     mask::{MatrixMask, VectorMask},
     options::OperatorOptions,
 };
-use crate::sparse_matrix::SparseMatrix;
-use crate::sparse_vector::SparseVector;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply_BinaryOp1st_BOOL,
@@ -36,6 +36,33 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_apply_BinaryOp2nd_UINT32, GrB_Vector_apply_BinaryOp2nd_UINT64,
     GrB_Vector_apply_BinaryOp2nd_UINT8,
 };
+
+// Implemented methods do not provide mutable access to GraphBLAS operators or options.
+// Code review must consider that no mtable access is provided.
+// https://doc.rust-lang.org/nomicon/send-and-sync.html
+unsafe impl Send for BinaryOperatorApplier<bool, bool, bool> {}
+unsafe impl Send for BinaryOperatorApplier<u8, u8, u8> {}
+unsafe impl Send for BinaryOperatorApplier<u16, u16, u16> {}
+unsafe impl Send for BinaryOperatorApplier<u32, u32, u32> {}
+unsafe impl Send for BinaryOperatorApplier<u64, u64, u64> {}
+unsafe impl Send for BinaryOperatorApplier<i8, i8, i8> {}
+unsafe impl Send for BinaryOperatorApplier<i16, i16, i16> {}
+unsafe impl Send for BinaryOperatorApplier<i32, i32, i32> {}
+unsafe impl Send for BinaryOperatorApplier<i64, i64, i64> {}
+unsafe impl Send for BinaryOperatorApplier<f32, f32, f32> {}
+unsafe impl Send for BinaryOperatorApplier<f64, f64, f64> {}
+
+unsafe impl Sync for BinaryOperatorApplier<bool, bool, bool> {}
+unsafe impl Sync for BinaryOperatorApplier<u8, u8, u8> {}
+unsafe impl Sync for BinaryOperatorApplier<u16, u16, u16> {}
+unsafe impl Sync for BinaryOperatorApplier<u32, u32, u32> {}
+unsafe impl Sync for BinaryOperatorApplier<u64, u64, u64> {}
+unsafe impl Sync for BinaryOperatorApplier<i8, i8, i8> {}
+unsafe impl Sync for BinaryOperatorApplier<i16, i16, i16> {}
+unsafe impl Sync for BinaryOperatorApplier<i32, i32, i32> {}
+unsafe impl Sync for BinaryOperatorApplier<i64, i64, i64> {}
+unsafe impl Sync for BinaryOperatorApplier<f32, f32, f32> {}
+unsafe impl Sync for BinaryOperatorApplier<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorApplier<
@@ -471,10 +498,12 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::sparse_matrix::{
+    use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::sparse_vector::{FromVectorElementList, GetVectorElementValue, VectorElementList};
+    use crate::value_types::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, VectorElementList,
+    };
 
     #[test]
     fn test_matrix_binary_operator_application() {
