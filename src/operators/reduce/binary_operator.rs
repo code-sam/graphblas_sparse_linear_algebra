@@ -80,15 +80,13 @@ impl<T: ValueType> BinaryOperatorReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let argument_with_read_lock = argument.get_read_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_reduce_BinaryOp(
                 product.graphblas_vector(),
                 ptr::null_mut(),
                 self.accumulator,
                 self.binary_operator,
-                *argument_with_read_lock,
+                argument.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -104,15 +102,13 @@ impl<T: ValueType> BinaryOperatorReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let argument_with_read_lock = argument.get_read_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_reduce_BinaryOp(
                 product.graphblas_vector(),
                 mask.graphblas_vector(),
                 self.accumulator,
                 self.binary_operator,
-                *argument_with_read_lock,
+                argument.graphblas_matrix(),
                 self.options,
             )
         })?;

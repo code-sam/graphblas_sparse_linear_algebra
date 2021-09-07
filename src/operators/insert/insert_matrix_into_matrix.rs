@@ -138,10 +138,6 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
                 let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
 
-                let matrix_to_insert_into_with_write_lock =
-                    matrix_to_insert_into.get_write_lock()?;
-                let matrix_to_insert_with_read_lock = matrix_to_insert.get_read_lock()?;
-
                 match (rows_to_insert_into, columns_to_insert_into) {
                     (
                         ElementIndexSelectorGraphblasType::Index(row),
@@ -149,10 +145,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -167,10 +163,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row,
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -185,10 +181,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column,
@@ -203,10 +199,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row,
                                 number_of_rows_to_insert_into,
                                 column,
@@ -242,12 +238,6 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
                 let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
 
-                let matrix_to_insert_into_with_write_lock =
-                    matrix_to_insert_into.get_write_lock()?;
-                let mask_for_matrix_to_insert_into_with_read_lock =
-                    mask_for_matrix_to_insert_into.get_read_lock()?;
-                let matrix_to_insert_with_read_lock = matrix_to_insert.get_read_lock()?;
-
                 match (rows_to_insert_into, columns_to_insert_into) {
                     (
                         ElementIndexSelectorGraphblasType::Index(row),
@@ -255,10 +245,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -273,10 +263,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row,
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -291,10 +281,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column,
@@ -309,10 +299,10 @@ macro_rules! implement_insert_matrix_into_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *matrix_to_insert_with_read_lock,
+                                matrix_to_insert.graphblas_matrix(),
                                 row,
                                 number_of_rows_to_insert_into,
                                 column,

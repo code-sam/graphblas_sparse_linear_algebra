@@ -94,18 +94,14 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let multiplier_with_read_lock = multiplier.get_read_lock()?;
-        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
-        let product_with_write_lock = product.get_write_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_eWiseMult_Semiring(
-                *product_with_write_lock,
+                product.graphblas_matrix(),
                 ptr::null_mut(),
                 self.accumulator,
                 self.multiplication_operator,
-                *multiplier_with_read_lock,
-                *multiplicant_with_read_lock,
+                multiplier.graphblas_matrix(),
+                multiplicant.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -122,19 +118,14 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let mask_with_read_lock = mask.get_read_lock()?;
-        let multiplier_with_read_lock = multiplier.get_read_lock()?;
-        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
-        let product_with_write_lock = product.get_write_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_eWiseMult_Semiring(
-                *product_with_write_lock,
-                *mask_with_read_lock,
+                product.graphblas_matrix(),
+                mask.graphblas_matrix(),
                 self.accumulator,
                 self.multiplication_operator,
-                *multiplier_with_read_lock,
-                *multiplicant_with_read_lock,
+                multiplier.graphblas_matrix(),
+                multiplicant.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -208,18 +199,14 @@ impl<T: ValueType> ElementWiseMatrixMultiplicationMonoidOperator<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let multiplier_with_read_lock = multiplier.get_read_lock()?;
-        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
-        let product_with_write_lock = product.get_write_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_eWiseMult_Monoid(
-                *product_with_write_lock,
+                product.graphblas_matrix(),
                 ptr::null_mut(),
                 self.accumulator,
                 self.multiplication_operator,
-                *multiplier_with_read_lock,
-                *multiplicant_with_read_lock,
+                multiplier.graphblas_matrix(),
+                multiplicant.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -236,19 +223,14 @@ impl<T: ValueType> ElementWiseMatrixMultiplicationMonoidOperator<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let mask_with_read_lock = mask.get_read_lock()?;
-        let multiplier_with_read_lock = multiplier.get_read_lock()?;
-        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
-        let product_with_write_lock = product.get_write_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_eWiseMult_Monoid(
-                *product_with_write_lock,
-                *mask_with_read_lock,
+                product.graphblas_matrix(),
+                mask.graphblas_matrix(),
                 self.accumulator,
                 self.multiplication_operator,
-                *multiplier_with_read_lock,
-                *multiplicant_with_read_lock,
+                multiplier.graphblas_matrix(),
+                multiplicant.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -332,18 +314,14 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let multiplier_with_read_lock = multiplier.get_read_lock()?;
-        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
-        let product_with_write_lock = product.get_write_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_eWiseMult_BinaryOp(
-                *product_with_write_lock,
+                product.graphblas_matrix(),
                 ptr::null_mut(),
                 self.accumulator,
                 self.multiplication_operator,
-                *multiplier_with_read_lock,
-                *multiplicant_with_read_lock,
+                multiplier.graphblas_matrix(),
+                multiplicant.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -360,19 +338,14 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let mask_with_read_lock = mask.get_read_lock()?;
-        let multiplier_with_read_lock = multiplier.get_read_lock()?;
-        let multiplicant_with_read_lock = multiplicant.get_read_lock()?;
-        let product_with_write_lock = product.get_write_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_eWiseMult_BinaryOp(
-                *product_with_write_lock,
-                *mask_with_read_lock,
+                product.graphblas_matrix(),
+                mask.graphblas_matrix(),
                 self.accumulator,
                 self.multiplication_operator,
-                *multiplier_with_read_lock,
-                *multiplicant_with_read_lock,
+                multiplier.graphblas_matrix(),
+                multiplicant.graphblas_matrix(),
                 self.options,
             )
         })?;

@@ -109,9 +109,6 @@ where
         let rows_to_extract = rows_to_extract.to_graphblas_type()?;
         let columns_to_extract = columns_to_extract.to_graphblas_type()?;
 
-        let sub_matrix_with_write_lock = sub_matrix.get_write_lock()?;
-        let matrix_to_extract_from_with_read_lock = matrix_to_extract_from.get_read_lock()?;
-
         match (rows_to_extract, columns_to_extract) {
             (
                 ElementIndexSelectorGraphblasType::Index(row),
@@ -119,10 +116,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
+                        sub_matrix.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row.as_ptr(),
                         number_of_rows_to_extract,
                         column.as_ptr(),
@@ -137,10 +134,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
+                        sub_matrix.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row,
                         number_of_rows_to_extract,
                         column.as_ptr(),
@@ -155,10 +152,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
+                        sub_matrix.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row.as_ptr(),
                         number_of_rows_to_extract,
                         column,
@@ -173,10 +170,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
+                        sub_matrix.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row,
                         number_of_rows_to_extract,
                         column,
@@ -221,10 +218,6 @@ where
         let rows_to_extract = rows_to_extract.to_graphblas_type()?;
         let columns_to_extract = columns_to_extract.to_graphblas_type()?;
 
-        let sub_matrix_with_write_lock = sub_matrix.get_write_lock()?;
-        let mask_with_read_lock = mask.get_read_lock()?;
-        let matrix_to_extract_from_with_read_lock = matrix_to_extract_from.get_read_lock()?;
-
         match (rows_to_extract, columns_to_extract) {
             (
                 ElementIndexSelectorGraphblasType::Index(row),
@@ -232,10 +225,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
-                        *mask_with_read_lock,
+                        sub_matrix.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row.as_ptr(),
                         number_of_rows_to_extract,
                         column.as_ptr(),
@@ -250,10 +243,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
-                        *mask_with_read_lock,
+                        sub_matrix.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row,
                         number_of_rows_to_extract,
                         column.as_ptr(),
@@ -268,10 +261,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
-                        *mask_with_read_lock,
+                        sub_matrix.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row.as_ptr(),
                         number_of_rows_to_extract,
                         column,
@@ -286,10 +279,10 @@ where
             ) => {
                 context.call(|| unsafe {
                     GrB_Matrix_extract(
-                        *sub_matrix_with_write_lock,
-                        *mask_with_read_lock,
+                        sub_matrix.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         row,
                         number_of_rows_to_extract,
                         column,

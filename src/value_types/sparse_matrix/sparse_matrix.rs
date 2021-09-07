@@ -4,7 +4,6 @@ use crate::error::{
 };
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-
 use std::sync::{Arc, RwLock};
 
 use super::coordinate::Coordinate;
@@ -14,7 +13,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
     GrB_Matrix_build_INT16, GrB_Matrix_build_INT32, GrB_Matrix_build_INT64, GrB_Matrix_build_INT8,
     GrB_Matrix_build_UINT16, GrB_Matrix_build_UINT32, GrB_Matrix_build_UINT64,
-    GrB_Matrix_build_UINT8, GrB_Matrix_dup, GrB_Matrix_extractElement_BOOL,
+    GrB_Matrix_build_UINT8, GrB_Matrix_clear, GrB_Matrix_dup, GrB_Matrix_extractElement_BOOL,
     GrB_Matrix_extractElement_FP32, GrB_Matrix_extractElement_FP64,
     GrB_Matrix_extractElement_INT16, GrB_Matrix_extractElement_INT32,
     GrB_Matrix_extractElement_INT64, GrB_Matrix_extractElement_INT8,
@@ -39,7 +38,7 @@ use crate::value_types::value_type::{BuiltInValueType, ValueType};
 
 pub struct SparseMatrix<T: ValueType> {
     context: Arc<Context>,
-    matrix: RwLock<GrB_Matrix>,
+    matrix: GrB_Matrix,
     value_type: PhantomData<T>,
 }
 
@@ -53,7 +52,7 @@ pub struct SparseMatrix<T: ValueType> {
 //     }
 // }
 
-// Mutable access to GrB_Matrix should occurs through a write lock on RwLock<GrB_Matrix>.
+// Mutable access to GrB_Matrix shall occur through a write lock on RwLock<GrB_Matrix>.
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
@@ -101,7 +100,7 @@ impl<T: ValueType + BuiltInValueType<T>> SparseMatrix<T> {
         let matrix = unsafe { matrix.assume_init() };
         return Ok(SparseMatrix {
             context,
-            matrix: RwLock::new(matrix),
+            matrix: matrix,
             value_type: PhantomData,
         });
     }
@@ -112,42 +111,8 @@ impl<T: ValueType> SparseMatrix<T> {
         self.context.clone()
     }
 
-    // pub(crate) fn graphblas_matrix_with_read_lock(&self) -> Result<RwLock<GrB_Matrix>, SparseLinearAlgebraError> {
-    //     get_read_lock_on_matrix(self.matrix)
-    // }
-
-    pub(crate) fn get_write_lock(
-        &mut self,
-    ) -> Result<std::sync::RwLockWriteGuard<GrB_Matrix>, SparseLinearAlgebraError> {
-        let _ = match self.matrix.write() {
-            Ok(matrix) => return Ok(matrix),
-            Err(_) => {
-                return Err(SparseLinearAlgebraError::SystemError(SystemError::new(
-                    SystemErrorType::PoisonedData,
-                    String::from(
-                        "RwLock on GrB_Matrix was poisoned, data may have been corrupted.",
-                    ),
-                    None,
-                )))
-            }
-        };
-    }
-
-    pub(crate) fn get_read_lock(
-        &self,
-    ) -> Result<std::sync::RwLockReadGuard<GrB_Matrix>, SparseLinearAlgebraError> {
-        let _ = match self.matrix.read() {
-            Ok(matrix) => return Ok(matrix),
-            Err(_) => {
-                return Err(SparseLinearAlgebraError::SystemError(SystemError::new(
-                    SystemErrorType::PoisonedData,
-                    String::from(
-                        "RwLock on GrB_Matrix was poisoned, data may have been corrupted.",
-                    ),
-                    None,
-                )))
-            }
-        };
+    pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
+        self.matrix
     }
 
     /// All elements of self with an index coordinate outside of the new size are dropped.
@@ -155,42 +120,24 @@ impl<T: ValueType> SparseMatrix<T> {
         let new_row_height = new_size.row_height().to_graphblas_index()?;
         let new_column_width = new_size.column_width().to_graphblas_index()?;
 
-        // let matrix = match self.matrix.write() {
-        //     Ok(matrix) => matrix,
-        //     Err(_) => {
-        //         return Err(SparseLinearAlgebraError::SystemError(SystemError::new(
-        //             SystemErrorType::PoisonedData,
-        //             String::from(
-        //                 "RwLock on GrB_Matrix was poisoned, data may heve been corrupted.",
-        //             ),
-        //             None,
-        //         )))
-        //     }
-        // };
         let context = self.context.clone();
-        let matrix_with_write_lock = self.get_write_lock()?;
-        context.call(|| unsafe {
-            GrB_Matrix_resize(*matrix_with_write_lock, new_row_height, new_column_width)
-        })?;
+        context
+            .call(|| unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) })?;
         Ok(())
     }
 
     pub fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        let matrix_with_read_lock = self.get_read_lock()?;
-        self.context.call(|| unsafe {
-            GrB_Matrix_nrows(row_height.as_mut_ptr(), *matrix_with_read_lock)
-        })?;
+        self.context
+            .call(|| unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) })?;
         let row_height = unsafe { row_height.assume_init() };
         Ok(ElementIndex::from_graphblas_index(row_height)?)
     }
 
     pub fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        let matrix_with_read_lock = self.get_read_lock()?;
-        self.context.call(|| unsafe {
-            GrB_Matrix_ncols(column_width.as_mut_ptr(), *matrix_with_read_lock)
-        })?;
+        self.context
+            .call(|| unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) })?;
         let column_width = unsafe { column_width.assume_init() };
         Ok(ElementIndex::from_graphblas_index(column_width)?)
     }
@@ -201,10 +148,8 @@ impl<T: ValueType> SparseMatrix<T> {
 
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        let matrix_with_read_lock = self.get_read_lock()?;
-        self.context.call(|| unsafe {
-            GrB_Matrix_nvals(number_of_values.as_mut_ptr(), *matrix_with_read_lock)
-        })?;
+        self.context
+            .call(|| unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) })?;
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
@@ -214,14 +159,16 @@ impl<T: ValueType> SparseMatrix<T> {
         let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
 
         let context = self.context.clone();
-        let matrix_with_write_lock = self.get_write_lock()?;
         context.call(|| unsafe {
-            GrB_Matrix_removeElement(
-                *matrix_with_write_lock,
-                row_index_to_delete,
-                column_index_to_delete,
-            )
+            GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
         })?;
+        Ok(())
+    }
+
+    /// remove all elements in th matrix
+    pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
+        self.context
+            .call(|| unsafe { GrB_Matrix_clear(self.matrix) })?;
         Ok(())
     }
 }
@@ -229,21 +176,20 @@ impl<T: ValueType> SparseMatrix<T> {
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
         let context = self.context.clone();
-        let _ = context.call(|| unsafe { GrB_Matrix_free(self.matrix.get_mut().unwrap()) });
+        let _ = context.call(|| unsafe { GrB_Matrix_free(&mut self.matrix) });
     }
 }
 
 impl<T: ValueType> Clone for SparseMatrix<T> {
     fn clone(&self) -> Self {
         let mut matrix_copy: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
-        let matrix_with_read_lock = self.get_read_lock().unwrap();
         self.context
-            .call(|| unsafe { GrB_Matrix_dup(matrix_copy.as_mut_ptr(), *matrix_with_read_lock) })
+            .call(|| unsafe { GrB_Matrix_dup(matrix_copy.as_mut_ptr(), self.matrix) })
             .unwrap();
 
         SparseMatrix {
             context: self.context.clone(),
-            matrix: RwLock::new(unsafe { matrix_copy.assume_init() }),
+            matrix: unsafe { matrix_copy.assume_init() },
             value_type: PhantomData,
         }
     }
@@ -380,10 +326,9 @@ macro_rules! sparse_matrix_from_element_vector {
 
                 {
                     let number_of_elements = elements.length().to_graphblas_index()?;
-                    let matrix_with_write_lock = matrix.get_write_lock()?;
                     context.call(|| unsafe {
                         $build_function(
-                            *matrix_with_write_lock,
+                            matrix.matrix,
                             graphblas_row_indices.as_ptr(),
                             graphblas_column_indices.as_ptr(),
                             elements.value_vec().as_ptr(),
@@ -438,10 +383,9 @@ macro_rules! implement_set_element {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
                 let column_index_to_set = element.column_index().to_graphblas_index()?;
                 let context = self.context.clone();
-                let matrix_with_write_lock = self.get_write_lock()?;
                 context.call(|| unsafe {
                     $add_element_function(
-                        *matrix_with_write_lock,
+                        self.matrix,
                         element.value(),
                         row_index_to_set,
                         column_index_to_set,
@@ -480,11 +424,10 @@ macro_rules! implement_get_element_value {
                 let row_index_to_get = coordinate.row_index().to_graphblas_index()?;
                 let column_index_to_get = coordinate.column_index().to_graphblas_index()?;
 
-                let matrix_with_read_lock = self.get_read_lock()?;
                 let result = self.context.call(|| unsafe {
                     $get_element_function(
                         value.as_mut_ptr(),
-                        *matrix_with_read_lock,
+                        self.matrix,
                         row_index_to_get,
                         column_index_to_get,
                     )
@@ -622,14 +565,13 @@ macro_rules! implement_get_element_list {
 
                 let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
 
-                let matrix_with_read_lock = self.get_read_lock()?;
                 self.context.call(|| unsafe {
                     $get_element_function(
                         row_indices.as_mut_ptr(),
                         column_indices.as_mut_ptr(),
                         values.as_mut_ptr(),
                         &mut number_of_stored_and_returned_elements,
-                        *matrix_with_read_lock,
+                        self.matrix,
                     )
                 })?;
 

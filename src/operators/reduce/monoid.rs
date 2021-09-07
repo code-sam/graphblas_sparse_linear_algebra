@@ -104,15 +104,13 @@ impl<T: ValueType> MonoidReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let argument_with_read_lock = argument.get_read_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_reduce_Monoid(
                 product.graphblas_vector(),
                 ptr::null_mut(),
                 self.accumulator,
                 self.monoid,
-                *argument_with_read_lock,
+                argument.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -128,15 +126,13 @@ impl<T: ValueType> MonoidReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        let argument_with_read_lock = argument.get_read_lock()?;
-
         context.call(|| unsafe {
             GrB_Matrix_reduce_Monoid(
                 product.graphblas_vector(),
                 mask.graphblas_vector(),
                 self.accumulator,
                 self.monoid,
-                *argument_with_read_lock,
+                argument.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -155,14 +151,12 @@ macro_rules! implement_monoid_reducer {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                let argument_with_read_lock = argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     $matrix_reducer_operator(
                         product,
                         self.accumulator,
                         self.monoid,
-                        *argument_with_read_lock,
+                        argument.graphblas_matrix(),
                         self.options,
                     )
                 })?;

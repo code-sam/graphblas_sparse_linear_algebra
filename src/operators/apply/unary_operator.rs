@@ -164,16 +164,13 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                let product_with_write_lock = product.get_write_lock()?;
-                let argument_with_read_lock = argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     GrB_Matrix_apply(
-                        *product_with_write_lock,
+                        product.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
                         self.unary_operator,
-                        *argument_with_read_lock,
+                        argument.graphblas_matrix(),
                         self.options,
                     )
                 })?;
@@ -192,17 +189,13 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                let product_with_write_lock = product.get_write_lock()?;
-                let mask_with_read_lock = mask.get_read_lock()?;
-                let argument_with_read_lock = argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     GrB_Matrix_apply(
-                        *product_with_write_lock,
-                        *mask_with_read_lock,
+                        product.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
                         self.unary_operator,
-                        *argument_with_read_lock,
+                        argument.graphblas_matrix(),
                         self.options,
                     )
                 })?;

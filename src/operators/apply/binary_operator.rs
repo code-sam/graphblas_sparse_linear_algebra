@@ -297,16 +297,13 @@ macro_rules! implement_binary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
-                let product_with_write_lock = product.get_write_lock()?;
-                let first_argument_with_read_lock = first_argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     $operator_matrix_as_first_argument(
-                        *product_with_write_lock,
+                        product.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
                         self.binary_operator,
-                        *first_argument_with_read_lock,
+                        first_argument.graphblas_matrix(),
                         *second_argument,
                         self.options,
                     )
@@ -323,17 +320,14 @@ macro_rules! implement_binary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
-                let product_with_write_lock = product.get_write_lock()?;
-                let second_argument_with_read_lock = second_argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     $operator_matrix_as_second_argument(
-                        *product_with_write_lock,
+                        product.graphblas_matrix(),
                         ptr::null_mut(),
                         self.accumulator,
                         self.binary_operator,
                         *first_argument,
-                        *second_argument_with_read_lock,
+                        second_argument.graphblas_matrix(),
                         self.options,
                     )
                 })?;
@@ -353,17 +347,13 @@ macro_rules! implement_binary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
-                let product_with_write_lock = product.get_write_lock()?;
-                let mask_with_read_lock = mask.get_read_lock()?;
-                let first_argument_with_read_lock = first_argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     $operator_matrix_as_first_argument(
-                        *product_with_write_lock,
-                        *mask_with_read_lock,
+                        product.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
                         self.binary_operator,
-                        *first_argument_with_read_lock,
+                        first_argument.graphblas_matrix(),
                         *second_argument,
                         self.options,
                     )
@@ -384,18 +374,14 @@ macro_rules! implement_binary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
-                let product_with_write_lock = product.get_write_lock()?;
-                let mask_with_read_lock = mask.get_read_lock()?;
-                let second_argument_with_read_lock = second_argument.get_read_lock()?;
-
                 context.call(|| unsafe {
                     $operator_matrix_as_second_argument(
-                        *product_with_write_lock,
-                        *mask_with_read_lock,
+                        product.graphblas_matrix(),
+                        mask.graphblas_matrix(),
                         self.accumulator,
                         self.binary_operator,
                         *first_argument,
-                        *second_argument_with_read_lock,
+                        second_argument.graphblas_matrix(),
                         self.options,
                     )
                 })?;

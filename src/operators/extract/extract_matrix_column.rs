@@ -100,8 +100,6 @@ where
 
         let column_index_to_extract = column_index_to_extract.to_graphblas_index()?;
 
-        let matrix_to_extract_from_with_read_lock = matrix_to_extract_from.get_read_lock()?;
-
         match indices_to_extract {
             ElementIndexSelectorGraphblasType::Index(index) => {
                 context.call(|| unsafe {
@@ -109,7 +107,7 @@ where
                         column_vector.graphblas_vector(),
                         ptr::null_mut(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         index.as_ptr(),
                         number_of_indices_to_extract,
                         column_index_to_extract,
@@ -123,7 +121,7 @@ where
                         column_vector.graphblas_vector(),
                         ptr::null_mut(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         index,
                         number_of_indices_to_extract,
                         column_index_to_extract,
@@ -159,8 +157,6 @@ where
 
         let column_index_to_extract = column_index_to_extract.to_graphblas_index()?;
 
-        let matrix_to_extract_from_with_read_lock = matrix_to_extract_from.get_read_lock()?;
-
         match indices_to_extract {
             ElementIndexSelectorGraphblasType::Index(index) => {
                 context.call(|| unsafe {
@@ -168,7 +164,7 @@ where
                         column_vector.graphblas_vector(),
                         mask.graphblas_vector(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         index.as_ptr(),
                         number_of_indices_to_extract,
                         column_index_to_extract,
@@ -182,7 +178,7 @@ where
                         column_vector.graphblas_vector(),
                         mask.graphblas_vector(),
                         self.accumulator,
-                        *matrix_to_extract_from_with_read_lock,
+                        matrix_to_extract_from.graphblas_matrix(),
                         index,
                         number_of_indices_to_extract,
                         column_index_to_extract,

@@ -136,14 +136,11 @@ macro_rules! implement_insert_vector_into_column_trait {
                 let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
                 let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
-                let matrix_to_insert_into_with_write_lock =
-                    matrix_to_insert_into.get_write_lock()?;
-
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -158,7 +155,7 @@ macro_rules! implement_insert_vector_into_column_trait {
                     ElementIndexSelectorGraphblasType::All(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -192,14 +189,11 @@ macro_rules! implement_insert_vector_into_column_trait {
                 let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
                 let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
-                let matrix_to_insert_into_with_write_lock =
-                    matrix_to_insert_into.get_write_lock()?;
-
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 mask_for_column_to_insert_into.graphblas_vector(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),
@@ -214,7 +208,7 @@ macro_rules! implement_insert_vector_into_column_trait {
                     ElementIndexSelectorGraphblasType::All(index) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 mask_for_column_to_insert_into.graphblas_vector(),
                                 self.accumulator,
                                 vector_to_insert.graphblas_vector(),

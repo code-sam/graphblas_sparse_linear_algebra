@@ -80,14 +80,12 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
-        let transpose_with_write_lock = transpose.get_write_lock()?;
-        let matrix_with_read_lock = matrix.get_read_lock()?;
         context.call(|| unsafe {
             GrB_transpose(
-                *transpose_with_write_lock,
+                transpose.graphblas_matrix(),
                 ptr::null_mut(),
                 self.accumulator,
-                *matrix_with_read_lock,
+                matrix.graphblas_matrix(),
                 self.options,
             )
         })?;
@@ -103,15 +101,12 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
-        let transpose_with_write_lock = transpose.get_write_lock()?;
-        let mask_with_read_lock = mask.get_read_lock()?;
-        let matrix_with_read_lock = matrix.get_read_lock()?;
         context.call(|| unsafe {
             GrB_transpose(
-                *transpose_with_write_lock,
-                *mask_with_read_lock,
+                transpose.graphblas_matrix(),
+                mask.graphblas_matrix(),
                 self.accumulator,
-                *matrix_with_read_lock,
+                matrix.graphblas_matrix(),
                 self.options,
             )
         })?;

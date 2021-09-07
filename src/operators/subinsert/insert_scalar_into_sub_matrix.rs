@@ -144,9 +144,6 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
                 let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
 
-                let matrix_to_insert_into_with_write_lock =
-                    matrix_to_insert_into.get_write_lock()?;
-
                 match (rows_to_insert_into, columns_to_insert_into) {
                     (
                         ElementIndexSelectorGraphblasType::Index(row),
@@ -154,7 +151,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
                                 *scalar_to_insert,
@@ -172,7 +169,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
                                 *scalar_to_insert,
@@ -190,7 +187,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
                                 *scalar_to_insert,
@@ -208,7 +205,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
                                 *scalar_to_insert,
@@ -247,11 +244,6 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
                 let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
 
-                let matrix_to_insert_into_with_write_lock =
-                    matrix_to_insert_into.get_write_lock()?;
-                let mask_for_matrix_to_insert_into_with_read_lock =
-                    mask_for_matrix_to_insert_into.get_read_lock()?;
-
                 match (rows_to_insert_into, columns_to_insert_into) {
                     (
                         ElementIndexSelectorGraphblasType::Index(row),
@@ -259,8 +251,8 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
                                 *scalar_to_insert,
                                 row.as_ptr(),
@@ -277,8 +269,8 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
                                 *scalar_to_insert,
                                 row,
@@ -295,8 +287,8 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
                                 *scalar_to_insert,
                                 row.as_ptr(),
@@ -313,8 +305,8 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                     ) => {
                         context.call(|| unsafe {
                             $graphblas_insert_function(
-                                *matrix_to_insert_into_with_write_lock,
-                                *mask_for_matrix_to_insert_into_with_read_lock,
+                                matrix_to_insert_into.graphblas_matrix(),
+                                mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
                                 *scalar_to_insert,
                                 row,

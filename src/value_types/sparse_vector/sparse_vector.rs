@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
@@ -13,7 +12,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Vector, GrB_Vector_build_BOOL, GrB_Vector_build_FP32, GrB_Vector_build_FP64,
     GrB_Vector_build_INT16, GrB_Vector_build_INT32, GrB_Vector_build_INT64, GrB_Vector_build_INT8,
     GrB_Vector_build_UINT16, GrB_Vector_build_UINT32, GrB_Vector_build_UINT64,
-    GrB_Vector_build_UINT8, GrB_Vector_dup, GrB_Vector_extractElement_BOOL,
+    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_extractElement_BOOL,
     GrB_Vector_extractElement_FP32, GrB_Vector_extractElement_FP64,
     GrB_Vector_extractElement_INT16, GrB_Vector_extractElement_INT32,
     GrB_Vector_extractElement_INT64, GrB_Vector_extractElement_INT8,
@@ -43,33 +42,33 @@ pub struct SparseVector<T: ValueType> {
     value_type: PhantomData<T>,
 }
 
-// Send and Sync implementaioms should be ok, since mutable access to GrB_Vector
-// must occur through a mut SparseVector. Method providing a copy or reference to
-// GrB_Vector will result in undefined behaviour though. Code review must consider this.
+// Mutable access to GrB_Vector shall occur through a write lock on RwLock<GrB_Matrix>.
+// Code review must consider that the correct lock is made via
+// SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-// unsafe impl Send for SparseVector<bool> {}
-// unsafe impl Send for SparseVector<u8> {}
-// unsafe impl Send for SparseVector<u16> {}
-// unsafe impl Send for SparseVector<u32> {}
-// unsafe impl Send for SparseVector<u64> {}
-// unsafe impl Send for SparseVector<i8> {}
-// unsafe impl Send for SparseVector<i16> {}
-// unsafe impl Send for SparseVector<i32> {}
-// unsafe impl Send for SparseVector<i64> {}
-// unsafe impl Send for SparseVector<f32> {}
-// unsafe impl Send for SparseVector<f64> {}
+unsafe impl Send for SparseVector<bool> {}
+unsafe impl Send for SparseVector<u8> {}
+unsafe impl Send for SparseVector<u16> {}
+unsafe impl Send for SparseVector<u32> {}
+unsafe impl Send for SparseVector<u64> {}
+unsafe impl Send for SparseVector<i8> {}
+unsafe impl Send for SparseVector<i16> {}
+unsafe impl Send for SparseVector<i32> {}
+unsafe impl Send for SparseVector<i64> {}
+unsafe impl Send for SparseVector<f32> {}
+unsafe impl Send for SparseVector<f64> {}
 
-// unsafe impl Sync for SparseVector<bool> {}
-// unsafe impl Sync for SparseVector<u8> {}
-// unsafe impl Sync for SparseVector<u16> {}
-// unsafe impl Sync for SparseVector<u32> {}
-// unsafe impl Sync for SparseVector<u64> {}
-// unsafe impl Sync for SparseVector<i8> {}
-// unsafe impl Sync for SparseVector<i16> {}
-// unsafe impl Sync for SparseVector<i32> {}
-// unsafe impl Sync for SparseVector<i64> {}
-// unsafe impl Sync for SparseVector<f32> {}
-// unsafe impl Sync for SparseVector<f64> {}
+unsafe impl Sync for SparseVector<bool> {}
+unsafe impl Sync for SparseVector<u8> {}
+unsafe impl Sync for SparseVector<u16> {}
+unsafe impl Sync for SparseVector<u32> {}
+unsafe impl Sync for SparseVector<u64> {}
+unsafe impl Sync for SparseVector<i8> {}
+unsafe impl Sync for SparseVector<i16> {}
+unsafe impl Sync for SparseVector<i32> {}
+unsafe impl Sync for SparseVector<i64> {}
+unsafe impl Sync for SparseVector<f32> {}
+unsafe impl Sync for SparseVector<f64> {}
 
 impl<T: ValueType + BuiltInValueType<T>> SparseVector<T> {
     pub fn new(
@@ -152,6 +151,12 @@ impl<T: ValueType> SparseVector<T> {
 
         self.context
             .call(|| unsafe { GrB_Vector_removeElement(self.vector, index_to_delete) })?;
+        Ok(())
+    }
+
+    pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
+        self.context
+            .call(|| unsafe { GrB_Vector_clear(self.vector) })?;
         Ok(())
     }
 
