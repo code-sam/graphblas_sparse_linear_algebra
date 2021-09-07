@@ -1,7 +1,7 @@
 // #[cfg(test)]
 mod tests {
     use rayon::prelude::*;
-    use std::sync::{Mutex};
+    use std::sync::Mutex;
 
     use graphblas_sparse_linear_algebra::context::{Context, Mode};
     use graphblas_sparse_linear_algebra::operators::binary_operator::Plus;

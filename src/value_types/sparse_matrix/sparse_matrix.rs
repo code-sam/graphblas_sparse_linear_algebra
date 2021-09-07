@@ -1,10 +1,10 @@
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType, SystemError, SystemErrorType,
+    SparseLinearAlgebraErrorType,
 };
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use super::coordinate::Coordinate;
 use super::element::{MatrixElement, MatrixElementList};
@@ -314,7 +314,7 @@ macro_rules! sparse_matrix_from_element_vector {
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints
-                let mut matrix = Self::new(context, size)?;
+                let matrix = Self::new(context, size)?;
 
                 let mut graphblas_row_indices = Vec::with_capacity(elements.length());
                 let mut graphblas_column_indices = Vec::with_capacity(elements.length());

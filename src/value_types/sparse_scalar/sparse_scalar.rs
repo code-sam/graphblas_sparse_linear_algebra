@@ -1,10 +1,9 @@
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use crate::error::{
     GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
-    SystemError, SystemErrorType,
 };
 
 use crate::bindings_to_graphblas_implementation::{
