@@ -32,9 +32,7 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_types::value_type::{
-    BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType,
-};
+use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
 
 pub struct SparseVector<T: ValueType> {
     context: Arc<Context>,
@@ -93,29 +91,29 @@ impl<T: ValueType + BuiltInValueType<T>> SparseVector<T> {
     }
 }
 
-impl<T: ValueType + CustomValueType> SparseVector<T> {
-    pub fn new_custom_type(
-        // context: Arc<Context>,
-        value_type: Arc<RegisteredCustomValueType<T>>,
-        length: ElementIndex,
-    ) -> Result<Self, SparseLinearAlgebraError> {
-        let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
-        let context = value_type.context();
+// impl<T: ValueType + CustomValueType> SparseVector<T> {
+//     pub fn new_custom_type(
+//         // context: Arc<Context>,
+//         value_type: Arc<RegisteredCustomValueType<T>>,
+//         length: ElementIndex,
+//     ) -> Result<Self, SparseLinearAlgebraError> {
+//         let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
+//         let context = value_type.context();
 
-        let length = length.to_graphblas_index()?;
+//         let length = length.to_graphblas_index()?;
 
-        context.call(|| unsafe {
-            GrB_Vector_new(vector.as_mut_ptr(), value_type.to_graphblas_type(), length)
-        })?;
+//         context.call(|| unsafe {
+//             GrB_Vector_new(vector.as_mut_ptr(), value_type.to_graphblas_type(), length)
+//         })?;
 
-        let vector = unsafe { vector.assume_init() };
-        return Ok(SparseVector {
-            context,
-            vector,
-            value_type: PhantomData,
-        });
-    }
-}
+//         let vector = unsafe { vector.assume_init() };
+//         return Ok(SparseVector {
+//             context,
+//             vector,
+//             value_type: PhantomData,
+//         });
+//     }
+// }
 
 impl<T: ValueType> SparseVector<T> {
     /// All elements of self with an index coordinate outside of the new size are dropped.

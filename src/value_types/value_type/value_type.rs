@@ -18,7 +18,7 @@ pub trait BuiltInValueType<T> {
     fn to_graphblas_type() -> GrB_Type;
 }
 
-pub trait CustomValueType: ValueType {
+pub(crate) trait CustomValueType: ValueType {
     type Type;
 
     // TODO: what to do when the same type is registered multiple times?
@@ -27,11 +27,11 @@ pub trait CustomValueType: ValueType {
     ) -> Result<Arc<RegisteredCustomValueType<Self::Type>>, SparseLinearAlgebraError>;
 }
 
-pub trait RegisteredValueType<T: ValueType>: ValueType {
+pub(crate) trait RegisteredValueType<T: ValueType>: ValueType {
     fn to_graphblas_type(registered_value_type: RegisteredCustomValueType<T>) -> GrB_Type;
 }
 
-pub struct RegisteredCustomValueType<T> {
+pub(crate) struct RegisteredCustomValueType<T> {
     context: Arc<Context>,
     graphblas_type: GrB_Type,
     _rust_type: PhantomData<T>,

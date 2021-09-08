@@ -21,9 +21,7 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_types::value_type::{
-    BuiltInValueType, CustomValueType, RegisteredCustomValueType, ValueType,
-};
+use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
 
 pub struct SparseScalar<T: ValueType> {
     context: Arc<Context>,
@@ -76,25 +74,25 @@ impl<T: ValueType + BuiltInValueType<T>> SparseScalar<T> {
     }
 }
 
-impl<T: ValueType + CustomValueType> SparseScalar<T> {
-    pub fn new_custom_type(
-        value_type: Arc<RegisteredCustomValueType<T>>,
-    ) -> Result<Self, SparseLinearAlgebraError> {
-        let mut scalar: MaybeUninit<GxB_Scalar> = MaybeUninit::uninit();
-        let context = value_type.context();
+// impl<T: ValueType + CustomValueType> SparseScalar<T> {
+//     pub fn new_custom_type(
+//         value_type: Arc<RegisteredCustomValueType<T>>,
+//     ) -> Result<Self, SparseLinearAlgebraError> {
+//         let mut scalar: MaybeUninit<GxB_Scalar> = MaybeUninit::uninit();
+//         let context = value_type.context();
 
-        context.call(|| unsafe {
-            GxB_Scalar_new(scalar.as_mut_ptr(), value_type.to_graphblas_type())
-        })?;
+//         context.call(|| unsafe {
+//             GxB_Scalar_new(scalar.as_mut_ptr(), value_type.to_graphblas_type())
+//         })?;
 
-        let scalar = unsafe { scalar.assume_init() };
-        return Ok(SparseScalar {
-            context,
-            scalar,
-            value_type: PhantomData,
-        });
-    }
-}
+//         let scalar = unsafe { scalar.assume_init() };
+//         return Ok(SparseScalar {
+//             context,
+//             scalar,
+//             value_type: PhantomData,
+//         });
+//     }
+// }
 
 impl<T: ValueType> SparseScalar<T> {
     pub fn context(&self) -> Arc<Context> {
