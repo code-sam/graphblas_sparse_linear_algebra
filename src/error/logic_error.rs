@@ -8,7 +8,7 @@ use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
 #[derive(Debug)]
 pub struct LogicError {
     error_type: LogicErrorType,
-    context: String,
+    explanation: String,
     source: Option<LogicErrorSource>,
 }
 
@@ -31,12 +31,12 @@ pub enum LogicErrorType {
 impl LogicError {
     pub fn new(
         error_type: LogicErrorType,
-        context: String,
+        explanation: String,
         source: Option<LogicErrorSource>,
     ) -> Self {
         Self {
             error_type,
-            context,
+            explanation,
             source,
         }
     }
@@ -44,8 +44,8 @@ impl LogicError {
     pub fn error_type(&self) -> LogicErrorType {
         self.error_type.clone()
     }
-    pub fn context(&self) -> String {
-        self.context.clone()
+    pub fn explanation(&self) -> String {
+        self.explanation.clone()
     }
 }
 
@@ -64,7 +64,7 @@ impl fmt::Display for LogicError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.error_type {
             // LogicErrorType::GraphBlas(_err) => writeln!(f, "Context:\n{}", &self.context)?,
-            _ => writeln!(f, "Context:\n{}", &self.context)?,
+            _ => writeln!(f, "Explanation:\n{}", &self.explanation)?,
         };
 
         match &self.source() {
@@ -79,7 +79,7 @@ impl From<GraphBlasError> for LogicError {
     fn from(error: GraphBlasError) -> Self {
         Self {
             error_type: LogicErrorType::GraphBlas(error.error_type()),
-            context: String::new(),
+            explanation: String::new(),
             source: Some(LogicErrorSource::GraphBlas(error)),
         }
     }
