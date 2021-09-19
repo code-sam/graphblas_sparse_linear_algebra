@@ -7,7 +7,7 @@ use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
 #[derive(Debug)]
 pub struct SystemError {
     error_type: SystemErrorType,
-    context: String,
+    explanation: String,
     source: Option<SystemErrorSource>,
 }
 
@@ -32,12 +32,12 @@ pub enum SystemErrorType {
 impl SystemError {
     pub fn new(
         error_type: SystemErrorType,
-        context: String,
+        explanation: String,
         source: Option<SystemErrorSource>,
     ) -> Self {
         Self {
             error_type,
-            context,
+            explanation,
             source,
         }
     }
@@ -45,8 +45,8 @@ impl SystemError {
     pub fn error_type(&self) -> SystemErrorType {
         self.error_type.clone()
     }
-    pub fn context(&self) -> String {
-        self.context.clone()
+    pub fn explanation(&self) -> String {
+        self.explanation.clone()
     }
 }
 
@@ -65,7 +65,7 @@ impl error::Error for SystemError {
 impl fmt::Display for SystemError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.error_type {
-            _ => writeln!(f, "Context:\n{}", &self.context)?,
+            _ => writeln!(f, "Explanation:\n{}", &self.explanation)?,
         };
 
         match &self.source() {
@@ -80,7 +80,7 @@ impl From<GraphBlasError> for SystemError {
     fn from(error: GraphBlasError) -> Self {
         Self {
             error_type: SystemErrorType::GraphBLAS(error.error_type()),
-            context: String::new(),
+            explanation: String::new(),
             source: Some(SystemErrorSource::GraphBLAS(error)),
         }
     }

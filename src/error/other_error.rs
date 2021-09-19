@@ -37,7 +37,7 @@ impl OtherError {
     pub fn error_type(&self) -> OtherErrorType {
         self.error_type.clone()
     }
-    pub fn context(&self) -> String {
+    pub fn explanation(&self) -> String {
         self.explanation.clone()
     }
 }
