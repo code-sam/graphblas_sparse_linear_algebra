@@ -18,7 +18,7 @@ pub enum SparseLinearAlgebraError {
     OtherError(crate::error::OtherError),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SparseLinearAlgebraErrorType {
     SystemErrorType(SystemErrorType),
     LogicErrorType(LogicErrorType),
