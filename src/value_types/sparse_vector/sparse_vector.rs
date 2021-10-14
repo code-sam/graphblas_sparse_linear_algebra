@@ -34,6 +34,7 @@ use crate::operators::binary_operator::BinaryOperator;
 use crate::util::{ElementIndex, IndexConversion};
 use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
 
+#[derive(Debug)]
 pub struct SparseVector<T: ValueType> {
     context: Arc<Context>,
     vector: GrB_Vector,

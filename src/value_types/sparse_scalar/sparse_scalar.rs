@@ -23,6 +23,7 @@ use crate::context::Context;
 use crate::util::{ElementIndex, IndexConversion};
 use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
 
+#[derive(Debug)]
 pub struct SparseScalar<T: ValueType> {
     context: Arc<Context>,
     scalar: GxB_Scalar,
