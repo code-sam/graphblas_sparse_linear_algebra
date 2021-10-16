@@ -11,6 +11,11 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
+      - name: login 
+        run: cargo login ${{ secrets.CARGO_API_TOKEN }}
+      - name: publish
+        run: cargo publish
+        
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
