@@ -1,6 +1,8 @@
 # graphblas_sparse_linear_algebra
 Rust wrapper for SuiteSparse:GraphBLAS
 
+![test](https://github.com/code_sam/graphblas_sparse_linear_algebra/actions/workflows/Test_main/badge.svg?branch=main)
+
 ## Dependencies
 graphblas_sparse_linear_algebra uses the SuiteSparse:GraphBLAS GraphBLAS implementation developed by Timothy A. Davis.
 
