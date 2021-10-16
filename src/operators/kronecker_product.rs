@@ -187,7 +187,7 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
         mask: &MatrixMask<MaskValueType, AsBool>,
         multiplier: &SparseMatrix<T>,

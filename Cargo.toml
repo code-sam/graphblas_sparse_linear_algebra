@@ -1,6 +1,6 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2018"
