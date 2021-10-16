@@ -15,13 +15,3 @@ jobs:
         run: cargo login ${{ secrets.CARGO_API_TOKEN }}
       - name: publish
         run: cargo publish
-        
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: login ${{ secrets.CARGO_API_TOKEN }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: publish
