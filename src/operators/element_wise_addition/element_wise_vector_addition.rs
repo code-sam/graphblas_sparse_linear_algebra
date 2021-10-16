@@ -214,7 +214,7 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
         mask: &VectorMask<MaskValueType, AsBool>,
         multiplier: &SparseVector<T>,
