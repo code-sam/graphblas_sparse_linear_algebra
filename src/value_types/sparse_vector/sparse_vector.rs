@@ -162,6 +162,9 @@ impl<T: ValueType> SparseVector<T> {
     pub fn context(&self) -> Arc<Context> {
         self.context.clone()
     }
+    pub fn context_ref(&self) -> &Arc<Context> {
+        &self.context
+    }
 
     pub(crate) fn graphblas_vector(&self) -> GrB_Vector {
         self.vector.clone()
