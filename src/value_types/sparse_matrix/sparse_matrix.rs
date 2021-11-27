@@ -111,6 +111,9 @@ impl<T: ValueType> SparseMatrix<T> {
     pub fn context(&self) -> Arc<Context> {
         self.context.clone()
     }
+    pub fn context_ref(&self) -> &Arc<Context> {
+        &self.context
+    }
 
     pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
         self.matrix

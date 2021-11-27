@@ -99,6 +99,9 @@ impl<T: ValueType> SparseScalar<T> {
     pub fn context(&self) -> Arc<Context> {
         self.context.clone()
     }
+    pub fn context_ref(&self) -> &Arc<Context> {
+        &self.context
+    }
 
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
