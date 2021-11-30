@@ -191,7 +191,7 @@ impl<T: ValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
         }
     }
 
-    pub fn apply<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply(
         &self,
         multiplier: &SparseVector<T>,
         multiplicant: &SparseVector<T>,

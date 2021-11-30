@@ -191,7 +191,7 @@ impl<T: ValueType> ElementWiseMatrixMultiplicationMonoidOperator<T> {
         }
     }
 
-    pub fn apply<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply(
         &self,
         multiplier: &SparseMatrix<T>,
         multiplicant: &SparseMatrix<T>,
