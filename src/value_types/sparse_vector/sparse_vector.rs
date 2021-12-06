@@ -208,8 +208,8 @@ macro_rules! implement_dispay {
                     }
                 }
 
-                let indices = element_list.index_vec();
-                let values = element_list.value_vec();
+                let indices = element_list.indices_ref();
+                let values = element_list.values_ref();
 
                 writeln! {f,"Vector length: {:?}", self.length()?};
                 writeln! {f,"Number of stored elements: {:?}", self.number_of_stored_elements()?};
@@ -276,7 +276,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     $build_function(
                         vector.vector,
                         graphblas_indices.as_ptr(),
-                        elements.value_vec().as_ptr(),
+                        elements.values_ref().as_ptr(),
                         number_of_elements,
                         reduction_operator_for_duplicates.graphblas_type(),
                     )

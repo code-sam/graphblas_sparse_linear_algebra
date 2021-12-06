@@ -107,11 +107,11 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         self.value.append(&mut element_list_to_append.value);
     }
 
-    pub fn row_index_vec(&self) -> &Vec<ElementIndex> {
-        &self.row_index
+    pub fn row_indices_ref(&self) -> &[ElementIndex] {
+        &self.row_index.as_slice()
     }
 
-    pub fn row_index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
+    pub(crate) fn row_index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
         if index <= self.length() {
             Ok(&self.row_index[index])
         } else {
@@ -127,7 +127,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         }
     }
 
-    pub fn column_index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
+    pub(crate) fn column_index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
         if index <= self.length() {
             Ok(&self.column_index[index])
         } else {
@@ -143,12 +143,12 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         }
     }
 
-    pub fn column_index_vec(&self) -> &Vec<ElementIndex> {
-        &self.column_index
+    pub fn column_indices_ref(&self) -> &[ElementIndex] {
+        &self.column_index.as_slice()
     }
 
-    pub fn value_vec(&self) -> &Vec<T> {
-        &self.value
+    pub fn values_ref(&self) -> &[T] {
+        &self.value.as_slice()
     }
 
     pub fn length(&self) -> usize {
