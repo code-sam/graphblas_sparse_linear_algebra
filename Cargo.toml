@@ -1,6 +1,6 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.4.5"
+version = "0.5.0"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2018"
@@ -12,7 +12,7 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-once_cell = {version = "1.7"}
+once_cell = {version = "1.8"}
 
 [features]
 default = ["build_static_graphblas_dependencies"]

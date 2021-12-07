@@ -213,9 +213,9 @@ macro_rules! implement_dispay {
                     }
                 }
 
-                let row_indices = element_list.row_index_vec();
-                let column_indices = element_list.column_index_vec();
-                let values = element_list.value_vec();
+                let row_indices = element_list.row_indices_ref();
+                let column_indices = element_list.column_indices_ref();
+                let values = element_list.values_ref();
 
                 writeln! {f,"Matrix size: {:?}", self.size()?};
                 writeln! {f,"Number of stored elements: {:?}", self.number_of_stored_elements()?};
@@ -335,7 +335,7 @@ macro_rules! sparse_matrix_from_element_vector {
                             matrix.matrix,
                             graphblas_row_indices.as_ptr(),
                             graphblas_column_indices.as_ptr(),
-                            elements.value_vec().as_ptr(),
+                            elements.values_ref().as_ptr(),
                             number_of_elements,
                             reduction_operator_for_duplicates.graphblas_type(),
                         )

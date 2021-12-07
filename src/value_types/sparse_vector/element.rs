@@ -94,11 +94,12 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
         self.value.append(&mut element_list_to_append.value);
     }
 
-    pub fn index_vec(&self) -> &Vec<ElementIndex> {
-        &self.index
+    pub fn indices_ref(&self) -> &[ElementIndex] {
+        self.index.as_slice()
     }
 
-    pub fn index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
+    pub(crate) fn index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
+        // REVIEW: is this worth the runtime cost?
         if index <= self.length() {
             Ok(&self.index[index])
         } else {
@@ -114,8 +115,8 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
         }
     }
 
-    pub fn value_vec(&self) -> &Vec<T> {
-        &self.value
+    pub fn values_ref(&self) -> &[T] {
+        self.value.as_slice()
     }
 
     // pub fn as_element_vec(&self) -> &Vec<Element<T>> {
