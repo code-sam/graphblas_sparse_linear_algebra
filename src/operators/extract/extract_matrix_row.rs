@@ -1,7 +1,7 @@
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    binary_operator::BinaryOperator, extract::MatrixColumnExtractor, mask::VectorMask,
-    options::OperatorOptions, transpose::MatrixTranspose,
+    binary_operator::BinaryOperator, extract::MatrixColumnExtractor, options::OperatorOptions,
+    transpose::MatrixTranspose,
 };
 use crate::util::{ElementIndex, ElementIndexSelector};
 use crate::value_types::sparse_matrix::{Size, SparseMatrix};
@@ -74,7 +74,7 @@ where
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         row_vector: &mut SparseVector<Column>,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let _context = matrix_to_extract_from.context();
 

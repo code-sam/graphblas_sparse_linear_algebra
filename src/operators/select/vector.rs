@@ -3,9 +3,7 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
 use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
 use crate::value_types::sparse_vector::SparseVector;
@@ -109,7 +107,7 @@ macro_rules! implement_scalar_selector {
                 argument: &SparseVector<$value_type>,
                 product: &mut SparseVector<$value_type>,
                 scalar: &$value_type,
-                _mask: &VectorMask<MaskValueType, AsBool>,
+                _mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
@@ -146,7 +144,7 @@ pub trait SelectVectorNotEqualToScalar<T: ValueType> {
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -241,7 +239,7 @@ pub trait SelectVectorEqualToScalar<T: ValueType> {
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -336,7 +334,7 @@ pub trait SelectVectorGreaterThanScalar<T: ValueType> {
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -434,7 +432,7 @@ pub trait SelectVectorGreaterThanOrEqualToScalar<T: ValueType> {
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -529,7 +527,7 @@ pub trait SelectVectorLessThanScalar<T: ValueType> {
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -627,7 +625,7 @@ pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType> {
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -741,7 +739,7 @@ macro_rules! implement_selector_with_zero {
                 &self,
                 argument: &SparseVector<T>,
                 product: &mut SparseVector<T>,
-                mask: &VectorMask<MaskValueType, AsBool>,
+                mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 

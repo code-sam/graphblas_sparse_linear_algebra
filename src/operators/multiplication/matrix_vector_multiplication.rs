@@ -4,8 +4,8 @@ use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
+use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
-use crate::operators::{mask::VectorMask, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::value_type::{AsBoolean, ValueType};
@@ -115,7 +115,7 @@ where
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
         multiplier: &SparseMatrix<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
         product: &mut SparseVector<Product>,
@@ -249,7 +249,7 @@ mod tests {
         let mut product = SparseVector::<f32>::new(&context, &length).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(&mask.into(), &multiplier, &multiplicant, &mut product)
+            .apply_with_mask(&mask, &multiplier, &multiplicant, &mut product)
             .unwrap();
 
         assert_eq!(product.get_element_value(&0).unwrap(), 19.);

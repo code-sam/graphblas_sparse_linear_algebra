@@ -2,9 +2,7 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
@@ -140,7 +138,7 @@ where
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         column_vector: &mut SparseVector<Column>,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 

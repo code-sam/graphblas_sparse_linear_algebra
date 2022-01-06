@@ -3,9 +3,7 @@ use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
 // use crate::operators::BinaryOperatorType;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::value_type::{AsBoolean, ValueType};
@@ -101,7 +99,7 @@ where
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
-        mask_for_vector_to_insert_into: &VectorMask<MaskValueType, AsBool>,
+        mask_for_vector_to_insert_into: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -173,7 +171,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                mask_for_vector_to_insert_into: &VectorMask<MaskValueType, AsBool>,
+                mask_for_vector_to_insert_into: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
 
@@ -302,12 +300,7 @@ mod tests {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(
-                &mut vector,
-                &indices_to_insert,
-                &scalar_to_insert,
-                &mask.into(),
-            )
+            .apply_with_mask(&mut vector, &indices_to_insert, &scalar_to_insert, &mask)
             .unwrap();
 
         // println!("{}", vector);

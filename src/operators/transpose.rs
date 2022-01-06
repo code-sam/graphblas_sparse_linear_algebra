@@ -3,9 +3,7 @@ use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
@@ -97,7 +95,7 @@ where
         &self,
         matrix: &SparseMatrix<Applicant>,
         transpose: &mut SparseMatrix<Product>,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 

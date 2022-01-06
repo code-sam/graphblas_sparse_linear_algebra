@@ -3,9 +3,7 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
 
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
@@ -102,7 +100,7 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &SparseMatrix<MatrixToInsert>,
-        mask_for_matrix_to_insert_into: &MatrixMask<MaskValueType, AsBool>,
+        mask_for_matrix_to_insert_into: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -226,7 +224,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 matrix_to_insert: &SparseMatrix<$value_type_matrix_to_insert>,
-                mask_for_matrix_to_insert_into: &MatrixMask<MaskValueType, AsBool>,
+                mask_for_matrix_to_insert_into: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
 
@@ -435,7 +433,7 @@ mod tests {
                 &rows_to_insert,
                 &columns_to_insert,
                 &matrix_to_insert,
-                &mask.into(),
+                &mask,
             )
             .unwrap();
 

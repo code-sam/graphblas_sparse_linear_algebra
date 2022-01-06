@@ -3,10 +3,7 @@ use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    binary_operator::BinaryOperator,
-    mask::{MatrixMask, VectorMask},
-    options::OperatorOptions,
-    unary_operator::UnaryOperator,
+    binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
 };
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
@@ -89,7 +86,7 @@ where
         &self,
         argument: &SparseVector<Argument>,
         product: &mut SparseVector<Product>,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
@@ -102,7 +99,7 @@ where
         &self,
         argument: &SparseMatrix<Argument>,
         product: &mut SparseMatrix<Product>,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -139,7 +136,7 @@ macro_rules! implement_unary_operator {
                 &self,
                 argument: &SparseVector<$argument_type>,
                 product: &mut SparseVector<$product_type>,
-                mask: &VectorMask<MaskValueType, AsBool>,
+                mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
@@ -185,7 +182,7 @@ macro_rules! implement_unary_operator {
                 &self,
                 argument: &SparseMatrix<$argument_type>,
                 product: &mut SparseMatrix<$product_type>,
-                mask: &MatrixMask<MaskValueType, AsBool>,
+                mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 

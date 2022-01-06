@@ -3,9 +3,7 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
@@ -103,7 +101,7 @@ where
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
         vector_to_insert: &SparseVector<VectorToInsert>,
-        mask_for_row_to_insert_into: &VectorMask<MaskValueType, AsBool>,
+        mask_for_row_to_insert_into: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -180,7 +178,7 @@ macro_rules! implement_insert_vector_into_sub_row_trait {
                 row_indices_to_insert_into: &ElementIndexSelector,
                 row_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
-                mask_for_row_to_insert_into: &VectorMask<MaskValueType, AsBool>,
+                mask_for_row_to_insert_into: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
 
@@ -343,7 +341,7 @@ mod tests {
                 &indices_to_insert,
                 &row_to_insert_into,
                 &vector_to_insert,
-                &mask.into(),
+                &mask,
             )
             .unwrap();
 

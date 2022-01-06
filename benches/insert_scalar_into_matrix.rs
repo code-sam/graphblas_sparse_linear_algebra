@@ -5,10 +5,7 @@ use std::sync::Arc;
 use graphblas_sparse_linear_algebra::context::Context;
 
 // use graphblas_sparse_linear_algebra::operators::BinaryOperatorType;
-use graphblas_sparse_linear_algebra::operators::{
-    binary_operator::BinaryOperator, mask::MatrixMask, mask::VectorMask, monoid::Monoid,
-    options::OperatorOptions, semiring::Semiring,
-};
+use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 use graphblas_sparse_linear_algebra::value_types::sparse_matrix::SparseMatrix;
 
 use graphblas_sparse_linear_algebra::util::{ElementIndex, ElementIndexSelector};
@@ -20,10 +17,8 @@ use graphblas_sparse_linear_algebra::operators::insert::{
     InsertScalarIntoMatrix, InsertScalarIntoMatrixTrait,
 };
 use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
-    FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElement,
-    MatrixElementList, SetMatrixElement, Size,
+    FromMatrixElementList, MatrixElementList, Size,
 };
-use graphblas_sparse_linear_algebra::value_types::sparse_vector::FromVectorElementList;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 

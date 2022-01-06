@@ -3,8 +3,7 @@ use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    binary_operator::BinaryOperator, mask::MatrixMask, monoid::Monoid, options::OperatorOptions,
-    semiring::Semiring,
+    binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::value_type::{AsBoolean, ValueType};
@@ -111,7 +110,7 @@ where
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
         multiplier: &SparseMatrix<Multiplier>,
         multiplicant: &SparseMatrix<Multiplicant>,
         product: &mut SparseMatrix<Product>,
@@ -215,7 +214,7 @@ impl<T: ValueType> ElementWiseMatrixAdditionMonoidOperator<T> {
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
         multiplier: &SparseMatrix<T>,
         multiplicant: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
@@ -330,7 +329,7 @@ where
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
         multiplier: &SparseMatrix<Multiplier>,
         multiplicant: &SparseMatrix<Multiplicant>,
         product: &mut SparseMatrix<Product>,
@@ -487,7 +486,7 @@ mod tests {
         let mut product = SparseMatrix::<i32>::new(&context, &size).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(&mask.into(), &multiplier, &multiplicant, &mut product)
+            .apply_with_mask(&mask, &multiplier, &multiplicant, &mut product)
             .unwrap();
 
         assert_eq!(product.get_element_value(&(0, 0).into()).unwrap(), 5);
