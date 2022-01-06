@@ -5,7 +5,6 @@ pub mod element_wise_multiplication;
 pub mod extract;
 pub mod insert;
 pub mod kronecker_product;
-pub mod mask;
 pub mod monoid;
 pub mod multiplication;
 pub mod options;

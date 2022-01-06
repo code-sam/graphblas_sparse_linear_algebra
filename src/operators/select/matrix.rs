@@ -3,9 +3,7 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::MatrixMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
@@ -129,7 +127,7 @@ macro_rules! implement_selector_with_diagonal {
                 argument: &SparseMatrix<T>,
                 product: &mut SparseMatrix<T>,
                 diagional: &DiagonalIndex,
-                mask: &MatrixMask<MaskValueType, AsBool>,
+                mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let diagonal_index = diagional.to_graphblas_type(&context)?;
@@ -210,7 +208,7 @@ macro_rules! implement_scalar_selector {
                 argument: &SparseMatrix<$value_type>,
                 product: &mut SparseMatrix<$value_type>,
                 scalar: &$value_type,
-                _mask: &MatrixMask<MaskValueType, AsBool>,
+                _mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
@@ -247,7 +245,7 @@ pub trait SelectMatrixNotEqualToScalar<T: ValueType> {
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -342,7 +340,7 @@ pub trait SelectMatrixEqualToScalar<T: ValueType> {
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -437,7 +435,7 @@ pub trait SelectMatrixGreaterThanScalar<T: ValueType> {
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -535,7 +533,7 @@ pub trait SelectMatrixGreaterThanOrEqualToScalar<T: ValueType> {
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -630,7 +628,7 @@ pub trait SelectMatrixLessThanScalar<T: ValueType> {
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -728,7 +726,7 @@ pub trait SelectMatrixLessThanOrEqualToScalar<T: ValueType> {
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -842,7 +840,7 @@ macro_rules! implement_selector_with_zero {
                 &self,
                 argument: &SparseMatrix<T>,
                 product: &mut SparseMatrix<T>,
-                mask: &MatrixMask<MaskValueType, AsBool>,
+                mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 

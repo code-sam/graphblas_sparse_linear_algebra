@@ -3,8 +3,7 @@ use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    binary_operator::BinaryOperator, mask::VectorMask, monoid::Monoid, options::OperatorOptions,
-    semiring::Semiring,
+    binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
 use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::value_type::{AsBoolean, ValueType};
@@ -111,7 +110,7 @@ where
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
         product: &mut SparseVector<Product>,
@@ -216,7 +215,7 @@ impl<T: ValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
         multiplier: &SparseVector<T>,
         multiplicant: &SparseVector<T>,
         product: &mut SparseVector<T>,
@@ -331,7 +330,7 @@ where
 
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
         product: &mut SparseVector<Product>,
@@ -487,7 +486,7 @@ mod tests {
         let mut product = SparseVector::<i32>::new(&context, &length).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(&mask.into(), &multiplier, &multiplicant, &mut product)
+            .apply_with_mask(&mask, &multiplier, &multiplicant, &mut product)
             .unwrap();
 
         assert_eq!(product.get_element_value(&0).unwrap(), 5);

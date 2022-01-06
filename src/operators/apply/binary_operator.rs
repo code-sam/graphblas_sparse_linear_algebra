@@ -2,11 +2,7 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator,
-    mask::{MatrixMask, VectorMask},
-    options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::value_type::{AsBoolean, ValueType};
@@ -133,7 +129,7 @@ where
         first_argument: &SparseVector<FirstArgument>,
         second_argument: &SecondArgument,
         product: &mut SparseVector<Product>,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_second_argument_and_mask<
@@ -144,7 +140,7 @@ where
         first_argument: &FirstArgument,
         second_argument: &SparseVector<SecondArgument>,
         product: &mut SparseVector<Product>,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_first_argument(
@@ -169,7 +165,7 @@ where
         first_argument: &SparseMatrix<FirstArgument>,
         second_argument: &SecondArgument,
         product: &mut SparseMatrix<Product>,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_second_argument_and_mask<
@@ -180,7 +176,7 @@ where
         first_argument: &FirstArgument,
         second_argument: &SparseMatrix<SecondArgument>,
         product: &mut SparseMatrix<Product>,
-        mask: &MatrixMask<MaskValueType, AsBool>,
+        mask: &SparseMatrix<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -243,7 +239,7 @@ macro_rules! implement_binary_operator {
                 first_argument: &SparseVector<$first_argument_type>,
                 second_argument: &$second_argument_type,
                 product: &mut SparseVector<$product_type>,
-                mask: &VectorMask<MaskValueType, AsBool>,
+                mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
@@ -270,7 +266,7 @@ macro_rules! implement_binary_operator {
                 first_argument: &$first_argument_type,
                 second_argument: &SparseVector<$second_argument_type>,
                 product: &mut SparseVector<$product_type>,
-                mask: &VectorMask<MaskValueType, AsBool>,
+                mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
@@ -343,7 +339,7 @@ macro_rules! implement_binary_operator {
                 first_argument: &SparseMatrix<$first_argument_type>,
                 second_argument: &$second_argument_type,
                 product: &mut SparseMatrix<$product_type>,
-                mask: &MatrixMask<MaskValueType, AsBool>,
+                mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
@@ -370,7 +366,7 @@ macro_rules! implement_binary_operator {
                 first_argument: &$first_argument_type,
                 second_argument: &SparseMatrix<$second_argument_type>,
                 product: &mut SparseMatrix<$product_type>,
-                mask: &MatrixMask<MaskValueType, AsBool>,
+                mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 

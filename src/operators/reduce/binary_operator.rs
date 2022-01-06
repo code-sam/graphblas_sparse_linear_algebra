@@ -3,9 +3,7 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, mask::VectorMask, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
@@ -98,7 +96,7 @@ impl<T: ValueType> BinaryOperatorReducer<T> {
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseVector<T>,
-        mask: &VectorMask<MaskValueType, AsBool>,
+        mask: &SparseVector<AsBool>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -187,7 +185,7 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         reducer
-            .to_vector_with_mask(&matrix, &mut product_vector, &mask.into())
+            .to_vector_with_mask(&matrix, &mut product_vector, &mask)
             .unwrap();
 
         println!("{}", matrix);
