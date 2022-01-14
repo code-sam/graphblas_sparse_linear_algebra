@@ -74,15 +74,15 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         column_index: Vec<ElementIndex>,
         value: Vec<T>,
     ) -> Result<Self, GraphBlasError> {
-        if (row_index.len() == column_index.len()) && (column_index.len() == value.len()) {
-            Ok(Self {
-                row_index,
-                column_index,
-                value,
-            })
-        } else {
-            Err(GraphBlasError::new(GraphBlasErrorType::DimensionMismatch, format!("Length of vectors must be equal: row_index.len() = {}, column_index.len() = {}, value.len() = {}", row_index.len(), column_index.len(), value.len())))
+        #[cfg(debug_assertions)]
+        if (row_index.len() != column_index.len()) && (column_index.len() == value.len()) {
+            return Err(GraphBlasError::new(GraphBlasErrorType::DimensionMismatch, format!("Length of vectors must be equal: row_index.len() = {}, column_index.len() = {}, value.len() = {}", row_index.len(), column_index.len(), value.len())));
         }
+        Ok(Self {
+            row_index,
+            column_index,
+            value,
+        })
     }
 
     pub fn from_element_vector(elements: Vec<MatrixElement<T>>) -> Self {
@@ -112,10 +112,9 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     }
 
     pub(crate) fn row_index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
-        if index <= self.length() {
-            Ok(&self.row_index[index])
-        } else {
-            Err(LogicError::new(
+        #[cfg(debug_assertions)]
+        if index > self.length() {
+            return Err(LogicError::new(
                 LogicErrorType::IndexOutOfBounds,
                 format!(
                     "index value {} larger than vector length {}",
@@ -123,15 +122,15 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
                     self.length()
                 ),
                 None,
-            ))
+            ));
         }
+        Ok(&self.row_index[index])
     }
 
     pub(crate) fn column_index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
-        if index <= self.length() {
-            Ok(&self.column_index[index])
-        } else {
-            Err(LogicError::new(
+        #[cfg(debug_assertions)]
+        if index > self.length() {
+            return Err(LogicError::new(
                 LogicErrorType::IndexOutOfBounds,
                 format!(
                     "index value {} larger than vector length {}",
@@ -139,8 +138,9 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
                     self.length()
                 ),
                 None,
-            ))
+            ));
         }
+        Ok(&self.column_index[index])
     }
 
     pub fn column_indices_ref(&self) -> &[ElementIndex] {

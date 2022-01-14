@@ -61,18 +61,18 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
     }
 
     pub fn from_vectors(index: Vec<ElementIndex>, value: Vec<T>) -> Result<Self, GraphBlasError> {
-        if index.len() == value.len() {
-            Ok(Self { index, value })
-        } else {
-            Err(GraphBlasError::new(
+        #[cfg(debug_assertions)]
+        if index.len() != value.len() {
+            return Err(GraphBlasError::new(
                 GraphBlasErrorType::DimensionMismatch,
                 format!(
                     "Length of vectors must be equal: index.len() = {}, value.len() = {}",
                     index.len(),
                     value.len()
                 ),
-            ))
+            ));
         }
+        Ok(Self { index, value })
     }
 
     pub fn from_element_vector(elements: Vec<VectorElement<T>>) -> Self {
@@ -99,11 +99,9 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
     }
 
     pub(crate) fn index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
-        // REVIEW: is this worth the runtime cost?
-        if index <= self.length() {
-            Ok(&self.index[index])
-        } else {
-            Err(LogicError::new(
+        #[cfg(debug_assertions)]
+        if index > self.length() {
+            return Err(LogicError::new(
                 LogicErrorType::IndexOutOfBounds,
                 format!(
                     "index value {} larger than vector length {}",
@@ -111,8 +109,9 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
                     self.length()
                 ),
                 None,
-            ))
+            ));
         }
+        Ok(&self.index[index])
     }
 
     pub fn values_ref(&self) -> &[T] {
