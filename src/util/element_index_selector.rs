@@ -19,7 +19,7 @@ impl<'a> ElementIndexSelector<'a> {
     ) -> Result<ElementIndexSelectorGraphblasType, SparseLinearAlgebraError> {
         match self {
             ElementIndexSelector::Index(columns) => {
-                let indices: Result<Vec<GrB_Index>, SystemError> = columns
+                let indices: Result<Vec<GrB_Index>, SparseLinearAlgebraError> = columns
                     .into_iter()
                     .map(|index| index.to_graphblas_index())
                     .collect();
