@@ -20,4 +20,4 @@ graphblas_sparse_linear_algebra is mostly compatible with the GraphBLAS specific
 Awesome, contributions are welcome. Graphblas_sparse_linear_algebra and your contribution may be relicensed and integrated into commercial software in the future. Therefore, you will be asked to agree to the [Contributor License Agreement](https://github.com/code-sam/graphblas_sparse_linear_algebra/blob/main/Contributor_License_Agreement.md) when you make a pull request.
 
 ## Licensing
-graphblas_sparse_linear_algebra is licensed under AGPL-3.0. For other licensing options, please contact Sam Dekker.
+graphblas_sparse_linear_algebra is licensed under [Creative Commons Attribution Non Commercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/legalcode). For other licensing options, please contact Sam Dekker.
