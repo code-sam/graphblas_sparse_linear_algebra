@@ -1,6 +1,7 @@
 use std::error;
 use std::error::Error;
 use std::fmt;
+use std::num::TryFromIntError;
 
 use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
 
@@ -14,6 +15,7 @@ pub struct SystemError {
 #[derive(Debug)]
 pub enum SystemErrorSource {
     GraphBLAS(GraphBlasError),
+    IntegerConversionError(TryFromIntError),
     PoisonedData,
 }
 
@@ -21,11 +23,12 @@ pub enum SystemErrorSource {
 pub enum SystemErrorType {
     GraphBLAS(GraphBlasErrorType),
     CreateGraphBlasErrorOnSuccessValue,
-    UnsupportedGraphBlasErrorValue,
-    UninitialisedContext,
     ContextAlreadyInitialized,
-    PoisonedData,
     IndexOutOfBounds,
+    UninitialisedContext,
+    UnsupportedGraphBlasErrorValue,
+    PoisonedData,
+    IntegerConversionFailed,
     Other,
 }
 
@@ -55,6 +58,7 @@ impl error::Error for SystemError {
         match self.source {
             Some(ref error) => match error {
                 SystemErrorSource::GraphBLAS(error) => Some(error),
+                SystemErrorSource::IntegerConversionError(error) => Some(error),
                 SystemErrorSource::PoisonedData => None,
             },
             None => None,
@@ -85,3 +89,15 @@ impl From<GraphBlasError> for SystemError {
         }
     }
 }
+
+impl From<TryFromIntError> for SystemError {
+    fn from(error: TryFromIntError) -> Self {
+        Self {
+            error_type: SystemErrorType::IntegerConversionFailed,
+            explanation: String::new(),
+            source: Some(SystemErrorSource::IntegerConversionError(error)),
+        }
+    }
+}
+
+
