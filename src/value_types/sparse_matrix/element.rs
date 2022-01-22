@@ -115,7 +115,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
 
     pub(crate) fn row_index(&self, index: ElementIndex) -> Result<&ElementIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
-        if index > self.length() {
+        if index >= self.length() {
             return Err(LogicError::new(
                 LogicErrorType::IndexOutOfBounds,
                 format!(
@@ -131,7 +131,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
 
     pub(crate) fn column_index(&self, index: ElementIndex) -> Result<&ElementIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
-        if index > self.length() {
+        if index >= self.length() {
             return Err(LogicError::new(
                 LogicErrorType::IndexOutOfBounds,
                 format!(

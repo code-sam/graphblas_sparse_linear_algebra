@@ -100,7 +100,7 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
 
     pub(crate) fn index(&self, index: ElementIndex) -> Result<&ElementIndex, LogicError> {
         #[cfg(debug_assertions)]
-        if index > self.length() {
+        if index >= self.length() {
             return Err(LogicError::new(
                 LogicErrorType::IndexOutOfBounds,
                 format!(
