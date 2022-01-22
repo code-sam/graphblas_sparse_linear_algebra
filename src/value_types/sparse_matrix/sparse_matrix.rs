@@ -555,38 +555,6 @@ pub trait GetMatrixElementList<T: ValueType> {
     fn get_element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError>;
 }
 
-                // let number_of_stored_elements = self.number_of_stored_elements()?;
-
-                // let mut graphblas_indices: Vec<GrB_Index> = Vec::with_capacity(number_of_stored_elements);
-                // let mut values: Vec<$value_type> = Vec::with_capacity(number_of_stored_elements);
-
-                // let mut expected_number_of_elements: GrB_Index;
-                // match number_of_stored_elements.try_into() {
-                //     Ok(as_GrB_Index) => expected_number_of_elements = as_GrB_Index,
-                //     Err(error) => return Err(SystemError::from(error).into())
-                // }
-
-                // self.context.call(|| unsafe {
-                //     $get_element_function(
-                //         graphblas_indices.as_mut_ptr(),
-                //         values.as_mut_ptr(),
-                //         &mut expected_number_of_elements,
-                //         self.vector)
-                // })?;
-
-                // let length_of_element_list = ElementIndex::from_graphblas_index(expected_number_of_elements)?;
-
-                // unsafe {
-                //     if length_of_element_list == number_of_stored_elements {
-                //         graphblas_indices.set_len(length_of_element_list);
-                //         values.set_len(length_of_element_list);
-                //     } else {
-                //         let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
-                //             format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
-                //         return Err(err)
-                //     }
-                // };
-
 macro_rules! implement_get_element_list {
     ($value_type:ty, $get_element_function:ident) => {
         impl GetMatrixElementList<$value_type> for SparseMatrix<$value_type> {
