@@ -1,6 +1,6 @@
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType,
+    SparseLinearAlgebraErrorType
 };
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;

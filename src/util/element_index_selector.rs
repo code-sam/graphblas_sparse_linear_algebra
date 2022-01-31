@@ -1,5 +1,5 @@
 use crate::bindings_to_graphblas_implementation::{GrB_ALL, GrB_Index};
-use crate::error::{SparseLinearAlgebraError, SystemError};
+use crate::error::{SparseLinearAlgebraError};
 use crate::util::{ElementIndex, IndexConversion};
 
 #[derive(Debug)]

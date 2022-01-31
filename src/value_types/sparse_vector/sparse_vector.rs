@@ -493,21 +493,17 @@ macro_rules! implement_get_element_list {
                 let mut graphblas_indices: Vec<GrB_Index> = Vec::with_capacity(number_of_stored_elements);
                 let mut values: Vec<$value_type> = Vec::with_capacity(number_of_stored_elements);
 
-                let mut number_of_returned_elements: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+                let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
 
                 self.context.call(|| unsafe {
                     $get_element_function(
                         graphblas_indices.as_mut_ptr(),
                         values.as_mut_ptr(),
-                        number_of_returned_elements.as_mut_ptr(),
+                        &mut number_of_stored_and_returned_elements,
                         self.vector)
                 })?;
 
-                let number_of_returned_elements = unsafe {
-                    number_of_returned_elements.assume_init()
-                };
-
-                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_returned_elements)?;
+                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
 
                 unsafe {
                     if length_of_element_list == number_of_stored_elements {
@@ -515,8 +511,7 @@ macro_rules! implement_get_element_list {
                         values.set_len(length_of_element_list);
                     } else {
                         let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
-                            format!("matrix.numbestruct GraphblasUint32(u32);
-                            struct GraphblasUint64(u64);r_of_stored_elements {} unequal to length of returned values{}",number_of_stored_elements, length_of_element_list)).into();
+                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
                         return Err(err)
                     }
                 };
