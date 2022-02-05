@@ -364,7 +364,7 @@ mod tests {
     };
 
     #[test]
-    fn create_vector_multiplier() {
+    fn create_vector_addition_operator() {
         let operator = Times::<i64, i64, i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
@@ -382,7 +382,7 @@ mod tests {
     }
 
     #[test]
-    fn test_element_wise_multiplication() {
+    fn test_element_wise_addition() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
         let operator = Times::<i32, i32, i32>::new();
