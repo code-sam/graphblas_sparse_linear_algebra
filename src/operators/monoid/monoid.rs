@@ -165,7 +165,7 @@ mod tests {
         let equality_operator =
             ElementWiseVectorAdditionMonoidOperator::<bool>::new(&operator, &options, None);
 
-        let length = 4;
+        let length = 7;
 
         let multiplier = SparseVector::<bool>::new(&context, &length).unwrap();
         let multiplicant = multiplier.clone();
@@ -182,6 +182,8 @@ mod tests {
             let multiplier_element_list = VectorElementList::<bool>::from_element_vector(vec![
                 (1, false).into(),
                 (3, true).into(),
+                (5, false).into(),
+                (6, true).into(),
             ]);
             let multiplier = SparseVector::<bool>::from_element_list(
                 &context,
@@ -193,6 +195,9 @@ mod tests {
 
             let multiplicant_element_list = VectorElementList::<bool>::from_element_vector(vec![
                 (3, true).into(),
+                (4, true).into(),
+                (5, false).into(),
+                (6, false).into(),
             ]);
             let multiplicant = SparseVector::<bool>::from_element_list(
                 &context,
@@ -211,7 +216,9 @@ mod tests {
             assert_eq!(product.get_element_value(&1).unwrap(), false); // false unequal to empty
             assert_eq!(product.get_element_value(&2).unwrap(), false); // operator does not apply on empty
             assert_eq!(product.get_element_value(&3).unwrap(), true); 
-
+            assert_eq!(product.get_element_value(&4).unwrap(), true); // true and empty => true
+            assert_eq!(product.get_element_value(&5).unwrap(), true); // true and false => true
+            assert_eq!(product.get_element_value(&6).unwrap(), false); // false and true => false
     }
 }
 
