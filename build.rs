@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
+use std::fs;
 use std::path::PathBuf;
 
 extern crate bindgen;
@@ -72,6 +73,8 @@ fn build_and_link_dependencies() {
         &path_with_graphblas_implementation,
         &path_with_graphblas_header_file,
     );
+
+    clean_build_artifacts(&cargo_build_directory)
 }
 
 // #[cfg(feature = "build_static_graphblas_dependencies")]
@@ -157,4 +160,26 @@ fn generate_bindings_to_graphblas_implementation() {
     bindings
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())
         .expect("Couldn't write bindings!");
+}
+
+fn clean_build_artifacts(cargo_build_directory: &OsString) {
+    let cargo_build_directory = PathBuf::from(cargo_build_directory);
+    let mut path_to_delete = cargo_build_directory.clone();
+    path_to_delete.push("build");
+    fs::remove_dir_all(path_to_delete).is_ok();
+
+    let mut path_to_delete_files_in = cargo_build_directory;
+    let mut path_to_keep = path_to_delete_files_in.clone();
+    path_to_keep.push("libgraphblas.a");
+
+    for path in fs::read_dir(path_to_delete_files_in).unwrap() {
+        let path = path.unwrap();
+        let path = path.path();
+
+        if path.clone().into_os_string().into_string().unwrap()
+            != path_to_keep.clone().into_os_string().into_string().unwrap()
+        {
+            fs::remove_file(path).is_ok();
+        }
+    }
 }
