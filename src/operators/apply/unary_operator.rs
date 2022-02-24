@@ -219,7 +219,7 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::operators::unary_operator::{Identity, One};
+    use crate::operators::unary_operator::{Identity, LogicalNegation, One};
     use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
@@ -329,5 +329,29 @@ mod tests {
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
         assert_eq!(product_vector.get_element_value(&2).unwrap(), 2);
         assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+    }
+
+    #[test]
+    fn test_vector_unary_negation_operator() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let vector_length: usize = 10;
+        let vector = SparseVector::<bool>::new(&context, &vector_length).unwrap();
+
+        let mut product_vector = SparseVector::<bool>::new(&context, &vector_length).unwrap();
+
+        let operator = UnaryOperatorApplier::new(
+            &LogicalNegation::<bool>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        operator
+            .apply_to_vector(&vector, &mut product_vector)
+            .unwrap();
+
+        println!("{}", product_vector);
+
+        assert_eq!(product_vector.number_of_stored_elements().unwrap(), 0);
     }
 }

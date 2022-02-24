@@ -147,7 +147,8 @@ mod tests {
     use crate::operators::element_wise_addition::ElementWiseVectorAdditionMonoidOperator;
     use crate::operators::options::OperatorOptions;
     use crate::value_types::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        VectorElementList,
     };
 
     #[test]
@@ -179,46 +180,46 @@ mod tests {
 
         assert_eq!(element_list.length(), 0);
 
-            let multiplier_element_list = VectorElementList::<bool>::from_element_vector(vec![
-                (1, false).into(),
-                (3, true).into(),
-                (5, false).into(),
-                (6, true).into(),
-            ]);
-            let multiplier = SparseVector::<bool>::from_element_list(
-                &context,
-                &length,
-                &multiplier_element_list,
-                &First::<bool, bool, bool>::new(),
-            )
+        let multiplier_element_list = VectorElementList::<bool>::from_element_vector(vec![
+            (1, false).into(),
+            (3, true).into(),
+            (5, false).into(),
+            (6, true).into(),
+        ]);
+        let multiplier = SparseVector::<bool>::from_element_list(
+            &context,
+            &length,
+            &multiplier_element_list,
+            &First::<bool, bool, bool>::new(),
+        )
+        .unwrap();
+
+        let multiplicant_element_list = VectorElementList::<bool>::from_element_vector(vec![
+            (3, true).into(),
+            (4, true).into(),
+            (5, false).into(),
+            (6, false).into(),
+        ]);
+        let multiplicant = SparseVector::<bool>::from_element_list(
+            &context,
+            &length,
+            &multiplicant_element_list,
+            &First::<bool, bool, bool>::new(),
+        )
+        .unwrap();
+
+        // Test multiplication of full matrices
+        equality_operator
+            .apply(&multiplier, &multiplicant, &mut product)
             .unwrap();
 
-            let multiplicant_element_list = VectorElementList::<bool>::from_element_vector(vec![
-                (3, true).into(),
-                (4, true).into(),
-                (5, false).into(),
-                (6, false).into(),
-            ]);
-            let multiplicant = SparseVector::<bool>::from_element_list(
-                &context,
-                &length,
-                &multiplicant_element_list,
-                &First::<bool, bool, bool>::new(),
-            )
-            .unwrap();
-
-            // Test multiplication of full matrices
-            equality_operator
-                .apply(&multiplier, &multiplicant, &mut product)
-                .unwrap();
-
-            assert_eq!(product.get_element_value(&0).unwrap(), false); // operator does not apply on empty
-            assert_eq!(product.get_element_value(&1).unwrap(), false); // false unequal to empty
-            assert_eq!(product.get_element_value(&2).unwrap(), false); // operator does not apply on empty
-            assert_eq!(product.get_element_value(&3).unwrap(), true); 
-            assert_eq!(product.get_element_value(&4).unwrap(), true); // true and empty => true
-            assert_eq!(product.get_element_value(&5).unwrap(), true); // true and false => true
-            assert_eq!(product.get_element_value(&6).unwrap(), false); // false and true => false
+        assert_eq!(product.get_element_value(&0).unwrap(), false); // operator does not apply on empty
+        assert_eq!(product.get_element_value(&1).unwrap(), false); // false unequal to empty
+        assert_eq!(product.get_element_value(&2).unwrap(), false); // operator does not apply on empty
+        assert_eq!(product.get_element_value(&3).unwrap(), true);
+        assert_eq!(product.get_element_value(&4).unwrap(), true); // true and empty => true
+        assert_eq!(product.get_element_value(&5).unwrap(), true); // true and false => true
+        assert_eq!(product.get_element_value(&6).unwrap(), false); // false and true => false
     }
 }
 

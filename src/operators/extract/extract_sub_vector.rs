@@ -128,6 +128,7 @@ where
         Ok(())
     }
 
+    /// Length of the mask must equal length of sub_vector
     pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
         vector_to_extract_from: &SparseVector<Vector>,
@@ -223,5 +224,61 @@ mod tests {
 
         assert_eq!(sub_vector.number_of_stored_elements().unwrap(), 2);
         assert_eq!(sub_vector.get_element_value(&2).unwrap(), 2);
+    }
+
+    #[test]
+    fn test_vector_extraction_with_mask() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let vector_element_list = VectorElementList::<u8>::from_element_vector(vec![
+            (1, 1).into(),
+            (2, 2).into(),
+            (3, 3).into(),
+            (4, 4).into(),
+            (5, 5).into(),
+        ]);
+
+        let vector = SparseVector::<u8>::from_element_list(
+            &context.clone(),
+            &10,
+            &vector_element_list,
+            &First::<u8, u8, u8>::new(),
+        )
+        .unwrap();
+
+        let mask_element_list = VectorElementList::<u8>::from_element_vector(vec![
+            (0, 0).into(),
+            (1, 1).into(),
+            (2, 2).into(),
+            (3, 3).into(),
+            // (4, 4).into(),
+            // (5, 5).into(),
+            // (6, 6).into(),
+        ]);
+
+        let mask = SparseVector::<u8>::from_element_list(
+            &context.clone(),
+            &4,
+            &mask_element_list,
+            &First::<u8, u8, u8>::new(),
+        )
+        .unwrap();
+
+        let mut sub_vector = SparseVector::<u8>::new(&context, &4).unwrap();
+
+        let indices_to_extract: Vec<ElementIndex> = (0..4).collect();
+        let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
+        // let indices_to_extract = ElementIndexSelector::All;
+
+        let extractor = SubVectorExtractor::new(&OperatorOptions::new_default(), None);
+
+        extractor
+            .apply_with_mask(&vector, &indices_to_extract, &mut sub_vector, &mask)
+            .unwrap();
+
+        assert_eq!(sub_vector.number_of_stored_elements().unwrap(), 3);
+        assert_eq!(sub_vector.get_element_value(&1).unwrap(), 1);
+        assert_eq!(sub_vector.get_element_value(&2).unwrap(), 2);
+        assert_eq!(sub_vector.get_element_value(&3).unwrap(), 3);
     }
 }
