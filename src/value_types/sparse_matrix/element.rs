@@ -1,5 +1,7 @@
 use super::coordinate::Coordinate;
-use crate::error::{SparseLinearAlgebraError, GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType};
+use crate::error::{
+    GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
+};
 use crate::util::ElementIndex;
 use crate::value_types::value_type::ValueType;
 
@@ -76,7 +78,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     ) -> Result<Self, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if (row_index.len() != column_index.len()) && (column_index.len() == value.len()) {
-            return Err(GraphBlasError::new(GraphBlasErrorType::DimensionMismatch, 
+            return Err(GraphBlasError::new(GraphBlasErrorType::DimensionMismatch,
                 format!("Length of vectors must be equal: row_index.len() = {}, column_index.len() = {}, value.len() = {}", 
                 row_index.len(), column_index.len(), value.len())).into());
         }
@@ -113,7 +115,10 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         &self.row_index.as_slice()
     }
 
-    pub(crate) fn row_index(&self, index: ElementIndex) -> Result<&ElementIndex, SparseLinearAlgebraError> {
+    pub(crate) fn row_index(
+        &self,
+        index: ElementIndex,
+    ) -> Result<&ElementIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index >= self.length() {
             return Err(LogicError::new(
@@ -124,12 +129,16 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
                     self.length()
                 ),
                 None,
-            ).into());
+            )
+            .into());
         }
         Ok(&self.row_index[index])
     }
 
-    pub(crate) fn column_index(&self, index: ElementIndex) -> Result<&ElementIndex, SparseLinearAlgebraError> {
+    pub(crate) fn column_index(
+        &self,
+        index: ElementIndex,
+    ) -> Result<&ElementIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index >= self.length() {
             return Err(LogicError::new(
@@ -140,7 +149,8 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
                     self.length()
                 ),
                 None,
-            ).into());
+            )
+            .into());
         }
         Ok(&self.column_index[index])
     }

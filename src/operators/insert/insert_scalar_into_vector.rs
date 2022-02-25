@@ -85,7 +85,7 @@ where
     VectorToInsertInto: ValueType,
     ScalarToInsert: ValueType,
 {
-    /// replace option applies to entire matrix_to_insert_to
+    /// replace option applies to entire vector_to_insert_to
     fn apply(
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
@@ -93,7 +93,7 @@ where
         scalar_to_insert: &ScalarToInsert,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    /// mask and replace option apply to entire matrix_to_insert_to
+    /// mask and replace option apply to entire vector_to_insert_to
     fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
@@ -117,7 +117,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 $value_type_scalar_to_insert,
             >
         {
-            /// replace option applies to entire matrix_to_insert_to
+            /// replace option applies to entire vector_to_insert_to
             fn apply(
                 &self,
                 vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
@@ -165,7 +165,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 Ok(())
             }
 
-            /// mask and replace option apply to entire matrix_to_insert_to
+            /// mask and replace option apply to entire vector_to_insert_to
             fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
                 &self,
                 vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,

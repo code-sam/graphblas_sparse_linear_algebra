@@ -1,4 +1,6 @@
-use crate::error::{SparseLinearAlgebraError, GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType};
+use crate::error::{
+    GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
+};
 use crate::util::ElementIndex;
 use crate::value_types::value_type::ValueType;
 
@@ -60,7 +62,10 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
         }
     }
 
-    pub fn from_vectors(index: Vec<ElementIndex>, value: Vec<T>) -> Result<Self, SparseLinearAlgebraError> {
+    pub fn from_vectors(
+        index: Vec<ElementIndex>,
+        value: Vec<T>,
+    ) -> Result<Self, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index.len() != value.len() {
             return Err(GraphBlasError::new(
@@ -70,7 +75,8 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
                     index.len(),
                     value.len()
                 ),
-            ).into());
+            )
+            .into());
         }
         Ok(Self { index, value })
     }

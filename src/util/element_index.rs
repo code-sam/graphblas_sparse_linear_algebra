@@ -40,7 +40,7 @@ impl IndexConversion for ElementIndex {
         let graphblas_index: GrB_Index;
         match self.try_into() {
             Ok(as_graphblas_index) => graphblas_index = as_graphblas_index,
-            Err(error) => return Err(SystemError::from(error).into())
+            Err(error) => return Err(SystemError::from(error).into()),
         }
         Ok(graphblas_index)
         // if self < (GrB_Index::MAX as Self) {
@@ -60,7 +60,7 @@ impl IndexConversion for ElementIndex {
         let element_index: ElementIndex;
         match index.try_into() {
             Ok(as_element_index) => element_index = as_element_index,
-            Err(error) => return Err(SystemError::from(error).into())
+            Err(error) => return Err(SystemError::from(error).into()),
         }
         Ok(element_index)
 
