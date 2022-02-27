@@ -22,9 +22,6 @@ You covenant, represent, warrant and agree that:
 - each contribution that you submit is and shall be an original work of authorship and you can legally grant the rights set out in this Agreement, and
 - to the best of your knowledge, each contribution will not violate any third party’s copyrights, trademarks, patents, or other intellectual property rights.
 
-## Open Source availability
-Any contribution we make available under any license will also be made available under a suitable FSF (Free Software Foundation) and OSI (Open Source Initiative) approved license.
-
 ## Obligation
 You acknowledge that we are under no obligation to use or incorporate your Contributions into the project. The decision to use or incorporate your Contributions into the project will be made at the sole discretion of us or our authorized delegates
 To the fullest extent permitted under applicable law, your Contributions are provided on an "asis" basis, without any warranties or conditions, express or implied, including, without limitation, any implied warranties or conditions of non-infringement, merchantability or fitness for a particular purpose. You are not required to provide support for your Contributions, except to the extent you desire to provide support.
