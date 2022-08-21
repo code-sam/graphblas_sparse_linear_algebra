@@ -32,7 +32,7 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
+use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType, graphblas_built_in_type_for_isize, graphblas_built_in_type_for_usize};
 
 #[derive(Debug)]
 pub struct SparseVector<T: ValueType> {
@@ -56,6 +56,8 @@ unsafe impl Send for SparseVector<i32> {}
 unsafe impl Send for SparseVector<i64> {}
 unsafe impl Send for SparseVector<f32> {}
 unsafe impl Send for SparseVector<f64> {}
+unsafe impl Send for SparseVector<isize> {}
+unsafe impl Send for SparseVector<usize> {}
 
 unsafe impl Sync for SparseVector<bool> {}
 unsafe impl Sync for SparseVector<u8> {}
@@ -68,6 +70,8 @@ unsafe impl Sync for SparseVector<i32> {}
 unsafe impl Sync for SparseVector<i64> {}
 unsafe impl Sync for SparseVector<f32> {}
 unsafe impl Sync for SparseVector<f64> {}
+unsafe impl Sync for SparseVector<isize> {}
+unsafe impl Sync for SparseVector<usize> {}
 
 impl<T: ValueType + BuiltInValueType<T>> SparseVector<T> {
     pub fn new(
@@ -238,6 +242,8 @@ implement_dispay!(u32);
 implement_dispay!(u64);
 implement_dispay!(f32);
 implement_dispay!(f64);
+implement_dispay!(isize);
+implement_dispay!(usize);
 
 pub trait FromVectorElementList<T: ValueType> {
     fn from_element_list(
@@ -528,6 +534,8 @@ macro_rules! implement_get_element_list {
         }
     };
 }
+
+// https://stackoverflow.com/questions/73072238/it-is-possible-to-generate-some-functions-with-names-that-came-from-a-vector-usi
 
 implement_get_element_list!(bool, GrB_Vector_extractTuples_BOOL);
 implement_get_element_list!(i8, GrB_Vector_extractTuples_INT8);

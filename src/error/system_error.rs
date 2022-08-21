@@ -27,6 +27,7 @@ pub enum SystemErrorType {
     IndexOutOfBounds,
     UninitialisedContext,
     UnsupportedGraphBlasErrorValue,
+    UnsupportedArchitecture,
     PoisonedData,
     IntegerConversionFailed,
     Other,
