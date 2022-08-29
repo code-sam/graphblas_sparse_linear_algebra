@@ -13,6 +13,7 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 
 [dependencies]
 once_cell = {version = "1.8"}
+macros_to_implement_traits = {path = "macros_to_implement_traits"}
 
 [features]
 default = ["build_static_graphblas_dependencies"]

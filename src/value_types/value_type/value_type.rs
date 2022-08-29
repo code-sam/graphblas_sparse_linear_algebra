@@ -13,16 +13,8 @@ use crate::context::Context;
 use crate::error::{SparseLinearAlgebraError, SystemError, SystemErrorType};
 use crate::util::{ElementIndex, IndexConversion};
 
-// TODO: review if there is a way to guarentee that USIZE_GRAPHBLAS_TYPE is set statically
-// static USIZE_GRAPHBLAS_TYPE: Lazy<Mutex<GrB_Type>> =
-//     Lazy::new(|| unsafe {
-//         match usize::BITS {
-//             8 => unsafe { Mutex::new(GrB_UINT8) },
-//             16 => unsafe { Mutex::new(GrB_UINT16) },
-//             32 => unsafe { Mutex::new(GrB_UINT32) },
-//             64 => unsafe { Mutex::new(GrB_UINT64) },
-//         }
-// });
+// use macros_to_implement_traits::{graphblas_built_in_type_for_isize, graphblas_built_in_type_for_usize};
+use macros_to_implement_traits::{implement_macro_for_isize, implement_macro_for_usize};
 
 pub trait ValueType {}
 
@@ -146,59 +138,106 @@ macro_rules! implement_value_type_for_graphblas_built_in_type {
     };
 }
 
-implement_value_type_for_graphblas_built_in_type!(bool, GrB_BOOL);
-implement_value_type_for_graphblas_built_in_type!(i8, GrB_INT8);
-implement_value_type_for_graphblas_built_in_type!(i16, GrB_INT16);
-implement_value_type_for_graphblas_built_in_type!(i32, GrB_INT32);
-implement_value_type_for_graphblas_built_in_type!(i64, GrB_INT64);
-implement_value_type_for_graphblas_built_in_type!(u8, GrB_UINT8);
-implement_value_type_for_graphblas_built_in_type!(u16, GrB_UINT16);
-implement_value_type_for_graphblas_built_in_type!(u32, GrB_UINT32);
-implement_value_type_for_graphblas_built_in_type!(u64, GrB_UINT64);
-implement_value_type_for_graphblas_built_in_type!(f32, GrB_FP32);
-implement_value_type_for_graphblas_built_in_type!(f64, GrB_FP64);
+// macro_rules! value_type_to_graphblas_type {
+//     ($value_type: ty) => {
+//         match $value_type {
+//             bool => GrB_BOOL,
+//             i8 => GrB_INT8,
+//             i16 => GrB_INT16,
+//             i32 => GrB_INT32,
+//             i64 => GrB_INT64,
+//             u8 => GrB_UINT8,
+//             u16 => GrB_UINT16,
+//             u32 => GrB_UINT32,
+//             u64 => GrB_UINT64,
+//             isize => graphblas_built_in_type_for_isize(), // does calling an equivalent procedural macro improve performacnce by reducing runtime cost?
+//             usize => graphblas_built_in_type_for_usize(),
+//             _ => panic!("Unsupported type: {:?}", $value_type)
+//         }
+//     };
+// }
 
-// TODO: review if it can be guaranteed that the result of this function is static. This may reduce runtime cost.
-pub(crate) fn graphblas_built_in_type_for_usize() -> Result<GrB_Type, SparseLinearAlgebraError> {
-    match usize::BITS {
-        8 => unsafe { Ok(GrB_UINT8) },
-        16 => unsafe { Ok(GrB_UINT16) },
-        32 => unsafe { Ok(GrB_UINT32) },
-        64 => unsafe { Ok(GrB_UINT64) },
-        _ => Err(SystemError::new(
-            SystemErrorType::UnsupportedArchitecture,
-            format!("Unsupported architecture: {} bits", usize::BITS),
-            None,
-        )
-        .into()),
-    }
+// implement_value_type_for_graphblas_built_in_type!(bool, GrB_BOOL);
+// implement_value_type_for_graphblas_built_in_type!(i8, GrB_INT8);
+// implement_value_type_for_graphblas_built_in_type!(i16, GrB_INT16);
+// implement_value_type_for_graphblas_built_in_type!(i32, GrB_INT32);
+// implement_value_type_for_graphblas_built_in_type!(i64, GrB_INT64);
+// implement_value_type_for_graphblas_built_in_type!(u8, GrB_UINT8);
+// implement_value_type_for_graphblas_built_in_type!(u16, GrB_UINT16);
+// implement_value_type_for_graphblas_built_in_type!(u32, GrB_UINT32);
+// implement_value_type_for_graphblas_built_in_type!(u64, GrB_UINT64);
+// implement_value_type_for_graphblas_built_in_type!(f32, GrB_FP32);
+// implement_value_type_for_graphblas_built_in_type!(f64, GrB_FP64);
+// implement_value_type_for_graphblas_built_in_type!(isize, graphblas_built_in_type_for_isize().unwrap());
+// implement_value_type_for_graphblas_built_in_type!(usize, graphblas_built_in_type_for_usize().unwrap());
+
+// pub(crate) fn graphblas_built_in_type_for_usize() -> Result<GrB_Type, SparseLinearAlgebraError> {
+//     match usize::BITS {
+//         8 => unsafe { Ok(GrB_UINT8) },
+//         16 => unsafe { Ok(GrB_UINT16) },
+//         32 => unsafe { Ok(GrB_UINT32) },
+//         64 => unsafe { Ok(GrB_UINT64) },
+//         _ => Err(SystemError::new(
+//             SystemErrorType::UnsupportedArchitecture,
+//             format!("Unsupported architecture: {} bits", usize::BITS),
+//             None,
+//         )
+//         .into()),
+//     }
+// }
+
+// pub(crate) fn graphblas_built_in_type_for_isize() -> Result<GrB_Type, SparseLinearAlgebraError> {
+//     match usize::BITS {
+//         8 => unsafe { Ok(GrB_INT8) },
+//         16 => unsafe { Ok(GrB_INT16) },
+//         32 => unsafe { Ok(GrB_INT32) },
+//         64 => unsafe { Ok(GrB_INT64) },
+//         _ => Err(SystemError::new(
+//             SystemErrorType::UnsupportedArchitecture,
+//             format!("Unsupported architecture: {} bits", usize::BITS),
+//             None,
+//         )
+//         .into()),
+//     }
+// }
+
+// macro_rules! supported_types {
+//     () => {
+//         bool, i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, isize, usize,
+//     };
+// }
+
+macro_rules! implement_graphblas_trait {
+    ($macro_identifier:ident) => {
+        $macro_identifier!(bool, GrB_BOOL);
+        $macro_identifier!(i8, GrB_INT8);
+        $macro_identifier!(i16, GrB_INT16);
+        $macro_identifier!(i32, GrB_INT32);
+        $macro_identifier!(i64, GrB_INT64);
+        $macro_identifier!(u8, GrB_UINT8);
+        $macro_identifier!(u16, GrB_UINT16);
+        $macro_identifier!(u32, GrB_UINT32);
+        $macro_identifier!(u64, GrB_UINT64);
+        $macro_identifier!(f32, GrB_FP32);
+        $macro_identifier!(f64, GrB_FP64);
+        implement_macro_for_isize!($macro_identifier);
+        implement_macro_for_usize!($macro_identifier);
+    };
+    // todo: add more arms
 }
 
-pub(crate) fn graphblas_built_in_type_for_isize() -> Result<GrB_Type, SparseLinearAlgebraError> {
-    match usize::BITS {
-        8 => unsafe { Ok(GrB_INT8) },
-        16 => unsafe { Ok(GrB_INT16) },
-        32 => unsafe { Ok(GrB_INT32) },
-        64 => unsafe { Ok(GrB_INT64) },
-        _ => Err(SystemError::new(
-            SystemErrorType::UnsupportedArchitecture,
-            format!("Unsupported architecture: {} bits", usize::BITS),
-            None,
-        )
-        .into()),
-    }
-}
+implement_graphblas_trait!(implement_value_type_for_graphblas_built_in_type);
 
-impl BuiltInValueType<usize> for usize {
-    fn to_graphblas_type() -> GrB_Type {
-        graphblas_built_in_type_for_usize().unwrap()
-    }
-}
-impl BuiltInValueType<isize> for isize {
-    fn to_graphblas_type() -> GrB_Type {
-        graphblas_built_in_type_for_isize().unwrap()
-    }
-}
+// impl BuiltInValueType<usize> for usize {
+//     fn to_graphblas_type() -> GrB_Type {
+//         graphblas_built_in_type_for_usize().unwrap()
+//     }
+// }
+// impl BuiltInValueType<isize> for isize {
+//     fn to_graphblas_type() -> GrB_Type {
+//         graphblas_built_in_type_for_isize().unwrap()
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
@@ -233,12 +272,4 @@ mod tests {
     //     assert_eq!(expected_size, built_in_type.size_in_graphblas().unwrap());
     // }
 
-    // #[test]
-    // fn use_graphblas_type() {
-    //     let value_1 = GraphblasInt16(10);
-    //     let value_2 = 3;
-    //     assert_eq!(i16::from(value_1) + value_2, 13);
-
-    //     // assert_eq!(value_1+value_1,GraphblasInt16(20));
-    // }
 }
