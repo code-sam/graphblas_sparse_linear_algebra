@@ -168,7 +168,7 @@ fn clean_build_artifacts(cargo_build_directory: &OsString) {
     path_to_delete.push("build");
     fs::remove_dir_all(path_to_delete).is_ok();
 
-    let mut path_to_delete_files_in = cargo_build_directory;
+    let path_to_delete_files_in = cargo_build_directory;
     let mut path_to_keep = path_to_delete_files_in.clone();
     path_to_keep.push("libgraphblas.a");
 
