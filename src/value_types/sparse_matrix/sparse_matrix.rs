@@ -1,7 +1,6 @@
-use crate::error::system_error::SystemErrorSource;
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType, SystemError, SystemErrorType,
+    SparseLinearAlgebraErrorType,
 };
 use std::convert::TryInto;
 use std::marker::{PhantomData, Send, Sync};
@@ -313,7 +312,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     .collect();
 
                 let element_values = elements.values_ref();
-                $convert_to_target_type!(element_values, element_values, $conversion_target_type);
+                $convert_to_target_type!(element_values, $conversion_target_type);
 
                 {
                     let number_of_elements = elements.length().to_graphblas_index()?;
@@ -377,7 +376,7 @@ macro_rules! implement_set_element {
                 //     ).into()),
                 // };
                 let element_value = element.value();
-                $convert_to_target_type!(element_value, element_value, $conversion_target_type);
+                $convert_to_target_type!(element_value, $conversion_target_type);
                 context.call(|| unsafe {
                     $add_element_function(
                         self.matrix,
@@ -565,7 +564,7 @@ macro_rules! implement_get_element_list {
                 let row_element_indices = row_indices.into_par_iter().map(|i| ElementIndex::from_graphblas_index(i).unwrap()).collect();
                 let column_element_indices = column_indices.into_par_iter().map(|i| ElementIndex::from_graphblas_index(i).unwrap()).collect();
 
-                $convert_to_target_type!(values, values, $value_type);
+                $convert_to_target_type!(values, $value_type);
 
                 let element_list = MatrixElementList::from_vectors(row_element_indices, column_element_indices, values)?;
                 Ok(element_list)

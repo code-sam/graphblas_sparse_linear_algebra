@@ -28,7 +28,7 @@ impl<T: ValueType + Copy> MatrixElement<T> {
         self.coordinate.column_index()
     }
     pub fn value(&self) -> T {
-        self.value
+        self.value.clone()
     }
     pub fn value_ref<'a>(&'a self) -> &'a T {
         &self.value

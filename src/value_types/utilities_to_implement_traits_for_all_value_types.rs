@@ -100,8 +100,8 @@ macro_rules! implement_macro_for_all_value_types_and_graphblas_function_with_sca
 pub(crate) use implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion;
 
 macro_rules! convert_vector_to_type {
-    ($input: ident, $output: ident, $target_type: ty) => {
-        let $output: Vec<$target_type> = $input
+    ($variable: ident, $target_type: ty) => {
+        let $variable: Vec<$target_type> = $variable
             .to_owned()
             .into_par_iter()
             .map(|x| x.try_into().unwrap())
@@ -112,15 +112,15 @@ pub(crate) use convert_vector_to_type;
 
 // TODO: error catching and propagation
 macro_rules! convert_scalar_to_type {
-    ($input: ident, $output: ident, $target_type: ty) => {
-        let $output: $target_type = $input.to_owned().try_into().unwrap();
+    ($variable: ident, $target_type: ty) => {
+        let $variable: $target_type = $variable.to_owned().try_into().unwrap();
     };
 }
 pub(crate) use convert_scalar_to_type;
 
 macro_rules! identity_conversion {
-    ($input: ident, $output: ident, $_target_type: ty) => {
-        let $output = std::convert::identity($input);
+    ($variable: ident, $_target_type: ty) => {
+        let $variable = std::convert::identity($variable);
     };
 }
 pub(crate) use identity_conversion;

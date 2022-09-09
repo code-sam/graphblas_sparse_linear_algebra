@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
@@ -21,7 +22,12 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    convert_scalar_to_type, identity_conversion, implement_macro_for_all_value_types,
+    implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion,
+    implement_trait_for_all_value_types,
+};
+use crate::value_types::value_type::{BuiltInValueType, ValueType};
 
 #[derive(Debug)]
 pub struct SparseScalar<T: ValueType> {
@@ -34,14 +40,8 @@ pub struct SparseScalar<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types!(
-    Send,
-    SparseScalar
-);
-crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types!(
-    Sync,
-    SparseScalar
-);
+implement_trait_for_all_value_types!(Send, SparseScalar);
+implement_trait_for_all_value_types!(Sync, SparseScalar);
 
 impl<T: ValueType + BuiltInValueType<T>> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
@@ -151,55 +151,40 @@ macro_rules! implement_dispay {
     };
 }
 
-implement_dispay!(bool);
-implement_dispay!(i8);
-implement_dispay!(i16);
-implement_dispay!(i32);
-implement_dispay!(i64);
-implement_dispay!(u8);
-implement_dispay!(u16);
-implement_dispay!(u32);
-implement_dispay!(u64);
-implement_dispay!(f32);
-implement_dispay!(f64);
+implement_macro_for_all_value_types!(implement_dispay);
 
 pub trait SetScalarValue<T: ValueType> {
     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_set_value_for_built_in_type {
-    ($value_type:ty, $add_element_function:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ty, $add_element_function:ident, $convert_to_target_type:ident) => {
         impl SetScalarValue<$value_type> for SparseScalar<$value_type> {
             fn set_value(&mut self, value: &$value_type) -> Result<(), SparseLinearAlgebraError> {
+                let value = value.clone(); // TODO: review if clone can be removed, and if this improves performance
+                $convert_to_target_type!(value, $graphblas_implementation_type);
                 self.context
-                    .call(|| unsafe { $add_element_function(self.scalar, *value) })?;
+                    .call(|| unsafe { $add_element_function(self.scalar, value) })?;
                 Ok(())
             }
         }
     };
 }
 
-implement_set_value_for_built_in_type!(bool, GxB_Scalar_setElement_BOOL);
-implement_set_value_for_built_in_type!(i8, GxB_Scalar_setElement_INT8);
-implement_set_value_for_built_in_type!(i16, GxB_Scalar_setElement_INT16);
-implement_set_value_for_built_in_type!(i32, GxB_Scalar_setElement_INT32);
-implement_set_value_for_built_in_type!(i64, GxB_Scalar_setElement_INT64);
-implement_set_value_for_built_in_type!(u8, GxB_Scalar_setElement_UINT8);
-implement_set_value_for_built_in_type!(u16, GxB_Scalar_setElement_UINT16);
-implement_set_value_for_built_in_type!(u32, GxB_Scalar_setElement_UINT32);
-implement_set_value_for_built_in_type!(u64, GxB_Scalar_setElement_UINT64);
-implement_set_value_for_built_in_type!(f32, GxB_Scalar_setElement_FP32);
-implement_set_value_for_built_in_type!(f64, GxB_Scalar_setElement_FP64);
+implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion!(
+    implement_set_value_for_built_in_type,
+    GxB_Scalar_setElement
+);
 
 pub trait GetScalarValue<T: ValueType + Default> {
     fn get_value(&self) -> Result<T, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_value_for_built_in_type {
-    ($value_type:ty, $get_value_function:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ty, $get_value_function:ident, $convert_to_target_type:ident) => {
         impl GetScalarValue<$value_type> for SparseScalar<$value_type> {
             fn get_value(&self) -> Result<$value_type, SparseLinearAlgebraError> {
-                let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
+                let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
 
                 let result = self
                     .context
@@ -208,6 +193,7 @@ macro_rules! implement_get_value_for_built_in_type {
                 match result {
                     Ok(_) => {
                         let value = unsafe { value.assume_init() };
+                        $convert_to_target_type!(value, $value_type);
                         Ok(value)
                     }
                     Err(error) => match error.error_type() {
@@ -222,17 +208,10 @@ macro_rules! implement_get_value_for_built_in_type {
     };
 }
 
-implement_get_value_for_built_in_type!(bool, GxB_Scalar_extractElement_BOOL);
-implement_get_value_for_built_in_type!(i8, GxB_Scalar_extractElement_INT8);
-implement_get_value_for_built_in_type!(i16, GxB_Scalar_extractElement_INT16);
-implement_get_value_for_built_in_type!(i32, GxB_Scalar_extractElement_INT32);
-implement_get_value_for_built_in_type!(i64, GxB_Scalar_extractElement_INT64);
-implement_get_value_for_built_in_type!(u8, GxB_Scalar_extractElement_UINT8);
-implement_get_value_for_built_in_type!(u16, GxB_Scalar_extractElement_UINT16);
-implement_get_value_for_built_in_type!(u32, GxB_Scalar_extractElement_UINT32);
-implement_get_value_for_built_in_type!(u64, GxB_Scalar_extractElement_UINT64);
-implement_get_value_for_built_in_type!(f32, GxB_Scalar_extractElement_FP32);
-implement_get_value_for_built_in_type!(f64, GxB_Scalar_extractElement_FP64);
+implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion!(
+    implement_get_value_for_built_in_type,
+    GxB_Scalar_extractElement
+);
 
 #[cfg(test)]
 mod tests {
