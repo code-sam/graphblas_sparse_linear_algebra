@@ -12,8 +12,10 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-once_cell = {version = "1.8"}
 macros_to_implement_traits = {path = "macros_to_implement_traits"}
+once_cell = {version = "1.8"}
+paste = {version = "1.0"}
+rayon = {version = "1.5"}
 
 [features]
 default = ["build_static_graphblas_dependencies"]
@@ -26,7 +28,6 @@ cmake = "0.1"
 
 [dev-dependencies]
 criterion = "0.3"
-rayon = {version = "1.5"}
 
 [[bench]]
 name = "insert_scalar_into_matrix"

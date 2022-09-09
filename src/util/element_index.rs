@@ -12,6 +12,18 @@ pub trait IndexConversion {
     // fn to_usize(&self) -> Result<usize, SystemError>;
 }
 
+// cannot implement From and Into for type defined in another crate. This would need the new type pattern.
+// impl From<GrB_Index> for ElementIndex {
+//     fn from(self) -> Self {
+//         self.from_graphblas_index()
+//     }
+// }
+// impl Into<ElementIndex> for GrB_Index {
+//     fn into(self) -> Self {
+//         self.as_graphblas_index()
+//     }
+// }
+
 impl IndexConversion for ElementIndex {
     // TODO: consider to use try_into()
     fn to_graphblas_index(&self) -> Result<GrB_Index, SparseLinearAlgebraError> {

@@ -45,33 +45,14 @@ pub struct SparseVector<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for SparseVector<bool> {}
-unsafe impl Send for SparseVector<u8> {}
-unsafe impl Send for SparseVector<u16> {}
-unsafe impl Send for SparseVector<u32> {}
-unsafe impl Send for SparseVector<u64> {}
-unsafe impl Send for SparseVector<i8> {}
-unsafe impl Send for SparseVector<i16> {}
-unsafe impl Send for SparseVector<i32> {}
-unsafe impl Send for SparseVector<i64> {}
-unsafe impl Send for SparseVector<f32> {}
-unsafe impl Send for SparseVector<f64> {}
-// unsafe impl Send for SparseVector<isize> {}
-// unsafe impl Send for SparseVector<usize> {}
-
-unsafe impl Sync for SparseVector<bool> {}
-unsafe impl Sync for SparseVector<u8> {}
-unsafe impl Sync for SparseVector<u16> {}
-unsafe impl Sync for SparseVector<u32> {}
-unsafe impl Sync for SparseVector<u64> {}
-unsafe impl Sync for SparseVector<i8> {}
-unsafe impl Sync for SparseVector<i16> {}
-unsafe impl Sync for SparseVector<i32> {}
-unsafe impl Sync for SparseVector<i64> {}
-unsafe impl Sync for SparseVector<f32> {}
-unsafe impl Sync for SparseVector<f64> {}
-// unsafe impl Sync for SparseVector<isize> {}
-// unsafe impl Sync for SparseVector<usize> {}
+crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types!(
+    Send,
+    SparseVector
+);
+crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types!(
+    Sync,
+    SparseVector
+);
 
 impl<T: ValueType + BuiltInValueType<T>> SparseVector<T> {
     pub fn new(

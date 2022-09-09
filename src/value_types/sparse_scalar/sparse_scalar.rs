@@ -34,29 +34,14 @@ pub struct SparseScalar<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for SparseScalar<bool> {}
-unsafe impl Send for SparseScalar<u8> {}
-unsafe impl Send for SparseScalar<u16> {}
-unsafe impl Send for SparseScalar<u32> {}
-unsafe impl Send for SparseScalar<u64> {}
-unsafe impl Send for SparseScalar<i8> {}
-unsafe impl Send for SparseScalar<i16> {}
-unsafe impl Send for SparseScalar<i32> {}
-unsafe impl Send for SparseScalar<i64> {}
-unsafe impl Send for SparseScalar<f32> {}
-unsafe impl Send for SparseScalar<f64> {}
-
-unsafe impl Sync for SparseScalar<bool> {}
-unsafe impl Sync for SparseScalar<u8> {}
-unsafe impl Sync for SparseScalar<u16> {}
-unsafe impl Sync for SparseScalar<u32> {}
-unsafe impl Sync for SparseScalar<u64> {}
-unsafe impl Sync for SparseScalar<i8> {}
-unsafe impl Sync for SparseScalar<i16> {}
-unsafe impl Sync for SparseScalar<i32> {}
-unsafe impl Sync for SparseScalar<i64> {}
-unsafe impl Sync for SparseScalar<f32> {}
-unsafe impl Sync for SparseScalar<f64> {}
+crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types!(
+    Send,
+    SparseScalar
+);
+crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types!(
+    Sync,
+    SparseScalar
+);
 
 impl<T: ValueType + BuiltInValueType<T>> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
