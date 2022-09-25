@@ -210,29 +210,6 @@ implement_trait_for_3_type_data_type_and_all_value_types!(
     Sync,
     ElementWiseVectorAdditionBinaryOperator
 );
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<bool, bool, bool> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u8, u8, u8> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u16, u16, u16> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u32, u32, u32> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<u64, u64, u64> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i8, i8, i8> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i16, i16, i16> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i32, i32, i32> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<i64, i64, i64> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<f32, f32, f32> {}
-// unsafe impl Send for ElementWiseVectorAdditionBinaryOperator<f64, f64, f64> {}
-
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<bool, bool, bool> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u8, u8, u8> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u16, u16, u16> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u32, u32, u32> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<u64, u64, u64> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i8, i8, i8> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i16, i16, i16> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i32, i32, i32> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<i64, i64, i64> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<f32, f32, f32> {}
-// unsafe impl Sync for ElementWiseVectorAdditionBinaryOperator<f64, f64, f64> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product> {
