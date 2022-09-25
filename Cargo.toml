@@ -1,9 +1,9 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.8.3"
+version = "0.9.0"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
-edition = "2018"
+edition = "2021"
 keywords = ["GraphBLAS", "sparse", "linear", "algebra"]
 license = "CC-BY-NC-4.0"
 readme = "README.md"
@@ -13,7 +13,7 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 
 [dependencies]
 macros_to_implement_traits = {path = "macros_to_implement_traits"}
-once_cell = {version = "1.8"}
+once_cell = {version = "1.15"}
 paste = {version = "1.0"}
 rayon = {version = "1.5"}
 
@@ -23,7 +23,7 @@ build_static_graphblas_dependencies = []
 generate_new_bindings_to_graphblas_implementation = []
 
 [build-dependencies]
-bindgen = "0.59"
+bindgen = "0.60"
 cmake = "0.1"
 
 [dev-dependencies]
