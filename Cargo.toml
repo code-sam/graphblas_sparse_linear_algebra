@@ -12,7 +12,7 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-macros_to_implement_traits = {path = "macros_to_implement_traits"}
+macros_to_implement_traits = {path = "macros_to_implement_traits", version = "0.1"}
 once_cell = {version = "1.15"}
 paste = {version = "1.0"}
 rayon = {version = "1.5"}
