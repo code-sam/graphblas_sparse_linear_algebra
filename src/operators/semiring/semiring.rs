@@ -1,4 +1,5 @@
 use crate::operators::binary_operator::{Plus, Times};
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_semiring_for_all_value_types;
 use crate::value_types::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::*;
@@ -13,7 +14,7 @@ where
 }
 
 macro_rules! implement_semiring_operator {
-    ($semiring:ident, $addition_operator:ident,$multiplication_operator:ident,$multiplier:ty,$multiplicant:ty,$product:ty,
+    ($semiring:ident, $addition_operator:ident, $multiplication_operator:ident, $multiplier:ty, $multiplicant:ty, $product:ty,
         $graphblas_operator:ident) => {
         impl Semiring<$multiplier, $multiplicant, $product>
             for $semiring<$multiplier, $multiplicant, $product>
@@ -51,95 +52,12 @@ where
     multiplication_operator: Times<Multiplier, Multiplicant, Product>,
 }
 
-implement_semiring_operator!(
+implement_semiring_for_all_value_types!(
+    implement_semiring_operator,
     PlusTimes,
     Plus,
     Times,
-    u8,
-    u8,
-    u8,
-    GrB_PLUS_TIMES_SEMIRING_UINT8
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    u16,
-    u16,
-    u16,
-    GrB_PLUS_TIMES_SEMIRING_UINT16
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    u32,
-    u32,
-    u32,
-    GrB_PLUS_TIMES_SEMIRING_UINT32
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    u64,
-    u64,
-    u64,
-    GrB_PLUS_TIMES_SEMIRING_UINT64
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    i8,
-    i8,
-    i8,
-    GrB_PLUS_TIMES_SEMIRING_INT8
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    i16,
-    i16,
-    i16,
-    GrB_PLUS_TIMES_SEMIRING_INT16
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    i32,
-    i32,
-    i32,
-    GrB_PLUS_TIMES_SEMIRING_INT32
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    i64,
-    i64,
-    i64,
-    GrB_PLUS_TIMES_SEMIRING_INT64
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    f32,
-    f32,
-    f32,
-    GrB_PLUS_TIMES_SEMIRING_FP32
-);
-implement_semiring_operator!(
-    PlusTimes,
-    Plus,
-    Times,
-    f64,
-    f64,
-    f64,
-    GrB_PLUS_TIMES_SEMIRING_FP64
+    GrB_PLUS_TIMES_SEMIRING
 );
 
 #[cfg(test)]

@@ -1,46 +1,26 @@
-use std::ptr;
-
 use std::marker::PhantomData;
-
-use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::sparse_matrix::SparseMatrix;
-
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Matrix_subassign,
 };
+use crate::error::SparseLinearAlgebraError;
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
+    implement_trait_for_2_type_data_type_and_all_value_types,
+};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 // TODO: explicitly define how dupicates are handled
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertMatrixIntoSubMatrix<bool, bool> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u8, u8> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u16, u16> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u32, u32> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<u64, u64> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i8, i8> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i16, i16> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i32, i32> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<i64, i64> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<f32, f32> {}
-unsafe impl Send for InsertMatrixIntoSubMatrix<f64, f64> {}
-
-unsafe impl Sync for InsertMatrixIntoSubMatrix<bool, bool> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u8, u8> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u16, u16> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u32, u32> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<u64, u64> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i8, i8> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i16, i16> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i32, i32> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<i64, i64> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<f32, f32> {}
-unsafe impl Sync for InsertMatrixIntoSubMatrix<f64, f64> {}
+implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertMatrixIntoSubMatrix);
+implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertMatrixIntoSubMatrix);
 
 #[derive(Debug, Clone)]
 pub struct InsertMatrixIntoSubMatrix<MatrixToInsertInto: ValueType, MatrixToInsert: ValueType> {
@@ -320,17 +300,10 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
     };
 }
 
-implement_insert_matrix_into_sub_matrix_trait!(bool, bool, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(u8, u8, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(u16, u16, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(u32, u32, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(u64, u64, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(i8, i8, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(i16, i16, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(i32, i32, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(i64, i64, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(f32, f32, GxB_Matrix_subassign);
-implement_insert_matrix_into_sub_matrix_trait!(f64, f64, GxB_Matrix_subassign);
+implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
+    implement_insert_matrix_into_sub_matrix_trait,
+    GxB_Matrix_subassign
+);
 
 #[cfg(test)]
 mod tests {

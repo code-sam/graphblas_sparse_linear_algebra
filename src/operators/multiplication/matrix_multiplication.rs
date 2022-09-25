@@ -7,6 +7,7 @@ use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
 use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -16,29 +17,8 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for MatrixMultiplicationOperator<bool, bool, bool> {}
-unsafe impl Send for MatrixMultiplicationOperator<u8, u8, u8> {}
-unsafe impl Send for MatrixMultiplicationOperator<u16, u16, u16> {}
-unsafe impl Send for MatrixMultiplicationOperator<u32, u32, u32> {}
-unsafe impl Send for MatrixMultiplicationOperator<u64, u64, u64> {}
-unsafe impl Send for MatrixMultiplicationOperator<i8, i8, i8> {}
-unsafe impl Send for MatrixMultiplicationOperator<i16, i16, i16> {}
-unsafe impl Send for MatrixMultiplicationOperator<i32, i32, i32> {}
-unsafe impl Send for MatrixMultiplicationOperator<i64, i64, i64> {}
-unsafe impl Send for MatrixMultiplicationOperator<f32, f32, f32> {}
-unsafe impl Send for MatrixMultiplicationOperator<f64, f64, f64> {}
-
-unsafe impl Sync for MatrixMultiplicationOperator<bool, bool, bool> {}
-unsafe impl Sync for MatrixMultiplicationOperator<u8, u8, u8> {}
-unsafe impl Sync for MatrixMultiplicationOperator<u16, u16, u16> {}
-unsafe impl Sync for MatrixMultiplicationOperator<u32, u32, u32> {}
-unsafe impl Sync for MatrixMultiplicationOperator<u64, u64, u64> {}
-unsafe impl Sync for MatrixMultiplicationOperator<i8, i8, i8> {}
-unsafe impl Sync for MatrixMultiplicationOperator<i16, i16, i16> {}
-unsafe impl Sync for MatrixMultiplicationOperator<i32, i32, i32> {}
-unsafe impl Sync for MatrixMultiplicationOperator<i64, i64, i64> {}
-unsafe impl Sync for MatrixMultiplicationOperator<f32, f32, f32> {}
-unsafe impl Sync for MatrixMultiplicationOperator<f64, f64, f64> {}
+implement_trait_for_3_type_data_type_and_all_value_types!(Send, MatrixMultiplicationOperator);
+implement_trait_for_3_type_data_type_and_all_value_types!(Sync, MatrixMultiplicationOperator);
 
 // TODO: review the use of &'a dyn Trait, removing dynamic dispatch could provide a performance gain. (it might be negated if cloning is necessary though)
 // https://www.joshmcguigan.com/blog/cost-of-indirection-rust/

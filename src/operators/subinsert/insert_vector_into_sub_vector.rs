@@ -1,46 +1,26 @@
-use std::ptr;
-
 use std::marker::PhantomData;
-
-use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_types::sparse_vector::SparseVector;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Vector_subassign,
 };
+use crate::error::SparseLinearAlgebraError;
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
+    implement_trait_for_2_type_data_type_and_all_value_types,
+};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 // TODO: explicitly define how dupicates are handled
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertVectorIntoSubVector<bool, bool> {}
-unsafe impl Send for InsertVectorIntoSubVector<u8, u8> {}
-unsafe impl Send for InsertVectorIntoSubVector<u16, u16> {}
-unsafe impl Send for InsertVectorIntoSubVector<u32, u32> {}
-unsafe impl Send for InsertVectorIntoSubVector<u64, u64> {}
-unsafe impl Send for InsertVectorIntoSubVector<i8, i8> {}
-unsafe impl Send for InsertVectorIntoSubVector<i16, i16> {}
-unsafe impl Send for InsertVectorIntoSubVector<i32, i32> {}
-unsafe impl Send for InsertVectorIntoSubVector<i64, i64> {}
-unsafe impl Send for InsertVectorIntoSubVector<f32, f32> {}
-unsafe impl Send for InsertVectorIntoSubVector<f64, f64> {}
-
-unsafe impl Sync for InsertVectorIntoSubVector<bool, bool> {}
-unsafe impl Sync for InsertVectorIntoSubVector<u8, u8> {}
-unsafe impl Sync for InsertVectorIntoSubVector<u16, u16> {}
-unsafe impl Sync for InsertVectorIntoSubVector<u32, u32> {}
-unsafe impl Sync for InsertVectorIntoSubVector<u64, u64> {}
-unsafe impl Sync for InsertVectorIntoSubVector<i8, i8> {}
-unsafe impl Sync for InsertVectorIntoSubVector<i16, i16> {}
-unsafe impl Sync for InsertVectorIntoSubVector<i32, i32> {}
-unsafe impl Sync for InsertVectorIntoSubVector<i64, i64> {}
-unsafe impl Sync for InsertVectorIntoSubVector<f32, f32> {}
-unsafe impl Sync for InsertVectorIntoSubVector<f64, f64> {}
+implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertVectorIntoSubVector);
+implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertVectorIntoSubVector);
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoSubVector<VectorToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -216,17 +196,10 @@ macro_rules! implement_insert_vector_into_sub_vector_trait {
     };
 }
 
-implement_insert_vector_into_sub_vector_trait!(bool, bool, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(u8, u8, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(u16, u16, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(u32, u32, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(u64, u64, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(i8, i8, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(i16, i16, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(i32, i32, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(i64, i64, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(f32, f32, GxB_Vector_subassign);
-implement_insert_vector_into_sub_vector_trait!(f64, f64, GxB_Vector_subassign);
+implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
+    implement_insert_vector_into_sub_vector_trait,
+    GxB_Vector_subassign
+);
 
 #[cfg(test)]
 mod tests {

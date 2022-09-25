@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
@@ -6,6 +7,11 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    convert_scalar_to_type, identity_conversion,
+    implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
+    implement_trait_for_2_type_data_type_and_all_value_types,
+};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -20,29 +26,8 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertScalarIntoMatrix<bool, bool> {}
-unsafe impl Send for InsertScalarIntoMatrix<u8, u8> {}
-unsafe impl Send for InsertScalarIntoMatrix<u16, u16> {}
-unsafe impl Send for InsertScalarIntoMatrix<u32, u32> {}
-unsafe impl Send for InsertScalarIntoMatrix<u64, u64> {}
-unsafe impl Send for InsertScalarIntoMatrix<i8, i8> {}
-unsafe impl Send for InsertScalarIntoMatrix<i16, i16> {}
-unsafe impl Send for InsertScalarIntoMatrix<i32, i32> {}
-unsafe impl Send for InsertScalarIntoMatrix<i64, i64> {}
-unsafe impl Send for InsertScalarIntoMatrix<f32, f32> {}
-unsafe impl Send for InsertScalarIntoMatrix<f64, f64> {}
-
-unsafe impl Sync for InsertScalarIntoMatrix<bool, bool> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u8, u8> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u16, u16> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u32, u32> {}
-unsafe impl Sync for InsertScalarIntoMatrix<u64, u64> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i8, i8> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i16, i16> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i32, i32> {}
-unsafe impl Sync for InsertScalarIntoMatrix<i64, i64> {}
-unsafe impl Sync for InsertScalarIntoMatrix<f32, f32> {}
-unsafe impl Sync for InsertScalarIntoMatrix<f64, f64> {}
+implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertScalarIntoMatrix);
+implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertScalarIntoMatrix);
 
 #[derive(Debug, Clone)]
 pub struct InsertScalarIntoMatrix<MatrixToInsertInto: ValueType, ScalarToInsert: ValueType> {
@@ -107,7 +92,7 @@ where
 
 macro_rules! implement_insert_scalar_into_matrix_trait {
     (
-        $value_type_matrix_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_insert_function:ident
+        $value_type_matrix_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
         impl
             InsertScalarIntoMatrixTrait<
@@ -128,6 +113,8 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 scalar_to_insert: &$value_type_scalar_to_insert,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
+                let scalar_to_insert = scalar_to_insert.clone();
+                $convert_to_type!(scalar_to_insert, $graphblas_implementation_type);
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
                     .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
@@ -150,7 +137,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -168,7 +155,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row,
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -186,7 +173,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column,
@@ -204,7 +191,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 ptr::null_mut(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row,
                                 number_of_rows_to_insert_into,
                                 column,
@@ -228,6 +215,8 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 mask_for_matrix_to_insert_into: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
+                let scalar_to_insert = scalar_to_insert.clone();
+                $convert_to_type!(scalar_to_insert, $graphblas_implementation_type);
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
                     .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
@@ -250,7 +239,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -268,7 +257,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row,
                                 number_of_rows_to_insert_into,
                                 column.as_ptr(),
@@ -286,7 +275,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row.as_ptr(),
                                 number_of_rows_to_insert_into,
                                 column,
@@ -304,7 +293,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                 matrix_to_insert_into.graphblas_matrix(),
                                 mask_for_matrix_to_insert_into.graphblas_matrix(),
                                 self.accumulator,
-                                *scalar_to_insert,
+                                scalar_to_insert,
                                 row,
                                 number_of_rows_to_insert_into,
                                 column,
@@ -321,17 +310,10 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
     };
 }
 
-implement_insert_scalar_into_matrix_trait!(bool, bool, GrB_Matrix_assign_BOOL);
-implement_insert_scalar_into_matrix_trait!(u8, u8, GrB_Matrix_assign_UINT8);
-implement_insert_scalar_into_matrix_trait!(u16, u16, GrB_Matrix_assign_UINT16);
-implement_insert_scalar_into_matrix_trait!(u32, u32, GrB_Matrix_assign_UINT32);
-implement_insert_scalar_into_matrix_trait!(u64, u64, GrB_Matrix_assign_UINT64);
-implement_insert_scalar_into_matrix_trait!(i8, i8, GrB_Matrix_assign_INT8);
-implement_insert_scalar_into_matrix_trait!(i16, i16, GrB_Matrix_assign_INT16);
-implement_insert_scalar_into_matrix_trait!(i32, i32, GrB_Matrix_assign_INT32);
-implement_insert_scalar_into_matrix_trait!(i64, i64, GrB_Matrix_assign_INT64);
-implement_insert_scalar_into_matrix_trait!(f32, f32, GrB_Matrix_assign_FP32);
-implement_insert_scalar_into_matrix_trait!(f64, f64, GrB_Matrix_assign_FP64);
+implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion!(
+    implement_insert_scalar_into_matrix_trait,
+    GrB_Matrix_assign
+);
 
 #[cfg(test)]
 mod tests {

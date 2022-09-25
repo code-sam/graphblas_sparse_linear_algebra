@@ -7,7 +7,10 @@ use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions
 
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
-
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_macro_with_custom_input_version_1_for_all_value_types,
+    implement_trait_for_all_value_types,
+};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -21,29 +24,8 @@ use super::diagonal_index::{DiagonalIndex, DiagonalIndexGraphblasType};
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for MatrixSelector<bool> {}
-unsafe impl Send for MatrixSelector<u8> {}
-unsafe impl Send for MatrixSelector<u16> {}
-unsafe impl Send for MatrixSelector<u32> {}
-unsafe impl Send for MatrixSelector<u64> {}
-unsafe impl Send for MatrixSelector<i8> {}
-unsafe impl Send for MatrixSelector<i16> {}
-unsafe impl Send for MatrixSelector<i32> {}
-unsafe impl Send for MatrixSelector<i64> {}
-unsafe impl Send for MatrixSelector<f32> {}
-unsafe impl Send for MatrixSelector<f64> {}
-
-unsafe impl Sync for MatrixSelector<bool> {}
-unsafe impl Sync for MatrixSelector<u8> {}
-unsafe impl Sync for MatrixSelector<u16> {}
-unsafe impl Sync for MatrixSelector<u32> {}
-unsafe impl Sync for MatrixSelector<u64> {}
-unsafe impl Sync for MatrixSelector<i8> {}
-unsafe impl Sync for MatrixSelector<i16> {}
-unsafe impl Sync for MatrixSelector<i32> {}
-unsafe impl Sync for MatrixSelector<i64> {}
-unsafe impl Sync for MatrixSelector<f32> {}
-unsafe impl Sync for MatrixSelector<f64> {}
+implement_trait_for_all_value_types!(Send, MatrixSelector);
+implement_trait_for_all_value_types!(Sync, MatrixSelector);
 
 #[derive(Debug, Clone)]
 pub struct MatrixSelector<T: ValueType> {
@@ -249,78 +231,8 @@ pub trait SelectMatrixNotEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectMatrixNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectMatrixNotEqualToScalar,
     not_equal_to_scalar,
     not_equal_to_scalar_with_mask,
@@ -344,78 +256,8 @@ pub trait SelectMatrixEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectMatrixEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectMatrixEqualToScalar,
     equal_to_scalar,
     equal_to_scalar_with_mask,
@@ -439,78 +281,8 @@ pub trait SelectMatrixGreaterThanScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectMatrixGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectMatrixGreaterThanScalar,
     greater_than_scalar,
     greater_than_scalar_with_mask,
@@ -537,78 +309,8 @@ pub trait SelectMatrixGreaterThanOrEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectMatrixGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectMatrixGreaterThanOrEqualToScalar,
     greater_than_or_equal_to_scalar,
     greater_than_or_equal_to_scalar_with_mask,
@@ -632,78 +334,8 @@ pub trait SelectMatrixLessThanScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectMatrixLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectMatrixLessThanScalar,
     less_than_scalar,
     less_than_scalar_with_mask,
@@ -730,78 +362,8 @@ pub trait SelectMatrixLessThanOrEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectMatrixLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectMatrixLessThanOrEqualToScalar,
     less_than_or_equal_to_scalar,
     less_than_less_than_or_equal_to_scalar_with_mask,

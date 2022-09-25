@@ -7,6 +7,11 @@ use crate::operators::{
 };
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_macro_with_2_types_for_all_value_types,
+    implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
+    implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
+};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -16,29 +21,8 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for UnaryOperatorApplier<bool> {}
-unsafe impl Send for UnaryOperatorApplier<u8> {}
-unsafe impl Send for UnaryOperatorApplier<u16> {}
-unsafe impl Send for UnaryOperatorApplier<u32> {}
-unsafe impl Send for UnaryOperatorApplier<u64> {}
-unsafe impl Send for UnaryOperatorApplier<i8> {}
-unsafe impl Send for UnaryOperatorApplier<i16> {}
-unsafe impl Send for UnaryOperatorApplier<i32> {}
-unsafe impl Send for UnaryOperatorApplier<i64> {}
-unsafe impl Send for UnaryOperatorApplier<f32> {}
-unsafe impl Send for UnaryOperatorApplier<f64> {}
-
-unsafe impl Sync for UnaryOperatorApplier<bool> {}
-unsafe impl Sync for UnaryOperatorApplier<u8> {}
-unsafe impl Sync for UnaryOperatorApplier<u16> {}
-unsafe impl Sync for UnaryOperatorApplier<u32> {}
-unsafe impl Sync for UnaryOperatorApplier<u64> {}
-unsafe impl Sync for UnaryOperatorApplier<i8> {}
-unsafe impl Sync for UnaryOperatorApplier<i16> {}
-unsafe impl Sync for UnaryOperatorApplier<i32> {}
-unsafe impl Sync for UnaryOperatorApplier<i64> {}
-unsafe impl Sync for UnaryOperatorApplier<f32> {}
-unsafe impl Sync for UnaryOperatorApplier<f64> {}
+implement_trait_for_all_value_types!(Send, UnaryOperatorApplier);
+implement_trait_for_all_value_types!(Sync, UnaryOperatorApplier);
 
 #[derive(Debug, Clone)]
 pub struct UnaryOperatorApplier<T: ValueType> {
@@ -203,15 +187,7 @@ macro_rules! implement_unary_operator {
     };
 }
 
-implement_unary_operator!(bool, bool);
-implement_unary_operator!(u8, u8);
-implement_unary_operator!(u16, u16);
-implement_unary_operator!(u32, u32);
-implement_unary_operator!(u64, u64);
-implement_unary_operator!(i8, i8);
-implement_unary_operator!(i16, i16);
-implement_unary_operator!(i32, i32);
-implement_unary_operator!(i64, i64);
+implement_macro_with_2_types_for_all_value_types!(implement_unary_operator);
 
 #[cfg(test)]
 mod tests {

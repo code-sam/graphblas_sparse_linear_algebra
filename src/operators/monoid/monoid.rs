@@ -1,7 +1,10 @@
 use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
-
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix,
+};
 use crate::value_types::value_type::ValueType;
 
 pub trait Monoid<T>
@@ -37,81 +40,56 @@ pub struct Min<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
-implement_monoid_operator!(Min, GrB_MIN_MONOID_INT8, i8);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_INT16, i16);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_INT32, i32);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_INT64, i64);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_UINT8, u8);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_UINT16, u16);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_UINT32, u32);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_UINT64, u64);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_FP32, f32);
-implement_monoid_operator!(Min, GrB_MIN_MONOID_FP64, f64);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
+    implement_monoid_operator,
+    Min,
+    GrB_MIN_MONOID
+);
 
 #[derive(Debug, Clone)]
 pub struct Max<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
-implement_monoid_operator!(Max, GrB_MAX_MONOID_INT8, i8);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_INT16, i16);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_INT32, i32);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_INT64, i64);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_UINT8, u8);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_UINT16, u16);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_UINT32, u32);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_UINT64, u64);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_FP32, f32);
-implement_monoid_operator!(Max, GrB_MAX_MONOID_FP64, f64);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
+    implement_monoid_operator,
+    Max,
+    GrB_MAX_MONOID
+);
 
 #[derive(Debug, Clone)]
 pub struct Plus<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_INT8, i8);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_INT16, i16);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_INT32, i32);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_INT64, i64);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_UINT8, u8);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_UINT16, u16);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_UINT32, u32);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_UINT64, u64);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_FP32, f32);
-implement_monoid_operator!(Plus, GrB_PLUS_MONOID_FP64, f64);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
+    implement_monoid_operator,
+    Plus,
+    GrB_PLUS_MONOID
+);
 
 #[derive(Debug, Clone)]
 pub struct Times<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_INT8, i8);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_INT16, i16);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_INT32, i32);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_INT64, i64);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_UINT8, u8);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_UINT16, u16);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_UINT32, u32);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_UINT64, u64);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_FP32, f32);
-implement_monoid_operator!(Times, GrB_TIMES_MONOID_FP64, f64);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
+    implement_monoid_operator,
+    Times,
+    GrB_TIMES_MONOID
+);
 
 #[derive(Debug, Clone)]
 pub struct Any<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
-implement_monoid_operator!(Any, GxB_ANY_BOOL_MONOID, bool);
-implement_monoid_operator!(Any, GxB_ANY_INT8_MONOID, i8);
-implement_monoid_operator!(Any, GxB_ANY_INT16_MONOID, i16);
-implement_monoid_operator!(Any, GxB_ANY_INT32_MONOID, i32);
-implement_monoid_operator!(Any, GxB_ANY_INT64_MONOID, i64);
-implement_monoid_operator!(Any, GxB_ANY_UINT8_MONOID, u8);
-implement_monoid_operator!(Any, GxB_ANY_UINT16_MONOID, u16);
-implement_monoid_operator!(Any, GxB_ANY_UINT32_MONOID, u32);
-implement_monoid_operator!(Any, GxB_ANY_UINT64_MONOID, u64);
-implement_monoid_operator!(Any, GxB_ANY_FP32_MONOID, f32);
-implement_monoid_operator!(Any, GxB_ANY_FP64_MONOID, f64);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix!(
+    implement_monoid_operator,
+    Any,
+    GxB_ANY,
+    MONOID
+);
 
 #[derive(Debug, Clone)]
 pub struct LogicalOr<T: ValueType> {
