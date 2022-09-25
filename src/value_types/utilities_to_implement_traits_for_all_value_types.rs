@@ -242,8 +242,8 @@ macro_rules! implement_2_type_macro_for_all_value_types_and_typed_graphblas_func
             $macro_identifier!(u64, u64, [<$graphblas_identifier _UINT64>]);
             $macro_identifier!(f32, f32, [<$graphblas_identifier _FP32>]);
             $macro_identifier!(f64, f64, [<$graphblas_identifier _FP64>]);
-            macros_to_implement_traits::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
-            macros_to_implement_traits::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
         }
     };
 }
@@ -263,8 +263,8 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
             $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64);
             $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32);
             $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64);
-            macros_to_implement_traits::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
-            macros_to_implement_traits::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
         }
     };
 }
@@ -284,8 +284,8 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
             $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64);
             $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32);
             $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64);
-            macros_to_implement_traits::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
-            macros_to_implement_traits::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
         }
     };
 }
@@ -305,8 +305,8 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
             $macro_identifier!($trait, [<$graphblas_identifier _UINT64_ $postfix>], u64);
             $macro_identifier!($trait, [<$graphblas_identifier _FP32_ $postfix>], f32);
             $macro_identifier!($trait, [<$graphblas_identifier _FP64_ $postfix>], f64);
-            macros_to_implement_traits::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize_with_postfix!($macro_identifier, $trait, $graphblas_identifier,  $postfix);
-            macros_to_implement_traits::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize_with_postfix!($macro_identifier, $trait, $graphblas_identifier,  $postfix);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize_with_postfix!($macro_identifier, $trait, $graphblas_identifier,  $postfix);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize_with_postfix!($macro_identifier, $trait, $graphblas_identifier,  $postfix);
         }
     };
 }
@@ -326,8 +326,8 @@ macro_rules! implement_macro_with_3_type_trait_and_typed_graphblas_function_for_
             $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64, u64, u64);
             $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32, f32, f32);
             $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64, f64, f64);
-            macros_to_implement_traits::implement_macro_with_3_typed_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
-            macros_to_implement_traits::implement_macro_with_3_typed_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_3_typed_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_3_typed_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
         }
     };
 }
@@ -347,8 +347,8 @@ macro_rules! implement_macro_for_all_value_types_and_graphblas_function {
             $macro_identifier!(u64, [<$graphblas_identifier _UINT64>]);
             $macro_identifier!(f32, [<$graphblas_identifier _FP32>]);
             $macro_identifier!(f64, [<$graphblas_identifier _FP64>]);
-            macros_to_implement_traits::implement_macro_for_isize_and_graphblas_function!($macro_identifier, $graphblas_identifier);
-            macros_to_implement_traits::implement_macro_for_usize_and_graphblas_function!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_isize_and_graphblas_function!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_usize_and_graphblas_function!($macro_identifier, $graphblas_identifier);
         }
     };
 }
@@ -368,8 +368,8 @@ macro_rules! implement_macro_for_all_value_types_and_2_typed_graphblas_functions
             $macro_identifier!(u64, [<$graphblas_identifier_1 _UINT64>], [<$graphblas_identifier_2 _UINT64>]);
             $macro_identifier!(f32, [<$graphblas_identifier_1 _FP32>], [<$graphblas_identifier_2 _FP32>]);
             $macro_identifier!(f64, [<$graphblas_identifier_1 _FP64>], [<$graphblas_identifier_2 _FP64>]);
-            macros_to_implement_traits::implement_macro_for_isize_and_2_typed_graphblas_functions!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2);
-            macros_to_implement_traits::implement_macro_for_usize_and_2_typed_graphblas_functions!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_isize_and_2_typed_graphblas_functions!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_usize_and_2_typed_graphblas_functions!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2);
         }
     };
 }
@@ -389,8 +389,8 @@ macro_rules! implement_macro_for_all_value_types_and_2_typed_graphblas_functions
             $macro_identifier!(u64, u64, [<$graphblas_identifier_1 _UINT64>], [<$graphblas_identifier_2 _UINT64>], identity_conversion);
             $macro_identifier!(f32, f32, [<$graphblas_identifier_1 _FP32>], [<$graphblas_identifier_2 _FP32>], identity_conversion);
             $macro_identifier!(f64, f64, [<$graphblas_identifier_1 _FP64>], [<$graphblas_identifier_2 _FP64>], identity_conversion);
-            macros_to_implement_traits::implement_macro_for_isize_and_2_typed_graphblas_functions_with_type_conversion!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2, convert_mut_scalar_to_type);
-            macros_to_implement_traits::implement_macro_for_usize_and_2_typed_graphblas_functions_with_type_conversion!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2, convert_mut_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_isize_and_2_typed_graphblas_functions_with_type_conversion!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2, convert_mut_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_usize_and_2_typed_graphblas_functions_with_type_conversion!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2, convert_mut_scalar_to_type);
         }
     };
 }
@@ -410,8 +410,8 @@ macro_rules! implement_macro_for_all_value_types_and_graphblas_function_with_vec
             $macro_identifier!(u64, u64, [<$graphblas_identifier _UINT64>], identity_conversion);
             $macro_identifier!(f32, f32, [<$graphblas_identifier _FP32>], identity_conversion);
             $macro_identifier!(f64, f64, [<$graphblas_identifier _FP64>], identity_conversion);
-            macros_to_implement_traits::implement_macro_for_isize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_vector_to_type);
-            macros_to_implement_traits::implement_macro_for_usize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_vector_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_isize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_vector_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_usize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_vector_to_type);
         }
     };
 }
@@ -431,8 +431,8 @@ macro_rules! implement_macro_for_all_value_types_and_graphblas_function_with_sca
             $macro_identifier!(u64, u64, [<$graphblas_identifier _UINT64>], identity_conversion);
             $macro_identifier!(f32, f32, [<$graphblas_identifier _FP32>], identity_conversion);
             $macro_identifier!(f64, f64, [<$graphblas_identifier _FP64>], identity_conversion);
-            macros_to_implement_traits::implement_macro_for_isize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
-            macros_to_implement_traits::implement_macro_for_usize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_isize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_usize_and_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
         }
     };
 }
@@ -452,8 +452,8 @@ macro_rules! implement_2_type_macro_for_all_value_types_and_typed_graphblas_func
             $macro_identifier!(u64, u64, u64, [<$graphblas_identifier _UINT64>], identity_conversion);
             $macro_identifier!(f32, f32, f32, [<$graphblas_identifier _FP32>], identity_conversion);
             $macro_identifier!(f64, f64, f64, [<$graphblas_identifier _FP64>], identity_conversion);
-            macros_to_implement_traits::implement_2_type_macro_for_isize_and_typed_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
-            macros_to_implement_traits::implement_2_type_macro_for_usize_and_typed_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function_with_type_conversion!($macro_identifier, $graphblas_identifier, convert_scalar_to_type);
         }
     };
 }
@@ -493,8 +493,8 @@ macro_rules! implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_
             $macro_identifier!(u64, u64, u64, u64, identity_conversion, [<$graphblas_function_1 _UINT64>], [<$graphblas_function_2 _UINT64>], [<$graphblas_function_3 _UINT64>], [<$graphblas_function_4 _UINT64>]);
             $macro_identifier!(f32, f32, f32, f32, identity_conversion, [<$graphblas_function_1 _FP32>], [<$graphblas_function_2 _FP32>], [<$graphblas_function_3 _FP32>], [<$graphblas_function_4 _FP32>]);
             $macro_identifier!(f64, f64, f64, f64, identity_conversion, [<$graphblas_function_1 _FP64>], [<$graphblas_function_2 _FP64>], [<$graphblas_function_3 _FP64>], [<$graphblas_function_4 _FP64>]);
-            macros_to_implement_traits::implement_macro_for_3_isizes_and_4_graphblas_functions!($macro_identifier, $graphblas_function_1, $graphblas_function_2, $graphblas_function_3, $graphblas_function_4, convert_scalar_to_type);
-            macros_to_implement_traits::implement_macro_for_3_usizes_and_4_graphblas_functions!($macro_identifier, $graphblas_function_1, $graphblas_function_2, $graphblas_function_3, $graphblas_function_4, convert_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_3_isizes_and_4_graphblas_functions!($macro_identifier, $graphblas_function_1, $graphblas_function_2, $graphblas_function_3, $graphblas_function_4, convert_scalar_to_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_3_usizes_and_4_graphblas_functions!($macro_identifier, $graphblas_function_1, $graphblas_function_2, $graphblas_function_3, $graphblas_function_4, convert_scalar_to_type);
         }
     };
 }
@@ -514,8 +514,8 @@ macro_rules! implement_semiring_for_all_value_types {
             $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u64, u64, u64, [<$graphblas_operator _UINT64>]);
             $macro_identifier!($semiring, $addition_operator, $multiplication_operator, f32, f32, f32, [<$graphblas_operator _FP32>]);
             $macro_identifier!($semiring, $addition_operator, $multiplication_operator, f64, f64, f64, [<$graphblas_operator _FP64>]);
-            macros_to_implement_traits::implement_semiring_for_isize!($macro_identifier, $semiring, $addition_operator, $multiplication_operator, $graphblas_operator);
-            macros_to_implement_traits::implement_semiring_for_usize!($macro_identifier, $semiring, $addition_operator, $multiplication_operator, $graphblas_operator);
+            graphblas_sparse_linear_algebra_proc_macros::implement_semiring_for_isize!($macro_identifier, $semiring, $addition_operator, $multiplication_operator, $graphblas_operator);
+            graphblas_sparse_linear_algebra_proc_macros::implement_semiring_for_usize!($macro_identifier, $semiring, $addition_operator, $multiplication_operator, $graphblas_operator);
         }
     };
 }

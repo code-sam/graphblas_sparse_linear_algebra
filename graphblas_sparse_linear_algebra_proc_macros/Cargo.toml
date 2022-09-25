@@ -1,7 +1,9 @@
 [package]
-name = "macros_to_implement_traits"
+name = "graphblas_sparse_linear_algebra_proc_macros"
 version = "0.1.0"
 edition = "2021"
+license = "CC-BY-NC-4.0"
+authors = ["code_sam <mail@samdekker.nl>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
