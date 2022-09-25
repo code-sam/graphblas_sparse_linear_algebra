@@ -28,7 +28,10 @@ impl<T: ValueType + Copy> MatrixElement<T> {
         self.coordinate.column_index()
     }
     pub fn value(&self) -> T {
-        self.value
+        self.value.clone()
+    }
+    pub fn value_ref<'a>(&'a self) -> &'a T {
+        &self.value
     }
 
     pub fn from_triple(row_index: ElementIndex, column_index: ElementIndex, value: T) -> Self {
@@ -112,7 +115,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     }
 
     pub fn row_indices_ref(&self) -> &[ElementIndex] {
-        &self.row_index.as_slice()
+        self.row_index.as_slice()
     }
 
     pub(crate) fn row_index(
@@ -156,12 +159,16 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     }
 
     pub fn column_indices_ref(&self) -> &[ElementIndex] {
-        &self.column_index.as_slice()
+        self.column_index.as_slice()
     }
 
     pub fn values_ref(&self) -> &[T] {
-        &self.value.as_slice()
+        self.value.as_slice()
     }
+
+    // pub fn values(&self) -> &Vec<T> {
+    //     &self.value
+    // }
 
     pub fn length(&self) -> usize {
         self.value.len()

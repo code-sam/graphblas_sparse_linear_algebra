@@ -1,7 +1,9 @@
+use std::marker::PhantomData;
 use std::ptr;
 
-use std::marker::PhantomData;
-
+use crate::bindings_to_graphblas_implementation::{
+    GrB_BinaryOp, GrB_Descriptor, GxB_Col_subassign,
+};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
@@ -9,40 +11,19 @@ use crate::util::{
 };
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
-use crate::value_types::value_type::{AsBoolean, ValueType};
-
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GxB_Col_subassign,
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
+    implement_trait_for_2_type_data_type_and_all_value_types,
 };
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 // TODO: explicitly define how dupicates are handled
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertVectorIntoSubColumn<bool, bool> {}
-unsafe impl Send for InsertVectorIntoSubColumn<u8, u8> {}
-unsafe impl Send for InsertVectorIntoSubColumn<u16, u16> {}
-unsafe impl Send for InsertVectorIntoSubColumn<u32, u32> {}
-unsafe impl Send for InsertVectorIntoSubColumn<u64, u64> {}
-unsafe impl Send for InsertVectorIntoSubColumn<i8, i8> {}
-unsafe impl Send for InsertVectorIntoSubColumn<i16, i16> {}
-unsafe impl Send for InsertVectorIntoSubColumn<i32, i32> {}
-unsafe impl Send for InsertVectorIntoSubColumn<i64, i64> {}
-unsafe impl Send for InsertVectorIntoSubColumn<f32, f32> {}
-unsafe impl Send for InsertVectorIntoSubColumn<f64, f64> {}
-
-unsafe impl Sync for InsertVectorIntoSubColumn<bool, bool> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<u8, u8> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<u16, u16> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<u32, u32> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<u64, u64> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<i8, i8> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<i16, i16> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<i32, i32> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<i64, i64> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<f32, f32> {}
-unsafe impl Sync for InsertVectorIntoSubColumn<f64, f64> {}
+implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertVectorIntoSubColumn);
+implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertVectorIntoSubColumn);
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -228,17 +209,10 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
     };
 }
 
-implement_insert_vector_into_sub_column_trait!(bool, bool, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(u8, u8, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(u16, u16, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(u32, u32, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(u64, u64, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(i8, i8, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(i16, i16, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(i32, i32, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(i64, i64, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(f32, f32, GxB_Col_subassign);
-implement_insert_vector_into_sub_column_trait!(f64, f64, GxB_Col_subassign);
+implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
+    implement_insert_vector_into_sub_column_trait,
+    GxB_Col_subassign
+);
 
 #[cfg(test)]
 mod tests {

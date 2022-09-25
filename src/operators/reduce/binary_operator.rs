@@ -7,7 +7,7 @@ use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions
 
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
-
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -17,29 +17,8 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for BinaryOperatorReducer<bool> {}
-unsafe impl Send for BinaryOperatorReducer<u8> {}
-unsafe impl Send for BinaryOperatorReducer<u16> {}
-unsafe impl Send for BinaryOperatorReducer<u32> {}
-unsafe impl Send for BinaryOperatorReducer<u64> {}
-unsafe impl Send for BinaryOperatorReducer<i8> {}
-unsafe impl Send for BinaryOperatorReducer<i16> {}
-unsafe impl Send for BinaryOperatorReducer<i32> {}
-unsafe impl Send for BinaryOperatorReducer<i64> {}
-unsafe impl Send for BinaryOperatorReducer<f32> {}
-unsafe impl Send for BinaryOperatorReducer<f64> {}
-
-unsafe impl Sync for BinaryOperatorReducer<bool> {}
-unsafe impl Sync for BinaryOperatorReducer<u8> {}
-unsafe impl Sync for BinaryOperatorReducer<u16> {}
-unsafe impl Sync for BinaryOperatorReducer<u32> {}
-unsafe impl Sync for BinaryOperatorReducer<u64> {}
-unsafe impl Sync for BinaryOperatorReducer<i8> {}
-unsafe impl Sync for BinaryOperatorReducer<i16> {}
-unsafe impl Sync for BinaryOperatorReducer<i32> {}
-unsafe impl Sync for BinaryOperatorReducer<i64> {}
-unsafe impl Sync for BinaryOperatorReducer<f32> {}
-unsafe impl Sync for BinaryOperatorReducer<f64> {}
+implement_trait_for_all_value_types!(Send, BinaryOperatorReducer);
+implement_trait_for_all_value_types!(Sync, BinaryOperatorReducer);
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorReducer<T: ValueType> {

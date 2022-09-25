@@ -1,10 +1,17 @@
+use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_scalar::{GetScalarValue, SparseScalar};
 use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    convert_scalar_to_type, identity_conversion,
+    implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
+    implement_trait_for_3_type_data_type_and_all_value_types,
+};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -36,29 +43,8 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for BinaryOperatorApplier<bool, bool, bool> {}
-unsafe impl Send for BinaryOperatorApplier<u8, u8, u8> {}
-unsafe impl Send for BinaryOperatorApplier<u16, u16, u16> {}
-unsafe impl Send for BinaryOperatorApplier<u32, u32, u32> {}
-unsafe impl Send for BinaryOperatorApplier<u64, u64, u64> {}
-unsafe impl Send for BinaryOperatorApplier<i8, i8, i8> {}
-unsafe impl Send for BinaryOperatorApplier<i16, i16, i16> {}
-unsafe impl Send for BinaryOperatorApplier<i32, i32, i32> {}
-unsafe impl Send for BinaryOperatorApplier<i64, i64, i64> {}
-unsafe impl Send for BinaryOperatorApplier<f32, f32, f32> {}
-unsafe impl Send for BinaryOperatorApplier<f64, f64, f64> {}
-
-unsafe impl Sync for BinaryOperatorApplier<bool, bool, bool> {}
-unsafe impl Sync for BinaryOperatorApplier<u8, u8, u8> {}
-unsafe impl Sync for BinaryOperatorApplier<u16, u16, u16> {}
-unsafe impl Sync for BinaryOperatorApplier<u32, u32, u32> {}
-unsafe impl Sync for BinaryOperatorApplier<u64, u64, u64> {}
-unsafe impl Sync for BinaryOperatorApplier<i8, i8, i8> {}
-unsafe impl Sync for BinaryOperatorApplier<i16, i16, i16> {}
-unsafe impl Sync for BinaryOperatorApplier<i32, i32, i32> {}
-unsafe impl Sync for BinaryOperatorApplier<i64, i64, i64> {}
-unsafe impl Sync for BinaryOperatorApplier<f32, f32, f32> {}
-unsafe impl Sync for BinaryOperatorApplier<f64, f64, f64> {}
+implement_trait_for_3_type_data_type_and_all_value_types!(Send, BinaryOperatorApplier);
+implement_trait_for_3_type_data_type_and_all_value_types!(Sync, BinaryOperatorApplier);
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorApplier<
@@ -181,17 +167,19 @@ where
 }
 
 macro_rules! implement_binary_operator {
-    ($first_argument_type:ty, $second_argument_type:ty, $product_type:ty, $operator_vector_as_first_argument:ident, $operator_vector_as_second_argument:ident, $operator_matrix_as_first_argument:ident, $operator_matrix_as_second_argument:ident) => {
+    ($first_argument_type:ty, $second_argument_type:ty, $product_type:ty, $graphblas_scalar_type:ty, $convert_to_graphblas_implementation_type:ident, $operator_vector_as_first_argument:ident, $operator_vector_as_second_argument:ident, $operator_matrix_as_first_argument:ident, $operator_matrix_as_second_argument:ident) => {
         impl BinaryOperatorApplierTrait<$first_argument_type, $second_argument_type, $product_type>
             for BinaryOperatorApplier<$first_argument_type, $second_argument_type, $product_type>
         {
             fn apply_with_vector_as_first_argument(
                 &self,
                 first_argument: &SparseVector<$first_argument_type>,
-                second_argument: &$second_argument_type,
+                second_argument: &$second_argument_type, // TODO: this must be a SparseScalar, such that type conversion can be removed
                 product: &mut SparseVector<$product_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let second_argument = second_argument.clone();
+                $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_vector_as_first_argument(
@@ -200,7 +188,7 @@ macro_rules! implement_binary_operator {
                         self.accumulator,
                         self.binary_operator,
                         first_argument.graphblas_vector(),
-                        *second_argument,
+                        second_argument,
                         self.options,
                     )
                 })?;
@@ -215,6 +203,8 @@ macro_rules! implement_binary_operator {
                 product: &mut SparseVector<$product_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let first_argument = first_argument.clone();
+                $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_vector_as_second_argument(
@@ -222,7 +212,7 @@ macro_rules! implement_binary_operator {
                         ptr::null_mut(),
                         self.accumulator,
                         self.binary_operator,
-                        *first_argument,
+                        first_argument,
                         second_argument.graphblas_vector(),
                         self.options,
                     )
@@ -242,6 +232,8 @@ macro_rules! implement_binary_operator {
                 mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let second_argument = second_argument.clone();
+                $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_vector_as_first_argument(
@@ -250,7 +242,7 @@ macro_rules! implement_binary_operator {
                         self.accumulator,
                         self.binary_operator,
                         first_argument.graphblas_vector(),
-                        *second_argument,
+                        second_argument,
                         self.options,
                     )
                 })?;
@@ -269,6 +261,8 @@ macro_rules! implement_binary_operator {
                 mask: &SparseVector<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let first_argument = first_argument.clone();
+                $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_vector_as_second_argument(
@@ -276,7 +270,7 @@ macro_rules! implement_binary_operator {
                         mask.graphblas_vector(),
                         self.accumulator,
                         self.binary_operator,
-                        *first_argument,
+                        first_argument,
                         second_argument.graphblas_vector(),
                         self.options,
                     )
@@ -292,6 +286,8 @@ macro_rules! implement_binary_operator {
                 product: &mut SparseMatrix<$product_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let second_argument = second_argument.clone();
+                $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_matrix_as_first_argument(
@@ -300,7 +296,7 @@ macro_rules! implement_binary_operator {
                         self.accumulator,
                         self.binary_operator,
                         first_argument.graphblas_matrix(),
-                        *second_argument,
+                        second_argument,
                         self.options,
                     )
                 })?;
@@ -315,6 +311,8 @@ macro_rules! implement_binary_operator {
                 product: &mut SparseMatrix<$product_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let first_argument = first_argument.clone();
+                $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_matrix_as_second_argument(
@@ -322,7 +320,7 @@ macro_rules! implement_binary_operator {
                         ptr::null_mut(),
                         self.accumulator,
                         self.binary_operator,
-                        *first_argument,
+                        first_argument,
                         second_argument.graphblas_matrix(),
                         self.options,
                     )
@@ -342,6 +340,8 @@ macro_rules! implement_binary_operator {
                 mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let second_argument = second_argument.clone();
+                $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_matrix_as_first_argument(
@@ -350,7 +350,7 @@ macro_rules! implement_binary_operator {
                         self.accumulator,
                         self.binary_operator,
                         first_argument.graphblas_matrix(),
-                        *second_argument,
+                        second_argument,
                         self.options,
                     )
                 })?;
@@ -369,6 +369,8 @@ macro_rules! implement_binary_operator {
                 mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
+                let first_argument = first_argument.clone();
+                $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
                 context.call(|| unsafe {
                     $operator_matrix_as_second_argument(
@@ -376,7 +378,7 @@ macro_rules! implement_binary_operator {
                         mask.graphblas_matrix(),
                         self.accumulator,
                         self.binary_operator,
-                        *first_argument,
+                        first_argument,
                         second_argument.graphblas_matrix(),
                         self.options,
                     )
@@ -388,104 +390,12 @@ macro_rules! implement_binary_operator {
     };
 }
 
-implement_binary_operator!(
-    bool,
-    bool,
-    bool,
-    GrB_Vector_apply_BinaryOp2nd_BOOL,
-    GrB_Vector_apply_BinaryOp1st_BOOL,
-    GrB_Matrix_apply_BinaryOp2nd_BOOL,
-    GrB_Matrix_apply_BinaryOp1st_BOOL
-);
-implement_binary_operator!(
-    u8,
-    u8,
-    u8,
-    GrB_Vector_apply_BinaryOp2nd_UINT8,
-    GrB_Vector_apply_BinaryOp1st_UINT8,
-    GrB_Matrix_apply_BinaryOp2nd_UINT8,
-    GrB_Matrix_apply_BinaryOp1st_UINT8
-);
-implement_binary_operator!(
-    u16,
-    u16,
-    u16,
-    GrB_Vector_apply_BinaryOp2nd_UINT16,
-    GrB_Vector_apply_BinaryOp1st_UINT16,
-    GrB_Matrix_apply_BinaryOp2nd_UINT16,
-    GrB_Matrix_apply_BinaryOp1st_UINT16
-);
-implement_binary_operator!(
-    u32,
-    u32,
-    u32,
-    GrB_Vector_apply_BinaryOp2nd_UINT32,
-    GrB_Vector_apply_BinaryOp1st_UINT32,
-    GrB_Matrix_apply_BinaryOp2nd_UINT32,
-    GrB_Matrix_apply_BinaryOp1st_UINT32
-);
-implement_binary_operator!(
-    u64,
-    u64,
-    u64,
-    GrB_Vector_apply_BinaryOp2nd_UINT64,
-    GrB_Vector_apply_BinaryOp1st_UINT64,
-    GrB_Matrix_apply_BinaryOp2nd_UINT64,
-    GrB_Matrix_apply_BinaryOp1st_UINT64
-);
-implement_binary_operator!(
-    i8,
-    i8,
-    i8,
-    GrB_Vector_apply_BinaryOp2nd_INT8,
-    GrB_Vector_apply_BinaryOp1st_INT8,
-    GrB_Matrix_apply_BinaryOp2nd_INT8,
-    GrB_Matrix_apply_BinaryOp1st_INT8
-);
-implement_binary_operator!(
-    i16,
-    i16,
-    i16,
-    GrB_Vector_apply_BinaryOp2nd_INT16,
-    GrB_Vector_apply_BinaryOp1st_INT16,
-    GrB_Matrix_apply_BinaryOp2nd_INT16,
-    GrB_Matrix_apply_BinaryOp1st_INT16
-);
-implement_binary_operator!(
-    i32,
-    i32,
-    i32,
-    GrB_Vector_apply_BinaryOp2nd_INT32,
-    GrB_Vector_apply_BinaryOp1st_INT32,
-    GrB_Matrix_apply_BinaryOp2nd_INT32,
-    GrB_Matrix_apply_BinaryOp1st_INT32
-);
-implement_binary_operator!(
-    i64,
-    i64,
-    i64,
-    GrB_Vector_apply_BinaryOp2nd_INT64,
-    GrB_Vector_apply_BinaryOp1st_INT64,
-    GrB_Matrix_apply_BinaryOp2nd_INT64,
-    GrB_Matrix_apply_BinaryOp1st_INT64
-);
-implement_binary_operator!(
-    f32,
-    f32,
-    f32,
-    GrB_Vector_apply_BinaryOp2nd_FP32,
-    GrB_Vector_apply_BinaryOp1st_FP32,
-    GrB_Matrix_apply_BinaryOp2nd_FP32,
-    GrB_Matrix_apply_BinaryOp1st_FP32
-);
-implement_binary_operator!(
-    f64,
-    f64,
-    f64,
-    GrB_Vector_apply_BinaryOp2nd_FP64,
-    GrB_Vector_apply_BinaryOp1st_FP64,
-    GrB_Matrix_apply_BinaryOp2nd_FP64,
-    GrB_Matrix_apply_BinaryOp1st_FP64
+implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types!(
+    implement_binary_operator,
+    GrB_Vector_apply_BinaryOp2nd,
+    GrB_Vector_apply_BinaryOp1st,
+    GrB_Matrix_apply_BinaryOp2nd,
+    GrB_Matrix_apply_BinaryOp1st
 );
 
 #[cfg(test)]
@@ -599,6 +509,61 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+        operator
+            .apply_with_vector_as_second_argument(&10, &vector, &mut product_vector)
+            .unwrap();
+
+        println!("{}", vector);
+        println!("{}", product_vector);
+
+        assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 10);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+    }
+
+    #[test]
+    fn test_vector_binary_operator_application_with_usize() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = VectorElementList::<usize>::from_element_vector(vec![
+            (1, 1).into(),
+            (2, 2).into(),
+            (4, 4).into(),
+            (5, 5).into(),
+        ]);
+
+        let vector_length: usize = 10;
+        let vector = SparseVector::<usize>::from_element_list(
+            &context.clone(),
+            &vector_length,
+            &element_list,
+            &First::<usize, usize, usize>::new(),
+        )
+        .unwrap();
+
+        let mut product_vector = SparseVector::<usize>::new(&context, &vector_length).unwrap();
+
+        let operator = BinaryOperatorApplier::new(
+            &First::<usize, usize, usize>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        operator
+            .apply_with_vector_as_first_argument(&vector, &10, &mut product_vector)
+            .unwrap();
+
+        println!("{}", product_vector);
+
+        assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+
+        let operator = BinaryOperatorApplier::new(
+            &First::<usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
             None,
         );

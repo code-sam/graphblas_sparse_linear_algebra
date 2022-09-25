@@ -1,14 +1,6 @@
-use std::ptr;
-
+use std::convert::TryInto;
 use std::marker::PhantomData;
-
-use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
-
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
-
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32,
@@ -20,33 +12,22 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
+use crate::error::SparseLinearAlgebraError;
+use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
+use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    convert_mut_scalar_to_type, identity_conversion,
+    implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,
+    implement_trait_for_all_value_types,
+};
+use crate::value_types::value_type::{AsBoolean, ValueType};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for MonoidReducer<bool> {}
-unsafe impl Send for MonoidReducer<u8> {}
-unsafe impl Send for MonoidReducer<u16> {}
-unsafe impl Send for MonoidReducer<u32> {}
-unsafe impl Send for MonoidReducer<u64> {}
-unsafe impl Send for MonoidReducer<i8> {}
-unsafe impl Send for MonoidReducer<i16> {}
-unsafe impl Send for MonoidReducer<i32> {}
-unsafe impl Send for MonoidReducer<i64> {}
-unsafe impl Send for MonoidReducer<f32> {}
-unsafe impl Send for MonoidReducer<f64> {}
-
-unsafe impl Sync for MonoidReducer<bool> {}
-unsafe impl Sync for MonoidReducer<u8> {}
-unsafe impl Sync for MonoidReducer<u16> {}
-unsafe impl Sync for MonoidReducer<u32> {}
-unsafe impl Sync for MonoidReducer<u64> {}
-unsafe impl Sync for MonoidReducer<i8> {}
-unsafe impl Sync for MonoidReducer<i16> {}
-unsafe impl Sync for MonoidReducer<i32> {}
-unsafe impl Sync for MonoidReducer<i64> {}
-unsafe impl Sync for MonoidReducer<f32> {}
-unsafe impl Sync for MonoidReducer<f64> {}
+implement_trait_for_all_value_types!(Send, MonoidReducer);
+implement_trait_for_all_value_types!(Sync, MonoidReducer);
 
 #[derive(Debug, Clone)]
 pub struct MonoidReducer<T: ValueType> {
@@ -140,7 +121,7 @@ impl<T: ValueType> MonoidReducer<T> {
 }
 
 macro_rules! implement_monoid_reducer {
-    ($value_type:ty, $matrix_reducer_operator:ident, $vector_reducer_operator:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ty, $matrix_reducer_operator:ident, $vector_reducer_operator:ident, $convert_to_type:ident) => {
         impl MonoidScalarReducer<$value_type> for MonoidReducer<$value_type> {
             fn matrix_to_scalar(
                 &self,
@@ -148,10 +129,12 @@ macro_rules! implement_monoid_reducer {
                 product: &mut $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
+                let mut tmp_product = product.clone();
+                $convert_to_type!(tmp_product, $graphblas_implementation_type);
 
                 context.call(|| unsafe {
                     $matrix_reducer_operator(
-                        product,
+                        &mut tmp_product,
                         self.accumulator,
                         self.monoid,
                         argument.graphblas_matrix(),
@@ -159,6 +142,8 @@ macro_rules! implement_monoid_reducer {
                     )
                 })?;
 
+                $convert_to_type!(tmp_product, $value_type);
+                *product = tmp_product;
                 Ok(())
             }
 
@@ -168,10 +153,12 @@ macro_rules! implement_monoid_reducer {
                 product: &mut $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
+                let mut tmp_product = product.clone();
+                $convert_to_type!(tmp_product, $graphblas_implementation_type);
 
                 context.call(|| unsafe {
                     $vector_reducer_operator(
-                        product,
+                        &mut tmp_product,
                         self.accumulator,
                         self.monoid,
                         argument.graphblas_vector(),
@@ -179,23 +166,19 @@ macro_rules! implement_monoid_reducer {
                     )
                 })?;
 
+                $convert_to_type!(tmp_product, $value_type);
+                *product = tmp_product;
                 Ok(())
             }
         }
     };
 }
 
-implement_monoid_reducer!(bool, GrB_Matrix_reduce_BOOL, GrB_Vector_reduce_BOOL);
-implement_monoid_reducer!(u8, GrB_Matrix_reduce_UINT8, GrB_Vector_reduce_UINT8);
-implement_monoid_reducer!(u16, GrB_Matrix_reduce_UINT16, GrB_Vector_reduce_UINT16);
-implement_monoid_reducer!(u32, GrB_Matrix_reduce_UINT32, GrB_Vector_reduce_UINT32);
-implement_monoid_reducer!(u64, GrB_Matrix_reduce_UINT64, GrB_Vector_reduce_UINT64);
-implement_monoid_reducer!(i8, GrB_Matrix_reduce_INT8, GrB_Vector_reduce_INT8);
-implement_monoid_reducer!(i16, GrB_Matrix_reduce_INT16, GrB_Vector_reduce_INT16);
-implement_monoid_reducer!(i32, GrB_Matrix_reduce_INT32, GrB_Vector_reduce_INT32);
-implement_monoid_reducer!(i64, GrB_Matrix_reduce_INT64, GrB_Vector_reduce_INT64);
-implement_monoid_reducer!(f32, GrB_Matrix_reduce_FP32, GrB_Vector_reduce_FP32);
-implement_monoid_reducer!(f64, GrB_Matrix_reduce_FP64, GrB_Vector_reduce_FP64);
+implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion!(
+    implement_monoid_reducer,
+    GrB_Matrix_reduce,
+    GrB_Vector_reduce
+);
 
 #[cfg(test)]
 mod tests {
@@ -209,146 +192,155 @@ mod tests {
     use crate::value_types::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;
 
-    #[test]
-    fn test_monoid_to_vector_reducer() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+    macro_rules! test_monoid {
+        ($value_type:ty) => {
+            paste::paste! {
+                #[test]
+                fn [<test_monoid_to_vector_reducer_ $value_type>]() {
+                    let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let element_list = MatrixElementList::<u8>::from_element_vector(vec![
-            (1, 1, 1).into(),
-            (1, 5, 1).into(),
-            (2, 1, 2).into(),
-            (4, 2, 4).into(),
-            (5, 2, 5).into(),
-        ]);
+                    let element_list = MatrixElementList::<$value_type>::from_element_vector(vec![
+                        (1, 1, 1 as $value_type).into(),
+                        (1, 5, 1 as $value_type).into(),
+                        (2, 1, 2 as $value_type).into(),
+                        (4, 2, 4 as $value_type).into(),
+                        (5, 2, 5 as $value_type).into(),
+                    ]);
 
-        let matrix_size: Size = (10, 15).into();
-        let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
-            &matrix_size,
-            &element_list,
-            &First::<u8, u8, u8>::new(),
-        )
-        .unwrap();
+                    let matrix_size: Size = (10, 15).into();
+                    let matrix = SparseMatrix::<$value_type>::from_element_list(
+                        &context.clone(),
+                        &matrix_size,
+                        &element_list,
+                        &First::<$value_type, $value_type, $value_type>::new(),
+                    )
+                    .unwrap();
 
-        let mut product_vector =
-            SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
+                    let mut product_vector =
+                        SparseVector::<$value_type>::new(&context, &matrix_size.row_height()).unwrap();
 
-        let reducer = MonoidReducer::new(
-            &MonoidPlus::<u8>::new(),
-            &OperatorOptions::new_default(),
-            None,
-        );
+                    let reducer = MonoidReducer::new(
+                        &MonoidPlus::<$value_type>::new(),
+                        &OperatorOptions::new_default(),
+                        None,
+                    );
 
-        reducer.to_vector(&matrix, &mut product_vector).unwrap();
+                    reducer.to_vector(&matrix, &mut product_vector).unwrap();
 
-        println!("{}", product_vector);
+                    println!("{}", product_vector);
 
-        assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+                    assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
+                    assert_eq!(product_vector.get_element_value(&1).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&9).unwrap(), 0 as $value_type);
 
-        let mask_element_list = VectorElementList::<u8>::from_element_vector(vec![
-            (1, 1).into(),
-            (2, 2).into(),
-            (4, 4).into(),
-            // (5, 5).into(),
-        ]);
+                    let mask_element_list = VectorElementList::<$value_type>::from_element_vector(vec![
+                        (1, 1 as $value_type).into(),
+                        (2, 2 as $value_type).into(),
+                        (4, 4 as $value_type).into(),
+                        // (5, 5).into(),
+                    ]);
 
-        let mask = SparseVector::<u8>::from_element_list(
-            &context.clone(),
-            &matrix_size.row_height(),
-            &mask_element_list,
-            &First::<u8, u8, u8>::new(),
-        )
-        .unwrap();
+                    let mask = SparseVector::<$value_type>::from_element_list(
+                        &context.clone(),
+                        &matrix_size.row_height(),
+                        &mask_element_list,
+                        &First::<$value_type, $value_type, $value_type>::new(),
+                    )
+                    .unwrap();
 
-        let mut product_vector =
-            SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
+                    let mut product_vector =
+                        SparseVector::<$value_type>::new(&context, &matrix_size.row_height()).unwrap();
 
-        reducer
-            .to_vector_with_mask(&matrix, &mut product_vector, &mask)
-            .unwrap();
+                    reducer
+                        .to_vector_with_mask(&matrix, &mut product_vector, &mask)
+                        .unwrap();
 
-        println!("{}", matrix);
-        println!("{}", product_vector);
+                    println!("{}", matrix);
+                    println!("{}", product_vector);
 
-        assert_eq!(product_vector.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&5).unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+                    assert_eq!(product_vector.number_of_stored_elements().unwrap(), 3);
+                    assert_eq!(product_vector.get_element_value(&1).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&5).unwrap(), 0 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&9).unwrap(), 0 as $value_type);
+                }
+
+                #[test]
+                fn [<test_monoid_to_scalar_reducer_for_matrix_ $value_type>]() {
+                    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+                    let element_list = MatrixElementList::<$value_type>::from_element_vector(vec![
+                        (1, 1, 1 as $value_type).into(),
+                        (1, 5, 1 as $value_type).into(),
+                        (2, 1, 2 as $value_type).into(),
+                        (4, 2, 4 as $value_type).into(),
+                        (5, 2, 5 as $value_type).into(),
+                    ]);
+
+                    let matrix_size: Size = (10, 15).into();
+                    let matrix = SparseMatrix::<$value_type>::from_element_list(
+                        &context.clone(),
+                        &matrix_size,
+                        &element_list,
+                        &First::<$value_type, $value_type, $value_type>::new(),
+                    )
+                    .unwrap();
+
+                    let mut product = 1 as $value_type;
+
+                    let reducer = MonoidReducer::new(
+                        &MonoidPlus::<$value_type>::new(),
+                        &OperatorOptions::new_default(),
+                        None,
+                    );
+
+                    reducer.matrix_to_scalar(&matrix, &mut product).unwrap();
+
+                    println!("{}", product);
+
+                    assert_eq!(product, 13 as $value_type);
+                }
+
+                #[test]
+                fn [<test_monoid_to_scalar_reducer_for_vector_ $value_type>]() {
+                    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+                    let element_list = VectorElementList::<$value_type>::from_element_vector(vec![
+                        (1, 1 as $value_type).into(),
+                        (2, 2 as $value_type).into(),
+                        (4, 4 as $value_type).into(),
+                        (5, 5 as $value_type).into(),
+                    ]);
+
+                    let vector_length = 10;
+                    let vector = SparseVector::<$value_type>::from_element_list(
+                        &context.clone(),
+                        &vector_length,
+                        &element_list,
+                        &First::<$value_type, $value_type, $value_type>::new(),
+                    )
+                    .unwrap();
+
+                    let mut product = 0 as $value_type;
+
+                    let reducer = MonoidReducer::new(
+                        &MonoidPlus::<$value_type>::new(),
+                        &OperatorOptions::new_default(),
+                        None,
+                    );
+
+                    reducer.vector_to_scalar(&vector, &mut product).unwrap();
+
+                    println!("{}", product);
+
+                    assert_eq!(product, 12 as $value_type);
+                }
+            }
+        };
     }
 
-    #[test]
-    fn test_monoid_to_scalar_reducer_for_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
-
-        let element_list = MatrixElementList::<u8>::from_element_vector(vec![
-            (1, 1, 1).into(),
-            (1, 5, 1).into(),
-            (2, 1, 2).into(),
-            (4, 2, 4).into(),
-            (5, 2, 5).into(),
-        ]);
-
-        let matrix_size: Size = (10, 15).into();
-        let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
-            &matrix_size,
-            &element_list,
-            &First::<u8, u8, u8>::new(),
-        )
-        .unwrap();
-
-        let mut product = 0;
-
-        let reducer = MonoidReducer::new(
-            &MonoidPlus::<u8>::new(),
-            &OperatorOptions::new_default(),
-            None,
-        );
-
-        reducer.matrix_to_scalar(&matrix, &mut product).unwrap();
-
-        println!("{}", product);
-
-        assert_eq!(product, 13);
-    }
-
-    #[test]
-    fn test_monoid_to_scalar_reducer_for_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
-
-        let element_list = VectorElementList::<u8>::from_element_vector(vec![
-            (1, 1).into(),
-            (2, 2).into(),
-            (4, 4).into(),
-            (5, 5).into(),
-        ]);
-
-        let vector_length = 10;
-        let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
-            &vector_length,
-            &element_list,
-            &First::<u8, u8, u8>::new(),
-        )
-        .unwrap();
-
-        let mut product = 0;
-
-        let reducer = MonoidReducer::new(
-            &MonoidPlus::<u8>::new(),
-            &OperatorOptions::new_default(),
-            None,
-        );
-
-        reducer.vector_to_scalar(&vector, &mut product).unwrap();
-
-        println!("{}", product);
-
-        assert_eq!(product, 12);
-    }
+    implement_macro_for_all_value_types_except_bool!(test_monoid);
 }

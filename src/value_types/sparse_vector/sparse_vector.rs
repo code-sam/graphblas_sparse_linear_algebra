@@ -1,6 +1,9 @@
+use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
+
+use rayon::prelude::*;
 
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
@@ -32,7 +35,15 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::Context;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::util::{ElementIndex, IndexConversion};
-use crate::value_types::value_type::{BuiltInValueType, RegisteredCustomValueType, ValueType};
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    convert_scalar_to_type, convert_vector_to_type, identity_conversion,
+    implement_macro_for_all_value_types,
+    implement_macro_for_all_value_types_and_graphblas_function,
+    implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion,
+    implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion,
+    implement_trait_for_all_value_types,
+};
+use crate::value_types::value_type::{BuiltInValueType, ValueType};
 
 #[derive(Debug)]
 pub struct SparseVector<T: ValueType> {
@@ -45,29 +56,8 @@ pub struct SparseVector<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for SparseVector<bool> {}
-unsafe impl Send for SparseVector<u8> {}
-unsafe impl Send for SparseVector<u16> {}
-unsafe impl Send for SparseVector<u32> {}
-unsafe impl Send for SparseVector<u64> {}
-unsafe impl Send for SparseVector<i8> {}
-unsafe impl Send for SparseVector<i16> {}
-unsafe impl Send for SparseVector<i32> {}
-unsafe impl Send for SparseVector<i64> {}
-unsafe impl Send for SparseVector<f32> {}
-unsafe impl Send for SparseVector<f64> {}
-
-unsafe impl Sync for SparseVector<bool> {}
-unsafe impl Sync for SparseVector<u8> {}
-unsafe impl Sync for SparseVector<u16> {}
-unsafe impl Sync for SparseVector<u32> {}
-unsafe impl Sync for SparseVector<u64> {}
-unsafe impl Sync for SparseVector<i8> {}
-unsafe impl Sync for SparseVector<i16> {}
-unsafe impl Sync for SparseVector<i32> {}
-unsafe impl Sync for SparseVector<i64> {}
-unsafe impl Sync for SparseVector<f32> {}
-unsafe impl Sync for SparseVector<f64> {}
+implement_trait_for_all_value_types!(Send, SparseVector);
+implement_trait_for_all_value_types!(Sync, SparseVector);
 
 impl<T: ValueType + BuiltInValueType<T>> SparseVector<T> {
     pub fn new(
@@ -227,17 +217,7 @@ macro_rules! implement_dispay {
     };
 }
 
-implement_dispay!(bool);
-implement_dispay!(i8);
-implement_dispay!(i16);
-implement_dispay!(i32);
-implement_dispay!(i64);
-implement_dispay!(u8);
-implement_dispay!(u16);
-implement_dispay!(u32);
-implement_dispay!(u64);
-implement_dispay!(f32);
-implement_dispay!(f64);
+implement_macro_for_all_value_types!(implement_dispay);
 
 pub trait FromVectorElementList<T: ValueType> {
     fn from_element_list(
@@ -250,7 +230,7 @@ pub trait FromVectorElementList<T: ValueType> {
 }
 
 macro_rules! sparse_matrix_from_element_vector {
-    ($value_type:ty, $build_function:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ty, $build_function:ident, $convert_to_target_type:ident) => {
         impl FromVectorElementList<$value_type> for SparseVector<$value_type> {
             fn from_element_list(
                 context: &Arc<Context>,
@@ -272,11 +252,13 @@ macro_rules! sparse_matrix_from_element_vector {
                     graphblas_indices.push(elements.index(i)?.to_graphblas_index()?);
                 }
                 let number_of_elements = elements.length().to_graphblas_index()?;
+                let element_values = elements.values_ref().clone();
+                $convert_to_target_type!(element_values, $graphblas_implementation_type);
                 vector.context.call(|| unsafe {
                     $build_function(
                         vector.vector,
                         graphblas_indices.as_ptr(),
-                        elements.values_ref().as_ptr(),
+                        element_values.as_ptr(),
                         number_of_elements,
                         reduction_operator_for_duplicates.graphblas_type(),
                     )
@@ -287,32 +269,27 @@ macro_rules! sparse_matrix_from_element_vector {
     };
 }
 
-sparse_matrix_from_element_vector!(bool, GrB_Vector_build_BOOL);
-sparse_matrix_from_element_vector!(i8, GrB_Vector_build_INT8);
-sparse_matrix_from_element_vector!(i16, GrB_Vector_build_INT16);
-sparse_matrix_from_element_vector!(i32, GrB_Vector_build_INT32);
-sparse_matrix_from_element_vector!(i64, GrB_Vector_build_INT64);
-sparse_matrix_from_element_vector!(u8, GrB_Vector_build_UINT8);
-sparse_matrix_from_element_vector!(u16, GrB_Vector_build_UINT16);
-sparse_matrix_from_element_vector!(u32, GrB_Vector_build_UINT32);
-sparse_matrix_from_element_vector!(u64, GrB_Vector_build_UINT64);
-sparse_matrix_from_element_vector!(f32, GrB_Vector_build_FP32);
-sparse_matrix_from_element_vector!(f64, GrB_Vector_build_FP64);
+implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion!(
+    sparse_matrix_from_element_vector,
+    GrB_Vector_build
+);
 
 pub trait SetVectorElement<T: ValueType> {
     fn set_element(&mut self, element: VectorElement<T>) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_set_element_for_built_in_type {
-    ($value_type:ty, $add_element_function:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ident, $add_element_function:ident, $convert_to_type:ident) => {
         impl SetVectorElement<$value_type> for SparseVector<$value_type> {
             fn set_element(
                 &mut self,
                 element: VectorElement<$value_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let index_to_set = element.index().to_graphblas_index()?;
+                let element_value = element.value().clone();
+                $convert_to_type!(element_value, $graphblas_implementation_type);
                 self.context.call(|| unsafe {
-                    $add_element_function(self.vector, element.value().into(), index_to_set)
+                    $add_element_function(self.vector, element_value, index_to_set)
                 })?;
                 Ok(())
             }
@@ -320,17 +297,10 @@ macro_rules! implement_set_element_for_built_in_type {
     };
 }
 
-implement_set_element_for_built_in_type!(bool, GrB_Vector_setElement_BOOL);
-implement_set_element_for_built_in_type!(i8, GrB_Vector_setElement_INT8);
-implement_set_element_for_built_in_type!(i16, GrB_Vector_setElement_INT16);
-implement_set_element_for_built_in_type!(i32, GrB_Vector_setElement_INT32);
-implement_set_element_for_built_in_type!(i64, GrB_Vector_setElement_INT64);
-implement_set_element_for_built_in_type!(u8, GrB_Vector_setElement_UINT8);
-implement_set_element_for_built_in_type!(u16, GrB_Vector_setElement_UINT16);
-implement_set_element_for_built_in_type!(u32, GrB_Vector_setElement_UINT32);
-implement_set_element_for_built_in_type!(u64, GrB_Vector_setElement_UINT64);
-implement_set_element_for_built_in_type!(f32, GrB_Vector_setElement_FP32);
-implement_set_element_for_built_in_type!(f64, GrB_Vector_setElement_FP64);
+implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion!(
+    implement_set_element_for_built_in_type,
+    GrB_Vector_setElement
+);
 
 macro_rules! implement_set_element_for_custom_type {
     ($value_type:ty) => {
@@ -366,8 +336,6 @@ macro_rules! implement_set_element_for_custom_type {
 //     }
 // }
 
-// implement_set_element_for_custom_type!(isize);
-// implement_set_element_for_custom_type!(usize);
 // implement_set_element_for_custom_type!(i128);
 // implement_set_element_for_custom_type!(u128);
 
@@ -376,13 +344,13 @@ pub trait GetVectorElementValue<T: ValueType + Default> {
 }
 
 macro_rules! implement_get_element_value_for_built_in_type {
-    ($value_type:ty, $get_element_function:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident, $convert_to_type:ident) => {
         impl GetVectorElementValue<$value_type> for SparseVector<$value_type> {
             fn get_element_value(
                 &self,
                 index: &ElementIndex,
             ) -> Result<$value_type, SparseLinearAlgebraError> {
-                let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
+                let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
                 let index_to_get = index.to_graphblas_index()?;
 
                 let result = self.context.call(|| unsafe {
@@ -392,6 +360,7 @@ macro_rules! implement_get_element_value_for_built_in_type {
                 match result {
                     Ok(_) => {
                         let value = unsafe { value.assume_init() };
+                        $convert_to_type!(value, $value_type);
                         Ok(value)
                     }
                     Err(error) => match error.error_type() {
@@ -406,17 +375,10 @@ macro_rules! implement_get_element_value_for_built_in_type {
     };
 }
 
-implement_get_element_value_for_built_in_type!(bool, GrB_Vector_extractElement_BOOL);
-implement_get_element_value_for_built_in_type!(i8, GrB_Vector_extractElement_INT8);
-implement_get_element_value_for_built_in_type!(i16, GrB_Vector_extractElement_INT16);
-implement_get_element_value_for_built_in_type!(i32, GrB_Vector_extractElement_INT32);
-implement_get_element_value_for_built_in_type!(i64, GrB_Vector_extractElement_INT64);
-implement_get_element_value_for_built_in_type!(u8, GrB_Vector_extractElement_UINT8);
-implement_get_element_value_for_built_in_type!(u16, GrB_Vector_extractElement_UINT16);
-implement_get_element_value_for_built_in_type!(u32, GrB_Vector_extractElement_UINT32);
-implement_get_element_value_for_built_in_type!(u64, GrB_Vector_extractElement_UINT64);
-implement_get_element_value_for_built_in_type!(f32, GrB_Vector_extractElement_FP32);
-implement_get_element_value_for_built_in_type!(f64, GrB_Vector_extractElement_FP64);
+implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion!(
+    implement_get_element_value_for_built_in_type,
+    GrB_Vector_extractElement
+);
 
 pub trait GetVectorElement<T: ValueType> {
     fn get_element(
@@ -438,17 +400,7 @@ macro_rules! implement_get_element_for_built_in_type {
     };
 }
 
-implement_get_element_for_built_in_type!(bool);
-implement_get_element_for_built_in_type!(i8);
-implement_get_element_for_built_in_type!(i16);
-implement_get_element_for_built_in_type!(i32);
-implement_get_element_for_built_in_type!(i64);
-implement_get_element_for_built_in_type!(u8);
-implement_get_element_for_built_in_type!(u16);
-implement_get_element_for_built_in_type!(u32);
-implement_get_element_for_built_in_type!(u64);
-implement_get_element_for_built_in_type!(f32);
-implement_get_element_for_built_in_type!(f64);
+implement_macro_for_all_value_types!(implement_get_element_for_built_in_type);
 
 macro_rules! implement_get_element_for_custom_type {
     ($value_type:ty) => {
@@ -473,9 +425,7 @@ macro_rules! implement_get_element_for_custom_type {
     };
 }
 
-// implement_get_element_for_custom_type!(isize);
 // implement_get_element_for_custom_type!(i128);
-// implement_get_element_for_custom_type!(usize);
 // implement_get_element_for_custom_type!(u128);
 
 pub trait GetVectorElementList<T: ValueType> {
@@ -483,7 +433,7 @@ pub trait GetVectorElementList<T: ValueType> {
 }
 
 macro_rules! implement_get_element_list {
-    ($value_type:ty, $get_element_function:ident) => {
+    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident, $convert_to_target_type:ident) => {
         impl GetVectorElementList<$value_type> for SparseVector<$value_type> {
             fn get_element_list(
                 &self,
@@ -491,7 +441,7 @@ macro_rules! implement_get_element_list {
                 let number_of_stored_elements = self.number_of_stored_elements()?;
 
                 let mut graphblas_indices: Vec<GrB_Index> = Vec::with_capacity(number_of_stored_elements);
-                let mut values: Vec<$value_type> = Vec::with_capacity(number_of_stored_elements);
+                let mut values: Vec<$graphblas_implementation_type> = Vec::with_capacity(number_of_stored_elements);
 
                 let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
 
@@ -522,6 +472,7 @@ macro_rules! implement_get_element_list {
                     indices.push(ElementIndex::from_graphblas_index(index)?);
                 }
 
+                $convert_to_target_type!(values, $value_type);
                 let element_list = VectorElementList::from_vectors(indices, values)?;
                 Ok(element_list)
             }
@@ -529,17 +480,10 @@ macro_rules! implement_get_element_list {
     };
 }
 
-implement_get_element_list!(bool, GrB_Vector_extractTuples_BOOL);
-implement_get_element_list!(i8, GrB_Vector_extractTuples_INT8);
-implement_get_element_list!(i16, GrB_Vector_extractTuples_INT16);
-implement_get_element_list!(i32, GrB_Vector_extractTuples_INT32);
-implement_get_element_list!(i64, GrB_Vector_extractTuples_INT64);
-implement_get_element_list!(u8, GrB_Vector_extractTuples_UINT8);
-implement_get_element_list!(u16, GrB_Vector_extractTuples_UINT16);
-implement_get_element_list!(u32, GrB_Vector_extractTuples_UINT32);
-implement_get_element_list!(u64, GrB_Vector_extractTuples_UINT64);
-implement_get_element_list!(f32, GrB_Vector_extractTuples_FP32);
-implement_get_element_list!(f64, GrB_Vector_extractTuples_FP64);
+implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion!(
+    implement_get_element_list,
+    GrB_Vector_extractTuples
+);
 
 #[cfg(test)]
 mod tests {

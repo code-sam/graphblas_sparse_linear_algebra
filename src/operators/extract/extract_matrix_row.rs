@@ -6,6 +6,7 @@ use crate::operators::{
 use crate::util::{ElementIndex, ElementIndexSelector};
 use crate::value_types::sparse_matrix::{Size, SparseMatrix};
 use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
@@ -17,6 +18,10 @@ where
     transpose_operator: MatrixTranspose<Matrix, Matrix>,
     column_extractor: MatrixColumnExtractor<Matrix, Column>,
 }
+
+// TODO: why does implementation yield compiler warnings?
+// implement_trait_for_2_type_data_type_and_all_value_types!(Send, MatrixRowExtractor);
+// implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixRowExtractor);
 
 impl<Matrix, Column> MatrixRowExtractor<Matrix, Column>
 where

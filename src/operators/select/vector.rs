@@ -7,7 +7,10 @@ use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions
 
 use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
 use crate::value_types::sparse_vector::SparseVector;
-
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_macro_with_custom_input_version_1_for_all_value_types,
+    implement_trait_for_all_value_types,
+};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -19,29 +22,8 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for VectorSelector<bool> {}
-unsafe impl Send for VectorSelector<u8> {}
-unsafe impl Send for VectorSelector<u16> {}
-unsafe impl Send for VectorSelector<u32> {}
-unsafe impl Send for VectorSelector<u64> {}
-unsafe impl Send for VectorSelector<i8> {}
-unsafe impl Send for VectorSelector<i16> {}
-unsafe impl Send for VectorSelector<i32> {}
-unsafe impl Send for VectorSelector<i64> {}
-unsafe impl Send for VectorSelector<f32> {}
-unsafe impl Send for VectorSelector<f64> {}
-
-unsafe impl Sync for VectorSelector<bool> {}
-unsafe impl Sync for VectorSelector<u8> {}
-unsafe impl Sync for VectorSelector<u16> {}
-unsafe impl Sync for VectorSelector<u32> {}
-unsafe impl Sync for VectorSelector<u64> {}
-unsafe impl Sync for VectorSelector<i8> {}
-unsafe impl Sync for VectorSelector<i16> {}
-unsafe impl Sync for VectorSelector<i32> {}
-unsafe impl Sync for VectorSelector<i64> {}
-unsafe impl Sync for VectorSelector<f32> {}
-unsafe impl Sync for VectorSelector<f64> {}
+implement_trait_for_all_value_types!(Send, VectorSelector);
+implement_trait_for_all_value_types!(Sync, VectorSelector);
 
 #[derive(Debug, Clone)]
 pub struct VectorSelector<T: ValueType> {
@@ -148,78 +130,8 @@ pub trait SelectVectorNotEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectVectorNotEqualToScalar,
-    not_equal_to_scalar,
-    not_equal_to_scalar_with_mask,
-    GxB_NE_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectVectorNotEqualToScalar,
     not_equal_to_scalar,
     not_equal_to_scalar_with_mask,
@@ -243,78 +155,8 @@ pub trait SelectVectorEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectVectorEqualToScalar,
-    equal_to_scalar,
-    equal_to_scalar_with_mask,
-    GxB_EQ_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectVectorEqualToScalar,
     equal_to_scalar,
     equal_to_scalar_with_mask,
@@ -338,78 +180,8 @@ pub trait SelectVectorGreaterThanScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectVectorGreaterThanScalar,
-    greater_than_scalar,
-    greater_than_scalar_with_mask,
-    GxB_GT_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectVectorGreaterThanScalar,
     greater_than_scalar,
     greater_than_scalar_with_mask,
@@ -436,78 +208,8 @@ pub trait SelectVectorGreaterThanOrEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectVectorGreaterThanOrEqualToScalar,
-    greater_than_or_equal_to_scalar,
-    greater_than_or_equal_to_scalar_with_mask,
-    GxB_GE_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectVectorGreaterThanOrEqualToScalar,
     greater_than_or_equal_to_scalar,
     greater_than_or_equal_to_scalar_with_mask,
@@ -531,78 +233,8 @@ pub trait SelectVectorLessThanScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectVectorLessThanScalar,
-    less_than_scalar,
-    less_than_scalar_with_mask,
-    GxB_LT_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectVectorLessThanScalar,
     less_than_scalar,
     less_than_scalar_with_mask,
@@ -629,78 +261,8 @@ pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-implement_scalar_selector!(
-    bool,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i8,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i16,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i32,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    i64,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u8,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u16,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u32,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    u64,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    f32,
-    SelectVectorLessThanOrEqualToScalar,
-    less_than_or_equal_to_scalar,
-    less_than_less_than_or_equal_to_scalar_with_mask,
-    GxB_LE_THUNK
-);
-implement_scalar_selector!(
-    f64,
+implement_macro_with_custom_input_version_1_for_all_value_types!(
+    implement_scalar_selector,
     SelectVectorLessThanOrEqualToScalar,
     less_than_or_equal_to_scalar,
     less_than_less_than_or_equal_to_scalar_with_mask,

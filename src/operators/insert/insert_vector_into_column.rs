@@ -9,6 +9,10 @@ use crate::util::{
 };
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
+    implement_trait_for_2_type_data_type_and_all_value_types,
+};
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_assign, GrB_Descriptor};
@@ -18,29 +22,8 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_assign, 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertVectorIntoColumn<bool, bool> {}
-unsafe impl Send for InsertVectorIntoColumn<u8, u8> {}
-unsafe impl Send for InsertVectorIntoColumn<u16, u16> {}
-unsafe impl Send for InsertVectorIntoColumn<u32, u32> {}
-unsafe impl Send for InsertVectorIntoColumn<u64, u64> {}
-unsafe impl Send for InsertVectorIntoColumn<i8, i8> {}
-unsafe impl Send for InsertVectorIntoColumn<i16, i16> {}
-unsafe impl Send for InsertVectorIntoColumn<i32, i32> {}
-unsafe impl Send for InsertVectorIntoColumn<i64, i64> {}
-unsafe impl Send for InsertVectorIntoColumn<f32, f32> {}
-unsafe impl Send for InsertVectorIntoColumn<f64, f64> {}
-
-unsafe impl Sync for InsertVectorIntoColumn<bool, bool> {}
-unsafe impl Sync for InsertVectorIntoColumn<u8, u8> {}
-unsafe impl Sync for InsertVectorIntoColumn<u16, u16> {}
-unsafe impl Sync for InsertVectorIntoColumn<u32, u32> {}
-unsafe impl Sync for InsertVectorIntoColumn<u64, u64> {}
-unsafe impl Sync for InsertVectorIntoColumn<i8, i8> {}
-unsafe impl Sync for InsertVectorIntoColumn<i16, i16> {}
-unsafe impl Sync for InsertVectorIntoColumn<i32, i32> {}
-unsafe impl Sync for InsertVectorIntoColumn<i64, i64> {}
-unsafe impl Sync for InsertVectorIntoColumn<f32, f32> {}
-unsafe impl Sync for InsertVectorIntoColumn<f64, f64> {}
+implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertVectorIntoColumn);
+implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertVectorIntoColumn);
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoColumn<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -225,17 +208,10 @@ macro_rules! implement_insert_vector_into_column_trait {
     };
 }
 
-implement_insert_vector_into_column_trait!(bool, bool, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(u8, u8, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(u16, u16, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(u32, u32, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(u64, u64, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(i8, i8, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(i16, i16, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(i32, i32, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(i64, i64, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(f32, f32, GrB_Col_assign);
-implement_insert_vector_into_column_trait!(f64, f64, GrB_Col_assign);
+implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
+    implement_insert_vector_into_column_trait,
+    GrB_Col_assign
+);
 
 #[cfg(test)]
 mod tests {

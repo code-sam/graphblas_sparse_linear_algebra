@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types;
 use crate::value_types::value_type::ValueType;
 
 pub trait BinaryOperator<X, Y, Z>
@@ -52,17 +53,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(First, GrB_FIRST_BOOL, bool, bool, bool);
-implement_binary_operator!(First, GrB_FIRST_INT8, i8, i8, i8);
-implement_binary_operator!(First, GrB_FIRST_INT16, i16, i16, i16);
-implement_binary_operator!(First, GrB_FIRST_INT32, i32, i32, i32);
-implement_binary_operator!(First, GrB_FIRST_INT64, i64, i64, i64);
-implement_binary_operator!(First, GrB_FIRST_UINT8, u8, u8, u8);
-implement_binary_operator!(First, GrB_FIRST_UINT16, u16, u16, u16);
-implement_binary_operator!(First, GrB_FIRST_UINT32, u32, u32, u32);
-implement_binary_operator!(First, GrB_FIRST_UINT64, u64, u64, u64);
-implement_binary_operator!(First, GrB_FIRST_FP32, f32, f32, f32);
-implement_binary_operator!(First, GrB_FIRST_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    First,
+    GrB_FIRST
+);
 
 // y = second(x,y)
 #[derive(Debug, Clone)]
@@ -77,17 +72,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(Second, GrB_SECOND_BOOL, bool, bool, bool);
-implement_binary_operator!(Second, GrB_SECOND_INT8, i8, i8, i8);
-implement_binary_operator!(Second, GrB_SECOND_INT16, i16, i16, i16);
-implement_binary_operator!(Second, GrB_SECOND_INT32, i32, i32, i32);
-implement_binary_operator!(Second, GrB_SECOND_INT64, i64, i64, i64);
-implement_binary_operator!(Second, GrB_SECOND_UINT8, u8, u8, u8);
-implement_binary_operator!(Second, GrB_SECOND_UINT16, u16, u16, u16);
-implement_binary_operator!(Second, GrB_SECOND_UINT32, u32, u32, u32);
-implement_binary_operator!(Second, GrB_SECOND_UINT64, u64, u64, u64);
-implement_binary_operator!(Second, GrB_SECOND_FP32, f32, f32, f32);
-implement_binary_operator!(Second, GrB_SECOND_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    Second,
+    GrB_SECOND
+);
 
 // z = x^y (z = x.pow(y))
 #[derive(Debug, Clone)]
@@ -102,17 +91,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(Power, GxB_POW_BOOL, bool, bool, bool);
-implement_binary_operator!(Power, GxB_POW_INT8, i8, i8, i8);
-implement_binary_operator!(Power, GxB_POW_INT16, i16, i16, i16);
-implement_binary_operator!(Power, GxB_POW_INT32, i32, i32, i32);
-implement_binary_operator!(Power, GxB_POW_INT64, i64, i64, i64);
-implement_binary_operator!(Power, GxB_POW_UINT8, u8, u8, u8);
-implement_binary_operator!(Power, GxB_POW_UINT16, u16, u16, u16);
-implement_binary_operator!(Power, GxB_POW_UINT32, u32, u32, u32);
-implement_binary_operator!(Power, GxB_POW_UINT64, u64, u64, u64);
-implement_binary_operator!(Power, GxB_POW_FP32, f32, f32, f32);
-implement_binary_operator!(Power, GxB_POW_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    Power,
+    GxB_POW
+);
 
 // z = x+y
 #[derive(Debug, Clone)]
@@ -127,17 +110,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(Plus, GrB_PLUS_BOOL, bool, bool, bool);
-implement_binary_operator!(Plus, GrB_PLUS_INT8, i8, i8, i8);
-implement_binary_operator!(Plus, GrB_PLUS_INT16, i16, i16, i16);
-implement_binary_operator!(Plus, GrB_PLUS_INT32, i32, i32, i32);
-implement_binary_operator!(Plus, GrB_PLUS_INT64, i64, i64, i64);
-implement_binary_operator!(Plus, GrB_PLUS_UINT8, u8, u8, u8);
-implement_binary_operator!(Plus, GrB_PLUS_UINT16, u16, u16, u16);
-implement_binary_operator!(Plus, GrB_PLUS_UINT32, u32, u32, u32);
-implement_binary_operator!(Plus, GrB_PLUS_UINT64, u64, u64, u64);
-implement_binary_operator!(Plus, GrB_PLUS_FP32, f32, f32, f32);
-implement_binary_operator!(Plus, GrB_PLUS_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    Plus,
+    GrB_PLUS
+);
 
 // z = x-y
 #[derive(Debug, Clone)]
@@ -152,17 +129,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(Minus, GrB_MINUS_BOOL, bool, bool, bool);
-implement_binary_operator!(Minus, GrB_MINUS_INT8, i8, i8, i8);
-implement_binary_operator!(Minus, GrB_MINUS_INT16, i16, i16, i16);
-implement_binary_operator!(Minus, GrB_MINUS_INT32, i32, i32, i32);
-implement_binary_operator!(Minus, GrB_MINUS_INT64, i64, i64, i64);
-implement_binary_operator!(Minus, GrB_MINUS_UINT8, u8, u8, u8);
-implement_binary_operator!(Minus, GrB_MINUS_UINT16, u16, u16, u16);
-implement_binary_operator!(Minus, GrB_MINUS_UINT32, u32, u32, u32);
-implement_binary_operator!(Minus, GrB_MINUS_UINT64, u64, u64, u64);
-implement_binary_operator!(Minus, GrB_MINUS_FP32, f32, f32, f32);
-implement_binary_operator!(Minus, GrB_MINUS_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    Minus,
+    GrB_MINUS
+);
 
 // z = x*y
 #[derive(Debug, Clone)]
@@ -177,17 +148,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(Times, GrB_TIMES_BOOL, bool, bool, bool);
-implement_binary_operator!(Times, GrB_TIMES_INT8, i8, i8, i8);
-implement_binary_operator!(Times, GrB_TIMES_INT16, i16, i16, i16);
-implement_binary_operator!(Times, GrB_TIMES_INT32, i32, i32, i32);
-implement_binary_operator!(Times, GrB_TIMES_INT64, i64, i64, i64);
-implement_binary_operator!(Times, GrB_TIMES_UINT8, u8, u8, u8);
-implement_binary_operator!(Times, GrB_TIMES_UINT16, u16, u16, u16);
-implement_binary_operator!(Times, GrB_TIMES_UINT32, u32, u32, u32);
-implement_binary_operator!(Times, GrB_TIMES_UINT64, u64, u64, u64);
-implement_binary_operator!(Times, GrB_TIMES_FP32, f32, f32, f32);
-implement_binary_operator!(Times, GrB_TIMES_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    Times,
+    GrB_TIMES
+);
 
 // z = x*y
 #[derive(Debug, Clone)]
@@ -202,17 +167,11 @@ where
     _value_type_output: PhantomData<Z>,
 }
 
-implement_binary_operator!(Divide, GrB_DIV_BOOL, bool, bool, bool);
-implement_binary_operator!(Divide, GrB_DIV_INT8, i8, i8, i8);
-implement_binary_operator!(Divide, GrB_DIV_INT16, i16, i16, i16);
-implement_binary_operator!(Divide, GrB_DIV_INT32, i32, i32, i32);
-implement_binary_operator!(Divide, GrB_DIV_INT64, i64, i64, i64);
-implement_binary_operator!(Divide, GrB_DIV_UINT8, u8, u8, u8);
-implement_binary_operator!(Divide, GrB_DIV_UINT16, u16, u16, u16);
-implement_binary_operator!(Divide, GrB_DIV_UINT32, u32, u32, u32);
-implement_binary_operator!(Divide, GrB_DIV_UINT64, u64, u64, u64);
-implement_binary_operator!(Divide, GrB_DIV_FP32, f32, f32, f32);
-implement_binary_operator!(Divide, GrB_DIV_FP64, f64, f64, f64);
+implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator,
+    Divide,
+    GrB_DIV
+);
 
 #[cfg(test)]
 mod tests {
