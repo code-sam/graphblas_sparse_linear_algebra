@@ -307,14 +307,14 @@ mod tests {
                 #[test]
                 fn [<test_monoid_to_scalar_reducer_for_vector_ $value_type>]() {
                     let context = Context::init_ready(Mode::NonBlocking).unwrap();
-            
+
                     let element_list = VectorElementList::<$value_type>::from_element_vector(vec![
                         (1, 1 as $value_type).into(),
                         (2, 2 as $value_type).into(),
                         (4, 4 as $value_type).into(),
                         (5, 5 as $value_type).into(),
                     ]);
-            
+
                     let vector_length = 10;
                     let vector = SparseVector::<$value_type>::from_element_list(
                         &context.clone(),
@@ -323,19 +323,19 @@ mod tests {
                         &First::<$value_type, $value_type, $value_type>::new(),
                     )
                     .unwrap();
-            
+
                     let mut product = 0 as $value_type;
-            
+
                     let reducer = MonoidReducer::new(
                         &MonoidPlus::<$value_type>::new(),
                         &OperatorOptions::new_default(),
                         None,
                     );
-            
+
                     reducer.vector_to_scalar(&vector, &mut product).unwrap();
-            
+
                     println!("{}", product);
-            
+
                     assert_eq!(product, 12 as $value_type);
                 }
             }
