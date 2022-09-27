@@ -59,7 +59,7 @@ pub struct SparseVector<T: ValueType> {
 implement_trait_for_all_value_types!(Send, SparseVector);
 implement_trait_for_all_value_types!(Sync, SparseVector);
 
-impl<T: ValueType + BuiltInValueType<T>> SparseVector<T> {
+impl<T: ValueType + BuiltInValueType> SparseVector<T> {
     pub fn new(
         context: &Arc<Context>,
         length: &ElementIndex,
