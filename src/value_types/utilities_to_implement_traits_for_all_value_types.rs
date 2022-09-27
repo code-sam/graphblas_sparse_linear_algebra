@@ -294,7 +294,7 @@ pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_fo
 macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix {
     ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident, $postfix:ident) => {
         paste::paste! {
-            // $macro_identifier!($trait, [<$graphblas_identifier _BOOL>], bool);
+            $macro_identifier!($trait, [<$graphblas_identifier _BOOL_ $postfix>], bool);
             $macro_identifier!($trait, [<$graphblas_identifier _INT8_ $postfix>], i8);
             $macro_identifier!($trait, [<$graphblas_identifier _INT16_ $postfix>], i16);
             $macro_identifier!($trait, [<$graphblas_identifier _INT32_ $postfix>], i32);
