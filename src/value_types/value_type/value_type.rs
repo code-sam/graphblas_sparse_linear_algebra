@@ -7,7 +7,7 @@ use crate::value_types::utilities_to_implement_traits_for_all_value_types::imple
 
 pub trait ValueType {}
 
-pub trait BuiltInValueType<T> {
+pub trait BuiltInValueType {
     fn to_graphblas_type() -> GrB_Type;
 }
 
@@ -15,7 +15,7 @@ macro_rules! implement_value_type_for_graphblas_built_in_type {
     ($value_type: ty, $graphblas_type_identifier: ident) => {
         impl ValueType for $value_type {}
 
-        impl BuiltInValueType<$value_type> for $value_type {
+        impl BuiltInValueType for $value_type {
             fn to_graphblas_type() -> GrB_Type {
                 unsafe { $graphblas_type_identifier }
             }

@@ -43,7 +43,7 @@ pub struct SparseScalar<T: ValueType> {
 implement_trait_for_all_value_types!(Send, SparseScalar);
 implement_trait_for_all_value_types!(Sync, SparseScalar);
 
-impl<T: ValueType + BuiltInValueType<T>> SparseScalar<T> {
+impl<T: ValueType + BuiltInValueType> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
         let mut scalar: MaybeUninit<GxB_Scalar> = MaybeUninit::uninit();
         let context = context.clone();

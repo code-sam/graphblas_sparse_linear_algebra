@@ -71,7 +71,7 @@ pub struct SparseMatrix<T: ValueType> {
 implement_trait_for_all_value_types!(Send, SparseMatrix);
 implement_trait_for_all_value_types!(Sync, SparseMatrix);
 
-impl<T: ValueType + BuiltInValueType<T>> SparseMatrix<T> {
+impl<T: ValueType + BuiltInValueType> SparseMatrix<T> {
     pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {
         let mut matrix: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
         let context = context.to_owned();
