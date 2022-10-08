@@ -58,7 +58,7 @@ impl<T: ValueType> MatrixSelector<T> {
 macro_rules! implement_selector_with_diagonal {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
         impl<T: ValueType> MatrixSelector<T> {
-            /// k = 0 selects the main diagonal, positive for avove, negative for below
+            /// k = 0 selects the main diagonal, positive for above, negative for below
             pub fn $method_name(
                 &self,
                 argument: &SparseMatrix<T>,
