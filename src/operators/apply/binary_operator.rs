@@ -167,6 +167,7 @@ where
 }
 
 macro_rules! implement_binary_operator {
+    // TODO differentiate between first and second argument for graphblas_scalar_type
     ($first_argument_type:ty, $second_argument_type:ty, $product_type:ty, $graphblas_scalar_type:ty, $convert_to_graphblas_implementation_type:ident, $operator_vector_as_first_argument:ident, $operator_vector_as_second_argument:ident, $operator_matrix_as_first_argument:ident, $operator_matrix_as_second_argument:ident) => {
         impl BinaryOperatorApplierTrait<$first_argument_type, $second_argument_type, $product_type>
             for BinaryOperatorApplier<$first_argument_type, $second_argument_type, $product_type>

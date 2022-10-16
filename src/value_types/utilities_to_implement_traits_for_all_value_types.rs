@@ -1,3 +1,15 @@
+// use rayon::iter::IntoParallelIterator;
+use rayon::prelude::*;
+
+use graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_isize as id_isize;
+use graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_usize as id_usize;
+use graphblas_sparse_linear_algebra_proc_macros::graphblas_implementation_type_for_isize;
+use graphblas_sparse_linear_algebra_proc_macros::graphblas_implementation_type_for_usize;
+
+use crate::error::GraphBlasError;
+use crate::error::SparseLinearAlgebraError;
+use crate::value_types::value_type::ValueType;
+
 macro_rules! implement_macro_for_all_value_types {
     ($macro_identifier:ident) => {
         $macro_identifier!(bool);
@@ -35,6 +47,25 @@ macro_rules! implement_macro_for_all_value_types_except_bool {
     };
 }
 pub(crate) use implement_macro_for_all_value_types_except_bool;
+
+macro_rules! implement_macro_for_all_value_types_except_bool_ {
+    ($macro_identifier:ident) => {
+        // $macro_identifier!(bool);
+        $macro_identifier!(i8);
+        $macro_identifier!(i16);
+        $macro_identifier!(i32);
+        $macro_identifier!(i64);
+        $macro_identifier!(u8);
+        $macro_identifier!(u16);
+        $macro_identifier!(u32);
+        $macro_identifier!(u64);
+        $macro_identifier!(f32);
+        $macro_identifier!(f64);
+        // $macro_identifier!(isize);
+        // $macro_identifier!(usize);
+    };
+}
+pub(crate) use implement_macro_for_all_value_types_except_bool_;
 
 macro_rules! implement_macro_with_2_types_for_all_value_types {
     ($macro_identifier:ident) => {
@@ -242,8 +273,10 @@ macro_rules! implement_2_type_macro_for_all_value_types_and_typed_graphblas_func
             $macro_identifier!(u64, u64, [<$graphblas_identifier _UINT64>]);
             $macro_identifier!(f32, f32, [<$graphblas_identifier _FP32>]);
             $macro_identifier!(f64, f64, [<$graphblas_identifier _FP64>]);
-            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
-            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            $macro_identifier!(isize, isize, id_isize!($graphblas_identifier));
+            $macro_identifier!(usize, usize, id_usize!($graphblas_identifier));
+            // graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            // graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
         }
     };
 }
@@ -263,6 +296,8 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
             $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64);
             $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32);
             $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64);
+            // $macro_identifier!($trait, id_isize!($graphblas_identifier), isize);
+            // $macro_identifier!($trait, id_usize!($graphblas_identifier), usize);
             graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
             graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
         }
@@ -389,6 +424,8 @@ macro_rules! implement_macro_for_all_value_types_and_2_typed_graphblas_functions
             $macro_identifier!(u64, u64, [<$graphblas_identifier_1 _UINT64>], [<$graphblas_identifier_2 _UINT64>], identity_conversion);
             $macro_identifier!(f32, f32, [<$graphblas_identifier_1 _FP32>], [<$graphblas_identifier_2 _FP32>], identity_conversion);
             $macro_identifier!(f64, f64, [<$graphblas_identifier_1 _FP64>], [<$graphblas_identifier_2 _FP64>], identity_conversion);
+            // $macro_identifier!(isize, graphblas_sparse_linear_algebra_proc_macros::graphblas_implementation_type_for_isize!(), graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_isize!($graphblas_identifier_1), graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_isize!($graphblas_identifier_2), convert_mut_scalar_to_type);
+            // $macro_identifier!(usize, graphblas_sparse_linear_algebra_proc_macros::graphblas_implementation_type_for_usize!(), graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_usize!($graphblas_identifier_1), graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_usize!($graphblas_identifier_2), convert_mut_scalar_to_type);
             graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_isize_and_2_typed_graphblas_functions_with_type_conversion!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2, convert_mut_scalar_to_type);
             graphblas_sparse_linear_algebra_proc_macros::implement_macro_for_usize_and_2_typed_graphblas_functions_with_type_conversion!($macro_identifier, $graphblas_identifier_1, $graphblas_identifier_2, convert_mut_scalar_to_type);
         }
@@ -520,6 +557,57 @@ macro_rules! implement_semiring_for_all_value_types {
     };
 }
 pub(crate) use implement_semiring_for_all_value_types;
+
+// TODO: rename to "convert_scalar_to_type"
+pub(crate) trait ConvertScalarToType<ArgumentType, ResultType>
+where
+    ArgumentType: ValueType + Clone,
+    ResultType: ValueType + std::convert::TryFrom<ArgumentType>,
+    <ResultType as TryFrom<ArgumentType>>::Error: std::fmt::Debug,
+{
+    fn apply(input: &ArgumentType) -> Result<ResultType, SparseLinearAlgebraError> {
+        Ok(input.to_owned().try_into().unwrap())
+        // The conversion is infallible, error handling is thus useless.
+        // match input.to_owned().try_into() {
+        //     Ok(value) => return Ok(value),
+        //     Err(error) => crate::error::LogicError::new(crate::error::LogicErrorType::UnsafeTypeConversion, format!("Safe type conversion failed"), None).into()
+        // }
+    }
+}
+
+// // TODO: rename to "convert_scalar_to_type"
+// pub(crate) fn convert_scalar_to_type_fun<
+//     ArgumentType: ValueType + Clone,
+//     ResultType: ValueType + std::convert::TryFrom<ArgumentType>,
+//     // where <ResultType as TryFrom<ArgumentType>>::Error: Debug
+// > (
+//     input: ArgumentType,
+// ) -> Result<ResultType, SparseLinearAlgebraError> {
+//     Ok(input.try_into().unwrap())
+//     // The conversion is infallible, error handling is thus useless.
+//     // match input.to_owned().try_into() {
+//     //     Ok(value) => return Ok(value),
+//     //     Err(error) => crate::error::LogicError::new(crate::error::LogicErrorType::UnsafeTypeConversion, format!("Safe type conversion failed"), None).into()
+//     // }
+// }
+
+pub(crate) fn convert_vector_to_type_fun<
+    ArgumentType: ValueType + Send + Clone + std::convert::Into<ResultType>,
+    ResultType: ValueType + Send,
+>(
+    input: Vec<ArgumentType>,
+) -> Result<Vec<ResultType>, SparseLinearAlgebraError> {
+    Ok(input
+        .into_par_iter()
+        .map(|x| x.try_into().unwrap())
+        .collect())
+}
+
+pub(crate) fn identity_conversion_fun<T: ValueType>(
+    input: T,
+) -> Result<T, SparseLinearAlgebraError> {
+    Ok(std::convert::identity(input))
+}
 
 macro_rules! convert_vector_to_type {
     ($variable: ident, $target_type: ty) => {

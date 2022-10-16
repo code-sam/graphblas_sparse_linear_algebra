@@ -25,6 +25,7 @@ pub enum LogicErrorType {
     // UninitialisedContext,
     // ContextAlreadyInitialized,
     IndexOutOfBounds,
+    UnsafeTypeConversion,
     Other,
 }
 
