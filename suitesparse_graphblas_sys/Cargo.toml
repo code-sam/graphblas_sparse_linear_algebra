@@ -1,0 +1,18 @@
+[package]
+name = "suitesparse_graphblas_sys"
+description = "Rust bindings for SuiteSparse::GraphBLAS"
+version = "0.1.0"
+edition = "2021"
+license = "CC-BY-NC-4.0"
+authors = ["code_sam <mail@samdekker.nl>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.60"
+cmake = "0.1"
+git2 = "0.15"

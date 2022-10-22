@@ -2,7 +2,9 @@ use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+use git2::{Object, Oid, Repository};
 
 extern crate bindgen;
 extern crate cmake;
@@ -24,50 +26,87 @@ fn main() {
     if let Ok(_) = std::env::var("DOCS_RS") {
         // do not build any dependencies as this would time out the docs.rs build server
     } else {
-        #[cfg(feature = "build_static_graphblas_dependencies")]
         build_and_link_dependencies();
-
-        #[cfg(feature = "generate_new_bindings_to_graphblas_implementation")]
         generate_bindings_to_graphblas_implementation();
     }
 }
 
-fn path_with_graphblas_header_file() -> PathBuf {
-    let mut path_with_graphblas_header_file = path_with_graphblas_implementation();
-    path_with_graphblas_header_file.push("SuiteSparse_GraphBLAS");
-    path_with_graphblas_header_file.push("Include");
-    path_with_graphblas_header_file.push("GraphBLAS.h");
-    return path_with_graphblas_header_file;
-}
-
 fn path_with_graphblas_implementation() -> PathBuf {
+    // TODO: is it correct to reference the current directory? Should this be the root directory of the current crate?
     let mut path_with_graphblas_implementation = std::env::current_dir().unwrap();
     path_with_graphblas_implementation.push("graphblas_implementation");
     return path_with_graphblas_implementation;
 }
 
-#[cfg(feature = "build_static_graphblas_dependencies")]
+fn path_with_suitesparse_graphblas_implementation() -> PathBuf {
+    let mut path_with_suitesparse_graphblas_implementation = path_with_graphblas_implementation();
+    path_with_suitesparse_graphblas_implementation.push("SuiteSparse_GraphBLAS");
+    return path_with_suitesparse_graphblas_implementation;
+}
+
+fn path_with_graphblas_header_file() -> PathBuf {
+    let mut path_with_graphblas_header_file = path_with_suitesparse_graphblas_implementation();
+    path_with_graphblas_header_file.push("Include");
+    path_with_graphblas_header_file.push("GraphBLAS.h");
+    return path_with_graphblas_header_file;
+}
+
+fn path_with_graphblas_library() -> PathBuf {
+    let mut path_with_graphblas_library = path_with_graphblas_implementation();
+    path_with_graphblas_library.push("lib");
+    return path_with_graphblas_library;
+}
+
+// DOC: to set a persistent environment variable in Ubuntu:
+// sudoedit /etc/profile
+// export KEY="value"
+// restart VM (on WSL => wsl --shutdown)
+fn path_with_openmp() -> PathBuf {
+    match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH") { 
+        Ok(path) => return PathBuf::from(path),
+        Err(error) => panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH. For example, when using GCC on Ubuntu 22.04, please set it to \"/usr/lib/gcc/x86_64-linux-gnu/11\". {}", error)
+    }
+}
+
+// DOC: to set a persistent environment variable in Ubuntu:
+// sudoedit /etc/profile
+// export KEY="value"
+// restart VM (on WSL => wsl --shutdown)
+fn name_of_openmp_library() -> String {
+    match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME") { 
+        Ok(name) => return name,
+        Err(error) => panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME. For example, when using GCC, please set it to \"gomp\". {}", error)
+    }
+}
+
 fn build_and_link_dependencies() {
     let cargo_build_directory = env::var_os("OUT_DIR").unwrap();
     let path_with_graphblas_header_file = path_with_graphblas_header_file();
     let path_with_graphblas_implementation = path_with_graphblas_implementation();
+    let path_with_suitesparse_graphblas_implementation =
+        path_with_suitesparse_graphblas_implementation();
 
-    #[cfg(feature = "build_static_graphblas_dependencies")]
+    // SuiteSparse::GraphBLAS repository is too large to fit a crate on crates.io (repo exceeds maximum allowed size of 10MB)
+    clone_and_checkout_repository(&path_with_graphblas_header_file, &path_with_suitesparse_graphblas_implementation);
+
     build_static_graphblas_implementation(&cargo_build_directory);
 
     // add directory containing libgomp.a to search path.
     // This directory should also contain libgraphblas.a, if it is not build from source or otherwise in the search path
     println!(
         "cargo:rustc-link-search=native={}",
-        path_with_graphblas_implementation
-            .clone()
+        path_with_suitesparse_graphblas_implementation
             .to_str()
             .unwrap()
             .to_owned()
     );
+    println!(
+        "cargo:rustc-link-search=native={}",
+        path_with_openmp().display()
+    );
 
     println!("cargo:rustc-link-lib=static=graphblas");
-    println!("cargo:rustc-link-lib=static=gomp");
+    println!("cargo:rustc-link-lib=static={}", name_of_openmp_library());
 
     declare_build_invalidation_conditions(
         &path_with_graphblas_implementation,
@@ -77,10 +116,49 @@ fn build_and_link_dependencies() {
     clean_build_artifacts(&cargo_build_directory)
 }
 
-// #[cfg(feature = "build_static_graphblas_dependencies")]
+fn clone_and_checkout_repository(path_with_graphblas_header_file: &PathBuf, path_with_suitesparse_graphblas_implementation: &PathBuf) {
+    let graphblas_repo;
+    match path_with_graphblas_header_file.try_exists() {
+        Err(error) => {
+            panic!(
+                "Unable to check if path {} exists, got error: {}",
+                path_with_graphblas_header_file.display(),
+                error
+            )
+        }
+        Ok(does_exist) => {
+            if !does_exist {
+                graphblas_repo = match Repository::clone(
+                    "https://github.com/DrTimothyAldenDavis/GraphBLAS",
+                    path_with_suitesparse_graphblas_implementation.clone(),
+                ) {
+                    Ok(repo) => repo,
+                    Err(error) => panic!("Failed to clone graphblas repository: {}", error),
+                };
+            } else {
+                // assume repo has been cloned before
+                graphblas_repo = match Repository::open(
+                    path_with_suitesparse_graphblas_implementation.clone(),
+                ) {
+                    Ok(repo) => repo,
+                    Err(error) => {
+                        panic!("failed to open SuiteSparse GraphBLAS repository: {}", error)
+                    }
+                };
+            }
+        }
+    };
+
+    let obj: Object = graphblas_repo
+        .find_commit(Oid::from_str("97510b55fba589e6ea315fe433237633057e7048").unwrap())
+        .unwrap()
+        .into_object();
+    graphblas_repo.checkout_tree(&obj, None).unwrap();
+    graphblas_repo.set_head_detached(obj.id()).unwrap();
+}
+
 fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
-        .define("JOBS", "32")
         .define("BUILD_GRB_STATIC_LIBRARY", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.clone())
@@ -91,6 +169,11 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         "cargo:rustc-link-search=native={}",
         cargo_build_directory.clone().to_str().unwrap().to_owned()
     );
+    println!(
+        "cargo:rustc-link-search=native={}",
+        path_with_graphblas_library().display()
+    );
+
 }
 
 fn declare_build_invalidation_conditions(
@@ -116,9 +199,9 @@ fn declare_build_invalidation_conditions(
     );
     println!(
         "cargo:rerun-if-changed = {}",
-        path_with_graphblas_implementation
+        path_with_openmp()
             .clone()
-            .join("libgomp.a")
+            .join(format!("lib{}.a",name_of_openmp_library()))
             .to_str()
             .unwrap()
             .to_owned()
@@ -132,12 +215,12 @@ fn generate_bindings_to_graphblas_implementation() {
 
     let ignored_macros = IgnoreMacros(
         vec![
-            "FP_INFINITE".into(),
             "FP_NAN".into(),
-            "FP_NORMAL".into(),
-            "FP_SUBNORMAL".into(),
+            "FP_INFINITE".into(),
             "FP_ZERO".into(),
-            "IPPORT_RESERVED".into(),
+            "FP_SUBNORMAL".into(),
+            "FP_NORMAL".into(),
+            // "IPPORT_RESERVED".into(),
         ]
         .into_iter()
         .collect(),
@@ -153,7 +236,7 @@ fn generate_bindings_to_graphblas_implementation() {
         )
         .parse_callbacks(Box::new(ignored_macros))
         .generate()
-        .expect("Unable to generate bindings");
+        .expect("Unable to generate bindings to GraphBLAS library.");
 
     let mut bindings_target_path = path_with_graphblas_implementation.clone();
     bindings_target_path.push("suitesparse_graphblas_bindings.rs");
