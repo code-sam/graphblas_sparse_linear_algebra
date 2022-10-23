@@ -8,22 +8,25 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use once_cell::sync::Lazy;
 
-use super::super::bindings_to_graphblas_implementation::{
+use crate::bindings_to_graphblas_implementation::{
     GrB_Info,
     GrB_Info_GrB_DIMENSION_MISMATCH,
     GrB_Info_GrB_DOMAIN_MISMATCH,
+    GrB_Info_GrB_EMPTY_OBJECT,
     GrB_Info_GrB_INDEX_OUT_OF_BOUNDS,
     GrB_Info_GrB_INSUFFICIENT_SPACE,
     GrB_Info_GrB_INVALID_INDEX,
     GrB_Info_GrB_INVALID_OBJECT,
     GrB_Info_GrB_INVALID_VALUE,
     GrB_Info_GrB_NO_VALUE,
+    GrB_Info_GrB_NOT_IMPLEMENTED,
     GrB_Info_GrB_NULL_POINTER,
     GrB_Info_GrB_OUTPUT_NOT_EMPTY,
     GrB_Info_GrB_OUT_OF_MEMORY,
     GrB_Info_GrB_PANIC,
     GrB_Info_GrB_SUCCESS,
     GrB_Info_GrB_UNINITIALIZED_OBJECT,
+    GrB_Info_GxB_EXHAUSTED,
     GrB_Mode,
     GrB_Mode_GrB_BLOCKING,
     GrB_Mode_GrB_NONBLOCKING,
@@ -42,7 +45,7 @@ These limtations are not compatible with the context concept implemented in this
 
 This module assumes that multiple contexts can be started, closed, and re-started per thread.
 It is expected that a future-version of GraphBLAS will support this concept.
-If this expectation is false, or given the current GraphBLAS C-specifcation version 1.3,
+If this expectation is false, or given the current GraphBLAS C-specifcation version 2.0,
 the context concet implemented in this module is not useful.
 */
 
@@ -228,15 +231,18 @@ pub enum Status {
     NoValue,
     UnitializedObject,
     InvalidObject,
+    NotImplemented,
     NullPointer,
     InvalidValue,
     InvalidIndex,
     DomainMismatch,
     DimensionMismatch,
+    EmptyObject,
     OutputNotEmpty,
     OutOfMemory,
     InsufficientSpace,
     IndexOutOfBounds,
+    IteratorExhausted,
     Panic,
     UnknownStatusType,
 }
@@ -248,15 +254,18 @@ impl From<GrB_Info> for Status {
             GrB_Info_GrB_NO_VALUE => Self::NoValue,
             GrB_Info_GrB_UNINITIALIZED_OBJECT => Self::UnitializedObject,
             GrB_Info_GrB_INVALID_OBJECT => Self::InvalidObject,
+            GrB_Info_GrB_NOT_IMPLEMENTED => Self::NotImplemented,
             GrB_Info_GrB_NULL_POINTER => Self::NullPointer,
             GrB_Info_GrB_INVALID_VALUE => Self::InvalidValue,
             GrB_Info_GrB_INVALID_INDEX => Self::InvalidIndex,
             GrB_Info_GrB_DOMAIN_MISMATCH => Self::DomainMismatch,
             GrB_Info_GrB_DIMENSION_MISMATCH => Self::DimensionMismatch,
+            GrB_Info_GrB_EMPTY_OBJECT => Self::EmptyObject,
             GrB_Info_GrB_OUTPUT_NOT_EMPTY => Self::OutputNotEmpty,
             GrB_Info_GrB_OUT_OF_MEMORY => Self::OutOfMemory,
             GrB_Info_GrB_INSUFFICIENT_SPACE => Self::InsufficientSpace,
             GrB_Info_GrB_INDEX_OUT_OF_BOUNDS => Self::IndexOutOfBounds,
+            GrB_Info_GxB_EXHAUSTED => Self::IteratorExhausted,
             GrB_Info_GrB_PANIC => Self::Panic,
             _ => Self::UnknownStatusType,
         }
@@ -282,6 +291,9 @@ impl Into<SparseLinearAlgebraError> for Status {
             Status::InvalidObject => {
                 GraphBlasError::new(GraphBlasErrorType::InvalidObject, get_error_context()).into()
             }
+            Status::NotImplemented => {
+                GraphBlasError::new(GraphBlasErrorType::NotImplemented, get_error_context()).into()
+            }
             Status::NullPointer => {
                 GraphBlasError::new(GraphBlasErrorType::NullPointer, get_error_context()).into()
             }
@@ -298,6 +310,10 @@ impl Into<SparseLinearAlgebraError> for Status {
                 GraphBlasError::new(GraphBlasErrorType::DimensionMismatch, get_error_context())
                     .into()
             }
+            Status::EmptyObject => {
+                GraphBlasError::new(GraphBlasErrorType::EmptyObject, get_error_context())
+                    .into()
+            }
             Status::OutputNotEmpty => {
                 GraphBlasError::new(GraphBlasErrorType::OutputNotEmpty, get_error_context()).into()
             }
@@ -310,6 +326,10 @@ impl Into<SparseLinearAlgebraError> for Status {
             }
             Status::IndexOutOfBounds => {
                 GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds, get_error_context())
+                    .into()
+            }
+            Status::IteratorExhausted => {
+                GraphBlasError::new(GraphBlasErrorType::IteratorExhausted, get_error_context())
                     .into()
             }
             Status::Panic => {

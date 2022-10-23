@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    # "graphblas_sparse_linear_algebra",
-    # "graphblas_sparse_linear_algebra_proc_macros",
+    "graphblas_sparse_linear_algebra",
+    "graphblas_sparse_linear_algebra_proc_macros",
     "suitesparse_graphblas_sys"
 ]

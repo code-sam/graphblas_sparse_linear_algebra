@@ -1,4 +1,1 @@
-// mod bindings;
-mod wrapper;
-
-pub use wrapper::*;
+pub use suitesparse_graphblas_sys::*;

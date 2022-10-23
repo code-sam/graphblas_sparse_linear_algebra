@@ -16,15 +16,18 @@ pub enum GraphBlasErrorType {
     NoValue,
     UnitializedObject,
     InvalidObject,
+    NotImplemented,
     NullPointer,
     InvalidValue,
     InvalidIndex,
     DomainMismatch,
     DimensionMismatch,
+    EmptyObject,
     OutputNotEmpty,
     OutOfMemory,
     InsufficientSpace,
     IndexOutOfBounds,
+    IteratorExhausted,
     Panic,
 }
 
