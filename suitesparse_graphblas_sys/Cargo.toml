@@ -1,12 +1,12 @@
 [package]
 name = "suitesparse_graphblas_sys"
 description = "Rust bindings for SuiteSparse::GraphBLAS"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "CC-BY-NC-4.0"
 authors = ["code_sam <mail@samdekker.nl>"]
 keywords = ["GraphBLAS", "SuiteSparse"]
-categories = ["External FFI bindings", "Mathematics"]
+categories = ["external-ffi-bindings", "mathematics"]
 readme = "README.md"
 repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 
