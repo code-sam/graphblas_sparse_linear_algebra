@@ -5,6 +5,7 @@ authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2021"
 keywords = ["GraphBLAS", "sparse", "linear", "algebra"]
+categories = ["API bindings, Mathematics"]
 license = "CC-BY-NC-4.0"
 readme = "README.md"
 repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"

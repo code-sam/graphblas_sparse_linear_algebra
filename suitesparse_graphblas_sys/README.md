@@ -9,8 +9,8 @@ suitesparse_graphblas_sys uses the SuiteSparse:GraphBLAS GraphBLAS implementatio
 
 By default, graphblas_sparse_linear_algebra makes a new build of SuiteSparse:GraphBLAS and links to it as a static dependency.
 
-### Network connection during build
-suitesparse_graphblas_sys clones the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) repository upon build.
+### Git
+suitesparse_graphblas_sys clones the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) repository upon build. The build system must have Git installed and an internet connection.
 
 ### C compiler
 suitesparse_graphblas_sys includes a build script to build SuiteSparse:GraphBLAS from source. The build process requires an installed C compiler, for example [GCC](https://gcc.gnu.org/).
