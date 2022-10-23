@@ -21,7 +21,7 @@ suitesparse_graphblas_sys' build script reads the following environment variable
 - SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME with the name of the [openmp](https://www.openmp.org/) implementation to be used. For example, when using GCC please set the environment variable to "gomp"
 
 ### Bindgen and CMake
-suitesparse_graphblas_sys depends on bindgen, please make sure the build system meets it's runtime [requirements](https://rust-lang.github.io/rust-bindgen/requirements.html)
+suitesparse_graphblas_sys depends on bindgen, please make sure the build system meets it's [requirements](https://rust-lang.github.io/rust-bindgen/requirements.html)
 
 suitesparse_graphblas_sys also requires [CMake](https://cmake.org/) installed on the build system.
 
