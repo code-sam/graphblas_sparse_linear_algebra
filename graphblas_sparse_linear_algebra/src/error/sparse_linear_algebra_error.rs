@@ -98,11 +98,9 @@ impl From<GraphBlasError> for SparseLinearAlgebraError {
             | GraphBlasErrorType::InsufficientSpace
             | GraphBlasErrorType::IndexOutOfBounds
             | GraphBlasErrorType::IteratorExhausted => Self::LogicError(error.into()),
-            GraphBlasErrorType::OutOfMemory 
-            | GraphBlasErrorType::Panic 
-            | GraphBlasErrorType::NotImplemented => {
-                Self::SystemError(error.into())
-            }
+            GraphBlasErrorType::OutOfMemory
+            | GraphBlasErrorType::Panic
+            | GraphBlasErrorType::NotImplemented => Self::SystemError(error.into()),
         }
     }
 }

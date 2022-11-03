@@ -12,6 +12,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
@@ -181,7 +182,7 @@ impl<ArgumentType: ValueType, ResultType: ValueType>
                 argument.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, result.graphblas_vector_ref())?;
 
         Ok(())
     }
@@ -203,7 +204,7 @@ impl<ArgumentType: ValueType, ResultType: ValueType>
                 argument.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, result.graphblas_vector_ref())?;
 
         Ok(())
     }
@@ -266,7 +267,7 @@ macro_rules! implement_monoid_reducer_matrix_to_scalar {
                         argument.graphblas_matrix(),
                         self.options,
                     )
-                })?;
+                }, &tmp_result)?;
 
                 *result = $convert_to_type!(tmp_result)?;
                 // $convert_to_type!(tmp_result, $result_value_type);

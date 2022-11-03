@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
@@ -80,32 +81,38 @@ where
 
         match indices_to_extract {
             ElementIndexSelectorGraphblasType::Index(index) => {
-                context.call(|| unsafe {
-                    GrB_Col_extract(
-                        column_vector.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
-                        index.as_ptr(),
-                        number_of_indices_to_extract,
-                        column_index_to_extract,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Col_extract(
+                            column_vector.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            matrix_to_extract_from.graphblas_matrix(),
+                            index.as_ptr(),
+                            number_of_indices_to_extract,
+                            column_index_to_extract,
+                            self.options,
+                        )
+                    },
+                    column_vector.graphblas_vector_ref(),
+                )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
-                context.call(|| unsafe {
-                    GrB_Col_extract(
-                        column_vector.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
-                        index,
-                        number_of_indices_to_extract,
-                        column_index_to_extract,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Col_extract(
+                            column_vector.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            matrix_to_extract_from.graphblas_matrix(),
+                            index,
+                            number_of_indices_to_extract,
+                            column_index_to_extract,
+                            self.options,
+                        )
+                    },
+                    column_vector.graphblas_vector_ref(),
+                )?;
             }
         }
 
@@ -137,32 +144,38 @@ where
 
         match indices_to_extract {
             ElementIndexSelectorGraphblasType::Index(index) => {
-                context.call(|| unsafe {
-                    GrB_Col_extract(
-                        column_vector.graphblas_vector(),
-                        mask.graphblas_vector(),
-                        self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
-                        index.as_ptr(),
-                        number_of_indices_to_extract,
-                        column_index_to_extract,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Col_extract(
+                            column_vector.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            matrix_to_extract_from.graphblas_matrix(),
+                            index.as_ptr(),
+                            number_of_indices_to_extract,
+                            column_index_to_extract,
+                            self.options,
+                        )
+                    },
+                    column_vector.graphblas_vector_ref(),
+                )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
-                context.call(|| unsafe {
-                    GrB_Col_extract(
-                        column_vector.graphblas_vector(),
-                        mask.graphblas_vector(),
-                        self.accumulator,
-                        matrix_to_extract_from.graphblas_matrix(),
-                        index,
-                        number_of_indices_to_extract,
-                        column_index_to_extract,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Col_extract(
+                            column_vector.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            matrix_to_extract_from.graphblas_matrix(),
+                            index,
+                            number_of_indices_to_extract,
+                            column_index_to_extract,
+                            self.options,
+                        )
+                    },
+                    column_vector.graphblas_vector_ref(),
+                )?;
             }
         }
 

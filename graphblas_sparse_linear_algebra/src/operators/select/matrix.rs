@@ -2,6 +2,7 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
@@ -80,7 +81,7 @@ macro_rules! implement_selector_with_diagonal {
                                 index.graphblas_scalar(),
                                 self.options,
                             )
-                        })?;
+                        }, product.graphblas_matrix_ref())?;
                     }
                     DiagonalIndexGraphblasType::Default => {
                         context.call(|| unsafe {
@@ -93,7 +94,7 @@ macro_rules! implement_selector_with_diagonal {
                                 ptr::null_mut(),
                                 self.options,
                             )
-                        })?;
+                        }, product.graphblas_matrix_ref())?;
                     }
                 }
 
@@ -126,7 +127,7 @@ macro_rules! implement_selector_with_diagonal {
                                 index.graphblas_scalar(),
                                 self.options,
                             )
-                        })?;
+                        }, product.graphblas_matrix_ref())?;
                     }
                     DiagonalIndexGraphblasType::Default => {
                         context.call(|| unsafe {
@@ -139,7 +140,7 @@ macro_rules! implement_selector_with_diagonal {
                                 ptr::null_mut(),
                                 self.options,
                             )
-                        })?;
+                        }, product.graphblas_matrix_ref())?;
                     }
                 }
 
@@ -177,7 +178,7 @@ macro_rules! implement_scalar_selector {
                         sparse_scalar.graphblas_scalar(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_matrix_ref())?;
 
                 Ok(())
             }
@@ -206,7 +207,7 @@ macro_rules! implement_scalar_selector {
                         sparse_scalar.graphblas_scalar(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_matrix_ref())?;
 
                 Ok(())
             }
@@ -390,7 +391,7 @@ macro_rules! implement_selector_with_zero {
                         ptr::null_mut(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_matrix_ref())?;
 
                 Ok(())
             }
@@ -416,7 +417,7 @@ macro_rules! implement_selector_with_zero {
                         ptr::null_mut(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_matrix_ref())?;
 
                 Ok(())
             }

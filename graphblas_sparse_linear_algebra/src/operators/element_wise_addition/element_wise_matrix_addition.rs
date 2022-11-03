@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
@@ -75,17 +76,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_eWiseAdd_Semiring(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_eWiseAdd_Semiring(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            &product.graphblas_matrix(),
+        )?;
 
         Ok(())
     }
@@ -99,17 +103,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_eWiseAdd_Semiring(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_eWiseAdd_Semiring(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            &product.graphblas_matrix(),
+        )?;
         Ok(())
     }
 }
@@ -158,17 +165,20 @@ impl<T: ValueType> ElementWiseMatrixAdditionMonoidOperator<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_eWiseAdd_Monoid(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_eWiseAdd_Monoid(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            &product.graphblas_matrix(),
+        )?;
 
         Ok(())
     }
@@ -182,17 +192,20 @@ impl<T: ValueType> ElementWiseMatrixAdditionMonoidOperator<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_eWiseAdd_Monoid(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_eWiseAdd_Monoid(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            &product.graphblas_matrix(),
+        )?;
 
         Ok(())
     }
@@ -258,17 +271,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_eWiseAdd_BinaryOp(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_eWiseAdd_BinaryOp(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            &product.graphblas_matrix(),
+        )?;
 
         Ok(())
     }
@@ -282,17 +298,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_eWiseAdd_BinaryOp(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_eWiseAdd_BinaryOp(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            &product.graphblas_matrix(),
+        )?;
 
         Ok(())
     }

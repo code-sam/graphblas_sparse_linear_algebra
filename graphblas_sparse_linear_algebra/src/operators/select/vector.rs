@@ -2,9 +2,9 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-
 use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
 use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
@@ -76,7 +76,7 @@ macro_rules! implement_scalar_selector {
                         sparse_scalar.graphblas_scalar(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_vector_ref())?;
 
                 Ok(())
             }
@@ -105,7 +105,7 @@ macro_rules! implement_scalar_selector {
                         sparse_scalar.graphblas_scalar(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_vector_ref())?;
 
                 Ok(())
             }
@@ -289,7 +289,7 @@ macro_rules! implement_selector_with_zero {
                         ptr::null_mut(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_vector_ref())?;
 
                 Ok(())
             }
@@ -315,7 +315,7 @@ macro_rules! implement_selector_with_zero {
                         ptr::null_mut(),
                         self.options,
                     )
-                })?;
+                }, product.graphblas_vector_ref())?;
 
                 Ok(())
             }

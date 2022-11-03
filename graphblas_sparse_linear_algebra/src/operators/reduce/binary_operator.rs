@@ -1,10 +1,9 @@
+use std::marker::PhantomData;
 use std::ptr;
 
-use std::marker::PhantomData;
-
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-
 use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types;
@@ -66,7 +65,7 @@ impl<T: ValueType> BinaryOperatorReducer<T> {
                 argument.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, product.graphblas_vector_ref())?;
 
         Ok(())
     }
@@ -88,7 +87,7 @@ impl<T: ValueType> BinaryOperatorReducer<T> {
                 argument.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, product.graphblas_vector_ref())?;
 
         Ok(())
     }

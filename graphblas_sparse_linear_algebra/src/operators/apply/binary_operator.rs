@@ -2,6 +2,7 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
@@ -182,17 +183,20 @@ macro_rules! implement_binary_operator {
                 let second_argument = second_argument.clone();
                 $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_vector_as_first_argument(
-                        product.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument.graphblas_vector(),
-                        second_argument,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_vector_as_first_argument(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_vector(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_vector(),
+                )?;
 
                 Ok(())
             }
@@ -207,17 +211,20 @@ macro_rules! implement_binary_operator {
                 let first_argument = first_argument.clone();
                 $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_vector_as_second_argument(
-                        product.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument,
-                        second_argument.graphblas_vector(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_vector_as_second_argument(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_vector(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_vector(),
+                )?;
 
                 Ok(())
             }
@@ -236,17 +243,20 @@ macro_rules! implement_binary_operator {
                 let second_argument = second_argument.clone();
                 $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_vector_as_first_argument(
-                        product.graphblas_vector(),
-                        mask.graphblas_vector(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument.graphblas_vector(),
-                        second_argument,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_vector_as_first_argument(
+                            product.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_vector(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_vector(),
+                )?;
 
                 Ok(())
             }
@@ -265,17 +275,20 @@ macro_rules! implement_binary_operator {
                 let first_argument = first_argument.clone();
                 $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_vector_as_second_argument(
-                        product.graphblas_vector(),
-                        mask.graphblas_vector(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument,
-                        second_argument.graphblas_vector(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_vector_as_second_argument(
+                            product.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_vector(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_vector(),
+                )?;
 
                 Ok(())
             }
@@ -290,17 +303,20 @@ macro_rules! implement_binary_operator {
                 let second_argument = second_argument.clone();
                 $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_matrix_as_first_argument(
-                        product.graphblas_matrix(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument.graphblas_matrix(),
-                        second_argument,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_matrix_as_first_argument(
+                            product.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_matrix(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_matrix(),
+                )?;
 
                 Ok(())
             }
@@ -315,17 +331,20 @@ macro_rules! implement_binary_operator {
                 let first_argument = first_argument.clone();
                 $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_matrix_as_second_argument(
-                        product.graphblas_matrix(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument,
-                        second_argument.graphblas_matrix(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_matrix_as_second_argument(
+                            product.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_matrix(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_matrix(),
+                )?;
 
                 Ok(())
             }
@@ -344,17 +363,20 @@ macro_rules! implement_binary_operator {
                 let second_argument = second_argument.clone();
                 $convert_to_graphblas_implementation_type!(second_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_matrix_as_first_argument(
-                        product.graphblas_matrix(),
-                        mask.graphblas_matrix(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument.graphblas_matrix(),
-                        second_argument,
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_matrix_as_first_argument(
+                            product.graphblas_matrix(),
+                            mask.graphblas_matrix(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_matrix(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_matrix(),
+                )?;
 
                 Ok(())
             }
@@ -373,17 +395,20 @@ macro_rules! implement_binary_operator {
                 let first_argument = first_argument.clone();
                 $convert_to_graphblas_implementation_type!(first_argument, $graphblas_scalar_type);
 
-                context.call(|| unsafe {
-                    $operator_matrix_as_second_argument(
-                        product.graphblas_matrix(),
-                        mask.graphblas_matrix(),
-                        self.accumulator,
-                        self.binary_operator,
-                        first_argument,
-                        second_argument.graphblas_matrix(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $operator_matrix_as_second_argument(
+                            product.graphblas_matrix(),
+                            mask.graphblas_matrix(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_matrix(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_matrix(),
+                )?;
 
                 Ok(())
             }

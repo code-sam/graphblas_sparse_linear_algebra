@@ -19,7 +19,7 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_Scalar_setElement_INT64, GxB_Scalar_setElement_INT8, GxB_Scalar_setElement_UINT16,
     GxB_Scalar_setElement_UINT32, GxB_Scalar_setElement_UINT64, GxB_Scalar_setElement_UINT8,
 };
-use crate::context::Context;
+use crate::context::{CallGraphBlasContext, Context};
 
 use crate::util::{ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
@@ -48,8 +48,9 @@ impl<T: ValueType + BuiltInValueType> SparseScalar<T> {
         let mut scalar: MaybeUninit<GxB_Scalar> = MaybeUninit::uninit();
         let context = context.clone();
 
-        context
-            .call(|| unsafe { GxB_Scalar_new(scalar.as_mut_ptr(), <T>::to_graphblas_type()) })?;
+        context.call_without_detailed_error_information(|| unsafe {
+            GxB_Scalar_new(scalar.as_mut_ptr(), <T>::to_graphblas_type())
+        })?;
 
         let scalar = unsafe { scalar.assume_init() };
         return Ok(SparseScalar {
@@ -90,28 +91,39 @@ impl<T: ValueType> SparseScalar<T> {
 
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context
-            .call(|| unsafe { GxB_Scalar_nvals(number_of_values.as_mut_ptr(), self.scalar) })?;
+        self.context.call(
+            || unsafe { GxB_Scalar_nvals(number_of_values.as_mut_ptr(), self.scalar) },
+            &self.scalar,
+        )?;
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
 
     pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
         self.context
-            .call(|| unsafe { GxB_Scalar_clear(self.scalar) })?;
+            .call_without_detailed_error_information(|| unsafe { GxB_Scalar_clear(self.scalar) })?;
         Ok(())
     }
 
     pub(crate) fn graphblas_scalar(&self) -> GxB_Scalar {
-        self.scalar.clone()
+        self.scalar
+    }
+
+    pub(crate) fn graphblas_scalar_ref(&self) -> &GxB_Scalar {
+        &self.scalar
+    }
+
+    pub(crate) fn graphblas_scalar_mut_ref(&mut self) -> &mut GxB_Scalar {
+        &mut self.scalar
     }
 }
 
 impl<T: ValueType> Drop for SparseScalar<T> {
     fn drop(&mut self) -> () {
-        let _ = self
-            .context
-            .call(|| unsafe { GxB_Scalar_free(&mut self.scalar.clone()) });
+        let _ = self.context.call(
+            || unsafe { GxB_Scalar_free(&mut self.scalar.clone()) },
+            &self.scalar,
+        );
     }
 }
 
@@ -119,7 +131,10 @@ impl<T: ValueType> Clone for SparseScalar<T> {
     fn clone(&self) -> Self {
         let mut scalar_copy: MaybeUninit<GxB_Scalar> = MaybeUninit::uninit();
         self.context
-            .call(|| unsafe { GxB_Scalar_dup(scalar_copy.as_mut_ptr(), self.scalar) })
+            .call(
+                || unsafe { GxB_Scalar_dup(scalar_copy.as_mut_ptr(), self.scalar) },
+                &self.scalar,
+            )
             .unwrap();
 
         SparseScalar {
@@ -163,8 +178,10 @@ macro_rules! implement_set_value_for_built_in_type {
             fn set_value(&mut self, value: &$value_type) -> Result<(), SparseLinearAlgebraError> {
                 let value = value.clone(); // TODO: review if clone can be removed, and if this improves performance
                 $convert_to_target_type!(value, $graphblas_implementation_type);
-                self.context
-                    .call(|| unsafe { $add_element_function(self.scalar, value) })?;
+                self.context.call(
+                    || unsafe { $add_element_function(self.scalar, value) },
+                    &self.scalar,
+                )?;
                 Ok(())
             }
         }
@@ -186,9 +203,10 @@ macro_rules! implement_get_value_for_built_in_type {
             fn get_value(&self) -> Result<$value_type, SparseLinearAlgebraError> {
                 let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
 
-                let result = self
-                    .context
-                    .call(|| unsafe { $get_value_function(value.as_mut_ptr(), self.scalar) });
+                let result = self.context.call(
+                    || unsafe { $get_value_function(value.as_mut_ptr(), self.scalar) },
+                    &self.scalar,
+                );
 
                 match result {
                     Ok(_) => {

@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
@@ -99,16 +100,19 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                context.call(|| unsafe {
-                    GrB_Vector_apply(
-                        product.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        self.unary_operator,
-                        argument.graphblas_vector(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Vector_apply(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.unary_operator,
+                            argument.graphblas_vector(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_vector(),
+                )?;
 
                 Ok(())
             }
@@ -124,16 +128,19 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                context.call(|| unsafe {
-                    GrB_Vector_apply(
-                        product.graphblas_vector(),
-                        mask.graphblas_vector(),
-                        self.accumulator,
-                        self.unary_operator,
-                        argument.graphblas_vector(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Vector_apply(
+                            product.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            self.unary_operator,
+                            argument.graphblas_vector(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_vector(),
+                )?;
 
                 Ok(())
             }
@@ -145,16 +152,19 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                context.call(|| unsafe {
-                    GrB_Matrix_apply(
-                        product.graphblas_matrix(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        self.unary_operator,
-                        argument.graphblas_matrix(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Matrix_apply(
+                            product.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.unary_operator,
+                            argument.graphblas_matrix(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_matrix(),
+                )?;
 
                 Ok(())
             }
@@ -170,16 +180,19 @@ macro_rules! implement_unary_operator {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
 
-                context.call(|| unsafe {
-                    GrB_Matrix_apply(
-                        product.graphblas_matrix(),
-                        mask.graphblas_matrix(),
-                        self.accumulator,
-                        self.unary_operator,
-                        argument.graphblas_matrix(),
-                        self.options,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        GrB_Matrix_apply(
+                            product.graphblas_matrix(),
+                            mask.graphblas_matrix(),
+                            self.accumulator,
+                            self.unary_operator,
+                            argument.graphblas_matrix(),
+                            self.options,
+                        )
+                    },
+                    &product.graphblas_matrix(),
+                )?;
 
                 Ok(())
             }

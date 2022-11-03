@@ -4,6 +4,7 @@ use std::ptr;
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Col_subassign,
 };
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
@@ -131,7 +132,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                 column_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
@@ -146,7 +147,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                 column_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                 }
 
@@ -184,7 +185,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                 column_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
@@ -199,7 +200,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                 column_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                 }
 

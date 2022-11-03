@@ -8,6 +8,7 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_Vector_subassign_INT64, GxB_Vector_subassign_INT8, GxB_Vector_subassign_UINT16,
     GxB_Vector_subassign_UINT32, GxB_Vector_subassign_UINT64, GxB_Vector_subassign_UINT8,
 };
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
@@ -130,7 +131,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
@@ -144,7 +145,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
                 }
 
@@ -181,7 +182,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
@@ -195,7 +196,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
                 }
 

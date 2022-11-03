@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use rayon::prelude::*;
 
+use crate::context::CallGraphBlasContext;
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
@@ -69,7 +70,7 @@ impl<T: ValueType + BuiltInValueType> SparseVector<T> {
 
         let length = length.to_graphblas_index()?;
 
-        context.call(|| unsafe {
+        context.call_without_detailed_error_information(|| unsafe {
             GrB_Vector_new(vector.as_mut_ptr(), <T>::to_graphblas_type(), length)
         })?;
 
@@ -111,23 +112,29 @@ impl<T: ValueType> SparseVector<T> {
     pub fn resize(&mut self, new_length: ElementIndex) -> Result<(), SparseLinearAlgebraError> {
         let new_length = new_length.to_graphblas_index()?;
 
-        self.context
-            .call(|| unsafe { GrB_Vector_resize(self.vector, new_length) })?;
+        self.context.call(
+            || unsafe { GrB_Vector_resize(self.vector, new_length) },
+            &self.vector,
+        )?;
         Ok(())
     }
 
     pub fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut length: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context
-            .call(|| unsafe { GrB_Vector_size(length.as_mut_ptr(), self.vector) })?;
+        self.context.call(
+            || unsafe { GrB_Vector_size(length.as_mut_ptr(), self.vector) },
+            &self.vector,
+        )?;
         let length = unsafe { length.assume_init() };
         Ok(ElementIndex::from_graphblas_index(length)?)
     }
 
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context
-            .call(|| unsafe { GrB_Vector_nvals(number_of_values.as_mut_ptr(), self.vector) })?;
+        self.context.call(
+            || unsafe { GrB_Vector_nvals(number_of_values.as_mut_ptr(), self.vector) },
+            &self.vector,
+        )?;
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
@@ -138,14 +145,16 @@ impl<T: ValueType> SparseVector<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let index_to_delete = index_to_delete.to_graphblas_index()?;
 
-        self.context
-            .call(|| unsafe { GrB_Vector_removeElement(self.vector, index_to_delete) })?;
+        self.context.call(
+            || unsafe { GrB_Vector_removeElement(self.vector, index_to_delete) },
+            &self.vector,
+        )?;
         Ok(())
     }
 
     pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
         self.context
-            .call(|| unsafe { GrB_Vector_clear(self.vector) })?;
+            .call(|| unsafe { GrB_Vector_clear(self.vector) }, &self.vector)?;
         Ok(())
     }
 
@@ -157,7 +166,15 @@ impl<T: ValueType> SparseVector<T> {
     }
 
     pub(crate) fn graphblas_vector(&self) -> GrB_Vector {
-        self.vector.clone()
+        self.vector
+    }
+
+    pub(crate) fn graphblas_vector_ref(&self) -> &GrB_Vector {
+        &self.vector
+    }
+
+    pub(crate) fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector {
+        &mut self.vector
     }
 }
 
@@ -165,7 +182,9 @@ impl<T: ValueType> Drop for SparseVector<T> {
     fn drop(&mut self) -> () {
         let _ = self
             .context
-            .call(|| unsafe { GrB_Vector_free(&mut self.vector.clone()) });
+            .call_without_detailed_error_information(|| unsafe {
+                GrB_Vector_free(&mut self.vector.clone())
+            });
     }
 }
 
@@ -173,7 +192,10 @@ impl<T: ValueType> Clone for SparseVector<T> {
     fn clone(&self) -> Self {
         let mut vector_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
         self.context
-            .call(|| unsafe { GrB_Vector_dup(vector_copy.as_mut_ptr(), self.vector) })
+            .call(
+                || unsafe { GrB_Vector_dup(vector_copy.as_mut_ptr(), self.vector) },
+                &self.vector,
+            )
             .unwrap();
 
         SparseVector {
@@ -254,15 +276,18 @@ macro_rules! sparse_matrix_from_element_vector {
                 let number_of_elements = elements.length().to_graphblas_index()?;
                 let element_values = elements.values_ref().clone();
                 $convert_to_target_type!(element_values, $graphblas_implementation_type);
-                vector.context.call(|| unsafe {
-                    $build_function(
-                        vector.vector,
-                        graphblas_indices.as_ptr(),
-                        element_values.as_ptr(),
-                        number_of_elements,
-                        reduction_operator_for_duplicates.graphblas_type(),
-                    )
-                })?;
+                vector.context.call(
+                    || unsafe {
+                        $build_function(
+                            vector.vector,
+                            graphblas_indices.as_ptr(),
+                            element_values.as_ptr(),
+                            number_of_elements,
+                            reduction_operator_for_duplicates.graphblas_type(),
+                        )
+                    },
+                    &vector.vector,
+                )?;
                 Ok(vector)
             }
         }
@@ -288,9 +313,10 @@ macro_rules! implement_set_element_for_built_in_type {
                 let index_to_set = element.index().to_graphblas_index()?;
                 let element_value = element.value().clone();
                 $convert_to_type!(element_value, $graphblas_implementation_type);
-                self.context.call(|| unsafe {
-                    $add_element_function(self.vector, element_value, index_to_set)
-                })?;
+                self.context.call(
+                    || unsafe { $add_element_function(self.vector, element_value, index_to_set) },
+                    &self.vector,
+                )?;
                 Ok(())
             }
         }
@@ -312,9 +338,10 @@ macro_rules! implement_set_element_for_custom_type {
                 let index_to_set = element.index().to_graphblas_index()?;
                 let value: *mut c_void = &mut element.value() as *mut $value_type as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
                                                                                                   // let value: *mut c_void = &mut element.value() as *mut _ as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
-                self.context.call(|| unsafe {
-                    GrB_Vector_setElement_UDT(self.vector, value, index_to_set)
-                })?;
+                self.context.call(
+                    || unsafe { GrB_Vector_setElement_UDT(self.vector, value, index_to_set) },
+                    &self.vector,
+                )?;
                 Ok(())
             }
         }
@@ -353,9 +380,12 @@ macro_rules! implement_get_element_value_for_built_in_type {
                 let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
                 let index_to_get = index.to_graphblas_index()?;
 
-                let result = self.context.call(|| unsafe {
-                    $get_element_function(value.as_mut_ptr(), self.vector, index_to_get)
-                });
+                let result = self.context.call(
+                    || unsafe {
+                        $get_element_function(value.as_mut_ptr(), self.vector, index_to_get)
+                    },
+                    &self.vector,
+                );
 
                 match result {
                     Ok(_) => {
@@ -413,9 +443,12 @@ macro_rules! implement_get_element_for_custom_type {
                 let pointer_to_value: *mut c_void = &mut value as *mut _ as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
                 let index_to_get = index.to_graphblas_index()?;
 
-                self.context.call(|| unsafe {
-                    GrB_Vector_extractElement_UDT(pointer_to_value, self.vector, index_to_get)
-                })?;
+                self.context.call(
+                    || unsafe {
+                        GrB_Vector_extractElement_UDT(pointer_to_value, self.vector, index_to_get)
+                    },
+                    &self.vector,
+                )?;
 
                 let value = unsafe { value.assume_init() };
 
@@ -451,7 +484,7 @@ macro_rules! implement_get_element_list {
                         values.as_mut_ptr(),
                         &mut number_of_stored_and_returned_elements,
                         self.vector)
-                })?;
+                }, &self.vector)?;
 
                 let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
 

@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::context::CallGraphBlasContext;
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Matrix_subassign,
 };
@@ -136,7 +137,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                     (
                         ElementIndexSelectorGraphblasType::All(row),
@@ -154,7 +155,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                     (
                         ElementIndexSelectorGraphblasType::Index(row),
@@ -172,7 +173,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                     (
                         ElementIndexSelectorGraphblasType::All(row),
@@ -190,7 +191,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                 }
 
@@ -236,7 +237,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                     (
                         ElementIndexSelectorGraphblasType::All(row),
@@ -254,7 +255,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                     (
                         ElementIndexSelectorGraphblasType::Index(row),
@@ -272,7 +273,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                     (
                         ElementIndexSelectorGraphblasType::All(row),
@@ -290,7 +291,7 @@ macro_rules! implement_insert_matrix_into_sub_matrix_trait {
                                 number_of_columns_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
                     }
                 }
 

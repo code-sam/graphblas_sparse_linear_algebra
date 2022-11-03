@@ -33,7 +33,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_INT8, GrB_Matrix_setElement_UINT16, GrB_Matrix_setElement_UINT32,
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
-use crate::context::Context;
+use crate::context::{CallGraphBlasContext, Context};
 use crate::operators::binary_operator::BinaryOperator;
 
 use crate::util::{ElementIndex, IndexConversion};
@@ -79,7 +79,7 @@ impl<T: ValueType + BuiltInValueType> SparseMatrix<T> {
         let row_height = size.row_height().to_graphblas_index()?;
         let column_width = size.column_width().to_graphblas_index()?;
 
-        context.call(|| unsafe {
+        context.call_without_detailed_error_information(|| unsafe {
             GrB_Matrix_new(
                 matrix.as_mut_ptr(),
                 <T>::to_graphblas_type(),
@@ -109,29 +109,43 @@ impl<T: ValueType> SparseMatrix<T> {
         self.matrix
     }
 
+    pub(crate) fn graphblas_matrix_ref(&self) -> &GrB_Matrix {
+        &self.matrix
+    }
+
+    pub(crate) fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
+        &mut self.matrix
+    }
+
     /// All elements of self with an index coordinate outside of the new size are dropped.
     pub fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
         let new_row_height = new_size.row_height().to_graphblas_index()?;
         let new_column_width = new_size.column_width().to_graphblas_index()?;
 
         let context = self.context.clone();
-        context
-            .call(|| unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) })?;
+        context.call(
+            || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
+            &self.matrix,
+        )?;
         Ok(())
     }
 
     pub fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context
-            .call(|| unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) })?;
+        self.context.call(
+            || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) },
+            &self.matrix,
+        )?;
         let row_height = unsafe { row_height.assume_init() };
         Ok(ElementIndex::from_graphblas_index(row_height)?)
     }
 
     pub fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context
-            .call(|| unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) })?;
+        self.context.call(
+            || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) },
+            &self.matrix,
+        )?;
         let column_width = unsafe { column_width.assume_init() };
         Ok(ElementIndex::from_graphblas_index(column_width)?)
     }
@@ -142,8 +156,10 @@ impl<T: ValueType> SparseMatrix<T> {
 
     pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context
-            .call(|| unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) })?;
+        self.context.call(
+            || unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) },
+            &self.matrix,
+        )?;
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
@@ -153,16 +169,19 @@ impl<T: ValueType> SparseMatrix<T> {
         let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
 
         let context = self.context.clone();
-        context.call(|| unsafe {
-            GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
-        })?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
+            },
+            &self.matrix,
+        )?;
         Ok(())
     }
 
     /// remove all elements in th matrix
     pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
         self.context
-            .call(|| unsafe { GrB_Matrix_clear(self.matrix) })?;
+            .call(|| unsafe { GrB_Matrix_clear(self.matrix) }, &self.matrix)?;
         Ok(())
     }
 }
@@ -170,7 +189,9 @@ impl<T: ValueType> SparseMatrix<T> {
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
         let context = self.context.clone();
-        let _ = context.call(|| unsafe { GrB_Matrix_free(&mut self.matrix) });
+        let _ = context.call_without_detailed_error_information(|| unsafe {
+            GrB_Matrix_free(&mut self.matrix)
+        });
     }
 }
 
@@ -178,7 +199,10 @@ impl<T: ValueType> Clone for SparseMatrix<T> {
     fn clone(&self) -> Self {
         let mut matrix_copy: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
         self.context
-            .call(|| unsafe { GrB_Matrix_dup(matrix_copy.as_mut_ptr(), self.matrix) })
+            .call(
+                || unsafe { GrB_Matrix_dup(matrix_copy.as_mut_ptr(), self.matrix) },
+                &self.matrix,
+            )
             .unwrap();
 
         SparseMatrix {
@@ -316,16 +340,19 @@ macro_rules! sparse_matrix_from_element_vector {
 
                 {
                     let number_of_elements = elements.length().to_graphblas_index()?;
-                    context.call(|| unsafe {
-                        $build_function(
-                            matrix.matrix,
-                            graphblas_row_indices.as_ptr(),
-                            graphblas_column_indices.as_ptr(),
-                            element_values.as_ptr(),
-                            number_of_elements,
-                            reduction_operator_for_duplicates.graphblas_type(),
-                        )
-                    })?;
+                    context.call(
+                        || unsafe {
+                            $build_function(
+                                matrix.matrix,
+                                graphblas_row_indices.as_ptr(),
+                                graphblas_column_indices.as_ptr(),
+                                element_values.as_ptr(),
+                                number_of_elements,
+                                reduction_operator_for_duplicates.graphblas_type(),
+                            )
+                        },
+                        &matrix.graphblas_matrix(),
+                    )?;
                 }
                 Ok(matrix)
             }
@@ -377,14 +404,17 @@ macro_rules! implement_set_element {
                 // };
                 let element_value = element.value();
                 $convert_to_target_type!(element_value, $conversion_target_type);
-                context.call(|| unsafe {
-                    $add_element_function(
-                        self.matrix,
-                        element_value,
-                        row_index_to_set,
-                        column_index_to_set,
-                    )
-                })?;
+                context.call(
+                    || unsafe {
+                        $add_element_function(
+                            self.matrix,
+                            element_value,
+                            row_index_to_set,
+                            column_index_to_set,
+                        )
+                    },
+                    &self.matrix,
+                )?;
                 Ok(())
             }
         }
@@ -412,14 +442,17 @@ macro_rules! implement_get_element_value {
                 let row_index_to_get = coordinate.row_index().to_graphblas_index()?;
                 let column_index_to_get = coordinate.column_index().to_graphblas_index()?;
 
-                let result = self.context.call(|| unsafe {
-                    $get_element_function(
-                        value.as_mut_ptr(),
-                        self.matrix,
-                        row_index_to_get,
-                        column_index_to_get,
-                    )
-                });
+                let result = self.context.call(
+                    || unsafe {
+                        $get_element_function(
+                            value.as_mut_ptr(),
+                            self.matrix,
+                            row_index_to_get,
+                            column_index_to_get,
+                        )
+                    },
+                    &self.matrix,
+                );
 
                 match result {
                     Ok(_) => {
@@ -545,7 +578,7 @@ macro_rules! implement_get_element_list {
                         &mut number_of_stored_and_returned_elements,
                         self.matrix,
                     )
-                })?;
+                }, &self.matrix)?;
 
                 let number_of_returned_elements = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
 
@@ -841,5 +874,31 @@ mod tests {
             matrix.number_of_stored_elements().unwrap(),
             element_list.length()
         );
+    }
+
+    #[test]
+    fn get_test_error_reporting_while_reading_an_element() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let target_height: ElementIndex = 10;
+        let target_width: ElementIndex = 5;
+        let size = Size::new(target_height, target_width);
+
+        let mut sparse_matrix = SparseMatrix::<i32>::new(&context, &size).unwrap();
+
+        let element_1 = MatrixElement::from_triple(1, 2, 1);
+        let element_2 = MatrixElement::from_triple(20, 3, 2);
+
+        sparse_matrix.set_element(element_1).unwrap();
+
+        match sparse_matrix.set_element(element_2) {
+            Ok(_) => assert!(false),
+            Err(error) => {
+                println!("{}", error.to_string());
+                assert!(error
+                    .to_string()
+                    .contains("Row index 20 out of range; must be < 10"))
+            }
+        }
     }
 }

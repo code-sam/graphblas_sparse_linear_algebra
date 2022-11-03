@@ -1,7 +1,7 @@
+use std::marker::PhantomData;
 use std::ptr;
 
-use std::marker::PhantomData;
-
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
@@ -88,7 +88,7 @@ where
                 multiplicant.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, product.graphblas_matrix_ref())?;
 
         Ok(())
     }
@@ -112,7 +112,7 @@ where
                 multiplicant.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, product.graphblas_matrix_ref())?;
 
         Ok(())
     }

@@ -6,7 +6,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_BOOL, GrB_FP32, GrB_FP64, GrB_INT16, GrB_INT32, GrB_INT64, GrB_INT8, GrB_Index, GrB_Type,
     GrB_Type_free, GrB_UINT16, GrB_UINT32, GrB_UINT64, GrB_UINT8, GxB_Type_size,
 };
-use crate::context::Context;
+use crate::context::{CallGraphBlasContext, Context};
 use crate::error::{SparseLinearAlgebraError, SystemError, SystemErrorType};
 use crate::util::{ElementIndex, IndexConversion};
 
@@ -34,7 +34,10 @@ pub(crate) struct RegisteredCustomValueType<T> {
 impl<T> Drop for RegisteredCustomValueType<T> {
     fn drop(&mut self) {
         let context = self.context.clone();
-        let _ = context.call(|| unsafe { GrB_Type_free(&mut self.graphblas_type.clone()) });
+        let _ = context.call(
+            || unsafe { GrB_Type_free(&mut self.graphblas_type.clone()) },
+            &self.graphblas_type,
+        );
     }
 }
 
@@ -58,7 +61,10 @@ impl<T> RegisteredCustomValueType<T> {
 
         let mut size: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
 
-        context.call(|| unsafe { GxB_Type_size(size.as_mut_ptr(), self.to_graphblas_type()) })?;
+        context.call(
+            || unsafe { GxB_Type_size(size.as_mut_ptr(), self.to_graphblas_type()) },
+            &self.to_graphblas_type(),
+        )?;
 
         let size = unsafe { size.assume_init() };
         Ok(ElementIndex::from_graphblas_index(size)?)
@@ -96,7 +102,7 @@ macro_rules! implement_value_type_for_custom_type {
                 let size_of_self =
                     IndexConversion::as_graphblas_index(std::mem::size_of::<$value_type>())?;
 
-                context.call(|| unsafe {
+                context.call_without_detailed_error_information(|| unsafe {
                     $crate::bindings_to_graphblas_implementation::GrB_Type_new(
                         graphblas_type.as_mut_ptr(),
                         size_of_self,

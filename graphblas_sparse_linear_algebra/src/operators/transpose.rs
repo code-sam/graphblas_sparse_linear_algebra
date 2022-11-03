@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::context::CallGraphBlasContext;
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
@@ -66,7 +67,7 @@ where
                 matrix.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, transpose.graphblas_matrix_ref())?;
 
         Ok(())
     }
@@ -87,7 +88,7 @@ where
                 matrix.graphblas_matrix(),
                 self.options,
             )
-        })?;
+        }, transpose.graphblas_matrix_ref())?;
 
         Ok(())
     }

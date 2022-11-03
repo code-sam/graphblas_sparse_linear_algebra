@@ -4,6 +4,7 @@ use std::ptr;
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Vector_subassign,
 };
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
@@ -123,7 +124,7 @@ macro_rules! implement_insert_vector_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
@@ -137,7 +138,7 @@ macro_rules! implement_insert_vector_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
                 }
 
@@ -172,7 +173,7 @@ macro_rules! implement_insert_vector_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
@@ -186,7 +187,7 @@ macro_rules! implement_insert_vector_into_sub_vector_trait {
                                 number_of_indices_to_insert_into,
                                 self.options,
                             )
-                        })?;
+                        }, vector_to_insert_into.graphblas_vector_ref())?;
                     }
                 }
 

@@ -2,12 +2,19 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::os::raw::c_char;
+use core::mem::MaybeUninit;
+use std::ffi::{c_char, CStr};
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use once_cell::sync::Lazy;
-use suitesparse_graphblas_sys::GrB_finalize;
+use suitesparse_graphblas_sys::{
+    GrB_BinaryOp, GrB_BinaryOp_error, GrB_Descriptor, GrB_Descriptor_error, GrB_IndexUnaryOp,
+    GrB_IndexUnaryOp_error, GrB_Matrix, GrB_Matrix_error, GrB_Monoid, GrB_Monoid_error, GrB_Scalar,
+    GrB_Scalar_error, GrB_Semiring, GrB_Semiring_error, GrB_Type, GrB_Type_error, GrB_UnaryOp,
+    GrB_UnaryOp_error, GrB_Vector, GrB_Vector_error, GrB_finalize, GxB_SelectOp,
+    GxB_SelectOp_error,
+};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_Info,
@@ -19,8 +26,8 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Info_GrB_INVALID_INDEX,
     GrB_Info_GrB_INVALID_OBJECT,
     GrB_Info_GrB_INVALID_VALUE,
-    GrB_Info_GrB_NO_VALUE,
     GrB_Info_GrB_NOT_IMPLEMENTED,
+    GrB_Info_GrB_NO_VALUE,
     GrB_Info_GrB_NULL_POINTER,
     GrB_Info_GrB_OUTPUT_NOT_EMPTY,
     GrB_Info_GrB_OUT_OF_MEMORY,
@@ -136,14 +143,15 @@ impl Context {
     //     }
     // }
 
-    // TODO: check context state
-    pub fn call<F>(&self, mut function_to_call: F) -> Result<Status, SparseLinearAlgebraError>
+    // TODO: check context is Ready
+    pub fn call_without_detailed_error_information<F>(
+        &self,
+        mut function_to_call: F,
+    ) -> Result<Status, SparseLinearAlgebraError>
     where
         F: FnMut() -> GrB_Info,
     {
-        // thread::sleep(time::Duration::from_secs(2));
-        // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
-        graphblas_result(function_to_call())
+        call_graphblas_implementation_without_detailed_error_information(function_to_call)
     }
 }
 
@@ -154,10 +162,24 @@ fn initialize(
     // println!("Trying to initialize a context");
     let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
     // println!("Got a lock to initialize a context! {:?}", is_graphblas_busy.load(Ordering::SeqCst));
-    let status = unsafe { graphblas_result(GrB_init(mode.into()))? };
+    let status = unsafe {
+        graphblas_result(GrB_init(mode.into()), || -> String {
+            String::from("Something went wrong while initializing a GraphBLAS context")
+        })?
+    };
     number_of_ready_contexts.fetch_add(1, Ordering::SeqCst);
     // println!("Initialised a context");
     Ok(status)
+}
+
+pub trait CallGraphBlasContext<T> {
+    fn call<F>(
+        &self,
+        function_to_call: F,
+        reference_to_debug_info: &T,
+    ) -> Result<Status, SparseLinearAlgebraError>
+    where
+        F: FnMut() -> GrB_Info;
 }
 
 #[derive(Debug, PartialEq)]
@@ -169,35 +191,34 @@ pub struct Ready {
     // version: Version
 }
 
-// pub trait Call {
-//     fn call<F>(&self, function_to_call: F) -> Result<Status, GraphBlasError>
-//     where
-//         F: FnMut() -> GrB_Info;
-// }
-
-// impl Call for NotReady {
-//     fn call<F>(&self, function_to_call: F) -> Result<Status, GraphBlasError>
-//     where
-//         F: FnMut() -> GrB_Info,
-//     {
-//         Err(GraphBlasError::new(GraphBlasErrorType::UninitialisedContext, String::from("Cannot call GraphBLAS before it's context is initialised")))
-//     }
-// }
-
 impl Ready {
-    fn call<F>(&self, mut function_to_call: F) -> Result<Status, SparseLinearAlgebraError>
+    fn call_without_detailed_error_information<F>(
+        &self,
+        mut function_to_call: F,
+    ) -> Result<Status, SparseLinearAlgebraError>
     where
         F: FnMut() -> GrB_Info,
     {
-        // thread::sleep(time::Duration::from_secs(2));
-        let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
-        graphblas_result(function_to_call())
+        call_graphblas_implementation_without_detailed_error_information(function_to_call)
     }
+}
+
+fn call_graphblas_implementation_without_detailed_error_information<F>(
+    mut function_to_call: F,
+) -> Result<Status, SparseLinearAlgebraError>
+where
+    F: FnMut() -> GrB_Info,
+{
+    // thread::sleep(time::Duration::from_secs(2));
+    let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+    graphblas_result(function_to_call(), || -> String {
+        String::from("Something went wrong while calling the GraphBLAS context.")
+    })
 }
 
 impl Ready {
     fn finalize_context(&self) -> Result<Status, SparseLinearAlgebraError> {
-        Ok(self.call(|| unsafe { GrB_finalize() })?)
+        Ok(self.call_without_detailed_error_information(|| unsafe { GrB_finalize() })?)
     }
 }
 
@@ -210,11 +231,83 @@ impl Drop for Ready {
     }
 }
 
-fn graphblas_result(grb_info: GrB_Info) -> Result<Status, SparseLinearAlgebraError> {
+macro_rules! implement_CallGraphBlasContext {
+    ($graphblas_type: ty, $error_retrieval_function: ident) => {
+        paste::paste! {
+            impl CallGraphBlasContext<$graphblas_type> for Context {
+                // TODO: check Context state is Ready
+                fn call<F>(
+                    &self,
+                    mut function_to_call: F,
+                    reference_to_debug_info: &$graphblas_type,
+                ) -> Result<Status, SparseLinearAlgebraError>
+                where
+                    F: FnMut() -> GrB_Info,
+                {
+                    let get_detailed_error_information =
+                        [<generate_closure_to_retrieve_detailed_error_message_ $graphblas_type>](reference_to_debug_info);
+                    // thread::sleep(time::Duration::from_secs(2));
+                    let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+                    graphblas_result(function_to_call(), get_detailed_error_information)
+                }
+            }
+
+            fn [<generate_closure_to_retrieve_detailed_error_message_ $graphblas_type>]<'a>(
+                struct_with_debugging_info: &'a $graphblas_type,
+            ) -> impl Fn() -> String + 'a {
+                return || -> String {
+                    let mut graphblas_error_message: MaybeUninit<*const c_char> = MaybeUninit::uninit();
+                    let graphblas_call_status;
+                    unsafe {
+                        // graphblas_call_status = suitesparse_graphblas_sys::GrB_error(
+                        graphblas_call_status = $error_retrieval_function(
+                            graphblas_error_message.as_mut_ptr(),
+                            *struct_with_debugging_info,
+                        );
+                    }
+                    let graphblas_error_message = unsafe { graphblas_error_message.assume_init() };
+                    match graphblas_call_status {
+                        GrB_Info_GrB_SUCCESS => {
+                            let message;
+                            unsafe {
+                                message = CStr::from_ptr(graphblas_error_message).to_str();
+                            }
+                            match message {
+                                Ok(message) => message.to_owned(),
+                                Err(error) => format!("Something went wrong while calling the GraphBLAS implementation. Unable to parse detailed error message due to: {}", error)
+                            }
+                        }
+                        _ => return String::from("Something went wrong while calling the GraphBLAS implementation. Unable to retrieve more detailed error information.")
+                    }
+                };
+            }
+        }
+    };
+}
+
+implement_CallGraphBlasContext!(GrB_Type, GrB_Type_error);
+implement_CallGraphBlasContext!(GrB_Scalar, GrB_Scalar_error);
+implement_CallGraphBlasContext!(GrB_Vector, GrB_Vector_error);
+implement_CallGraphBlasContext!(GrB_Matrix, GrB_Matrix_error);
+implement_CallGraphBlasContext!(GrB_Descriptor, GrB_Descriptor_error);
+implement_CallGraphBlasContext!(GrB_UnaryOp, GrB_UnaryOp_error);
+implement_CallGraphBlasContext!(GrB_BinaryOp, GrB_BinaryOp_error);
+implement_CallGraphBlasContext!(GrB_Semiring, GrB_Semiring_error);
+implement_CallGraphBlasContext!(GrB_Monoid, GrB_Monoid_error);
+implement_CallGraphBlasContext!(GrB_IndexUnaryOp, GrB_IndexUnaryOp_error);
+implement_CallGraphBlasContext!(GxB_SelectOp, GxB_SelectOp_error);
+
+fn graphblas_result<F>(
+    grb_info: GrB_Info,
+    get_detailed_error_information: F,
+) -> Result<Status, SparseLinearAlgebraError>
+where
+    F: Fn() -> String,
+{
     let status = Status::from(grb_info);
     match status {
         Status::Success => Ok(Status::Success),
-        _ => Err(status.into()),
+        _ => Err(status.into_sparse_linear_algebra_error(get_detailed_error_information())),
     }
 }
 
@@ -267,8 +360,11 @@ impl From<GrB_Info> for Status {
     }
 }
 
-impl Into<SparseLinearAlgebraError> for Status {
-    fn into(self) -> SparseLinearAlgebraError {
+impl Status {
+    fn into_sparse_linear_algebra_error(
+        self,
+        detailed_error_information: String,
+    ) -> SparseLinearAlgebraError {
         match self {
             Status::Success => SystemError::new(
                 SystemErrorType::CreateGraphBlasErrorOnSuccessValue,
@@ -277,72 +373,84 @@ impl Into<SparseLinearAlgebraError> for Status {
             )
             .into(),
             Status::NoValue => {
-                GraphBlasError::new(GraphBlasErrorType::NoValue, get_error_context()).into()
+                GraphBlasError::new(GraphBlasErrorType::NoValue, detailed_error_information).into()
             }
-            Status::UnitializedObject => {
-                GraphBlasError::new(GraphBlasErrorType::UnitializedObject, get_error_context())
-                    .into()
-            }
-            Status::InvalidObject => {
-                GraphBlasError::new(GraphBlasErrorType::InvalidObject, get_error_context()).into()
-            }
-            Status::NotImplemented => {
-                GraphBlasError::new(GraphBlasErrorType::NotImplemented, get_error_context()).into()
-            }
+            Status::UnitializedObject => GraphBlasError::new(
+                GraphBlasErrorType::UnitializedObject,
+                detailed_error_information,
+            )
+            .into(),
+            Status::InvalidObject => GraphBlasError::new(
+                GraphBlasErrorType::InvalidObject,
+                detailed_error_information,
+            )
+            .into(),
+            Status::NotImplemented => GraphBlasError::new(
+                GraphBlasErrorType::NotImplemented,
+                detailed_error_information,
+            )
+            .into(),
             Status::NullPointer => {
-                GraphBlasError::new(GraphBlasErrorType::NullPointer, get_error_context()).into()
+                GraphBlasError::new(GraphBlasErrorType::NullPointer, detailed_error_information)
+                    .into()
             }
             Status::InvalidValue => {
-                GraphBlasError::new(GraphBlasErrorType::InvalidValue, get_error_context()).into()
+                GraphBlasError::new(GraphBlasErrorType::InvalidValue, detailed_error_information)
+                    .into()
             }
             Status::InvalidIndex => {
-                GraphBlasError::new(GraphBlasErrorType::InvalidIndex, get_error_context()).into()
-            }
-            Status::DomainMismatch => {
-                GraphBlasError::new(GraphBlasErrorType::DomainMismatch, get_error_context()).into()
-            }
-            Status::DimensionMismatch => {
-                GraphBlasError::new(GraphBlasErrorType::DimensionMismatch, get_error_context())
+                GraphBlasError::new(GraphBlasErrorType::InvalidIndex, detailed_error_information)
                     .into()
             }
+            Status::DomainMismatch => GraphBlasError::new(
+                GraphBlasErrorType::DomainMismatch,
+                detailed_error_information,
+            )
+            .into(),
+            Status::DimensionMismatch => GraphBlasError::new(
+                GraphBlasErrorType::DimensionMismatch,
+                detailed_error_information,
+            )
+            .into(),
             Status::EmptyObject => {
-                GraphBlasError::new(GraphBlasErrorType::EmptyObject, get_error_context())
+                GraphBlasError::new(GraphBlasErrorType::EmptyObject, detailed_error_information)
                     .into()
             }
-            Status::OutputNotEmpty => {
-                GraphBlasError::new(GraphBlasErrorType::OutputNotEmpty, get_error_context()).into()
-            }
+            Status::OutputNotEmpty => GraphBlasError::new(
+                GraphBlasErrorType::OutputNotEmpty,
+                detailed_error_information,
+            )
+            .into(),
             Status::OutOfMemory => {
-                GraphBlasError::new(GraphBlasErrorType::OutOfMemory, get_error_context()).into()
-            }
-            Status::InsufficientSpace => {
-                GraphBlasError::new(GraphBlasErrorType::InsufficientSpace, get_error_context())
+                GraphBlasError::new(GraphBlasErrorType::OutOfMemory, detailed_error_information)
                     .into()
             }
-            Status::IndexOutOfBounds => {
-                GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds, get_error_context())
-                    .into()
-            }
-            Status::IteratorExhausted => {
-                GraphBlasError::new(GraphBlasErrorType::IteratorExhausted, get_error_context())
-                    .into()
-            }
+            Status::InsufficientSpace => GraphBlasError::new(
+                GraphBlasErrorType::InsufficientSpace,
+                detailed_error_information,
+            )
+            .into(),
+            Status::IndexOutOfBounds => GraphBlasError::new(
+                GraphBlasErrorType::IndexOutOfBounds,
+                detailed_error_information,
+            )
+            .into(),
+            Status::IteratorExhausted => GraphBlasError::new(
+                GraphBlasErrorType::IteratorExhausted,
+                detailed_error_information,
+            )
+            .into(),
             Status::Panic => {
-                GraphBlasError::new(GraphBlasErrorType::Panic, get_error_context()).into()
+                GraphBlasError::new(GraphBlasErrorType::Panic, detailed_error_information).into()
             }
             Status::UnknownStatusType => SystemError::new(
                 SystemErrorType::UnsupportedGraphBlasErrorValue,
-                get_error_context(),
+                String::from("Something went wrong while calling the GrapBLAS implementation"),
                 None,
             )
             .into(),
         }
     }
-}
-
-fn get_error_context() -> String {
-    String::from("Something went wrong while calling GraphBLAS")
-    // unsafe { std::ffi::CStr::from_ptr(GrB_error()).to_string_lossy().into_owned() }
 }
 
 #[cfg(test)]
