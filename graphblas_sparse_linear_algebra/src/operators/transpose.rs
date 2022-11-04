@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::sparse_matrix::SparseMatrix;
@@ -59,15 +59,18 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
-        context.call(|| unsafe {
-            GrB_transpose(
-                transpose.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                matrix.graphblas_matrix(),
-                self.options,
-            )
-        }, transpose.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_transpose(
+                    transpose.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    matrix.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            transpose.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -80,15 +83,18 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
-        context.call(|| unsafe {
-            GrB_transpose(
-                transpose.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                matrix.graphblas_matrix(),
-                self.options,
-            )
-        }, transpose.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_transpose(
+                    transpose.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    matrix.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            transpose.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }

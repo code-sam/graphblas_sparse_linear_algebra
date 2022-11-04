@@ -66,17 +66,20 @@ macro_rules! implement_scalar_selector {
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
                 sparse_scalar.set_value(scalar)?;
 
-                context.call(|| unsafe {
-                    GxB_Vector_select(
-                        product.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        $graphblas_operator,
-                        argument.graphblas_vector(),
-                        sparse_scalar.graphblas_scalar(),
-                        self.options,
-                    )
-                }, product.graphblas_vector_ref())?;
+                context.call(
+                    || unsafe {
+                        GxB_Vector_select(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            $graphblas_operator,
+                            argument.graphblas_vector(),
+                            sparse_scalar.graphblas_scalar(),
+                            self.options,
+                        )
+                    },
+                    product.graphblas_vector_ref(),
+                )?;
 
                 Ok(())
             }
@@ -95,17 +98,20 @@ macro_rules! implement_scalar_selector {
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
                 sparse_scalar.set_value(scalar)?;
 
-                context.call(|| unsafe {
-                    GxB_Vector_select(
-                        product.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        $graphblas_operator,
-                        argument.graphblas_vector(),
-                        sparse_scalar.graphblas_scalar(),
-                        self.options,
-                    )
-                }, product.graphblas_vector_ref())?;
+                context.call(
+                    || unsafe {
+                        GxB_Vector_select(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            $graphblas_operator,
+                            argument.graphblas_vector(),
+                            sparse_scalar.graphblas_scalar(),
+                            self.options,
+                        )
+                    },
+                    product.graphblas_vector_ref(),
+                )?;
 
                 Ok(())
             }
@@ -279,17 +285,20 @@ macro_rules! implement_selector_with_zero {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
-                context.call(|| unsafe {
-                    GxB_Vector_select(
-                        product.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.accumulator,
-                        $graphblas_operator,
-                        argument.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.options,
-                    )
-                }, product.graphblas_vector_ref())?;
+                context.call(
+                    || unsafe {
+                        GxB_Vector_select(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            $graphblas_operator,
+                            argument.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.options,
+                        )
+                    },
+                    product.graphblas_vector_ref(),
+                )?;
 
                 Ok(())
             }
@@ -305,17 +314,20 @@ macro_rules! implement_selector_with_zero {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
-                context.call(|| unsafe {
-                    GxB_Vector_select(
-                        product.graphblas_vector(),
-                        mask.graphblas_vector(),
-                        self.accumulator,
-                        $graphblas_operator,
-                        argument.graphblas_vector(),
-                        ptr::null_mut(),
-                        self.options,
-                    )
-                }, product.graphblas_vector_ref())?;
+                context.call(
+                    || unsafe {
+                        GxB_Vector_select(
+                            product.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            $graphblas_operator,
+                            argument.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.options,
+                        )
+                    },
+                    product.graphblas_vector_ref(),
+                )?;
 
                 Ok(())
             }

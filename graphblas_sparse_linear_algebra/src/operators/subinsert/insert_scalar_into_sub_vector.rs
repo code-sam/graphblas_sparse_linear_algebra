@@ -121,31 +121,37 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
 
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                vector_to_insert_into.graphblas_vector(),
-                                ptr::null_mut(),
-                                self.accumulator,
-                                scalar_to_insert,
-                                index.as_ptr(),
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, vector_to_insert_into.graphblas_vector_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    vector_to_insert_into.graphblas_vector(),
+                                    ptr::null_mut(),
+                                    self.accumulator,
+                                    scalar_to_insert,
+                                    index.as_ptr(),
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            vector_to_insert_into.graphblas_vector_ref(),
+                        )?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                vector_to_insert_into.graphblas_vector(),
-                                ptr::null_mut(),
-                                self.accumulator,
-                                scalar_to_insert,
-                                index,
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, vector_to_insert_into.graphblas_vector_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    vector_to_insert_into.graphblas_vector(),
+                                    ptr::null_mut(),
+                                    self.accumulator,
+                                    scalar_to_insert,
+                                    index,
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            vector_to_insert_into.graphblas_vector_ref(),
+                        )?;
                     }
                 }
 
@@ -172,31 +178,37 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
 
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                vector_to_insert_into.graphblas_vector(),
-                                mask_for_vector_to_insert_into.graphblas_vector(),
-                                self.accumulator,
-                                scalar_to_insert,
-                                index.as_ptr(),
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, vector_to_insert_into.graphblas_vector_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    vector_to_insert_into.graphblas_vector(),
+                                    mask_for_vector_to_insert_into.graphblas_vector(),
+                                    self.accumulator,
+                                    scalar_to_insert,
+                                    index.as_ptr(),
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            vector_to_insert_into.graphblas_vector_ref(),
+                        )?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                vector_to_insert_into.graphblas_vector(),
-                                mask_for_vector_to_insert_into.graphblas_vector(),
-                                self.accumulator,
-                                scalar_to_insert,
-                                index,
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, vector_to_insert_into.graphblas_vector_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    vector_to_insert_into.graphblas_vector(),
+                                    mask_for_vector_to_insert_into.graphblas_vector(),
+                                    self.accumulator,
+                                    scalar_to_insert,
+                                    index,
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            vector_to_insert_into.graphblas_vector_ref(),
+                        )?;
                     }
                 }
 

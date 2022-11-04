@@ -120,33 +120,39 @@ macro_rules! implement_insert_vector_into_sub_row_trait {
 
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
-                                ptr::null_mut(),
-                                self.accumulator,
-                                vector_to_insert.graphblas_vector(),
-                                row_to_insert_into,
-                                index.as_ptr(),
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    matrix_to_insert_into.graphblas_matrix(),
+                                    ptr::null_mut(),
+                                    self.accumulator,
+                                    vector_to_insert.graphblas_vector(),
+                                    row_to_insert_into,
+                                    index.as_ptr(),
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            matrix_to_insert_into.graphblas_matrix_ref(),
+                        )?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
-                                ptr::null_mut(),
-                                self.accumulator,
-                                vector_to_insert.graphblas_vector(),
-                                row_to_insert_into,
-                                index,
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    matrix_to_insert_into.graphblas_matrix(),
+                                    ptr::null_mut(),
+                                    self.accumulator,
+                                    vector_to_insert.graphblas_vector(),
+                                    row_to_insert_into,
+                                    index,
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            matrix_to_insert_into.graphblas_matrix_ref(),
+                        )?;
                     }
                 }
 
@@ -173,33 +179,39 @@ macro_rules! implement_insert_vector_into_sub_row_trait {
 
                 match indices_to_insert_into {
                     ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
-                                mask_for_row_to_insert_into.graphblas_vector(),
-                                self.accumulator,
-                                vector_to_insert.graphblas_vector(),
-                                row_to_insert_into,
-                                index.as_ptr(),
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    matrix_to_insert_into.graphblas_matrix(),
+                                    mask_for_row_to_insert_into.graphblas_vector(),
+                                    self.accumulator,
+                                    vector_to_insert.graphblas_vector(),
+                                    row_to_insert_into,
+                                    index.as_ptr(),
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            matrix_to_insert_into.graphblas_matrix_ref(),
+                        )?;
                     }
 
                     ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(|| unsafe {
-                            $graphblas_insert_function(
-                                matrix_to_insert_into.graphblas_matrix(),
-                                mask_for_row_to_insert_into.graphblas_vector(),
-                                self.accumulator,
-                                vector_to_insert.graphblas_vector(),
-                                row_to_insert_into,
-                                index,
-                                number_of_indices_to_insert_into,
-                                self.options,
-                            )
-                        }, matrix_to_insert_into.graphblas_matrix_ref())?;
+                        context.call(
+                            || unsafe {
+                                $graphblas_insert_function(
+                                    matrix_to_insert_into.graphblas_matrix(),
+                                    mask_for_row_to_insert_into.graphblas_vector(),
+                                    self.accumulator,
+                                    vector_to_insert.graphblas_vector(),
+                                    row_to_insert_into,
+                                    index,
+                                    number_of_indices_to_insert_into,
+                                    self.options,
+                                )
+                            },
+                            matrix_to_insert_into.graphblas_matrix_ref(),
+                        )?;
                     }
                 }
 

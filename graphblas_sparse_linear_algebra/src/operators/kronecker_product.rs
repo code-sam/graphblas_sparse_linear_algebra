@@ -74,17 +74,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_kronecker_Semiring(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_kronecker_Semiring(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -98,17 +101,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_kronecker_Semiring(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_kronecker_Semiring(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -152,17 +158,20 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_kronecker_Monoid(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_kronecker_Monoid(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -176,17 +185,20 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_kronecker_Monoid(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_kronecker_Monoid(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -240,17 +252,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_kronecker_BinaryOp(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_kronecker_BinaryOp(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -264,17 +279,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_kronecker_BinaryOp(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.multiplication_operator,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_kronecker_BinaryOp(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.multiplication_operator,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }

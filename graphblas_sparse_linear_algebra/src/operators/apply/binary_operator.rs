@@ -429,7 +429,7 @@ mod tests {
     use super::*;
 
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus};
+    use crate::operators::binary_operator::First;
     use crate::value_types::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };

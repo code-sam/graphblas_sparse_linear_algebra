@@ -78,17 +78,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_mxm(
-                product.graphblas_matrix(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.semiring,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_mxm(
+                    product.graphblas_matrix(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.semiring,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }
@@ -102,17 +105,20 @@ where
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_mxm(
-                product.graphblas_matrix(),
-                mask.graphblas_matrix(),
-                self.accumulator,
-                self.semiring,
-                multiplier.graphblas_matrix(),
-                multiplicant.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_matrix_ref())?;
+        context.call(
+            || unsafe {
+                GrB_mxm(
+                    product.graphblas_matrix(),
+                    mask.graphblas_matrix(),
+                    self.accumulator,
+                    self.semiring,
+                    multiplier.graphblas_matrix(),
+                    multiplicant.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_matrix_ref(),
+        )?;
 
         Ok(())
     }

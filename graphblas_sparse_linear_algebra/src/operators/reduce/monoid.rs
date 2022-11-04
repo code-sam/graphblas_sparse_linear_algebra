@@ -84,16 +84,19 @@ impl<T: ValueType> MonoidReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_reduce_Monoid(
-                product.graphblas_vector(),
-                ptr::null_mut(),
-                self.accumulator,
-                self.monoid,
-                argument.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_vector_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_reduce_Monoid(
+                    product.graphblas_vector(),
+                    ptr::null_mut(),
+                    self.accumulator,
+                    self.monoid,
+                    argument.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_vector_ref(),
+        )?;
 
         Ok(())
     }
@@ -106,16 +109,19 @@ impl<T: ValueType> MonoidReducer<T> {
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
-        context.call(|| unsafe {
-            GrB_Matrix_reduce_Monoid(
-                product.graphblas_vector(),
-                mask.graphblas_vector(),
-                self.accumulator,
-                self.monoid,
-                argument.graphblas_matrix(),
-                self.options,
-            )
-        }, product.graphblas_vector_ref())?;
+        context.call(
+            || unsafe {
+                GrB_Matrix_reduce_Monoid(
+                    product.graphblas_vector(),
+                    mask.graphblas_vector(),
+                    self.accumulator,
+                    self.monoid,
+                    argument.graphblas_matrix(),
+                    self.options,
+                )
+            },
+            product.graphblas_vector_ref(),
+        )?;
 
         Ok(())
     }
