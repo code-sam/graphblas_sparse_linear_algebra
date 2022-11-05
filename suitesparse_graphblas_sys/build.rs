@@ -69,7 +69,7 @@ fn path_with_openmp() -> PathBuf {
             match search_compiler_path() {
                 Some(path) => {
                     println!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH: {}", error);
-                    println!("Automatically use default compiler path: {}", path);
+                    println!("Automatically use default compiler path: {}", path.display());
                     return path
                 },
                 None => {
