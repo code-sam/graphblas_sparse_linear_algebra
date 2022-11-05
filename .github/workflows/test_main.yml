@@ -8,6 +8,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH: /usr/lib/gcc/x86_64-linux-gnu/11/
+  SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME: gomp
 
 jobs:
   build_and_test:
