@@ -1,10 +1,11 @@
 use std::collections::HashSet;
-use std::env;
+use std::{env, error};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{PathBuf};
 
 use git2::{Object, Oid, Repository};
+use glob::glob;
 
 extern crate bindgen;
 extern crate cmake;
@@ -64,7 +65,48 @@ fn path_with_graphblas_library() -> PathBuf {
 fn path_with_openmp() -> PathBuf {
     match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH") { 
         Ok(path) => return PathBuf::from(path),
-        Err(error) => panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH. For example, when using GCC on Ubuntu 22.04, please set it to \"/usr/lib/gcc/x86_64-linux-gnu/11\". {}", error)
+        Err(error) => {
+            match search_compiler_path() {
+                Some(path) => {
+                    return path
+                },
+                None => {
+                    panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH. For example, when using GCC on Ubuntu 22.04, please set it to \"/usr/lib/gcc/x86_64-linux-gnu/11\". {}", error)
+                }
+            }
+            
+        }
+    }
+}
+
+fn search_compiler_path() -> Option<PathBuf> {
+    if cfg!(target_os = "linux") {
+        let mut matching_paths = Vec::<PathBuf>::new();
+        match glob("/usr/bin/**/libgcc.so") {
+            Ok(paths) => {
+                for entry in paths {
+                    match entry {
+                        Ok(path) => matching_paths.push(path),
+                        Err(error) => println!("{}", error)
+                    };
+                };
+            },
+            Err(error) => {
+                println!("{}", error);
+                println!("Unable to automatically find an installed GCC compiler under \"/usr/bin/\", please install GCC or set the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
+                return None
+            }
+        }
+        if matching_paths.len() > 0 {
+            matching_paths.sort();
+            return Some(matching_paths.last().unwrap().to_owned())
+        } else {
+            println!("Unable to automatically find an installed GCC compiler under \"/usr/bin/\", please install GCC or set the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
+            return None
+        }
+    } else {
+        println!("Automatically finding an installed C compiler not supported on this operating system, please the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
+        return None
     }
 }
 
@@ -75,8 +117,19 @@ fn path_with_openmp() -> PathBuf {
 fn name_of_openmp_library() -> String {
     match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME") { 
         Ok(name) => return name,
-        Err(error) => panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME. For example, when using GCC, please set it to \"gomp\". {}", error)
+        Err(error) => {
+            println!("{}", error);
+            println!("Unable read environment variable SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME, set to default \"gomp\"");
+            return search_openmp().unwrap();
+            // panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME. For example, when using GCC, please set it to \"gomp\". {}", error)
+        }
     }
+}
+
+// TODO: as soon as automatic searching is supported for non-linux operating systems, and other compilers than GCC,
+// this function must be implemented with an actual search algorithm.
+fn search_openmp() -> Option<String> {
+    return Some(String::from("gomp"))
 }
 
 fn build_and_link_dependencies() {
