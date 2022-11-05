@@ -1,12 +1,5 @@
-// use rayon::iter::IntoParallelIterator;
 use rayon::prelude::*;
 
-use graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_isize as id_isize;
-use graphblas_sparse_linear_algebra_proc_macros::graphblas_identifier_for_usize as id_usize;
-use graphblas_sparse_linear_algebra_proc_macros::graphblas_implementation_type_for_isize;
-use graphblas_sparse_linear_algebra_proc_macros::graphblas_implementation_type_for_usize;
-
-use crate::error::GraphBlasError;
 use crate::error::SparseLinearAlgebraError;
 use crate::value_types::value_type::ValueType;
 
