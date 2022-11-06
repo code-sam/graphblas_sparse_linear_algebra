@@ -1,6 +1,5 @@
 ![test](https://github.com/code-sam/graphblas_sparse_linear_algebra/actions/workflows/test_main.yml/badge.svg?branch=main)
 # graphblas_sparse_linear_algebra
-# graphblas_sparse_linear_algebra
 Workspace for a Rust wrapper for SuiteSparse:GraphBLAS. The workspace contains three crates:
 - [graphblas_sparse_linear_algebra](https://crates.io/crates/graphblas_sparse_linear_algebra): the GraphBLAS API wrapper for most users
 - [suitesparse_graphblas_sys](https://crates.io/crates/suitesparse_graphblas_sys): bindings to the SuiteSparse GraphBLAS implementation
