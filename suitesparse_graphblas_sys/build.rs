@@ -1,11 +1,10 @@
 use std::collections::HashSet;
-use std::{env, error};
+use std::{env};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{PathBuf};
 
 use git2::{Object, Oid, Repository};
-use glob::glob;
 
 extern crate bindgen;
 extern crate cmake;
