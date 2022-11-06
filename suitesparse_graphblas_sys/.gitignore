@@ -1,5 +1,5 @@
 *.lock
 graphblas_implementation/SuiteSparse_GraphBLAS/
-graphblas_implementation/include/
+# graphblas_implementation/include/
 graphblas_implementation/lib/
 target/

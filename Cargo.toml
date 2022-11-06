@@ -1,34 +1,6 @@
-[package]
-name = "graphblas_sparse_linear_algebra"
-version = "0.10.0"
-authors = ["code_sam <mail@samdekker.nl>"]
-description = "Wrapper for SuiteSparse:GraphBLAS"
-edition = "2021"
-keywords = ["GraphBLAS", "sparse", "linear", "algebra"]
-license = "CC-BY-NC-4.0"
-readme = "README.md"
-repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-graphblas_sparse_linear_algebra_proc_macros = {path = "graphblas_sparse_linear_algebra_proc_macros", version = "0.1"}
-once_cell = {version = "1.15"}
-paste = {version = "1.0"}
-rayon = {version = "1.5"}
-
-[features]
-default = ["build_static_graphblas_dependencies"]
-build_static_graphblas_dependencies = []
-generate_new_bindings_to_graphblas_implementation = []
-
-[build-dependencies]
-bindgen = "0.60"
-cmake = "0.1"
-
-[dev-dependencies]
-criterion = "0.3"
-
-[[bench]]
-name = "insert_scalar_into_matrix"
-harness = false
+[workspace]
+members = [
+    "graphblas_sparse_linear_algebra",
+    "graphblas_sparse_linear_algebra_proc_macros",
+    "suitesparse_graphblas_sys"
+]

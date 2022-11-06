@@ -1,0 +1,22 @@
+[package]
+name = "suitesparse_graphblas_sys"
+description = "Rust bindings for SuiteSparse::GraphBLAS"
+version = "0.1.5"
+edition = "2021"
+license = "CC-BY-NC-4.0"
+authors = ["code_sam <mail@samdekker.nl>"]
+keywords = ["GraphBLAS", "SuiteSparse"]
+categories = ["external-ffi-bindings", "mathematics"]
+readme = "README.md"
+repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.60"
+cmake = "0.1"
+git2 = "0.15"
