@@ -82,32 +82,14 @@ fn path_with_openmp() -> PathBuf {
 }
 
 fn search_compiler_path() -> Option<PathBuf> {
-    if cfg!(target_os = "linux") {
-        let mut matching_paths = Vec::<PathBuf>::new();
-        match glob("/usr/bin/**/libgcc.so") {
-            Ok(paths) => {
-                for entry in paths {
-                    match entry {
-                        Ok(path) => matching_paths.push(path),
-                        Err(error) => println!("{}", error)
-                    };
-                };
-            },
-            Err(error) => {
-                println!("{}", error);
-                println!("Unable to automatically find an installed GCC compiler under \"/usr/bin/\", please install GCC or set the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
-                return None
-            }
-        }
-        if matching_paths.len() > 0 {
-            matching_paths.sort();
-            return Some(matching_paths.last().unwrap().to_owned())
-        } else {
-            println!("Unable to automatically find an installed GCC compiler under \"/usr/bin/\", please install GCC or set the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
-            return None
-        }
+    if cfg!(target_os = "linux") && cfg!(target_arch = "x86_64") {
+        let mut path = path_with_graphblas_implementation();
+        path.push("OpenMP");
+        path.push("linux");
+        Some(path)
+        
     } else {
-        println!("Automatically finding an installed C compiler not supported on this operating system, please the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
+        println!("Unable to select a default OpenMP archive for this operating system and architecture, please the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
         return None
     }
 }
