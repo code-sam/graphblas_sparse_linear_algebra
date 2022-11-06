@@ -4,16 +4,16 @@ Rust wrapper for SuiteSparse:GraphBLAS
 
 ## Minimum example
 ```rust
-    use graphblas_sparse_linear_algebra::context::{Context, Mode};
-    use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait};
-    use graphblas_sparse_linear_algebra::operators::binary_operator::{First};
-    use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-    use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
-    };
-    use graphblas_sparse_linear_algebra::value_types::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
-    };
+use graphblas_sparse_linear_algebra::context::{Context, Mode};
+use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait};
+use graphblas_sparse_linear_algebra::operators::binary_operator::{First};
+use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
+    FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
+};
+use graphblas_sparse_linear_algebra::value_types::sparse_vector::{
+    FromVectorElementList, GetVectorElementValue, VectorElementList,
+};
 
 fn main() {
     let context = Context::init_ready(Mode::NonBlocking).unwrap();
@@ -74,7 +74,7 @@ fn main() {
  ```
 
 ## Dependencies
-graphblas_sparse_linear_algebra uses the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) GraphBLAS implementation developed by Timothy A. Davis.
+graphblas_sparse_linear_algebra uses the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) implementation developed by Timothy A. Davis.
 
 ## Building from source
 Please make sure to meet the requirements for building [suitesparse_graphblas_sys](https://crates.io/crates/suitesparse_graphblas_sys).
