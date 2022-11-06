@@ -1,4 +1,5 @@
 mod bindings_to_graphblas_implementation;
+pub mod collections;
 pub mod context;
 pub mod error;
 pub mod operators;

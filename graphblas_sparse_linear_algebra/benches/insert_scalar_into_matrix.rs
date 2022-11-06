@@ -6,7 +6,7 @@ use graphblas_sparse_linear_algebra::context::Context;
 
 // use graphblas_sparse_linear_algebra::operators::BinaryOperatorType;
 use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
-use graphblas_sparse_linear_algebra::value_types::sparse_matrix::SparseMatrix;
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::SparseMatrix;
 
 use graphblas_sparse_linear_algebra::util::{ElementIndex, ElementIndexSelector};
 
@@ -16,7 +16,7 @@ use graphblas_sparse_linear_algebra::operators::binary_operator::First;
 use graphblas_sparse_linear_algebra::operators::insert::{
     InsertScalarIntoMatrix, InsertScalarIntoMatrixTrait,
 };
-use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
     FromMatrixElementList, MatrixElementList, Size,
 };
 

@@ -7,7 +7,7 @@ mod tests {
     use graphblas_sparse_linear_algebra::operators::binary_operator::Plus;
     use graphblas_sparse_linear_algebra::operators::element_wise_multiplication::ElementWiseMatrixMultiplicationBinaryOperator;
     use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
-    use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
+    use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
         Coordinate, GetMatrixElement, MatrixElement, SetMatrixElement, Size, SparseMatrix,
     };
 

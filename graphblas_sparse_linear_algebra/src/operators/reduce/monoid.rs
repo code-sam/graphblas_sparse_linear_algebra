@@ -15,8 +15,8 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
     implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,
@@ -197,8 +197,8 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::monoid::Plus as MonoidPlus;
 
-    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
     use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;

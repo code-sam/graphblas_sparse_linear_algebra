@@ -6,8 +6,8 @@ use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_scalar::{SetScalarValue, SparseScalar};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_custom_input_version_1_for_all_value_types,
     implement_trait_for_all_value_types,
@@ -463,7 +463,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 

@@ -3,6 +3,8 @@ use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
+use suitesparse_graphblas_sys::GrB_Scalar_dup;
+
 use crate::error::{
     GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
@@ -132,7 +134,7 @@ impl<T: ValueType> Clone for SparseScalar<T> {
         let mut scalar_copy: MaybeUninit<GxB_Scalar> = MaybeUninit::uninit();
         self.context
             .call(
-                || unsafe { GxB_Scalar_dup(scalar_copy.as_mut_ptr(), self.scalar) },
+                || unsafe { GrB_Scalar_dup(scalar_copy.as_mut_ptr(), self.scalar) },
                 &self.scalar,
             )
             .unwrap();

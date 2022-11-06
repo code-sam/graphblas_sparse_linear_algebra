@@ -8,10 +8,10 @@ use graphblas_sparse_linear_algebra::context::{Context, Mode};
 use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{First};
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use graphblas_sparse_linear_algebra::value_types::sparse_matrix::{
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
     FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
 };
-use graphblas_sparse_linear_algebra::value_types::sparse_vector::{
+use graphblas_sparse_linear_algebra::collections::sparse_vector::{
     FromVectorElementList, GetVectorElementValue, VectorElementList,
 };
 

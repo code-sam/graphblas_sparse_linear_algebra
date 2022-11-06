@@ -6,8 +6,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_2_types_for_all_value_types,
     implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
@@ -209,10 +209,10 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::unary_operator::{Identity, LogicalNegation, One};
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
 

@@ -8,8 +8,8 @@ use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
     implement_trait_for_2_type_data_type_and_all_value_types,
@@ -230,10 +230,10 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::value_types::sparse_vector::{FromVectorElementList, VectorElementList};
+    use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
 
     #[test]
     fn test_insert_vector_into_column() {

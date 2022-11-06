@@ -7,7 +7,7 @@ use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::value_types::sparse_vector::SparseVector;
+use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
@@ -181,7 +181,7 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
 

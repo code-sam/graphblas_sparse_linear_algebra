@@ -4,8 +4,8 @@ use crate::operators::{
     transpose::MatrixTranspose,
 };
 use crate::util::{ElementIndex, ElementIndexSelector};
-use crate::value_types::sparse_matrix::{Size, SparseMatrix};
-use crate::value_types::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::{Size, SparseMatrix};
+use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
@@ -116,8 +116,8 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList};
-    use crate::value_types::sparse_vector::GetVectorElementValue;
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_vector::GetVectorElementValue;
 
     #[test]
     fn test_row_extraction() {

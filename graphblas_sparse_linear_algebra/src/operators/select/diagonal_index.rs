@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::context::Context;
 use crate::error::SparseLinearAlgebraError;
 
-use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
+use crate::collections::sparse_scalar::{SetScalarValue, SparseScalar};
 
 type GraphblasDiagonalDiagonalIndex = i64;
 

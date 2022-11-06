@@ -124,7 +124,7 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::element_wise_addition::ElementWiseVectorAdditionMonoidOperator;
     use crate::operators::options::OperatorOptions;
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
         VectorElementList,
     };

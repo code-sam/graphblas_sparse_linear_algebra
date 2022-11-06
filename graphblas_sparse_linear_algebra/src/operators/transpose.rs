@@ -5,7 +5,7 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, 
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
@@ -105,7 +105,7 @@ mod tests {
     use super::*;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };
 

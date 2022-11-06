@@ -7,7 +7,7 @@ use crate::error::SparseLinearAlgebraError;
 // use crate::operators::BinaryOperatorType;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
@@ -347,7 +347,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::util::ElementIndex;
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 

@@ -6,7 +6,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
@@ -330,7 +330,7 @@ mod tests {
 
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
 
