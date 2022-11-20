@@ -43,7 +43,7 @@ use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_for_all_value_types_and_graphblas_function,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{BuiltInValueType, ValueType, ConvertScalar, ConvertVector};
+use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
 
 #[derive(Debug)]
 pub struct SparseMatrix<T: ValueType> {

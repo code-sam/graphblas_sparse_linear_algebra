@@ -1,6 +1,3 @@
-use std::sync::Arc;
-
-use crate::context::Context;
 use crate::error::SparseLinearAlgebraError;
 use crate::util::ElementIndex;
 
