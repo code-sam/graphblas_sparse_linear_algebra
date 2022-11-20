@@ -2,12 +2,13 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 // use crate::operators::BinaryOperatorType;
+use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
@@ -228,12 +229,12 @@ implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_sca
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
-    use crate::util::ElementIndex;
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
+    use crate::util::ElementIndex;
 
     #[test]
     fn test_insert_scalar_into_vector() {

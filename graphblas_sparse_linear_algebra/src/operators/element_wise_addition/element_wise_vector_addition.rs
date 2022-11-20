@@ -1,16 +1,17 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::collections::sparse_vector::SparseVector;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Monoid, GrB_Semiring, GrB_Vector_eWiseAdd_BinaryOp,
@@ -42,9 +43,9 @@ where
 impl<Multiplier, Multiplicant, Product>
     ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -129,7 +130,7 @@ implement_trait_for_all_value_types!(Send, ElementWiseVectorAdditionMonoidOperat
 implement_trait_for_all_value_types!(Sync, ElementWiseVectorAdditionMonoidOperator);
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType> {
+pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType + BuiltInValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -137,7 +138,7 @@ pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
+impl<T: ValueType + BuiltInValueType> ElementWiseVectorAdditionMonoidOperator<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
@@ -238,9 +239,9 @@ pub struct ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Pro
 impl<Multiplier, Multiplicant, Product>
     ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -322,11 +323,11 @@ where
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus, Times};
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::{First, Plus, Times};
 
     #[test]
     fn create_vector_addition_operator() {

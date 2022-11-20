@@ -1,19 +1,20 @@
+use crate::collections::collection::Collection;
+use crate::collections::sparse_matrix::{Size, SparseMatrix};
+use crate::collections::sparse_vector::SparseVector;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, extract::MatrixColumnExtractor, options::OperatorOptions,
     transpose::MatrixTranspose,
 };
 use crate::util::{ElementIndex, ElementIndexSelector};
-use crate::collections::sparse_matrix::{Size, SparseMatrix};
-use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 #[derive(Debug, Clone)]
 pub struct MatrixRowExtractor<Matrix, Column>
 where
-    Matrix: ValueType,
-    Column: ValueType,
+    Matrix: ValueType + BuiltInValueType,
+    Column: ValueType + BuiltInValueType,
 {
     transpose_operator: MatrixTranspose<Matrix, Matrix>,
     column_extractor: MatrixColumnExtractor<Matrix, Column>,
@@ -25,8 +26,8 @@ where
 
 impl<Matrix, Column> MatrixRowExtractor<Matrix, Column>
 where
-    Matrix: ValueType,
-    Column: ValueType,
+    Matrix: ValueType + BuiltInValueType,
+    Column: ValueType + BuiltInValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -114,10 +115,10 @@ where
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::collections::sparse_vector::GetVectorElementValue;
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn test_row_extraction() {

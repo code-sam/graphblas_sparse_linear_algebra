@@ -1,15 +1,16 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_mxv,
@@ -42,9 +43,9 @@ where
 impl<Multiplier, Multiplicant, Product>
     MatrixVectorMultiplicationOperator<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         semiring: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
@@ -128,14 +129,14 @@ where
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
-    use crate::operators::binary_operator::Plus;
-    use crate::operators::semiring::PlusTimes;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::Plus;
+    use crate::operators::semiring::PlusTimes;
 
     #[test]
     fn test_multiplication_with_plus_times() {

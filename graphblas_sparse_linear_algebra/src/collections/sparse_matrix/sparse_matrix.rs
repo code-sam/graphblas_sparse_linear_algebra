@@ -38,14 +38,12 @@ use crate::operators::binary_operator::BinaryOperator;
 
 use crate::util::{ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
-    convert_scalar_to_type, convert_vector_to_type, identity_conversion,
+    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,
     implement_macro_for_all_value_types_and_graphblas_function,
-    implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion,
-    implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{BuiltInValueType, ValueType};
+use crate::value_types::value_type::{BuiltInValueType, ValueType, ConvertScalar, ConvertVector};
 
 #[derive(Debug)]
 pub struct SparseMatrix<T: ValueType> {
@@ -308,7 +306,7 @@ pub trait FromMatrixElementList<T: ValueType> {
 // }
 
 macro_rules! sparse_matrix_from_element_vector {
-    ($value_type:ty, $conversion_target_type: ty, $build_function:ident, $convert_to_target_type: ident) => {
+    ($value_type:ty, $conversion_target_type: ty, $build_function:ident) => {
         impl FromMatrixElementList<$value_type> for SparseMatrix<$value_type> {
             fn from_element_list(
                 context: &Arc<Context>,
@@ -335,8 +333,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     .map(|index| index.to_graphblas_index().unwrap())
                     .collect();
 
-                let element_values = elements.values_ref();
-                $convert_to_target_type!(element_values, $conversion_target_type);
+                let element_values = elements.values_ref().to_owned().to_type()?;
 
                 {
                     let number_of_elements = elements.length().to_graphblas_index()?;
@@ -360,7 +357,7 @@ macro_rules! sparse_matrix_from_element_vector {
     };
 }
 
-implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion!(
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     sparse_matrix_from_element_vector,
     GrB_Matrix_build
 );
@@ -384,7 +381,7 @@ pub trait SetMatrixElement<T: ValueType> {
 // }
 
 macro_rules! implement_set_element {
-    ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident, $convert_to_target_type:ident) => {
+    ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident) => {
         impl SetMatrixElement<$value_type> for SparseMatrix<$value_type> {
             fn set_element(
                 &mut self,
@@ -393,17 +390,7 @@ macro_rules! implement_set_element {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
                 let column_index_to_set = element.column_index().to_graphblas_index()?;
                 let context = self.context.clone();
-                // Typecasting to support usize and isize. TODO: review performance cost
-                // let value = match element.value().try_into() {
-                //     Ok(value) => value.unwrap(),
-                //     Err(error) => Err(SystemError::new(
-                //         SystemErrorType::IntegerConversionFailed,
-                //         String::new(),
-                //         Some(SystemErrorSource::IntegerConversionError(error)),
-                //     ).into()),
-                // };
-                let element_value = element.value();
-                $convert_to_target_type!(element_value, $conversion_target_type);
+                let element_value = element.value().to_type()?;
                 context.call(
                     || unsafe {
                         $add_element_function(
@@ -421,7 +408,7 @@ macro_rules! implement_set_element {
     };
 }
 
-implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion!(
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     implement_set_element,
     GrB_Matrix_setElement
 );
@@ -557,7 +544,7 @@ pub trait GetMatrixElementList<T: ValueType> {
 }
 
 macro_rules! implement_get_element_list {
-    ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident, $convert_to_target_type:ident) => {
+    ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetMatrixElementList<$value_type> for SparseMatrix<$value_type> {
             fn get_element_list(
                 &self,
@@ -597,7 +584,7 @@ macro_rules! implement_get_element_list {
                 let row_element_indices = row_indices.into_par_iter().map(|i| ElementIndex::from_graphblas_index(i).unwrap()).collect();
                 let column_element_indices = column_indices.into_par_iter().map(|i| ElementIndex::from_graphblas_index(i).unwrap()).collect();
 
-                $convert_to_target_type!(values, $value_type);
+                let values = values.to_type()?;
 
                 let element_list = MatrixElementList::from_vectors(row_element_indices, column_element_indices, values)?;
                 Ok(element_list)
@@ -606,7 +593,7 @@ macro_rules! implement_get_element_list {
     };
 }
 
-implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion!(
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     implement_get_element_list,
     GrB_Matrix_extractTuples
 );

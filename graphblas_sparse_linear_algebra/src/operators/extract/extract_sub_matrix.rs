@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::collections::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, ValueType};
 
@@ -304,11 +304,11 @@ where
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn test_matrix_extraction() {

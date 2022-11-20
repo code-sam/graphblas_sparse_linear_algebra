@@ -1,12 +1,12 @@
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::collections::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
@@ -328,11 +328,11 @@ where
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus, Times};
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::{First, Plus, Times};
 
     #[test]
     fn create_matrix_multiplier() {

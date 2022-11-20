@@ -2,14 +2,14 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::util::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
     implement_trait_for_2_type_data_type_and_all_value_types,

@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BinaryOp,
@@ -28,7 +29,7 @@ pub struct BinaryOperatorReducer<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> BinaryOperatorReducer<T> {
+impl<T: ValueType + BuiltInValueType> BinaryOperatorReducer<T> {
     pub fn new(
         binary_operator: &dyn BinaryOperator<T, T, T>,
         options: &OperatorOptions,

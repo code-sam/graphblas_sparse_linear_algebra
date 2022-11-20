@@ -2,12 +2,13 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
-use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::collections::sparse_scalar::{GetScalarValue, SparseScalar};
 use crate::collections::sparse_vector::SparseVector;
+use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::error::SparseLinearAlgebraError;
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
@@ -428,14 +429,14 @@ implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_fo
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn test_matrix_binary_operator_application() {

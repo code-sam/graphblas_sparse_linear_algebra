@@ -252,6 +252,52 @@ macro_rules! implement_macro_with_custom_input_version_1_for_all_value_types {
 }
 pub(crate) use implement_macro_with_custom_input_version_1_for_all_value_types;
 
+macro_rules! implement_1_type_macro_for_all_value_types_and_typed_graphblas_function {
+    ($macro_identifier:ident, $graphblas_identifier:ident) => {
+        paste::paste! {
+            $macro_identifier!(bool, [<$graphblas_identifier _BOOL>]);
+            $macro_identifier!(i8, [<$graphblas_identifier _INT8>]);
+            $macro_identifier!(i16, [<$graphblas_identifier _INT16>]);
+            $macro_identifier!(i32, [<$graphblas_identifier _INT32>]);
+            $macro_identifier!(i64, [<$graphblas_identifier _INT64>]);
+            $macro_identifier!(u8, [<$graphblas_identifier _UINT8>]);
+            $macro_identifier!(u16, [<$graphblas_identifier _UINT16>]);
+            $macro_identifier!(u32, [<$graphblas_identifier _UINT32>]);
+            $macro_identifier!(u64, [<$graphblas_identifier _UINT64>]);
+            $macro_identifier!(f32, [<$graphblas_identifier _FP32>]);
+            $macro_identifier!(f64, [<$graphblas_identifier _FP64>]);
+            // $macro_identifier!(isize, id_isize!($graphblas_identifier));
+            // $macro_identifier!(usize, id_usize!($graphblas_identifier));
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+        }
+    };
+}
+pub(crate) use implement_1_type_macro_for_all_value_types_and_typed_graphblas_function;
+
+macro_rules! implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type {
+    ($macro_identifier:ident, $graphblas_identifier:ident) => {
+        paste::paste! {
+            $macro_identifier!(bool, bool, [<$graphblas_identifier _BOOL>]);
+            $macro_identifier!(i8, i8, [<$graphblas_identifier _INT8>]);
+            $macro_identifier!(i16, i16, [<$graphblas_identifier _INT16>]);
+            $macro_identifier!(i32, i32, [<$graphblas_identifier _INT32>]);
+            $macro_identifier!(i64, i64, [<$graphblas_identifier _INT64>]);
+            $macro_identifier!(u8, u8, [<$graphblas_identifier _UINT8>]);
+            $macro_identifier!(u16, u16, [<$graphblas_identifier _UINT16>]);
+            $macro_identifier!(u32, u32, [<$graphblas_identifier _UINT32>]);
+            $macro_identifier!(u64, u64, [<$graphblas_identifier _UINT64>]);
+            $macro_identifier!(f32, f32, [<$graphblas_identifier _FP32>]);
+            $macro_identifier!(f64, f64, [<$graphblas_identifier _FP64>]);
+            // $macro_identifier!(isize, isize, id_isize!($graphblas_identifier));
+            // $macro_identifier!(usize, usize, id_usize!($graphblas_identifier));
+            graphblas_sparse_linear_algebra_proc_macros::implement_1_type_macro_for_isize_and_typed_graphblas_function_with_implementation_type!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_1_type_macro_for_usize_and_typed_graphblas_function_with_implementation_type!($macro_identifier, $graphblas_identifier);
+        }
+    };
+}
+pub(crate) use implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
+
 macro_rules! implement_2_type_macro_for_all_value_types_and_typed_graphblas_function {
     ($macro_identifier:ident, $graphblas_identifier:ident) => {
         paste::paste! {
@@ -266,10 +312,10 @@ macro_rules! implement_2_type_macro_for_all_value_types_and_typed_graphblas_func
             $macro_identifier!(u64, u64, [<$graphblas_identifier _UINT64>]);
             $macro_identifier!(f32, f32, [<$graphblas_identifier _FP32>]);
             $macro_identifier!(f64, f64, [<$graphblas_identifier _FP64>]);
-            $macro_identifier!(isize, isize, id_isize!($graphblas_identifier));
-            $macro_identifier!(usize, usize, id_usize!($graphblas_identifier));
-            // graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
-            // graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            // $macro_identifier!(isize, isize, id_isize!($graphblas_identifier));
+            // $macro_identifier!(usize, usize, id_usize!($graphblas_identifier));
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_isize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_2_type_macro_for_usize_and_typed_graphblas_function!($macro_identifier, $graphblas_identifier);
         }
     };
 }
@@ -550,6 +596,45 @@ macro_rules! implement_semiring_for_all_value_types {
     };
 }
 pub(crate) use implement_semiring_for_all_value_types;
+
+// macro_rules! scalar_indentity_conversion {
+//     ($from_type: ty, $to_type: ty) => {
+//         Ok(self)
+//     };
+// }
+
+// macro_rules! scalar_conversion {
+//     ($from_type: ty, $to_type: ty) => {
+//         let as_type: Result<i64, std::num::TryFromIntError> = self.try_into();
+//         match as_type {
+//             Ok(as_type) => Ok(as_type),
+//             Err(error) => {
+//                 Err(LogicError::from(error).into())
+//             }
+//         }
+//     };
+// }
+
+macro_rules! implement_type_conversion_macro {
+    ($macro_identifier:ident, $identity_conversion:ident, $conversion_implementation:ident) => {
+        paste::paste! {
+            $macro_identifier!(bool, bool, $identity_conversion);
+            $macro_identifier!(i8, i8, $identity_conversion);
+            $macro_identifier!(i16, i16, $identity_conversion);
+            $macro_identifier!(i32, i32, $identity_conversion);
+            $macro_identifier!(i64, i64, $identity_conversion);
+            $macro_identifier!(u8, u8, $identity_conversion);
+            $macro_identifier!(u16, u16, $identity_conversion);
+            $macro_identifier!(u32, u32, $identity_conversion);
+            $macro_identifier!(u64, u64, $identity_conversion);
+            $macro_identifier!(f32, f32, $identity_conversion);
+            $macro_identifier!(f64, f64, $identity_conversion);
+            graphblas_sparse_linear_algebra_proc_macros::implement_type_conversion_macro_for_isize!($macro_identifier, $conversion_implementation);
+            graphblas_sparse_linear_algebra_proc_macros::implement_type_conversion_macro_for_usize!($macro_identifier, $conversion_implementation);
+        }
+    };
+}
+pub(crate) use implement_type_conversion_macro;
 
 // TODO: rename to "convert_scalar_to_type"
 pub(crate) trait ConvertScalarToType<ArgumentType, ResultType>
