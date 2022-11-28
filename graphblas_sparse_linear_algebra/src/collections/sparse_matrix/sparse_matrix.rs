@@ -1,13 +1,17 @@
+use crate::collections::sparse_vector::SparseVector;
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
 };
+use crate::operators::options::OperatorOptions;
 use std::convert::TryInto;
 use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
+use once_cell::sync::Lazy;
 use rayon::prelude::*;
+use suitesparse_graphblas_sys::GxB_Vector_diag;
 
 use super::coordinate::Coordinate;
 use super::element::{MatrixElement, MatrixElementList};
@@ -33,10 +37,11 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_INT8, GrB_Matrix_setElement_UINT16, GrB_Matrix_setElement_UINT32,
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
+use crate::context::ContextTrait;
 use crate::context::{CallGraphBlasContext, Context};
 use crate::operators::binary_operator::BinaryOperator;
 
-use crate::util::{ElementIndex, IndexConversion};
+use crate::util::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,
@@ -44,6 +49,9 @@ use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_trait_for_all_value_types,
 };
 use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
+
+pub type ColumnIndex = ElementIndex;
+pub type RowIndex = ElementIndex;
 
 #[derive(Debug)]
 pub struct SparseMatrix<T: ValueType> {
@@ -183,6 +191,8 @@ impl<T: ValueType> SparseMatrix<T> {
         Ok(())
     }
 }
+
+pub trait SparseMatrixTrait<T: ValueType + BuiltInValueType> {}
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {

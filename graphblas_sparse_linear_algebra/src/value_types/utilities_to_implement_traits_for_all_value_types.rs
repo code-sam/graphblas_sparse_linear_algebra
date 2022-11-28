@@ -386,6 +386,49 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
 }
 pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix;
 
+macro_rules! implement_macro_with_2_type_trait_and_typed_graphblas_function_for_all_value_types {
+    ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
+        paste::paste! {
+            $macro_identifier!($trait, [<$graphblas_identifier _BOOL>], bool, bool);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT8>], i8, i8);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT16>], i16, i16);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT32>], i32, i32);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT64>], i64, i64);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT8>], u8, u8);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT16>], u16, u16);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT32>], u32, u32);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64, u64);
+            $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32, f32);
+            $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64, f64);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_2_typed_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_2_typed_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
+        }
+    };
+}
+pub(crate) use implement_macro_with_2_type_trait_and_typed_graphblas_function_for_all_value_types;
+
+macro_rules! implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types {
+    ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident, $output_type: ty) => {
+        paste::paste! {
+            $macro_identifier!($trait, [<$graphblas_identifier _BOOL>], bool, bool, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT8>], i8, i8, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT16>], i16, i16, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT32>], i32, i32, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT64>], i64, i64, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT8>], u8, u8, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT16>], u16, u16, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT32>], u32, u32, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64, u64, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32, f32, $output_type);
+            $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64, f64, $output_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_2_typed_trait_and_output_type_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier, $output_type);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_2_typed_trait_and_output_type_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier, $output_type);
+        }
+    };
+}
+pub(crate) use implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types;
+
+
 macro_rules! implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types {
     ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
         paste::paste! {

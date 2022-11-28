@@ -7,6 +7,8 @@ use crate::collections::sparse_scalar::{SetScalarValue, SparseScalar};
 
 type GraphblasDiagonalDiagonalIndex = i64;
 
+// TODO: move to util::diagonal_index and merge the two modules
+
 /// Default selects the main diagonal
 pub enum DiagonalIndex {
     Default(),

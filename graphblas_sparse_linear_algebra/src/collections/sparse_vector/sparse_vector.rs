@@ -1,8 +1,10 @@
+use std::cmp::min;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use suitesparse_graphblas_sys::GxB_Vector_build_Scalar;
+use once_cell::sync::Lazy;
+use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_sort};
 
 use super::element::{VectorElement, VectorElementList};
 use crate::bindings_to_graphblas_implementation::{
@@ -27,6 +29,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_setElement_UINT8, GrB_Vector_size,
 };
 use crate::collections::collection::Collection;
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::collections::sparse_scalar::SparseScalar;
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, ContextTrait};
@@ -35,12 +38,16 @@ use crate::error::{
     SparseLinearAlgebraErrorType,
 };
 use crate::operators::binary_operator::BinaryOperator;
-use crate::util::{ElementIndex, IndexConversion};
+use crate::operators::options::OperatorOptions;
+use crate::util::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types, implement_trait_for_all_value_types,
 };
 use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
+
+static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
+    Lazy::new(|| OperatorOptions::new_default());
 
 #[derive(Debug)]
 pub struct SparseVector<T: ValueType> {
@@ -142,6 +149,40 @@ impl<T: ValueType + BuiltInValueType> SparseVector<T> {
         return Ok(vector);
     }
 
+    // TODO: unit tests
+    fn from_sparse_matrix_diagonal(
+        matrix: &SparseMatrix<T>,
+        diagonal_index: &DiagonalIndex,
+    ) -> Result<Self, SparseLinearAlgebraError> {
+        let diagonal_length;
+        if *diagonal_index > 0 {
+            diagonal_length = min(
+                matrix.column_width()? - diagonal_index.to_graphblas_element_index()?,
+                matrix.row_height()?,
+            );
+        } else {
+            diagonal_length = min(
+                matrix.row_height()? - diagonal_index.abs().to_graphblas_element_index()?,
+                matrix.column_width()?,
+            );
+        }
+
+        let diagonal = SparseVector::new(matrix.context_ref(), &diagonal_length)?;
+        let context = matrix.context();
+        let graphblas_diagonal_index = diagonal_index.to_graphblas_index()?;
+
+        context.call_without_detailed_error_information(|| unsafe {
+            GxB_Vector_diag(
+                diagonal.graphblas_vector(),
+                matrix.graphblas_matrix(),
+                graphblas_diagonal_index,
+                DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+            )
+        })?;
+
+        return Ok(diagonal);
+    }
+
     pub(crate) fn graphblas_vector(&self) -> GrB_Vector {
         self.vector
     }
@@ -153,6 +194,7 @@ impl<T: ValueType + BuiltInValueType> SparseVector<T> {
     }
 }
 
+// TODO: this trait is not consistent with other constructors, which do not have a trait
 pub trait FromValue<T: ValueType + BuiltInValueType> {
     fn from_value(
         context: &Arc<Context>,
@@ -617,15 +659,34 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
+pub trait SortSparseVector<T: ValueType + BuiltInValueType, B: BinaryOperator<T,T,bool>> {
+    fn sort(&self, sorted_values: &mut SparseVector<T>, sorted_indices_in_self: &mut SparseVector<T>, sort_operator: &B) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl <T: ValueType + BuiltInValueType, B: BinaryOperator<T,T,bool>>SortSparseVector<T, B> for SparseVector<T>{
+    fn sort(&self, sorted_values: &mut SparseVector<T>, indices_to_sort_self: &mut SparseVector<T>, sort_operator: &B) -> Result<(), SparseLinearAlgebraError> {
+        self.context.call(|| unsafe {
+            GxB_Vector_sort(
+                sorted_values.graphblas_vector(),
+                indices_to_sort_self.graphblas_vector(),
+                sort_operator.graphblas_type(),
+                self.graphblas_vector(),
+                DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor())
+        }, &self.vector)?;
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
     // #[macro_use(implement_value_type_for_custom_type)]
 
     use super::*;
+    use crate::collections::sparse_matrix::{MatrixElementList, FromMatrixElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{First, IsGreaterThan};
 
     #[test]
     fn new_vector() {
@@ -658,6 +719,47 @@ mod tests {
         for index in indices {
             assert_eq!(sparse_vector.get_element_value(&index).unwrap(), value);
         }
+    }
+
+    #[test]
+    fn from_sparse_diagonal() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = MatrixElementList::<u8>::from_element_vector(vec![
+            (0, 0, 0).into(),
+            (0, 1, 1).into(),
+            (0, 2, 2).into(),
+            (2, 2, 4).into(),
+            (2, 4, 6).into(),
+            (2, 5, 10).into(),
+            (3, 1, 4).into(),
+        ]);
+
+        let matrix = SparseMatrix::<u8>::from_element_list(
+            &context,
+            &(10, 15).into(),
+            &element_list,
+            &First::<u8, u8, u8>::new(),
+        )
+        .unwrap();
+
+        let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &0).unwrap();
+        assert_eq!(diagonal.length().unwrap(), 10);
+        assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
+        assert_eq!(diagonal.get_element_value(&0).unwrap(), 0);
+        assert_eq!(diagonal.get_element_value(&2).unwrap(), 4);
+
+        let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &2).unwrap();
+        assert_eq!(diagonal.length().unwrap(), 10);
+        assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
+        assert_eq!(diagonal.get_element_value(&0).unwrap(), 2);
+        assert_eq!(diagonal.get_element_value(&2).unwrap(), 6);
+
+        let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &-2).unwrap();
+        assert_eq!(diagonal.length().unwrap(), 8);
+        assert_eq!(diagonal.number_of_stored_elements().unwrap(), 1);
+        assert_eq!(diagonal.get_element_value(&1).unwrap(), 4);
+
     }
 
     #[test]
@@ -947,5 +1049,42 @@ mod tests {
             vector.number_of_stored_elements().unwrap(),
             element_list.length()
         );
+    }
+
+    #[test]
+    fn sort() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = VectorElementList::<isize>::from_element_vector(vec![
+            (1, 1).into(),
+            (2, 2).into(),
+            (4, 6).into(),
+            (6, 4).into(),
+        ]);
+
+        let vector = SparseVector::<isize>::from_element_list(
+            &context.clone(),
+            &10,
+            &element_list,
+            &First::<isize, isize, isize>::new(),
+        )
+        .unwrap();
+
+        let mut sorted = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
+        let mut indices = sorted.clone();
+
+        let larger_than_operator = IsGreaterThan::<isize, isize, bool>::new();
+
+        vector.sort(&mut sorted, &mut indices, &larger_than_operator).unwrap();
+
+        assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
+        assert_eq!(sorted.get_element_value(&1).unwrap(), 4);
+        assert_eq!(sorted.get_element_value(&2).unwrap(), 2);
+        assert_eq!(sorted.get_element_value(&3).unwrap(), 1);
+
+        assert_eq!(indices.get_element_value(&0).unwrap(), 4);
+        assert_eq!(indices.get_element_value(&1).unwrap(), 6);
+        assert_eq!(indices.get_element_value(&2).unwrap(), 2);
+        assert_eq!(indices.get_element_value(&3).unwrap(), 1);
     }
 }
