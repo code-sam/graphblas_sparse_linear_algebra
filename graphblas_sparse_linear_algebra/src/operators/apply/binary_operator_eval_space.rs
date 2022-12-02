@@ -8,7 +8,7 @@ use crate::collections::sparse_scalar::{GetScalarValue, SparseScalar};
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::{binary_operator::binary_operator_eval_space::BinaryOperator, options::OperatorOptions};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
@@ -45,31 +45,33 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_3_type_data_type_and_all_value_types!(Send, BinaryOperatorApplier);
-implement_trait_for_3_type_data_type_and_all_value_types!(Sync, BinaryOperatorApplier);
+// implement_trait_for_3_type_data_type_and_all_value_types!(Send, BinaryOperatorApplier);
+// implement_trait_for_3_type_data_type_and_all_value_types!(Sync, BinaryOperatorApplier);
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorApplier<
     FirstArgument: ValueType,
     SecondArgument: ValueType,
     Product: ValueType,
+    EvaluationSpace: ValueType,
 > {
     _first_argument: PhantomData<FirstArgument>,
     _second_argument: PhantomData<SecondArgument>,
     _result: PhantomData<Product>,
+    _evaluation_space: PhantomData<EvaluationSpace>,
 
     binary_operator: GrB_BinaryOp,
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
-impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
-    BinaryOperatorApplier<FirstArgument, SecondArgument, Product>
+impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType, EvaluationSpace: ValueType>
+    BinaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationSpace>
 {
     pub fn new(
-        binary_operator: &dyn BinaryOperator<FirstArgument, SecondArgument, Product>,
+        binary_operator: &dyn BinaryOperator<FirstArgument, SecondArgument, Product, EvaluationSpace>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<FirstArgument, SecondArgument, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<FirstArgument, SecondArgument, Product, EvaluationSpace>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -85,6 +87,7 @@ impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
             _first_argument: PhantomData,
             _second_argument: PhantomData,
             _result: PhantomData,
+            _evaluation_space: PhantomData,
         }
     }
 }
@@ -170,7 +173,7 @@ where
 
 macro_rules! implement_binary_operator {
     // TODO differentiate between first and second argument for graphblas_scalar_type
-    ($first_argument_type:ty, $second_argument_type:ty, $product_type:ty, $graphblas_scalar_type:ty, $convert_to_graphblas_implementation_type:ident, $operator_vector_as_first_argument:ident, $operator_vector_as_second_argument:ident, $operator_matrix_as_first_argument:ident, $operator_matrix_as_second_argument:ident) => {
+    ($evaluation_space:ty, $graphblas_scalar_type:ty, $convert_to_graphblas_implementation_type:ident, $operator_vector_as_first_argument:ident, $operator_vector_as_second_argument:ident, $operator_matrix_as_first_argument:ident, $operator_matrix_as_second_argument:ident) => {
         impl BinaryOperatorApplierTrait<$first_argument_type, $second_argument_type, $product_type>
             for BinaryOperatorApplier<$first_argument_type, $second_argument_type, $product_type>
         {
@@ -427,8 +430,6 @@ implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_fo
 
 #[cfg(test)]
 mod tests {
-    use suitesparse_graphblas_sys::GrB_PLUS_INT32;
-
     use super::*;
 
     use crate::collections::sparse_matrix::{
@@ -463,7 +464,7 @@ mod tests {
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
             None,
         );
@@ -479,7 +480,7 @@ mod tests {
         assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), 0);
 
         let operator = BinaryOperatorApplier::new(
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
             None,
         );
@@ -645,56 +646,4 @@ mod tests {
     //         assert_eq!(product_vector.get_element_value(&(10+i)).unwrap(), i+10);
     //     }
     // }
-
-    // #[test]
-    // fn mixed_types() {
-    //     let context = Context::init_ready(Mode::NonBlocking).unwrap();
-
-    //     let element_list = VectorElementList::<usize>::from_element_vector(vec![
-    //         (1, 1).into(),
-    //         (2, 2).into(),
-    //         (4, 4).into(),
-    //         (5, 5).into(),
-    //     ]);
-
-    //     let vector_length: usize = 10;
-    //     let vector = SparseVector::<usize>::from_element_list(
-    //         &context.clone(),
-    //         &vector_length,
-    //         &element_list,
-    //         &First::<usize, usize, usize>::new(),
-    //     )
-    //     .unwrap();
-
-    //     let mut product_vector = SparseVector::<i16>::new(&context, &vector_length).unwrap();
-
-    //     let result = context.call(
-    //         || unsafe {
-    //             suitesparse_graphblas_sys::GrB_Vector_apply_BinaryOp1st_FP32(
-    //                 product_vector.graphblas_vector(),
-    //                 ptr::null_mut(),
-    //                 ptr::null_mut(),
-    //                 suitesparse_graphblas_sys::GrB_PLUS_BOOL,
-    //                 2.0, // arg must match apply function type
-    //                 vector.graphblas_vector(),
-    //                 OperatorOptions::new_default().to_graphblas_descriptor(),
-    //             )
-    //         },
-    //         &product_vector.graphblas_vector(),
-    //     );
-
-    //     println!("{:?}", result);
-    //     println!("{}", product_vector);
-    //     assert!(false);
-    // }
 }
-
-// match accumulator {
-//     Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-//     None => accumulator_to_use = ptr::null_mut(),
-// }
-
-// Self {
-//     binary_operator: binary_operator.graphblas_type(),
-//     accumulator: accumulator_to_use,
-//     options: options.to_graphblas_descriptor(),

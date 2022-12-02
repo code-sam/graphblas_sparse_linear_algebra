@@ -21,7 +21,7 @@ use crate::context::{CallGraphBlasContext, Context, ContextTrait};
 use crate::error::{
     GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
-use crate::util::{ElementIndex, IndexConversion};
+use crate::index::{ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types, implement_trait_for_all_value_types,

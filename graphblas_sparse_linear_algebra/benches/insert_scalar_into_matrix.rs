@@ -8,7 +8,7 @@ use graphblas_sparse_linear_algebra::context::Context;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::SparseMatrix;
 use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
-use graphblas_sparse_linear_algebra::util::{ElementIndex, ElementIndexSelector};
+use graphblas_sparse_linear_algebra::index::{ElementIndex, ElementIndexSelector};
 
 use graphblas_sparse_linear_algebra::context::Mode;
 

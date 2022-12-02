@@ -1,18 +1,15 @@
 use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
-    implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_2_type_trait_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types,
-};
+use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types;
 use crate::value_types::value_type::ValueType;
 
-pub trait BinaryOperator<X, Y, Z>
+pub trait BinaryOperator<X, Y, Z, T>
 where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
+    X: ValueType, // left-hand-side
+    Y: ValueType, // right-hand-side
+    Z: ValueType, // result
+    T: ValueType,
 {
     fn graphblas_type(&self) -> GrB_BinaryOp;
 }
@@ -20,24 +17,23 @@ where
 macro_rules! implement_binary_operator {
     ($operator_name:ident,
         $graphblas_operator_name:ident,
-        $value_type_left_input:ty,
-        $value_type_right_input:ty,
-        $value_type_output:ty
+        $evaluation_space: ty
     ) => {
-        impl BinaryOperator<$value_type_left_input, $value_type_right_input, $value_type_output>
-            for $operator_name<$value_type_left_input, $value_type_right_input, $value_type_output>
+        impl<X: ValueType, Y: ValueType, Z: ValueType> BinaryOperator<X, Y, Z, $evaluation_space>
+            for $operator_name<X, Y, Z, $evaluation_space>
         {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl $operator_name<$value_type_left_input, $value_type_right_input, $value_type_output> {
+        impl<X: ValueType, Y: ValueType, Z: ValueType> $operator_name<X, Y, Z, $evaluation_space> {
             pub fn new() -> Self {
                 Self {
                     _value_type_left_input: PhantomData,
                     _value_type_right_input: PhantomData,
                     _value_type_output: PhantomData,
+                    _evaluation_space: PhantomData,
                 }
             }
         }
@@ -46,18 +42,20 @@ macro_rules! implement_binary_operator {
 
 // x = first(x,y)
 #[derive(Debug, Clone)]
-pub struct First<X, Y, Z>
+pub struct First<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     First,
     GrB_FIRST
@@ -65,18 +63,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // y = second(x,y)
 #[derive(Debug, Clone)]
-pub struct Second<X, Y, Z>
+pub struct Second<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Second,
     GrB_SECOND
@@ -84,18 +84,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = 1
 #[derive(Debug, Clone)]
-pub struct One<X, Y, Z>
+pub struct One<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     One,
     GrB_ONEB
@@ -103,18 +105,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x^y (z = x.pow(y))
 #[derive(Debug, Clone)]
-pub struct Power<X, Y, Z>
+pub struct Power<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Power,
     GxB_POW
@@ -122,18 +126,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x+y
 #[derive(Debug, Clone)]
-pub struct Plus<X, Y, Z>
+pub struct Plus<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Plus,
     GrB_PLUS
@@ -141,18 +147,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x-y
 #[derive(Debug, Clone)]
-pub struct Minus<X, Y, Z>
+pub struct Minus<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Minus,
     GrB_MINUS
@@ -160,18 +168,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = y-x
 #[derive(Debug, Clone)]
-pub struct ReverseMinus<X, Y, Z>
+pub struct ReverseMinus<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     ReverseMinus,
     GxB_RMINUS
@@ -179,18 +189,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x*y
 #[derive(Debug, Clone)]
-pub struct Times<X, Y, Z>
+pub struct Times<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Times,
     GrB_TIMES
@@ -198,18 +210,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x/y
 #[derive(Debug, Clone)]
-pub struct Divide<X, Y, Z>
+pub struct Divide<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Divide,
     GrB_DIV
@@ -217,18 +231,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x/y
 #[derive(Debug, Clone)]
-pub struct ReverseDivide<X, Y, Z>
+pub struct ReverseDivide<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     ReverseDivide,
     GxB_RDIV
@@ -236,38 +252,42 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x==y
 #[derive(Debug, Clone)]
-pub struct IsEqual<X, Y, bool>
+pub struct IsEqual<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
-    IsEqual,
-    GrB_EQ,
-    bool
-);
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsEqual,
+//     GrB_EQ,
+//     bool
+// );
 
 // z = x==y
 #[derive(Debug, Clone)]
-pub struct IsEqualTyped<X, Y, Z>
+pub struct IsEqualTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsEqualTyped,
     GxB_ISEQ
@@ -275,38 +295,42 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x~!=y
 #[derive(Debug, Clone)]
-pub struct IsNotEqual<X, Y, bool>
+pub struct IsNotEqual<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
-    IsNotEqual,
-    GrB_NE,
-    bool
-);
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsNotEqual,
+//     GrB_NE,
+//     bool
+// );
 
 // z = x==y
 #[derive(Debug, Clone)]
-pub struct IsNotEqualTyped<X, Y, Z>
+pub struct IsNotEqualTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsNotEqualTyped,
     GxB_ISNE
@@ -314,18 +338,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = any(x,y), selected according to fastest computation speed
 #[derive(Debug, Clone)]
-pub struct Any<X, Y, Z>
+pub struct Any<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Any,
     GxB_ANY
@@ -333,18 +359,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = min(x,y)
 #[derive(Debug, Clone)]
-pub struct Min<X, Y, Z>
+pub struct Min<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Min,
     GrB_MIN
@@ -352,18 +380,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = max(x,y)
 #[derive(Debug, Clone)]
-pub struct Max<X, Y, Z>
+pub struct Max<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Max,
     GrB_MAX
@@ -371,38 +401,42 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x>y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThan<X, Y, bool>
+pub struct IsGreaterThan<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
-    IsGreaterThan,
-    GrB_GT,
-    bool
-);
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsGreaterThan,
+//     GrB_GT,
+//     bool
+// );
 
 // z = (x>y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThanTyped<X, Y, Z>
+pub struct IsGreaterThanTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsGreaterThanTyped,
     GxB_ISGT
@@ -410,38 +444,42 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x>=y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThanOrEqualTo<X, Y, bool>
+pub struct IsGreaterThanOrEqualTo<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
-    IsGreaterThanOrEqualTo,
-    GrB_GE,
-    bool
-);
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsGreaterThanOrEqualTo,
+//     GrB_GE,
+//     bool
+// );
 
 // z = (x>=y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThanOrEqualToTyped<X, Y, Z>
+pub struct IsGreaterThanOrEqualToTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsGreaterThanOrEqualToTyped,
     GxB_ISGE
@@ -449,38 +487,42 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x<y)
 #[derive(Debug, Clone)]
-pub struct IsLessThan<X, Y, bool>
+pub struct IsLessThan<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
-    IsLessThan,
-    GrB_LT,
-    bool
-);
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsLessThan,
+//     GrB_LT,
+//     bool
+// );
 
 // z = (x<y)
 #[derive(Debug, Clone)]
-pub struct IsLessThanTyped<X, Y, Z>
+pub struct IsLessThanTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsLessThanTyped,
     GxB_ISLT
@@ -488,72 +530,107 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x<=y)
 #[derive(Debug, Clone)]
-pub struct IsLessThanOrEqualTo<X, Y, bool>
+pub struct IsLessThanOrEqualTo<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
-    IsLessThanOrEqualTo,
-    GrB_LE,
-    bool
-);
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsLessThanOrEqualTo,
+//     GrB_LE,
+//     bool
+// );
 
 // z = (x<=y)
 #[derive(Debug, Clone)]
-pub struct IsLessThanOrEqualToTyped<X, Y, Z>
+pub struct IsLessThanOrEqualToTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsLessThanOrEqualToTyped,
     GxB_ISLE
 );
 
+// // z = (x|y)
+// #[derive(Debug, Clone)]
+// pub struct LogicalOr<X, Y, bool>
+// where
+//     X: ValueType,
+//     Y: ValueType,
+//     // Z: bool,
+// {
+//     _value_type_left_input: PhantomData<X>,
+//     _value_type_right_input: PhantomData<Y>,
+//     _value_type_output: PhantomData<bool>,
+// }
+
+// implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
+//     implement_binary_operator,
+//     IsLessThan,
+//     GrB_LOR,
+//     bool
+// );
+
 // z = (x|y)
 #[derive(Debug, Clone)]
-pub struct LogicalOr<X, Y, Z>
+pub struct LogicalOr<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_binary_operator!(LogicalOr, GrB_LOR, bool, bool, bool);
+// implement_binary_operator!(
+//     LogicalOr,
+//     GrB_LOR,
+//     bool,
+//     bool,
+//     bool,
+//     bool,
+// );
 
 // z = (x|y)
 #[derive(Debug, Clone)]
-pub struct LogicalOrTyped<X, Y, Z>
+pub struct LogicalOrTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     LogicalOrTyped,
     GxB_LOR
@@ -561,18 +638,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x&y)
 #[derive(Debug, Clone)]
-pub struct LogicalAndTyped<X, Y, Z>
+pub struct LogicalAndTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     LogicalAndTyped,
     GxB_LAND
@@ -580,18 +659,20 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x&y)
 #[derive(Debug, Clone)]
-pub struct LogicalExclusiveOrTyped<X, Y, Z>
+pub struct LogicalExclusiveOrTyped<X, Y, Z, T>
 where
     X: ValueType,
     Y: ValueType,
     Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<Z>,
+    _evaluation_space: PhantomData<T>,
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     LogicalExclusiveOrTyped,
     GxB_LXOR
@@ -603,10 +684,10 @@ mod tests {
 
     #[test]
     fn new_binary_operator() {
-        let first = First::<bool, bool, bool>::new();
+        let first = First::<bool, bool, bool, bool>::new();
         let _graphblas_type = first.graphblas_type();
 
-        let plus = Plus::<i8, i8, i8>::new();
+        let plus = Plus::<i8, i8, i8, i8>::new();
         let _graphblas_type = plus.graphblas_type();
     }
 }

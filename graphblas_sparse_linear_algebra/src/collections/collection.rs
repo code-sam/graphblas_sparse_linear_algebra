@@ -1,5 +1,5 @@
 use crate::error::SparseLinearAlgebraError;
-use crate::util::ElementIndex;
+use crate::index::ElementIndex;
 
 // // TODO: This trait is not public but will likely end up in a trait bound.
 // // Can these method better be considered a non-public implementation detail not captured in a trait?

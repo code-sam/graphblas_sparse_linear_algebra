@@ -41,7 +41,7 @@ use crate::context::ContextTrait;
 use crate::context::{CallGraphBlasContext, Context};
 use crate::operators::binary_operator::BinaryOperator;
 
-use crate::util::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
+use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,

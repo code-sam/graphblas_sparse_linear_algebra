@@ -20,7 +20,8 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_Matrix_select, GxB_NE_THUNK, GxB_NONZERO, GxB_OFFDIAG, GxB_TRIL, GxB_TRIU,
 };
 
-use super::diagonal_index::{DiagonalIndex, DiagonalIndexGraphblasType};
+// use super::diagonal_index::{DiagonalIndex, DiagonalIndexGraphblasType};
+use crate::index::{DiagonalIndex, DiagonalIndexConversion, GraphblasDiagionalIndex};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
@@ -66,43 +67,22 @@ macro_rules! implement_selector_with_diagonal {
                 product: &mut SparseMatrix<T>,
                 diagional: &DiagonalIndex,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
-                let diagonal_index = diagional.to_graphblas_type(&context)?;
+                let diagonal_index = diagional.to_sparse_scalar(argument.context_ref())?;
 
-                match diagonal_index {
-                    DiagonalIndexGraphblasType::Index(index) => {
-                        context.call(
-                            || unsafe {
-                                GxB_Matrix_select(
-                                    product.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    self.accumulator,
-                                    $graphblas_operator,
-                                    argument.graphblas_matrix(),
-                                    index.graphblas_scalar(),
-                                    self.options,
-                                )
-                            },
-                            product.graphblas_matrix_ref(),
-                        )?;
-                    }
-                    DiagonalIndexGraphblasType::Default => {
-                        context.call(
-                            || unsafe {
-                                GxB_Matrix_select(
-                                    product.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    self.accumulator,
-                                    $graphblas_operator,
-                                    argument.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    self.options,
-                                )
-                            },
-                            product.graphblas_matrix_ref(),
-                        )?;
-                    }
-                }
+                argument.context_ref().call(
+                    || unsafe {
+                        GxB_Matrix_select(
+                            product.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            $graphblas_operator,
+                            argument.graphblas_matrix(),
+                            diagonal_index.graphblas_scalar(),
+                            self.options,
+                        )
+                    },
+                    product.graphblas_matrix_ref(),
+                )?;
 
                 Ok(())
             }
@@ -118,43 +98,22 @@ macro_rules! implement_selector_with_diagonal {
                 diagional: &DiagonalIndex,
                 mask: &SparseMatrix<AsBool>,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
-                let diagonal_index = diagional.to_graphblas_type(&context)?;
+                let diagonal_index = diagional.to_sparse_scalar(argument.context_ref())?;
 
-                match diagonal_index {
-                    DiagonalIndexGraphblasType::Index(index) => {
-                        context.call(
-                            || unsafe {
-                                GxB_Matrix_select(
-                                    product.graphblas_matrix(),
-                                    mask.graphblas_matrix(),
-                                    self.accumulator,
-                                    $graphblas_operator,
-                                    argument.graphblas_matrix(),
-                                    index.graphblas_scalar(),
-                                    self.options,
-                                )
-                            },
-                            product.graphblas_matrix_ref(),
-                        )?;
-                    }
-                    DiagonalIndexGraphblasType::Default => {
-                        context.call(
-                            || unsafe {
-                                GxB_Matrix_select(
-                                    product.graphblas_matrix(),
-                                    mask.graphblas_matrix(),
-                                    self.accumulator,
-                                    $graphblas_operator,
-                                    argument.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    self.options,
-                                )
-                            },
-                            product.graphblas_matrix_ref(),
-                        )?;
-                    }
-                }
+                argument.context_ref().call(
+                    || unsafe {
+                        GxB_Matrix_select(
+                            product.graphblas_matrix(),
+                            mask.graphblas_matrix(),
+                            self.accumulator,
+                            $graphblas_operator,
+                            argument.graphblas_matrix(),
+                            diagonal_index.graphblas_scalar(),
+                            self.options,
+                        )
+                    },
+                    product.graphblas_matrix_ref(),
+                )?;
 
                 Ok(())
             }
@@ -491,7 +450,7 @@ mod tests {
 
         let selector = MatrixSelector::new(&OperatorOptions::new_default(), None);
 
-        let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = 0;
 
         selector
             .lower_triangle(&matrix, &mut product_matrix, &diagonal_index)
@@ -505,8 +464,7 @@ mod tests {
         assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
         assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
 
-        let diagonal_index = DiagonalIndex::Index(-1);
-        // let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = -1;
 
         selector
             .lower_triangle(&matrix, &mut product_matrix, &diagonal_index)
@@ -545,7 +503,7 @@ mod tests {
 
         let selector = MatrixSelector::new(&OperatorOptions::new_default(), None);
 
-        let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = 0;
 
         selector
             .upper_triangle(&matrix, &mut product_matrix, &diagonal_index)
@@ -559,8 +517,7 @@ mod tests {
         assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 3);
         assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
 
-        let diagonal_index = DiagonalIndex::Index(-1);
-        // let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = -1;
 
         selector
             .upper_triangle(&matrix, &mut product_matrix, &diagonal_index)
@@ -599,7 +556,7 @@ mod tests {
 
         let selector = MatrixSelector::new(&OperatorOptions::new_default(), None);
 
-        let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = 0;
 
         selector
             .diagonal(&matrix, &mut product_matrix, &diagonal_index)
@@ -613,7 +570,7 @@ mod tests {
         assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
         assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
 
-        let diagonal_index = DiagonalIndex::Index(-1);
+        let diagonal_index = -1;
         // let diagonal_index = DiagonalIndex::Default();
 
         selector
@@ -653,7 +610,7 @@ mod tests {
 
         let selector = MatrixSelector::new(&OperatorOptions::new_default(), None);
 
-        let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = 0;
 
         selector
             .clear_diagonal(&matrix, &mut product_matrix, &diagonal_index)
@@ -667,8 +624,7 @@ mod tests {
         assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 3);
         assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 0);
 
-        let diagonal_index = DiagonalIndex::Index(-1);
-        // let diagonal_index = DiagonalIndex::Default();
+        let diagonal_index = -1;
 
         selector
             .clear_diagonal(&matrix, &mut product_matrix, &diagonal_index)

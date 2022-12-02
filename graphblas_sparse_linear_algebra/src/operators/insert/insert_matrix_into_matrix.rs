@@ -4,8 +4,8 @@ use std::ptr;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
+use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
     implement_trait_for_2_type_data_type_and_all_value_types,
@@ -338,8 +338,8 @@ mod tests {
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
     use crate::context::{Context, Mode};
+    use crate::index::ElementIndex;
     use crate::operators::binary_operator::First;
-    use crate::util::ElementIndex;
 
     #[test]
     fn test_insert_matrix_into_matrix() {

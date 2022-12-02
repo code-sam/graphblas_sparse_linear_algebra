@@ -37,9 +37,9 @@ use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
 };
+use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
-use crate::util::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types, implement_trait_for_all_value_types,
@@ -659,20 +659,36 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
-pub trait SortSparseVector<T: ValueType + BuiltInValueType, B: BinaryOperator<T,T,bool>> {
-    fn sort(&self, sorted_values: &mut SparseVector<T>, sorted_indices_in_self: &mut SparseVector<T>, sort_operator: &B) -> Result<(), SparseLinearAlgebraError>;
+pub trait SortSparseVector<T: ValueType + BuiltInValueType, B: BinaryOperator<T, T, bool>> {
+    fn sort(
+        &self,
+        sorted_values: &mut SparseVector<T>,
+        sorted_indices_in_self: &mut SparseVector<T>,
+        sort_operator: &B,
+    ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl <T: ValueType + BuiltInValueType, B: BinaryOperator<T,T,bool>>SortSparseVector<T, B> for SparseVector<T>{
-    fn sort(&self, sorted_values: &mut SparseVector<T>, indices_to_sort_self: &mut SparseVector<T>, sort_operator: &B) -> Result<(), SparseLinearAlgebraError> {
-        self.context.call(|| unsafe {
-            GxB_Vector_sort(
-                sorted_values.graphblas_vector(),
-                indices_to_sort_self.graphblas_vector(),
-                sort_operator.graphblas_type(),
-                self.graphblas_vector(),
-                DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor())
-        }, &self.vector)?;
+impl<T: ValueType + BuiltInValueType, B: BinaryOperator<T, T, bool>> SortSparseVector<T, B>
+    for SparseVector<T>
+{
+    fn sort(
+        &self,
+        sorted_values: &mut SparseVector<T>,
+        indices_to_sort_self: &mut SparseVector<T>,
+        sort_operator: &B,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        self.context.call(
+            || unsafe {
+                GxB_Vector_sort(
+                    sorted_values.graphblas_vector(),
+                    indices_to_sort_self.graphblas_vector(),
+                    sort_operator.graphblas_type(),
+                    self.graphblas_vector(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                )
+            },
+            &self.vector,
+        )?;
         Ok(())
     }
 }
@@ -683,7 +699,7 @@ mod tests {
     // #[macro_use(implement_value_type_for_custom_type)]
 
     use super::*;
-    use crate::collections::sparse_matrix::{MatrixElementList, FromMatrixElementList};
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
     use crate::operators::binary_operator::{First, IsGreaterThan};
@@ -759,7 +775,6 @@ mod tests {
         assert_eq!(diagonal.length().unwrap(), 8);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 1);
         assert_eq!(diagonal.get_element_value(&1).unwrap(), 4);
-
     }
 
     #[test]
@@ -1075,7 +1090,9 @@ mod tests {
 
         let larger_than_operator = IsGreaterThan::<isize, isize, bool>::new();
 
-        vector.sort(&mut sorted, &mut indices, &larger_than_operator).unwrap();
+        vector
+            .sort(&mut sorted, &mut indices, &larger_than_operator)
+            .unwrap();
 
         assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
         assert_eq!(sorted.get_element_value(&1).unwrap(), 4);

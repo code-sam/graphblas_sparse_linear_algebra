@@ -1,6 +1,12 @@
 use std::convert::TryInto;
+use std::sync::Arc;
 
-use crate::error::{SparseLinearAlgebraError, SystemError};
+use crate::context::Context;
+use crate::value_types::value_type::ConvertScalar;
+use crate::{
+    collections::sparse_scalar::SparseScalar,
+    error::{SparseLinearAlgebraError, SystemError},
+};
 
 use super::ElementIndex;
 
@@ -10,10 +16,14 @@ pub type GraphblasDiagionalIndex = i64; // TODO: check when the GraphBLAS specif
 pub trait DiagonalIndexConversion {
     fn to_graphblas_index(&self) -> Result<GraphblasDiagionalIndex, SparseLinearAlgebraError>;
     fn as_graphblas_index(self) -> Result<GraphblasDiagionalIndex, SparseLinearAlgebraError>;
-    fn to_graphblas_element_index(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn from_graphblas_index(
         index: GraphblasDiagionalIndex,
     ) -> Result<DiagonalIndex, SparseLinearAlgebraError>;
+    fn to_graphblas_element_index(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
+    fn to_sparse_scalar(
+        &self,
+        context: &Arc<Context>,
+    ) -> Result<SparseScalar<GraphblasDiagionalIndex>, SparseLinearAlgebraError>;
 }
 
 impl DiagonalIndexConversion for DiagonalIndex {
@@ -48,5 +58,15 @@ impl DiagonalIndexConversion for DiagonalIndex {
             Err(error) => return Err(SystemError::from(error).into()),
         }
         Ok(element_index)
+    }
+
+    fn to_sparse_scalar(
+        &self,
+        context: &Arc<Context>,
+    ) -> Result<SparseScalar<GraphblasDiagionalIndex>, SparseLinearAlgebraError> {
+        Ok(SparseScalar::<GraphblasDiagionalIndex>::from_value(
+            context,
+            self.to_type()?,
+        )?)
     }
 }

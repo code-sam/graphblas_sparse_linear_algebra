@@ -1,4 +1,4 @@
-use crate::util::ElementIndex;
+use crate::index::ElementIndex;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Size {

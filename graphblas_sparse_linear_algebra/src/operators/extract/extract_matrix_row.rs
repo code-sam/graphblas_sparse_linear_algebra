@@ -2,11 +2,11 @@ use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{Size, SparseMatrix};
 use crate::collections::sparse_vector::SparseVector;
 use crate::error::SparseLinearAlgebraError;
+use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::{
     binary_operator::BinaryOperator, extract::MatrixColumnExtractor, options::OperatorOptions,
     transpose::MatrixTranspose,
 };
-use crate::util::{ElementIndex, ElementIndexSelector};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 

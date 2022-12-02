@@ -12,8 +12,8 @@ use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
@@ -234,7 +234,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
-    use crate::util::ElementIndex;
+    use crate::index::ElementIndex;
 
     #[test]
     fn test_insert_scalar_into_vector() {

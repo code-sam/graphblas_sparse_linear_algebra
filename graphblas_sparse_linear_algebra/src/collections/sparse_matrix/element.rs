@@ -2,7 +2,7 @@ use super::coordinate::Coordinate;
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
 };
-use crate::util::ElementIndex;
+use crate::index::ElementIndex;
 use crate::value_types::value_type::ValueType;
 
 #[derive(Debug, Clone, Copy, PartialEq)]

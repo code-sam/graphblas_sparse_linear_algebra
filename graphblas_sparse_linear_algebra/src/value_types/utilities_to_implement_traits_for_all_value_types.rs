@@ -428,7 +428,6 @@ macro_rules! implement_macro_with_2_type_trait_and_output_type_and_typed_graphbl
 }
 pub(crate) use implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types;
 
-
 macro_rules! implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types {
     ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
         paste::paste! {
