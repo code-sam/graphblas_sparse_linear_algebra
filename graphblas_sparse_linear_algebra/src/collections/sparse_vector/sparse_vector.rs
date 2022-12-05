@@ -4,7 +4,9 @@ use std::mem::MaybeUninit;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_sort};
+use suitesparse_graphblas_sys::{
+    GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_sort,
+};
 
 use super::element::{VectorElement, VectorElementList};
 use crate::bindings_to_graphblas_implementation::{
@@ -149,8 +151,7 @@ impl<T: ValueType + BuiltInValueType> SparseVector<T> {
         return Ok(vector);
     }
 
-    // TODO: unit tests
-    fn from_sparse_matrix_diagonal(
+    pub fn from_sparse_matrix_diagonal(
         matrix: &SparseMatrix<T>,
         diagonal_index: &DiagonalIndex,
     ) -> Result<Self, SparseLinearAlgebraError> {
@@ -368,7 +369,7 @@ macro_rules! implement_dispay {
 
                 let indices = element_list.indices_ref();
                 let values = element_list.values_ref();
-
+                
                 writeln! {f,"Vector length: {:?}", self.length()?};
                 writeln! {f,"Number of stored elements: {:?}", self.number_of_stored_elements()?};
 
