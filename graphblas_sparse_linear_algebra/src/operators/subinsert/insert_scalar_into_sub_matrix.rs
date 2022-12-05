@@ -343,6 +343,7 @@ implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_sca
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

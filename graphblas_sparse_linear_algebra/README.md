@@ -4,6 +4,7 @@ Rust wrapper for SuiteSparse:GraphBLAS
 
 ## Minimum example
 ```rust
+use graphblas_sparse_linear_algebra::collections::collection::Collection;
 use graphblas_sparse_linear_algebra::context::{Context, Mode};
 use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{First};

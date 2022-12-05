@@ -304,6 +304,7 @@ where
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };

@@ -419,6 +419,7 @@ implement_selector_with_zero!(zero_or_negative, zero_or_negative_with_mask, GxB_
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

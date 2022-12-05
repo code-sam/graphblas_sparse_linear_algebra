@@ -302,6 +302,7 @@ where
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Times};
 

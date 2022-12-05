@@ -1,3 +1,4 @@
+use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::SparseVector;
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
@@ -59,16 +60,6 @@ pub struct SparseMatrix<T: ValueType> {
     matrix: GrB_Matrix,
     value_type: PhantomData<T>,
 }
-
-// struct GraphBlasSparseMatrix {
-//     matrix: GrB_Matrix,
-// }
-
-// impl GraphBlasSparseMatrix {
-//     fn getMatrix(&self) -> GrB_Matrix {
-//         self.matrix
-//     }
-// }
 
 // Mutable access to GrB_Matrix shall occur through a write lock on RwLock<GrB_Matrix>.
 // Code review must consider that the correct lock is made via
@@ -160,16 +151,6 @@ impl<T: ValueType> SparseMatrix<T> {
         Ok(Size::new(self.row_height()?, self.column_width()?))
     }
 
-    pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-        let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) },
-            &self.matrix,
-        )?;
-        let number_of_values = unsafe { number_of_values.assume_init() };
-        Ok(ElementIndex::from_graphblas_index(number_of_values)?)
-    }
-
     pub fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
         let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
         let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
@@ -183,12 +164,24 @@ impl<T: ValueType> SparseMatrix<T> {
         )?;
         Ok(())
     }
+}
 
+impl<T: ValueType> Collection for SparseMatrix<T> {
     /// remove all elements in th matrix
-    pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
+    fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
         self.context
             .call(|| unsafe { GrB_Matrix_clear(self.matrix) }, &self.matrix)?;
         Ok(())
+    }
+
+    fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+        let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+        self.context.call(
+            || unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) },
+            &self.matrix,
+        )?;
+        let number_of_values = unsafe { number_of_values.assume_init() };
+        Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
 }
 
