@@ -4,8 +4,8 @@ use std::ptr;
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Matrix_subassign,
 };
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};

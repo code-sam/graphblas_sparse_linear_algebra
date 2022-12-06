@@ -2,9 +2,9 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
-use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
 use crate::collections::sparse_vector::SparseVector;
-use crate::context::CallGraphBlasContext;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,

@@ -8,8 +8,8 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_Matrix_subassign_INT64, GxB_Matrix_subassign_INT8, GxB_Matrix_subassign_UINT16,
     GxB_Matrix_subassign_UINT32, GxB_Matrix_subassign_UINT64, GxB_Matrix_subassign_UINT8,
 };
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};

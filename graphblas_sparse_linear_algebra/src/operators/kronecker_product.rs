@@ -3,13 +3,13 @@ use std::ptr;
 use std::marker::PhantomData;
 
 use crate::collections::sparse_matrix::SparseMatrix;
-use crate::context::CallGraphBlasContext;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_kronecker_BinaryOp, GrB_Matrix_kronecker_Monoid,
@@ -25,9 +25,9 @@ implement_trait_for_3_type_data_type_and_all_value_types!(Sync, SemiringKronecke
 #[derive(Debug, Clone)]
 pub struct SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     _multiplier: PhantomData<Multiplier>,
     _multiplicant: PhantomData<Multiplicant>,
@@ -40,9 +40,9 @@ where
 
 impl<Multiplier, Multiplicant, Product> SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -121,7 +121,7 @@ where
 }
 
 #[derive(Debug, Clone)]
-pub struct MonoidKroneckerProduct<T: ValueType> {
+pub struct MonoidKroneckerProduct<T: ValueType + BuiltInValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -129,7 +129,7 @@ pub struct MonoidKroneckerProduct<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> MonoidKroneckerProduct<T> {
+impl<T: ValueType + BuiltInValueType> MonoidKroneckerProduct<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
@@ -218,9 +218,9 @@ pub struct BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Prod
 impl<Multiplier, Multiplicant, Product>
     BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant

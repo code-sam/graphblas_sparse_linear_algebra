@@ -2,7 +2,7 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
-use crate::context::CallGraphBlasContext;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
@@ -12,7 +12,7 @@ use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_custom_input_version_1_for_all_value_types,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_DIAG, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
@@ -30,14 +30,14 @@ implement_trait_for_all_value_types!(Send, MatrixSelector);
 implement_trait_for_all_value_types!(Sync, MatrixSelector);
 
 #[derive(Debug, Clone)]
-pub struct MatrixSelector<T: ValueType> {
+pub struct MatrixSelector<T: ValueType + BuiltInValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> MatrixSelector<T> {
+impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
     pub fn new(
         options: &OperatorOptions,
         accumulator: Option<&dyn BinaryOperator<T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -59,7 +59,7 @@ impl<T: ValueType> MatrixSelector<T> {
 
 macro_rules! implement_selector_with_diagonal {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
-        impl<T: ValueType> MatrixSelector<T> {
+        impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
             /// k = 0 selects the main diagonal, positive for above, negative for below
             pub fn $method_name(
                 &self,
@@ -350,7 +350,7 @@ implement_macro_with_custom_input_version_1_for_all_value_types!(
 
 macro_rules! implement_selector_with_zero {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
-        impl<T: ValueType> MatrixSelector<T> {
+        impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
             pub fn $method_name(
                 &self,
                 argument: &SparseMatrix<T>,

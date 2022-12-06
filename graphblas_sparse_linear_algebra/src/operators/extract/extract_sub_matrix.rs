@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_extract,
@@ -24,8 +24,8 @@ implement_trait_for_2_type_data_type_and_all_value_types!(Sync, SubMatrixExtract
 #[derive(Debug, Clone)]
 pub struct SubMatrixExtractor<Matrix, SubMatrix>
 where
-    Matrix: ValueType,
-    SubMatrix: ValueType,
+    Matrix: ValueType + BuiltInValueType,
+    SubMatrix: ValueType + BuiltInValueType,
 {
     _matrix: PhantomData<Matrix>,
     _sub_matrix: PhantomData<SubMatrix>,
@@ -36,8 +36,8 @@ where
 
 impl<Matrix, SubMatrix> SubMatrixExtractor<Matrix, SubMatrix>
 where
-    Matrix: ValueType,
-    SubMatrix: ValueType,
+    Matrix: ValueType + BuiltInValueType,
+    SubMatrix: ValueType + BuiltInValueType,
 {
     pub fn new(
         options: &OperatorOptions,

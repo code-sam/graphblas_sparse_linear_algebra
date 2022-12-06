@@ -1,6 +1,6 @@
-use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::{Size, SparseMatrix};
+use crate::collections::sparse_matrix::{Size, SparseMatrix, SparseMatrixTrait};
 use crate::collections::sparse_vector::SparseVector;
+use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::{
@@ -115,6 +115,7 @@ where
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::collections::sparse_vector::GetVectorElementValue;
     use crate::context::{Context, Mode};

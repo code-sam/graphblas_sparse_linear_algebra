@@ -1,10 +1,9 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
 use crate::collections::sparse_vector::SparseVector;
-use crate::context::CallGraphBlasContext;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
@@ -188,6 +187,7 @@ where
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::collections::sparse_vector::GetVectorElementValue;
     use crate::context::{Context, Mode};

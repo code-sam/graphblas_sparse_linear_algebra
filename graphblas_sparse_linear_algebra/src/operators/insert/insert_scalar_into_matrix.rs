@@ -2,10 +2,9 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-// use crate::operators::BinaryOperatorType;
-use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{

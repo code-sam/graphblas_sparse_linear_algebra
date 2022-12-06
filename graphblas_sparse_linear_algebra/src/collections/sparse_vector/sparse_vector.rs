@@ -31,7 +31,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_setElement_UINT8, GrB_Vector_size,
 };
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
 use crate::collections::sparse_scalar::SparseScalar;
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, ContextTrait};
