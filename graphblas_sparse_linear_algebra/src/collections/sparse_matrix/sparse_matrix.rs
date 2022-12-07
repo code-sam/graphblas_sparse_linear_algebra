@@ -51,6 +51,9 @@ use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
 };
 use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
 
+static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
+    Lazy::new(|| OperatorOptions::new_default());
+
 pub type ColumnIndex = ElementIndex;
 pub type RowIndex = ElementIndex;
 
@@ -92,6 +95,11 @@ impl<T: ValueType + BuiltInValueType> SparseMatrix<T> {
             value_type: PhantomData,
         });
     }
+
+    // TODO
+    // fn from_matrices(matrices: Vec<SparseMatrix<T>, >) -> Result<Self, SparseLinearAlgebraError> {
+
+    // }
 
     pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
         self.matrix
