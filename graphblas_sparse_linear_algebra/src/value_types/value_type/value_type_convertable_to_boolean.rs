@@ -1,5 +1,6 @@
-use super::value_type::{BuiltInValueType, ValueType};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
+
+use super::{BuiltInValueType, ValueType};
 
 pub trait AsBoolean<T>: ValueType + BuiltInValueType {}
 

@@ -2,17 +2,18 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_types::sparse_vector::SparseVector;
+use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
     implement_trait_for_2_type_data_type_and_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Vector_assign,
@@ -64,8 +65,8 @@ where
 
 pub trait InsertVectorIntoVectorTrait<VectorToInsertInto, VectorToInsert>
 where
-    VectorToInsertInto: ValueType,
-    VectorToInsert: ValueType,
+    VectorToInsertInto: ValueType + BuiltInValueType,
+    VectorToInsert: ValueType + BuiltInValueType,
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -223,10 +224,10 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::util::ElementIndex;
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::index::ElementIndex;
 
     #[test]
     fn test_insert_vector_into_vector() {

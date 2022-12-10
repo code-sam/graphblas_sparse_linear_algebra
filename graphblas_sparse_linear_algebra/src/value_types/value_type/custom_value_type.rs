@@ -8,7 +8,7 @@ use crate::bindings_to_graphblas_implementation::{
 };
 use crate::context::{CallGraphBlasContext, Context};
 use crate::error::{SparseLinearAlgebraError, SystemError, SystemErrorType};
-use crate::util::{ElementIndex, IndexConversion};
+use crate::index::{ElementIndex, IndexConversion};
 
 use super::value_type::ValueType;
 

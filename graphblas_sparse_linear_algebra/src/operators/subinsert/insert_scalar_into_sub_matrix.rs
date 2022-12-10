@@ -8,11 +8,11 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_Matrix_subassign_INT64, GxB_Matrix_subassign_INT8, GxB_Matrix_subassign_UINT16,
     GxB_Matrix_subassign_UINT32, GxB_Matrix_subassign_UINT64, GxB_Matrix_subassign_UINT8,
 };
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
@@ -343,13 +343,14 @@ implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_sca
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::util::ElementIndex;
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
+    use crate::index::ElementIndex;
 
     #[test]
     fn test_insert_scalar_into_matrix() {

@@ -120,14 +120,14 @@ implement_monoid_operator!(Equal, GrB_LXNOR_MONOID_BOOL, bool);
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_vector::{
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        VectorElementList,
+    };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::element_wise_addition::ElementWiseVectorAdditionMonoidOperator;
     use crate::operators::options::OperatorOptions;
-    use crate::value_types::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
-        VectorElementList,
-    };
 
     #[test]
     fn new_binary_operator() {

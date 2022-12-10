@@ -1,7 +1,7 @@
-use std::error;
 use std::error::Error;
 use std::fmt;
 use std::num::TryFromIntError;
+use std::{error, sync::PoisonError};
 
 use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
 
@@ -97,6 +97,16 @@ impl From<TryFromIntError> for SystemError {
             error_type: SystemErrorType::IntegerConversionFailed,
             explanation: String::new(),
             source: Some(SystemErrorSource::IntegerConversionError(error)),
+        }
+    }
+}
+
+impl<T> From<PoisonError<T>> for SystemError {
+    fn from(error: PoisonError<T>) -> Self {
+        Self {
+            error_type: SystemErrorType::PoisonedData,
+            explanation: format!("{:?}", error),
+            source: Some(SystemErrorSource::PoisonedData),
         }
     }
 }

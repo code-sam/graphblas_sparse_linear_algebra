@@ -2,12 +2,13 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_scalar::{GetScalarValue, SparseScalar};
+use crate::collections::sparse_vector::SparseVector;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_scalar::{GetScalarValue, SparseScalar};
-use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
@@ -426,16 +427,18 @@ implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_fo
 
 #[cfg(test)]
 mod tests {
+    use suitesparse_graphblas_sys::GrB_PLUS_INT32;
+
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn test_matrix_binary_operator_application() {
@@ -642,4 +645,56 @@ mod tests {
     //         assert_eq!(product_vector.get_element_value(&(10+i)).unwrap(), i+10);
     //     }
     // }
+
+    // #[test]
+    // fn mixed_types() {
+    //     let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+    //     let element_list = VectorElementList::<usize>::from_element_vector(vec![
+    //         (1, 1).into(),
+    //         (2, 2).into(),
+    //         (4, 4).into(),
+    //         (5, 5).into(),
+    //     ]);
+
+    //     let vector_length: usize = 10;
+    //     let vector = SparseVector::<usize>::from_element_list(
+    //         &context.clone(),
+    //         &vector_length,
+    //         &element_list,
+    //         &First::<usize, usize, usize>::new(),
+    //     )
+    //     .unwrap();
+
+    //     let mut product_vector = SparseVector::<i16>::new(&context, &vector_length).unwrap();
+
+    //     let result = context.call(
+    //         || unsafe {
+    //             suitesparse_graphblas_sys::GrB_Vector_apply_BinaryOp1st_FP32(
+    //                 product_vector.graphblas_vector(),
+    //                 ptr::null_mut(),
+    //                 ptr::null_mut(),
+    //                 suitesparse_graphblas_sys::GrB_PLUS_BOOL,
+    //                 2.0, // arg must match apply function type
+    //                 vector.graphblas_vector(),
+    //                 OperatorOptions::new_default().to_graphblas_descriptor(),
+    //             )
+    //         },
+    //         &product_vector.graphblas_vector(),
+    //     );
+
+    //     println!("{:?}", result);
+    //     println!("{}", product_vector);
+    //     assert!(false);
+    // }
 }
+
+// match accumulator {
+//     Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
+//     None => accumulator_to_use = ptr::null_mut(),
+// }
+
+// Self {
+//     binary_operator: binary_operator.graphblas_type(),
+//     accumulator: accumulator_to_use,
+//     options: options.to_graphblas_descriptor(),

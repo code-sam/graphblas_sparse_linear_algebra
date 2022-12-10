@@ -77,6 +77,11 @@ static IS_GRAPHBLAS_BUSY: Lazy<Mutex<AtomicBool>> =
 //     number_of_ready_contexts.load(Ordering::SeqCst) > 0
 // }
 
+pub trait ContextTrait {
+    fn context(&self) -> Arc<Context>;
+    fn context_ref(&self) -> &Arc<Context>;
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Mode {
     Blocking,

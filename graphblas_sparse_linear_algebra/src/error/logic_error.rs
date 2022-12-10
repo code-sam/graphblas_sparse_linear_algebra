@@ -1,7 +1,7 @@
 // Look here for an example on how to implement error types: https://doc.rust-lang.org/src/std/io/error.rs.html#42
-use std::error;
 use std::error::Error;
 use std::fmt;
+use std::{error, num::TryFromIntError};
 
 use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
 
@@ -15,6 +15,7 @@ pub struct LogicError {
 #[derive(Debug)]
 pub enum LogicErrorSource {
     GraphBlas(GraphBlasError),
+    TryFromIntError(TryFromIntError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -55,6 +56,7 @@ impl error::Error for LogicError {
         match self.source {
             Some(ref error) => match error {
                 LogicErrorSource::GraphBlas(error) => Some(error),
+                LogicErrorSource::TryFromIntError(error) => Some(error),
             },
             None => None,
         }
@@ -82,6 +84,16 @@ impl From<GraphBlasError> for LogicError {
             error_type: LogicErrorType::GraphBlas(error.error_type()),
             explanation: String::new(),
             source: Some(LogicErrorSource::GraphBlas(error)),
+        }
+    }
+}
+
+impl From<TryFromIntError> for LogicError {
+    fn from(error: TryFromIntError) -> Self {
+        Self {
+            error_type: LogicErrorType::UnsafeTypeConversion,
+            explanation: String::new(),
+            source: Some(LogicErrorSource::TryFromIntError(error)),
         }
     }
 }

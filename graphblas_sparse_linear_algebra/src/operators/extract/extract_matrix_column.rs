@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::collections::sparse_vector::SparseVector;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::util::{
+use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
 
@@ -23,8 +23,8 @@ implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixColumnExtr
 #[derive(Debug, Clone)]
 pub struct MatrixColumnExtractor<Matrix, Column>
 where
-    Matrix: ValueType,
-    Column: ValueType,
+    Matrix: ValueType + BuiltInValueType,
+    Column: ValueType + BuiltInValueType,
 {
     _matrix: PhantomData<Matrix>,
     _column: PhantomData<Column>,
@@ -35,8 +35,8 @@ where
 
 impl<Matrix, Column> MatrixColumnExtractor<Matrix, Column>
 where
-    Matrix: ValueType,
-    Column: ValueType,
+    Matrix: ValueType + BuiltInValueType,
+    Column: ValueType + BuiltInValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -187,10 +187,11 @@ where
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_vector::GetVectorElementValue;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList};
-    use crate::value_types::sparse_vector::GetVectorElementValue;
 
     #[test]
     fn test_column_extraction() {

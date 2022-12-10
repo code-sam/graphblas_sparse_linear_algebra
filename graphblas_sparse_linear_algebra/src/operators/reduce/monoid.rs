@@ -12,17 +12,18 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
-use crate::value_types::sparse_matrix::SparseMatrix;
-use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
     implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
@@ -41,7 +42,7 @@ pub struct MonoidReducer<T: ValueType> {
 
 pub trait MonoidScalarReducer<T>
 where
-    T: ValueType,
+    T: ValueType + BuiltInValueType,
 {
     fn matrix_to_scalar(
         &self,
@@ -56,7 +57,7 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> MonoidReducer<T> {
+impl<T: ValueType + BuiltInValueType> MonoidReducer<T> {
     pub fn new(
         monoid: &dyn Monoid<T>,
         options: &OperatorOptions,
@@ -197,8 +198,8 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::monoid::Plus as MonoidPlus;
 
-    use crate::value_types::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
     use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;

@@ -1,8 +1,5 @@
-mod diagonal_index;
 mod matrix;
 mod vector;
-
-pub use diagonal_index::DiagonalIndex;
 
 pub use matrix::{
     MatrixSelector, SelectMatrixEqualToScalar, SelectMatrixGreaterThanOrEqualToScalar,

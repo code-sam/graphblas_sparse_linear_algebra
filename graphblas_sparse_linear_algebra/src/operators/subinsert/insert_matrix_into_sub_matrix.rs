@@ -4,11 +4,11 @@ use std::ptr;
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Matrix_subassign,
 };
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::util::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
     implement_trait_for_2_type_data_type_and_all_value_types,
@@ -334,13 +334,14 @@ implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::util::ElementIndex;
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
+    use crate::index::ElementIndex;
 
     #[test]
     fn test_insert_matrix_into_matrix() {

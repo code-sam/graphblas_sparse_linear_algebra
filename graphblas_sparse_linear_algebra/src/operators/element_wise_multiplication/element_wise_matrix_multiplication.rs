@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_eWiseMult_BinaryOp, GrB_Matrix_eWiseMult_Monoid,
@@ -48,9 +48,9 @@ where
 impl<Multiplier, Multiplicant, Product>
     ElementWiseMatrixMultiplicationSemiring<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -135,7 +135,7 @@ implement_trait_for_all_value_types!(Send, ElementWiseMatrixMultiplicationMonoid
 implement_trait_for_all_value_types!(Sync, ElementWiseMatrixMultiplicationMonoidOperator);
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseMatrixMultiplicationMonoidOperator<T: ValueType> {
+pub struct ElementWiseMatrixMultiplicationMonoidOperator<T: ValueType + BuiltInValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -143,7 +143,7 @@ pub struct ElementWiseMatrixMultiplicationMonoidOperator<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> ElementWiseMatrixMultiplicationMonoidOperator<T> {
+impl<T: ValueType + BuiltInValueType> ElementWiseMatrixMultiplicationMonoidOperator<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
@@ -244,9 +244,9 @@ pub struct ElementWiseMatrixMultiplicationBinaryOperator<Multiplier, Multiplican
 impl<Multiplier, Multiplicant, Product>
     ElementWiseMatrixMultiplicationBinaryOperator<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    Multiplier: ValueType + BuiltInValueType,
+    Multiplicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -328,11 +328,12 @@ where
 mod tests {
     use super::*;
 
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus, Times};
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::collection::Collection;
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::{First, Plus, Times};
 
     #[test]
     fn create_matrix_multiplier() {

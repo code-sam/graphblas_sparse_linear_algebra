@@ -1,24 +1,21 @@
-use crate::util::ElementIndex;
+use crate::index::ElementIndex;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Size<const R: ElementIndex, const C: ElementIndex> {
+pub struct Size {
     row_height: ElementIndex,
     column_width: ElementIndex,
 }
 
-impl<const R: ElementIndex, const C: ElementIndex> Size<R, C> {
-    pub fn new() -> Self {
+impl Size {
+    pub fn new(row_height: ElementIndex, column_width: ElementIndex) -> Self {
         Self {
-            row_height: R,
-            column_width: C,
+            row_height,
+            column_width,
         }
     }
 
     pub fn from_tuple(size: (ElementIndex, ElementIndex)) -> Self {
-        Self {
-            row_height: size.0,
-            column_width: size.1,
-        }
+        Self::new(size.0, size.1)
     }
 
     pub fn row_height(&self) -> ElementIndex {
@@ -29,9 +26,7 @@ impl<const R: ElementIndex, const C: ElementIndex> Size<R, C> {
     }
 }
 
-impl<const R: ElementIndex, const C: ElementIndex> From<(ElementIndex, ElementIndex)>
-    for Size<R, C>
-{
+impl From<(ElementIndex, ElementIndex)> for Size {
     fn from(size: (ElementIndex, ElementIndex)) -> Self {
         Self {
             row_height: size.0,

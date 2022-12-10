@@ -1,13 +1,18 @@
+use crate::collections::collection::Collection;
+use crate::collections::sparse_vector::SparseVector;
 use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
 };
+use crate::operators::options::OperatorOptions;
 use std::convert::TryInto;
 use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
+use once_cell::sync::Lazy;
 use rayon::prelude::*;
+use suitesparse_graphblas_sys::GxB_Vector_diag;
 
 use super::coordinate::Coordinate;
 use super::element::{MatrixElement, MatrixElementList};
@@ -33,19 +38,24 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_INT8, GrB_Matrix_setElement_UINT16, GrB_Matrix_setElement_UINT32,
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
+use crate::context::ContextTrait;
 use crate::context::{CallGraphBlasContext, Context};
 use crate::operators::binary_operator::BinaryOperator;
 
-use crate::util::{ElementIndex, IndexConversion};
+use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
-    convert_scalar_to_type, convert_vector_to_type, identity_conversion,
+    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,
     implement_macro_for_all_value_types_and_graphblas_function,
-    implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion,
-    implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{BuiltInValueType, ValueType};
+use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
+
+static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
+    Lazy::new(|| OperatorOptions::new_default());
+
+pub type ColumnIndex = ElementIndex;
+pub type RowIndex = ElementIndex;
 
 #[derive(Debug)]
 pub struct SparseMatrix<T: ValueType> {
@@ -53,16 +63,6 @@ pub struct SparseMatrix<T: ValueType> {
     matrix: GrB_Matrix,
     value_type: PhantomData<T>,
 }
-
-// struct GraphBlasSparseMatrix {
-//     matrix: GrB_Matrix,
-// }
-
-// impl GraphBlasSparseMatrix {
-//     fn getMatrix(&self) -> GrB_Matrix {
-//         self.matrix
-//     }
-// }
 
 // Mutable access to GrB_Matrix shall occur through a write lock on RwLock<GrB_Matrix>.
 // Code review must consider that the correct lock is made via
@@ -95,15 +95,11 @@ impl<T: ValueType + BuiltInValueType> SparseMatrix<T> {
             value_type: PhantomData,
         });
     }
-}
 
-impl<T: ValueType> SparseMatrix<T> {
-    pub fn context(&self) -> Arc<Context> {
-        self.context.clone()
-    }
-    pub fn context_ref(&self) -> &Arc<Context> {
-        &self.context
-    }
+    // TODO
+    // fn from_matrices(matrices: Vec<SparseMatrix<T>, >) -> Result<Self, SparseLinearAlgebraError> {
+
+    // }
 
     pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
         self.matrix
@@ -116,45 +112,26 @@ impl<T: ValueType> SparseMatrix<T> {
     pub(crate) fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
         &mut self.matrix
     }
+}
 
-    /// All elements of self with an index coordinate outside of the new size are dropped.
-    pub fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
-        let new_row_height = new_size.row_height().to_graphblas_index()?;
-        let new_column_width = new_size.column_width().to_graphblas_index()?;
+impl<T: ValueType> ContextTrait for SparseMatrix<T> {
+    fn context(&self) -> Arc<Context> {
+        self.context.clone()
+    }
+    fn context_ref(&self) -> &Arc<Context> {
+        &self.context
+    }
+}
 
-        let context = self.context.clone();
-        context.call(
-            || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
-            &self.matrix,
-        )?;
+impl<T: ValueType> Collection for SparseMatrix<T> {
+    /// remove all elements in th matrix
+    fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
+        self.context
+            .call(|| unsafe { GrB_Matrix_clear(self.matrix) }, &self.matrix)?;
         Ok(())
     }
 
-    pub fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-        let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) },
-            &self.matrix,
-        )?;
-        let row_height = unsafe { row_height.assume_init() };
-        Ok(ElementIndex::from_graphblas_index(row_height)?)
-    }
-
-    pub fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-        let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) },
-            &self.matrix,
-        )?;
-        let column_width = unsafe { column_width.assume_init() };
-        Ok(ElementIndex::from_graphblas_index(column_width)?)
-    }
-
-    pub fn size(&self) -> Result<Size, SparseLinearAlgebraError> {
-        Ok(Size::new(self.row_height()?, self.column_width()?))
-    }
-
-    pub fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+    fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         self.context.call(
             || unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) },
@@ -163,27 +140,68 @@ impl<T: ValueType> SparseMatrix<T> {
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
     }
+}
 
-    pub fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
-        let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
-        let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
+pub trait SparseMatrixTrait<T: ValueType> {
+    fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
+    fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
+    /// All elements of self with an index coordinate outside of the new size are dropped.
+    fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError>;
+    fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
+    fn size(&self) -> Result<Size, SparseLinearAlgebraError>;
+}
 
-        let context = self.context.clone();
-        context.call(
-            || unsafe {
-                GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
-            },
-            &self.matrix,
-        )?;
-        Ok(())
-    }
+impl<T: ValueType> SparseMatrixTrait<T> for SparseMatrix<T> {
+        fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+            let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+            self.context.call(
+                || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) },
+                &self.matrix,
+            )?;
+            let column_width = unsafe { column_width.assume_init() };
+            Ok(ElementIndex::from_graphblas_index(column_width)?)
+        }
 
-    /// remove all elements in th matrix
-    pub fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
-        self.context
-            .call(|| unsafe { GrB_Matrix_clear(self.matrix) }, &self.matrix)?;
-        Ok(())
-    }
+        fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
+            let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
+            let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
+    
+            let context = self.context.clone();
+            context.call(
+                || unsafe {
+                    GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
+                },
+                &self.matrix,
+            )?;
+            Ok(())
+        }
+
+        /// All elements of self with an index coordinate outside of the new size are dropped.
+        fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
+            let new_row_height = new_size.row_height().to_graphblas_index()?;
+            let new_column_width = new_size.column_width().to_graphblas_index()?;
+    
+            let context = self.context.clone();
+            context.call(
+                || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
+                &self.matrix,
+            )?;
+            Ok(())
+        }
+
+        fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+            let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+            self.context.call(
+                || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) },
+                &self.matrix,
+            )?;
+            let row_height = unsafe { row_height.assume_init() };
+            Ok(ElementIndex::from_graphblas_index(row_height)?)
+        }
+
+        fn size(&self) -> Result<Size, SparseLinearAlgebraError> {
+            Ok(Size::new(self.row_height()?, self.column_width()?))
+        }
 }
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
@@ -308,7 +326,7 @@ pub trait FromMatrixElementList<T: ValueType> {
 // }
 
 macro_rules! sparse_matrix_from_element_vector {
-    ($value_type:ty, $conversion_target_type: ty, $build_function:ident, $convert_to_target_type: ident) => {
+    ($value_type:ty, $conversion_target_type: ty, $build_function:ident) => {
         impl FromMatrixElementList<$value_type> for SparseMatrix<$value_type> {
             fn from_element_list(
                 context: &Arc<Context>,
@@ -335,8 +353,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     .map(|index| index.to_graphblas_index().unwrap())
                     .collect();
 
-                let element_values = elements.values_ref();
-                $convert_to_target_type!(element_values, $conversion_target_type);
+                let element_values = elements.values_ref().to_owned().to_type()?;
 
                 {
                     let number_of_elements = elements.length().to_graphblas_index()?;
@@ -360,7 +377,7 @@ macro_rules! sparse_matrix_from_element_vector {
     };
 }
 
-implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion!(
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     sparse_matrix_from_element_vector,
     GrB_Matrix_build
 );
@@ -384,7 +401,7 @@ pub trait SetMatrixElement<T: ValueType> {
 // }
 
 macro_rules! implement_set_element {
-    ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident, $convert_to_target_type:ident) => {
+    ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident) => {
         impl SetMatrixElement<$value_type> for SparseMatrix<$value_type> {
             fn set_element(
                 &mut self,
@@ -393,17 +410,7 @@ macro_rules! implement_set_element {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
                 let column_index_to_set = element.column_index().to_graphblas_index()?;
                 let context = self.context.clone();
-                // Typecasting to support usize and isize. TODO: review performance cost
-                // let value = match element.value().try_into() {
-                //     Ok(value) => value.unwrap(),
-                //     Err(error) => Err(SystemError::new(
-                //         SystemErrorType::IntegerConversionFailed,
-                //         String::new(),
-                //         Some(SystemErrorSource::IntegerConversionError(error)),
-                //     ).into()),
-                // };
-                let element_value = element.value();
-                $convert_to_target_type!(element_value, $conversion_target_type);
+                let element_value = element.value().to_type()?;
                 context.call(
                     || unsafe {
                         $add_element_function(
@@ -421,7 +428,7 @@ macro_rules! implement_set_element {
     };
 }
 
-implement_macro_for_all_value_types_and_graphblas_function_with_scalar_type_conversion!(
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     implement_set_element,
     GrB_Matrix_setElement
 );
@@ -557,7 +564,7 @@ pub trait GetMatrixElementList<T: ValueType> {
 }
 
 macro_rules! implement_get_element_list {
-    ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident, $convert_to_target_type:ident) => {
+    ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetMatrixElementList<$value_type> for SparseMatrix<$value_type> {
             fn get_element_list(
                 &self,
@@ -597,7 +604,7 @@ macro_rules! implement_get_element_list {
                 let row_element_indices = row_indices.into_par_iter().map(|i| ElementIndex::from_graphblas_index(i).unwrap()).collect();
                 let column_element_indices = column_indices.into_par_iter().map(|i| ElementIndex::from_graphblas_index(i).unwrap()).collect();
 
-                $convert_to_target_type!(values, $value_type);
+                let values = values.to_type()?;
 
                 let element_list = MatrixElementList::from_vectors(row_element_indices, column_element_indices, values)?;
                 Ok(element_list)
@@ -606,7 +613,7 @@ macro_rules! implement_get_element_list {
     };
 }
 
-implement_macro_for_all_value_types_and_graphblas_function_with_vector_type_conversion!(
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     implement_get_element_list,
     GrB_Matrix_extractTuples
 );

@@ -2,18 +2,18 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::SparseMatrix;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::sparse_matrix::SparseMatrix;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
 
 #[derive(Debug, Clone)]
 pub struct MatrixTranspose<Applicant, Product>
 where
-    Applicant: ValueType,
-    Product: ValueType,
+    Applicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     _applicant: PhantomData<Applicant>,
     _product: PhantomData<Product>,
@@ -30,8 +30,8 @@ implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixTranspose)
 
 impl<Applicant, Product> MatrixTranspose<Applicant, Product>
 where
-    Applicant: ValueType,
-    Product: ValueType,
+    Applicant: ValueType + BuiltInValueType,
+    Product: ValueType + BuiltInValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -103,11 +103,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
-    use crate::value_types::sparse_matrix::{
+    use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };
+    use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn test_transpose() {

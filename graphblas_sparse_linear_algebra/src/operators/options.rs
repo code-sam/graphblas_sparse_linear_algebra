@@ -86,7 +86,7 @@ impl OperatorOptions {
     //     }
     // }
 
-    pub fn to_graphblas_descriptor(&self) -> GrB_Descriptor {
+    pub(crate) fn to_graphblas_descriptor(&self) -> GrB_Descriptor {
         match (
             self.clear_output_before_use,
             self.use_mask_structure_of_stored_values_as_mask,

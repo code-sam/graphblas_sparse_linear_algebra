@@ -1,17 +1,17 @@
+use std::marker::PhantomData;
 use std::ptr;
 
-use std::marker::PhantomData;
-
-use crate::context::CallGraphBlasContext;
+use crate::collections::collection::Collection;
+use crate::collections::sparse_scalar::{SetScalarValue, SparseScalar};
+use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::sparse_scalar::{SetScalarValue, SparseScalar};
-use crate::value_types::sparse_vector::SparseVector;
 use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_custom_input_version_1_for_all_value_types,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
@@ -247,7 +247,7 @@ implement_macro_with_custom_input_version_1_for_all_value_types!(
     GxB_LT_THUNK
 );
 
-pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType> {
+pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType + BuiltInValueType> {
     fn less_than_or_equal_to_scalar(
         &self,
         argument: &SparseVector<T>,
@@ -277,7 +277,7 @@ implement_macro_with_custom_input_version_1_for_all_value_types!(
 
 macro_rules! implement_selector_with_zero {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
-        impl<T: ValueType> VectorSelector<T> {
+        impl<T: ValueType + BuiltInValueType> VectorSelector<T> {
             pub fn $method_name(
                 &self,
                 argument: &SparseVector<T>,
@@ -349,7 +349,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
-    use crate::value_types::sparse_vector::{
+    use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
 
