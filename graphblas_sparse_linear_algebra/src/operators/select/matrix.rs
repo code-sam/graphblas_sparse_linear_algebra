@@ -6,13 +6,13 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_scalar::{SetScalarValue, SparseScalar};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SetScalarValue, SparseScalar};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_custom_input_version_1_for_all_value_types,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_DIAG, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
@@ -30,14 +30,14 @@ implement_trait_for_all_value_types!(Send, MatrixSelector);
 implement_trait_for_all_value_types!(Sync, MatrixSelector);
 
 #[derive(Debug, Clone)]
-pub struct MatrixSelector<T: ValueType + BuiltInValueType> {
+pub struct MatrixSelector<T: ValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
+impl<T: ValueType> MatrixSelector<T> {
     pub fn new(
         options: &OperatorOptions,
         accumulator: Option<&dyn BinaryOperator<T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -59,7 +59,7 @@ impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
 
 macro_rules! implement_selector_with_diagonal {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
-        impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
+        impl<T: ValueType> MatrixSelector<T> {
             /// k = 0 selects the main diagonal, positive for above, negative for below
             pub fn $method_name(
                 &self,
@@ -81,22 +81,19 @@ macro_rules! implement_selector_with_diagonal {
                             self.options,
                         )
                     },
-                    product.graphblas_matrix_ref(),
+                    unsafe { product.graphblas_matrix_ref() },
                 )?;
 
                 Ok(())
             }
 
             /// k = 0 selects the main diagonal, positive for avove, negative for below
-            pub fn $method_name_with_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
-            >(
+            pub fn $method_name_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 argument: &SparseMatrix<T>,
                 product: &mut SparseMatrix<T>,
                 diagional: &DiagonalIndex,
-                mask: &SparseMatrix<AsBool>,
+                mask: &SparseMatrix<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let diagonal_index = diagional.to_sparse_scalar(argument.context_ref())?;
 
@@ -112,7 +109,7 @@ macro_rules! implement_selector_with_diagonal {
                             self.options,
                         )
                     },
-                    product.graphblas_matrix_ref(),
+                    unsafe { product.graphblas_matrix_ref() },
                 )?;
 
                 Ok(())
@@ -151,21 +148,18 @@ macro_rules! implement_scalar_selector {
                             self.options,
                         )
                     },
-                    product.graphblas_matrix_ref(),
+                    unsafe { product.graphblas_matrix_ref() },
                 )?;
 
                 Ok(())
             }
 
-            fn $method_name_with_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
-            >(
+            fn $method_name_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 argument: &SparseMatrix<$value_type>,
                 product: &mut SparseMatrix<$value_type>,
                 scalar: &$value_type,
-                _mask: &SparseMatrix<AsBool>,
+                _mask: &SparseMatrix<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
@@ -183,7 +177,7 @@ macro_rules! implement_scalar_selector {
                             self.options,
                         )
                     },
-                    product.graphblas_matrix_ref(),
+                    unsafe { product.graphblas_matrix_ref() },
                 )?;
 
                 Ok(())
@@ -200,12 +194,12 @@ pub trait SelectMatrixNotEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn not_equal_to_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn not_equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -225,12 +219,12 @@ pub trait SelectMatrixEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn equal_to_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -250,12 +244,12 @@ pub trait SelectMatrixGreaterThanScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn greater_than_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn greater_than_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -275,15 +269,12 @@ pub trait SelectMatrixGreaterThanOrEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn greater_than_or_equal_to_scalar_with_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn greater_than_or_equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -303,12 +294,12 @@ pub trait SelectMatrixLessThanScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn less_than_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn less_than_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -328,15 +319,12 @@ pub trait SelectMatrixLessThanOrEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn less_than_less_than_or_equal_to_scalar_with_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn less_than_less_than_or_equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseMatrix<T>,
         scalar: &T,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -350,7 +338,7 @@ implement_macro_with_custom_input_version_1_for_all_value_types!(
 
 macro_rules! implement_selector_with_zero {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
-        impl<T: ValueType + BuiltInValueType> MatrixSelector<T> {
+        impl<T: ValueType> MatrixSelector<T> {
             pub fn $method_name(
                 &self,
                 argument: &SparseMatrix<T>,
@@ -370,20 +358,17 @@ macro_rules! implement_selector_with_zero {
                             self.options,
                         )
                     },
-                    product.graphblas_matrix_ref(),
+                    unsafe { product.graphblas_matrix_ref() },
                 )?;
 
                 Ok(())
             }
 
-            pub fn $method_name_with_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
-            >(
+            pub fn $method_name_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 argument: &SparseMatrix<T>,
                 product: &mut SparseMatrix<T>,
-                mask: &SparseMatrix<AsBool>,
+                mask: &SparseMatrix<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
@@ -399,7 +384,7 @@ macro_rules! implement_selector_with_zero {
                             self.options,
                         )
                     },
-                    product.graphblas_matrix_ref(),
+                    unsafe { product.graphblas_matrix_ref() },
                 )?;
 
                 Ok(())

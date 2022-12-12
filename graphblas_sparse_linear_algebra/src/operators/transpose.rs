@@ -2,18 +2,18 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
-use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
 pub struct MatrixTranspose<Applicant, Product>
 where
-    Applicant: ValueType + BuiltInValueType,
-    Product: ValueType + BuiltInValueType,
+    Applicant: ValueType,
+    Product: ValueType,
 {
     _applicant: PhantomData<Applicant>,
     _product: PhantomData<Product>,
@@ -30,8 +30,8 @@ implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixTranspose)
 
 impl<Applicant, Product> MatrixTranspose<Applicant, Product>
 where
-    Applicant: ValueType + BuiltInValueType,
-    Product: ValueType + BuiltInValueType,
+    Applicant: ValueType,
+    Product: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -69,17 +69,17 @@ where
                     self.options,
                 )
             },
-            transpose.graphblas_matrix_ref(),
+            unsafe { transpose.graphblas_matrix_ref() },
         )?;
 
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix: &SparseMatrix<Applicant>,
         transpose: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
@@ -93,7 +93,7 @@ where
                     self.options,
                 )
             },
-            transpose.graphblas_matrix_ref(),
+            unsafe { transpose.graphblas_matrix_ref() },
         )?;
 
         Ok(())

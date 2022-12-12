@@ -1,15 +1,17 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
+use crate::collections::sparse_matrix::{
+    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, ValueType, BuiltInValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_extract,
@@ -24,8 +26,8 @@ implement_trait_for_2_type_data_type_and_all_value_types!(Sync, SubMatrixExtract
 #[derive(Debug, Clone)]
 pub struct SubMatrixExtractor<Matrix, SubMatrix>
 where
-    Matrix: ValueType + BuiltInValueType,
-    SubMatrix: ValueType + BuiltInValueType,
+    Matrix: ValueType,
+    SubMatrix: ValueType,
 {
     _matrix: PhantomData<Matrix>,
     _sub_matrix: PhantomData<SubMatrix>,
@@ -36,8 +38,8 @@ where
 
 impl<Matrix, SubMatrix> SubMatrixExtractor<Matrix, SubMatrix>
 where
-    Matrix: ValueType + BuiltInValueType,
-    SubMatrix: ValueType + BuiltInValueType,
+    Matrix: ValueType,
+    SubMatrix: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -107,7 +109,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
             (
@@ -128,7 +130,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
             (
@@ -149,7 +151,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
             (
@@ -170,7 +172,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
         }
@@ -178,13 +180,13 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -228,7 +230,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
             (
@@ -249,7 +251,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
             (
@@ -270,7 +272,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
             (
@@ -291,7 +293,7 @@ where
                             self.options,
                         )
                     },
-                    sub_matrix.graphblas_matrix_ref(),
+                    unsafe { sub_matrix.graphblas_matrix_ref() },
                 )?;
             }
         }

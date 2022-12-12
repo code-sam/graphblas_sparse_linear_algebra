@@ -4,9 +4,7 @@ use std::mem::MaybeUninit;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use suitesparse_graphblas_sys::{
-    GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_sort,
-};
+use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_sort};
 
 use super::element::{VectorElement, VectorElementList};
 use crate::bindings_to_graphblas_implementation::{
@@ -31,8 +29,10 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_setElement_UINT8, GrB_Vector_size,
 };
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
-use crate::collections::sparse_scalar::SparseScalar;
+use crate::collections::sparse_matrix::{
+    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
+};
+use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, ContextTrait};
 use crate::error::{
@@ -42,11 +42,11 @@ use crate::error::{
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types, implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
+use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
@@ -94,7 +94,7 @@ implement_trait_for_all_value_types!(Sync, SparseVector);
 // implement_macro_for_all_value_types_and_graphblas_function!(new_sparse_vector, GrB);
 
 // TODO: implement for usize and isize
-impl<T: ValueType + BuiltInValueType> SparseVector<T> {
+impl<T: ValueType> SparseVector<T> {
     pub fn new(
         context: &Arc<Context>,
         length: &ElementIndex,
@@ -183,20 +183,10 @@ impl<T: ValueType + BuiltInValueType> SparseVector<T> {
 
         return Ok(diagonal);
     }
-
-    pub(crate) fn graphblas_vector(&self) -> GrB_Vector {
-        self.vector
-    }
-    pub(crate) fn graphblas_vector_ref(&self) -> &GrB_Vector {
-        &self.vector
-    }
-    pub(crate) fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector {
-        &mut self.vector
-    }
 }
 
 // TODO: this trait is not consistent with other constructors, which do not have a trait
-pub trait FromValue<T: ValueType + BuiltInValueType> {
+pub trait SparseVectorFromValue<T: ValueType> {
     fn from_value(
         context: &Arc<Context>,
         length: &ElementIndex,
@@ -207,7 +197,7 @@ pub trait FromValue<T: ValueType + BuiltInValueType> {
 
 macro_rules! implement_from_value {
     ($value_type: ty) => {
-        impl FromValue<$value_type> for SparseVector<$value_type> {
+        impl SparseVectorFromValue<$value_type> for SparseVector<$value_type> {
             fn from_value(
                 context: &Arc<Context>,
                 length: &ElementIndex,
@@ -276,6 +266,24 @@ impl<T: ValueType> Collection for SparseVector<T> {
         )?;
         let number_of_values = unsafe { number_of_values.assume_init() };
         Ok(ElementIndex::from_graphblas_index(number_of_values)?)
+    }
+}
+
+pub trait GraphblasSparseVectorTrait {
+    unsafe fn graphblas_vector(&self) -> GrB_Vector;
+    unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector;
+    unsafe fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector;
+}
+
+impl<T: ValueType> GraphblasSparseVectorTrait for SparseVector<T> {
+    unsafe fn graphblas_vector(&self) -> GrB_Vector {
+        self.vector
+    }
+    unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector {
+        &self.vector
+    }
+    unsafe fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector {
+        &mut self.vector
     }
 }
 
@@ -369,7 +377,7 @@ macro_rules! implement_dispay {
 
                 let indices = element_list.indices_ref();
                 let values = element_list.values_ref();
-                
+
                 writeln! {f,"Vector length: {:?}", self.length()?};
                 writeln! {f,"Number of stored elements: {:?}", self.number_of_stored_elements()?};
 
@@ -660,7 +668,7 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
-pub trait SortSparseVector<T: ValueType + BuiltInValueType, B: BinaryOperator<T, T, bool>> {
+pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool>> {
     fn sort(
         &self,
         sorted_values: &mut SparseVector<T>,
@@ -669,9 +677,7 @@ pub trait SortSparseVector<T: ValueType + BuiltInValueType, B: BinaryOperator<T,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + BuiltInValueType, B: BinaryOperator<T, T, bool>> SortSparseVector<T, B>
-    for SparseVector<T>
-{
+impl<T: ValueType, B: BinaryOperator<T, T, bool>> SortSparseVector<T, B> for SparseVector<T> {
     fn sort(
         &self,
         sorted_values: &mut SparseVector<T>,

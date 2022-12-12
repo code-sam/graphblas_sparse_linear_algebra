@@ -4,19 +4,21 @@ use std::ptr;
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_Col_subassign,
 };
-use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
-use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::{
+    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
+};
+use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
     implement_trait_for_2_type_data_type_and_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 // TODO: explicitly define how dupicates are handled
 
@@ -78,13 +80,13 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &SparseVector<VectorToInsert>,
-        mask_for_vector_to_insert_into: &SparseVector<AsBool>,
+        mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -134,7 +136,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
 
@@ -152,7 +154,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                 }
@@ -161,13 +163,13 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
             }
 
             /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 matrix_to_insert_into: &mut SparseMatrix<$value_type_matrix_to_insert_into>,
                 column_indices_to_insert_into: &ElementIndexSelector,
                 column_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
-                mask_for_column_to_insert_into: &SparseVector<AsBool>,
+                mask_for_column_to_insert_into: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
 
@@ -193,7 +195,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
 
@@ -211,7 +213,7 @@ macro_rules! implement_insert_vector_into_sub_column_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                 }

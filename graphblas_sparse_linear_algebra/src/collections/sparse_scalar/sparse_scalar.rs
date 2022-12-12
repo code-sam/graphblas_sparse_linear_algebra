@@ -22,12 +22,12 @@ use crate::error::{
     GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
 use crate::index::{ElementIndex, IndexConversion};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types, implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::ConvertScalar;
-use crate::value_types::value_type::{BuiltInValueType, ValueType};
+use crate::value_type::ConvertScalar;
+use crate::value_type::ValueType;
 
 #[derive(Debug)]
 pub struct SparseScalar<T: ValueType> {
@@ -43,7 +43,7 @@ pub struct SparseScalar<T: ValueType> {
 implement_trait_for_all_value_types!(Send, SparseScalar);
 implement_trait_for_all_value_types!(Sync, SparseScalar);
 
-impl<T: ValueType + BuiltInValueType> SparseScalar<T> {
+impl<T: ValueType> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
         let mut scalar: MaybeUninit<GrB_Scalar> = MaybeUninit::uninit();
         let context = context.clone();
@@ -58,16 +58,6 @@ impl<T: ValueType + BuiltInValueType> SparseScalar<T> {
             scalar,
             value_type: PhantomData,
         });
-    }
-
-    pub(crate) fn graphblas_scalar(&self) -> GrB_Scalar {
-        self.scalar
-    }
-    pub(crate) fn graphblas_scalar_ref(&self) -> &GrB_Scalar {
-        &self.scalar
-    }
-    pub(crate) fn graphblas_scalar_mut_ref(&mut self) -> &mut GrB_Scalar {
-        &mut self.scalar
     }
 }
 
@@ -170,6 +160,24 @@ impl<T: ValueType> Clone for SparseScalar<T> {
     }
 }
 
+pub trait GraphblasSparseScalarTrait {
+    unsafe fn graphblas_scalar(&self) -> GrB_Scalar;
+    unsafe fn graphblas_scalar_ref(&self) -> &GrB_Scalar;
+    unsafe fn graphblas_scalar_mut_ref(&mut self) -> &mut GrB_Scalar;
+}
+
+impl<T: ValueType> GraphblasSparseScalarTrait for SparseScalar<T> {
+    unsafe fn graphblas_scalar(&self) -> GrB_Scalar {
+        self.scalar
+    }
+    unsafe fn graphblas_scalar_ref(&self) -> &GrB_Scalar {
+        &self.scalar
+    }
+    unsafe fn graphblas_scalar_mut_ref(&mut self) -> &mut GrB_Scalar {
+        &mut self.scalar
+    }
+}
+
 // // TODO improve printing format
 // // summary data, column aligning
 // impl<T: ValueType + GetScalarValue<T> + Default> std::fmt::Display for SparseScalar<T> {
@@ -210,7 +218,7 @@ macro_rules! implement_dispay {
 }
 implement_macro_for_all_value_types!(implement_dispay);
 
-pub trait SetScalarValue<T: ValueType + BuiltInValueType> {
+pub trait SetScalarValue<T: ValueType> {
     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -236,8 +244,7 @@ pub trait SetScalarValue<T: ValueType + BuiltInValueType> {
 //     }
 // }
 
-trait GraphBlasSetElementFunction<T: ValueType + BuiltInValueType, U: ValueType + BuiltInValueType>
-{
+trait GraphBlasSetElementFunction<T: ValueType, U: ValueType> {
     fn graphblas_set_element_function() -> unsafe extern "C" fn(GrB_Scalar, U) -> GrB_Info;
 }
 

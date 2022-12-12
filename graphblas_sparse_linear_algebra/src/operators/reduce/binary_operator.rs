@@ -2,13 +2,15 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types;
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BinaryOp,
@@ -29,7 +31,7 @@ pub struct BinaryOperatorReducer<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType + BuiltInValueType> BinaryOperatorReducer<T> {
+impl<T: ValueType> BinaryOperatorReducer<T> {
     pub fn new(
         binary_operator: &dyn BinaryOperator<T, T, T>,
         options: &OperatorOptions,
@@ -68,17 +70,17 @@ impl<T: ValueType + BuiltInValueType> BinaryOperatorReducer<T> {
                     self.options,
                 )
             },
-            product.graphblas_vector_ref(),
+            unsafe { product.graphblas_vector_ref() },
         )?;
 
         Ok(())
     }
 
-    pub fn to_vector_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseVector<T>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -93,7 +95,7 @@ impl<T: ValueType + BuiltInValueType> BinaryOperatorReducer<T> {
                     self.options,
                 )
             },
-            product.graphblas_vector_ref(),
+            unsafe { product.graphblas_vector_ref() },
         )?;
 
         Ok(())

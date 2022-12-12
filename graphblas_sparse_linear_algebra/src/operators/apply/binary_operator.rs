@@ -3,18 +3,18 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::SparseMatrix;
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
 use crate::collections::sparse_scalar::{GetScalarValue, SparseScalar};
-use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
     implement_trait_for_3_type_data_type_and_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply_BinaryOp1st_BOOL,
@@ -109,26 +109,20 @@ where
         product: &mut SparseVector<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_vector_as_first_argument_and_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn apply_with_vector_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         first_argument: &SparseVector<FirstArgument>,
         second_argument: &SecondArgument,
         product: &mut SparseVector<Product>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_vector_as_second_argument_and_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn apply_with_vector_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         first_argument: &FirstArgument,
         second_argument: &SparseVector<SecondArgument>,
         product: &mut SparseVector<Product>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_first_argument(
@@ -145,26 +139,20 @@ where
         product: &mut SparseMatrix<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_matrix_as_first_argument_and_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn apply_with_matrix_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         first_argument: &SparseMatrix<FirstArgument>,
         second_argument: &SecondArgument,
         product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_matrix_as_second_argument_and_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn apply_with_matrix_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         first_argument: &FirstArgument,
         second_argument: &SparseMatrix<SecondArgument>,
         product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<AsBool>,
+        mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -196,7 +184,7 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_vector(),
+                    unsafe { &product.graphblas_vector() },
                 )?;
 
                 Ok(())
@@ -224,21 +212,20 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_vector(),
+                    unsafe { &product.graphblas_vector() },
                 )?;
 
                 Ok(())
             }
 
             fn apply_with_vector_as_first_argument_and_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
+                MaskValueType: ValueType + AsBoolean,
             >(
                 &self,
                 first_argument: &SparseVector<$first_argument_type>,
                 second_argument: &$second_argument_type,
                 product: &mut SparseVector<$product_type>,
-                mask: &SparseVector<AsBool>,
+                mask: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.clone();
@@ -256,21 +243,20 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_vector(),
+                    unsafe { &product.graphblas_vector() },
                 )?;
 
                 Ok(())
             }
 
             fn apply_with_vector_as_second_argument_and_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
+                MaskValueType: ValueType + AsBoolean,
             >(
                 &self,
                 first_argument: &$first_argument_type,
                 second_argument: &SparseVector<$second_argument_type>,
                 product: &mut SparseVector<$product_type>,
-                mask: &SparseVector<AsBool>,
+                mask: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.clone();
@@ -288,7 +274,7 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_vector(),
+                    unsafe { &product.graphblas_vector() },
                 )?;
 
                 Ok(())
@@ -316,7 +302,7 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_matrix(),
+                    unsafe { &product.graphblas_matrix() },
                 )?;
 
                 Ok(())
@@ -344,21 +330,20 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_matrix(),
+                    unsafe { &product.graphblas_matrix() },
                 )?;
 
                 Ok(())
             }
 
             fn apply_with_matrix_as_first_argument_and_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
+                MaskValueType: ValueType + AsBoolean,
             >(
                 &self,
                 first_argument: &SparseMatrix<$first_argument_type>,
                 second_argument: &$second_argument_type,
                 product: &mut SparseMatrix<$product_type>,
-                mask: &SparseMatrix<AsBool>,
+                mask: &SparseMatrix<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.clone();
@@ -376,21 +361,20 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_matrix(),
+                    unsafe { &product.graphblas_matrix() },
                 )?;
 
                 Ok(())
             }
 
             fn apply_with_matrix_as_second_argument_and_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
+                MaskValueType: ValueType + AsBoolean,
             >(
                 &self,
                 first_argument: &$first_argument_type,
                 second_argument: &SparseMatrix<$second_argument_type>,
                 product: &mut SparseMatrix<$product_type>,
-                mask: &SparseMatrix<AsBool>,
+                mask: &SparseMatrix<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.clone();
@@ -408,7 +392,7 @@ macro_rules! implement_binary_operator {
                             self.options,
                         )
                     },
-                    &product.graphblas_matrix(),
+                    unsafe { &product.graphblas_matrix() },
                 )?;
 
                 Ok(())

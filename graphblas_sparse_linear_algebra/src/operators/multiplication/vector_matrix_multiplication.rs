@@ -2,15 +2,17 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_vxm,
@@ -43,9 +45,9 @@ where
 impl<Multiplier, Multiplicant, Product>
     VectorMatrixMultiplicationOperator<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType + BuiltInValueType,
-    Multiplicant: ValueType + BuiltInValueType,
-    Product: ValueType + BuiltInValueType,
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
 {
     pub fn new(
         semiring: Box<dyn Semiring<Multiplier, Multiplicant, Product>>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
@@ -90,15 +92,15 @@ where
                     self.options,
                 )
             },
-            product.graphblas_vector_ref(),
+            unsafe { product.graphblas_vector_ref() },
         )?;
 
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseMatrix<Multiplicant>,
         product: &mut SparseVector<Product>,
@@ -117,7 +119,7 @@ where
                     self.options,
                 )
             },
-            product.graphblas_vector_ref(),
+            unsafe { product.graphblas_vector_ref() },
         )?;
 
         Ok(())

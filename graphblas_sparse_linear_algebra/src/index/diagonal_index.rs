@@ -2,7 +2,7 @@ use std::convert::TryInto;
 use std::sync::Arc;
 
 use crate::context::Context;
-use crate::value_types::value_type::ConvertScalar;
+use crate::value_type::ConvertScalar;
 use crate::{
     collections::sparse_scalar::SparseScalar,
     error::{SparseLinearAlgebraError, SystemError},

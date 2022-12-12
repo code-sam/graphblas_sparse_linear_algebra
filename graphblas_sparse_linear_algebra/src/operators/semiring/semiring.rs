@@ -1,6 +1,6 @@
 use crate::operators::binary_operator::{Plus, Times};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_semiring_for_all_value_types;
-use crate::value_types::value_type::ValueType;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_semiring_for_all_value_types;
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::*;
 
