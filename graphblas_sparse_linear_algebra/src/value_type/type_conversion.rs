@@ -10,31 +10,14 @@ use suitesparse_graphblas_sys::{
 
 use crate::{
     error::{LogicError, SparseLinearAlgebraError, SystemError, SystemErrorType},
-    value_types::utilities_to_implement_traits_for_all_value_types::{
+    value_type::utilities_to_implement_traits_for_all_value_types::{
         implement_macro_for_all_value_types_and_graphblas_function, implement_type_conversion_macro,
     },
 };
 
-pub trait BuiltInValueType {
-    fn to_graphblas_type() -> GrB_Type;
-}
+use super::ValueType;
 
-macro_rules! implement_value_type_for_graphblas_built_in_type {
-    ($value_type: ty, $graphblas_type_identifier: ident) => {
-        impl BuiltInValueType for $value_type {
-            fn to_graphblas_type() -> GrB_Type {
-                unsafe { $graphblas_type_identifier }
-            }
-        }
-    };
-}
-
-implement_macro_for_all_value_types_and_graphblas_function!(
-    implement_value_type_for_graphblas_built_in_type,
-    GrB
-);
-
-pub(crate) trait ConvertScalar<T: BuiltInValueType, U: BuiltInValueType> {
+pub(crate) trait ConvertScalar<T: ValueType, U: ValueType> {
     fn to_type(self) -> Result<U, SparseLinearAlgebraError>;
 }
 
@@ -72,7 +55,7 @@ implement_type_conversion_macro!(
     scalar_conversion
 );
 
-pub(crate) trait ConvertVector<T: BuiltInValueType, U: BuiltInValueType> {
+pub(crate) trait ConvertVector<T: ValueType, U: ValueType> {
     fn to_type(self) -> Result<Vec<U>, SparseLinearAlgebraError>;
 }
 

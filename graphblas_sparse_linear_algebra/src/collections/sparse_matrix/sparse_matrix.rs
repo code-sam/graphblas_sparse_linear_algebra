@@ -43,13 +43,13 @@ use crate::context::{CallGraphBlasContext, Context};
 use crate::operators::binary_operator::BinaryOperator;
 
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,
     implement_macro_for_all_value_types_and_graphblas_function,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{BuiltInValueType, ConvertScalar, ConvertVector, ValueType};
+use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
@@ -71,7 +71,7 @@ pub struct SparseMatrix<T: ValueType> {
 implement_trait_for_all_value_types!(Send, SparseMatrix);
 implement_trait_for_all_value_types!(Sync, SparseMatrix);
 
-impl<T: ValueType + BuiltInValueType> SparseMatrix<T> {
+impl<T: ValueType> SparseMatrix<T> {
     pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {
         let mut matrix: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
         let context = context.to_owned();
@@ -100,18 +100,6 @@ impl<T: ValueType + BuiltInValueType> SparseMatrix<T> {
     // fn from_matrices(matrices: Vec<SparseMatrix<T>, >) -> Result<Self, SparseLinearAlgebraError> {
 
     // }
-
-    pub(crate) fn graphblas_matrix(&self) -> GrB_Matrix {
-        self.matrix
-    }
-
-    pub(crate) fn graphblas_matrix_ref(&self) -> &GrB_Matrix {
-        &self.matrix
-    }
-
-    pub(crate) fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
-        &mut self.matrix
-    }
 }
 
 impl<T: ValueType> ContextTrait for SparseMatrix<T> {
@@ -142,6 +130,26 @@ impl<T: ValueType> Collection for SparseMatrix<T> {
     }
 }
 
+pub trait GraphblasSparseMatrixTrait {
+    unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
+    unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix;
+    unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix;
+}
+
+impl<T: ValueType> GraphblasSparseMatrixTrait for SparseMatrix<T> {
+    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
+        self.matrix
+    }
+
+    unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix {
+        &self.matrix
+    }
+
+    unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
+        &mut self.matrix
+    }
+}
+
 pub trait SparseMatrixTrait<T: ValueType> {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
@@ -152,56 +160,56 @@ pub trait SparseMatrixTrait<T: ValueType> {
 }
 
 impl<T: ValueType> SparseMatrixTrait<T> for SparseMatrix<T> {
-        fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-            let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-            self.context.call(
-                || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) },
-                &self.matrix,
-            )?;
-            let column_width = unsafe { column_width.assume_init() };
-            Ok(ElementIndex::from_graphblas_index(column_width)?)
-        }
+    fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+        let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+        self.context.call(
+            || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) },
+            &self.matrix,
+        )?;
+        let column_width = unsafe { column_width.assume_init() };
+        Ok(ElementIndex::from_graphblas_index(column_width)?)
+    }
 
-        fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
-            let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
-            let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
-    
-            let context = self.context.clone();
-            context.call(
-                || unsafe {
-                    GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
-                },
-                &self.matrix,
-            )?;
-            Ok(())
-        }
+    fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
+        let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
+        let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
 
-        /// All elements of self with an index coordinate outside of the new size are dropped.
-        fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
-            let new_row_height = new_size.row_height().to_graphblas_index()?;
-            let new_column_width = new_size.column_width().to_graphblas_index()?;
-    
-            let context = self.context.clone();
-            context.call(
-                || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
-                &self.matrix,
-            )?;
-            Ok(())
-        }
+        let context = self.context.clone();
+        context.call(
+            || unsafe {
+                GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
+            },
+            &self.matrix,
+        )?;
+        Ok(())
+    }
 
-        fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-            let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-            self.context.call(
-                || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) },
-                &self.matrix,
-            )?;
-            let row_height = unsafe { row_height.assume_init() };
-            Ok(ElementIndex::from_graphblas_index(row_height)?)
-        }
+    /// All elements of self with an index coordinate outside of the new size are dropped.
+    fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
+        let new_row_height = new_size.row_height().to_graphblas_index()?;
+        let new_column_width = new_size.column_width().to_graphblas_index()?;
 
-        fn size(&self) -> Result<Size, SparseLinearAlgebraError> {
-            Ok(Size::new(self.row_height()?, self.column_width()?))
-        }
+        let context = self.context.clone();
+        context.call(
+            || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
+            &self.matrix,
+        )?;
+        Ok(())
+    }
+
+    fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+        let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+        self.context.call(
+            || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) },
+            &self.matrix,
+        )?;
+        let row_height = unsafe { row_height.assume_init() };
+        Ok(ElementIndex::from_graphblas_index(row_height)?)
+    }
+
+    fn size(&self) -> Result<Size, SparseLinearAlgebraError> {
+        Ok(Size::new(self.row_height()?, self.column_width()?))
+    }
 }
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
@@ -368,7 +376,7 @@ macro_rules! sparse_matrix_from_element_vector {
                                 reduction_operator_for_duplicates.graphblas_type(),
                             )
                         },
-                        &matrix.graphblas_matrix(),
+                        unsafe { &matrix.graphblas_matrix() },
                     )?;
                 }
                 Ok(matrix)

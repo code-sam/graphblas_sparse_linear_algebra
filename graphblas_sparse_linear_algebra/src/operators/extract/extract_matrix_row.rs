@@ -7,14 +7,14 @@ use crate::operators::{
     binary_operator::BinaryOperator, extract::MatrixColumnExtractor, options::OperatorOptions,
     transpose::MatrixTranspose,
 };
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
 pub struct MatrixRowExtractor<Matrix, Column>
 where
-    Matrix: ValueType + BuiltInValueType,
-    Column: ValueType + BuiltInValueType,
+    Matrix: ValueType,
+    Column: ValueType,
 {
     transpose_operator: MatrixTranspose<Matrix, Matrix>,
     column_extractor: MatrixColumnExtractor<Matrix, Column>,
@@ -26,8 +26,8 @@ where
 
 impl<Matrix, Column> MatrixRowExtractor<Matrix, Column>
 where
-    Matrix: ValueType + BuiltInValueType,
-    Column: ValueType + BuiltInValueType,
+    Matrix: ValueType,
+    Column: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -74,13 +74,13 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         row_vector: &mut SparseVector<Column>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let _context = matrix_to_extract_from.context();
 

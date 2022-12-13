@@ -2,16 +2,18 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_scalar::{SetScalarValue, SparseScalar};
-use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SetScalarValue, SparseScalar};
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_custom_input_version_1_for_all_value_types,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
@@ -78,21 +80,18 @@ macro_rules! implement_scalar_selector {
                             self.options,
                         )
                     },
-                    product.graphblas_vector_ref(),
+                    unsafe { product.graphblas_vector_ref() },
                 )?;
 
                 Ok(())
             }
 
-            fn $method_name_with_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
-            >(
+            fn $method_name_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 argument: &SparseVector<$value_type>,
                 product: &mut SparseVector<$value_type>,
                 scalar: &$value_type,
-                _mask: &SparseVector<AsBool>,
+                _mask: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let mut sparse_scalar = SparseScalar::<$value_type>::new(&context)?;
@@ -110,7 +109,7 @@ macro_rules! implement_scalar_selector {
                             self.options,
                         )
                     },
-                    product.graphblas_vector_ref(),
+                    unsafe { product.graphblas_vector_ref() },
                 )?;
 
                 Ok(())
@@ -127,12 +126,12 @@ pub trait SelectVectorNotEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn not_equal_to_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn not_equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -152,12 +151,12 @@ pub trait SelectVectorEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn equal_to_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -177,12 +176,12 @@ pub trait SelectVectorGreaterThanScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn greater_than_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn greater_than_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -202,15 +201,12 @@ pub trait SelectVectorGreaterThanOrEqualToScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn greater_than_or_equal_to_scalar_with_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn greater_than_or_equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -230,12 +226,12 @@ pub trait SelectVectorLessThanScalar<T: ValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn less_than_scalar_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn less_than_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -247,7 +243,7 @@ implement_macro_with_custom_input_version_1_for_all_value_types!(
     GxB_LT_THUNK
 );
 
-pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType + BuiltInValueType> {
+pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType> {
     fn less_than_or_equal_to_scalar(
         &self,
         argument: &SparseVector<T>,
@@ -255,15 +251,12 @@ pub trait SelectVectorLessThanOrEqualToScalar<T: ValueType + BuiltInValueType> {
         scalar: &T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn less_than_less_than_or_equal_to_scalar_with_mask<
-        MaskValueType: ValueType,
-        AsBool: AsBoolean<MaskValueType>,
-    >(
+    fn less_than_less_than_or_equal_to_scalar_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseVector<T>,
         product: &mut SparseVector<T>,
         scalar: &T,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -277,7 +270,7 @@ implement_macro_with_custom_input_version_1_for_all_value_types!(
 
 macro_rules! implement_selector_with_zero {
     ($method_name:ident, $method_name_with_mask:ident, $graphblas_operator:ident) => {
-        impl<T: ValueType + BuiltInValueType> VectorSelector<T> {
+        impl<T: ValueType> VectorSelector<T> {
             pub fn $method_name(
                 &self,
                 argument: &SparseVector<T>,
@@ -297,20 +290,17 @@ macro_rules! implement_selector_with_zero {
                             self.options,
                         )
                     },
-                    product.graphblas_vector_ref(),
+                    unsafe { product.graphblas_vector_ref() },
                 )?;
 
                 Ok(())
             }
 
-            pub fn $method_name_with_mask<
-                MaskValueType: ValueType,
-                AsBool: AsBoolean<MaskValueType>,
-            >(
+            pub fn $method_name_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 argument: &SparseVector<T>,
                 product: &mut SparseVector<T>,
-                mask: &SparseVector<AsBool>,
+                mask: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
 
@@ -326,7 +316,7 @@ macro_rules! implement_selector_with_zero {
                             self.options,
                         )
                     },
-                    product.graphblas_vector_ref(),
+                    unsafe { product.graphblas_vector_ref() },
                 )?;
 
                 Ok(())

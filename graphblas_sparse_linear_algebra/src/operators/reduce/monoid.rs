@@ -13,17 +13,19 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::SparseMatrix;
-use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
     implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,
     implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
@@ -42,7 +44,7 @@ pub struct MonoidReducer<T: ValueType> {
 
 pub trait MonoidScalarReducer<T>
 where
-    T: ValueType + BuiltInValueType,
+    T: ValueType,
 {
     fn matrix_to_scalar(
         &self,
@@ -57,7 +59,7 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + BuiltInValueType> MonoidReducer<T> {
+impl<T: ValueType> MonoidReducer<T> {
     pub fn new(
         monoid: &dyn Monoid<T>,
         options: &OperatorOptions,
@@ -96,17 +98,17 @@ impl<T: ValueType + BuiltInValueType> MonoidReducer<T> {
                     self.options,
                 )
             },
-            product.graphblas_vector_ref(),
+            unsafe { product.graphblas_vector_ref() },
         )?;
 
         Ok(())
     }
 
-    pub fn to_vector_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         argument: &SparseMatrix<T>,
         product: &mut SparseVector<T>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -121,7 +123,7 @@ impl<T: ValueType + BuiltInValueType> MonoidReducer<T> {
                     self.options,
                 )
             },
-            product.graphblas_vector_ref(),
+            unsafe { product.graphblas_vector_ref() },
         )?;
 
         Ok(())
@@ -202,7 +204,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
-    use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;
+    use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;
 
     macro_rules! test_monoid {
         ($value_type:ty) => {

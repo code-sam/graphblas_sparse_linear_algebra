@@ -2,17 +2,19 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
+use crate::collections::sparse_matrix::{
+    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
     implement_trait_for_2_type_data_type_and_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_assign_BOOL, GrB_Matrix_assign_FP32,
@@ -80,13 +82,13 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
-        mask_for_matrix_to_insert_into: &SparseMatrix<AsBool>,
+        mask_for_matrix_to_insert_into: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -146,7 +148,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                     (
@@ -167,7 +169,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                     (
@@ -188,7 +190,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                     (
@@ -209,7 +211,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                 }
@@ -218,13 +220,13 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
             }
 
             /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 matrix_to_insert_into: &mut SparseMatrix<$value_type_matrix_to_insert_into>,
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                mask_for_matrix_to_insert_into: &SparseMatrix<AsBool>,
+                mask_for_matrix_to_insert_into: &SparseMatrix<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.clone();
@@ -260,7 +262,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                     (
@@ -281,7 +283,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                     (
@@ -302,7 +304,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                     (
@@ -323,7 +325,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     self.options,
                                 )
                             },
-                            matrix_to_insert_into.graphblas_matrix_ref(),
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
                         )?;
                     }
                 }

@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types;
-use crate::value_types::value_type::ValueType;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types;
+use crate::value_type::ValueType;
 
 pub trait BinaryOperator<X, Y, Z, T>
 where

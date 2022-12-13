@@ -6,15 +6,17 @@ use crate::collections::collection::Collection;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 // use crate::operators::BinaryOperatorType;
-use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_scalar_to_type, identity_conversion,
     implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
     implement_trait_for_2_type_data_type_and_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Vector_assign_BOOL, GrB_Vector_assign_FP32,
@@ -81,12 +83,12 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire vector_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
-        mask_for_vector_to_insert_into: &SparseVector<AsBool>,
+        mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -135,7 +137,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                                     self.options,
                                 )
                             },
-                            vector_to_insert_into.graphblas_vector_ref(),
+                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
                         )?;
                     }
 
@@ -152,7 +154,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                                     self.options,
                                 )
                             },
-                            vector_to_insert_into.graphblas_vector_ref(),
+                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
                         )?;
                     }
                 }
@@ -161,12 +163,12 @@ macro_rules! implement_insert_scalar_into_vector_trait {
             }
 
             /// mask and replace option apply to entire vector_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
                 vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                mask_for_vector_to_insert_into: &SparseVector<AsBool>,
+                mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.clone();
@@ -192,7 +194,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                                     self.options,
                                 )
                             },
-                            vector_to_insert_into.graphblas_vector_ref(),
+                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
                         )?;
                     }
 
@@ -209,7 +211,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                                     self.options,
                                 )
                             },
-                            vector_to_insert_into.graphblas_vector_ref(),
+                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
                         )?;
                     }
                 }

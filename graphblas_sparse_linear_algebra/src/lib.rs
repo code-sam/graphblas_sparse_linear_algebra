@@ -4,7 +4,7 @@ pub mod context;
 pub mod error;
 pub mod index;
 pub mod operators;
-pub mod value_types;
+pub mod value_type;
 
 #[doc = include_str!("../README.md")]
 #[cfg(doctest)]

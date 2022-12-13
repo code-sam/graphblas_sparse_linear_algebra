@@ -1,16 +1,18 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_matrix::{SparseMatrix, SparseMatrixTrait};
-use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::{
+    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
+};
+use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
 
@@ -23,8 +25,8 @@ implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixColumnExtr
 #[derive(Debug, Clone)]
 pub struct MatrixColumnExtractor<Matrix, Column>
 where
-    Matrix: ValueType + BuiltInValueType,
-    Column: ValueType + BuiltInValueType,
+    Matrix: ValueType,
+    Column: ValueType,
 {
     _matrix: PhantomData<Matrix>,
     _column: PhantomData<Column>,
@@ -35,8 +37,8 @@ where
 
 impl<Matrix, Column> MatrixColumnExtractor<Matrix, Column>
 where
-    Matrix: ValueType + BuiltInValueType,
-    Column: ValueType + BuiltInValueType,
+    Matrix: ValueType,
+    Column: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -94,7 +96,7 @@ where
                             self.options,
                         )
                     },
-                    column_vector.graphblas_vector_ref(),
+                    unsafe { column_vector.graphblas_vector_ref() },
                 )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
@@ -111,7 +113,7 @@ where
                             self.options,
                         )
                     },
-                    column_vector.graphblas_vector_ref(),
+                    unsafe { column_vector.graphblas_vector_ref() },
                 )?;
             }
         }
@@ -119,13 +121,13 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         column_vector: &mut SparseVector<Column>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -157,7 +159,7 @@ where
                             self.options,
                         )
                     },
-                    column_vector.graphblas_vector_ref(),
+                    unsafe { column_vector.graphblas_vector_ref() },
                 )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
@@ -174,7 +176,7 @@ where
                             self.options,
                         )
                     },
-                    column_vector.graphblas_vector_ref(),
+                    unsafe { column_vector.graphblas_vector_ref() },
                 )?;
             }
         }

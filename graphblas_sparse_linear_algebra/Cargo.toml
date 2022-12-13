@@ -1,11 +1,11 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.12.1"
+version = "0.13.0"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2021"
 keywords = ["GraphBLAS", "sparse", "linear", "algebra"]
-categories = ["api-bindings, mathematics"]
+categories = ["api-bindings", "mathematics"]
 license = "CC-BY-NC-4.0"
 readme = "README.md"
 repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"

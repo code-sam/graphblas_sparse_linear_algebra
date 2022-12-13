@@ -10,7 +10,7 @@ use crate::context::{CallGraphBlasContext, Context};
 use crate::error::{SparseLinearAlgebraError, SystemError, SystemErrorType};
 use crate::index::{ElementIndex, IndexConversion};
 
-use super::value_type::ValueType;
+use super::ValueType;
 
 pub(crate) trait CustomValueType: ValueType {
     type Type;
@@ -112,7 +112,7 @@ macro_rules! implement_value_type_for_custom_type {
                 let graphblas_type = unsafe { graphblas_type.assume_init() };
 
                 Ok(Arc::new(
-                    $crate::value_types::value_type::RegisteredCustomValueType::new(
+                    $crate::value_type::RegisteredCustomValueType::new(
                         context,
                         graphblas_type,
                     ),

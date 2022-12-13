@@ -2,15 +2,17 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_vector::{SparseVector, SparseVectorTrait};
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Vector_extract,
@@ -37,8 +39,8 @@ where
 
 impl<Vector, SubVector> SubVectorExtractor<Vector, SubVector>
 where
-    Vector: ValueType + BuiltInValueType,
-    SubVector: ValueType + BuiltInValueType,
+    Vector: ValueType,
+    SubVector: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -92,7 +94,7 @@ where
                             self.options,
                         )
                     },
-                    sub_vector.graphblas_vector_ref(),
+                    unsafe { sub_vector.graphblas_vector_ref() },
                 )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
@@ -108,7 +110,7 @@ where
                             self.options,
                         )
                     },
-                    sub_vector.graphblas_vector_ref(),
+                    unsafe { sub_vector.graphblas_vector_ref() },
                 )?;
             }
         }
@@ -117,12 +119,12 @@ where
     }
 
     /// Length of the mask must equal length of sub_vector
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         vector_to_extract_from: &SparseVector<Vector>,
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 
@@ -151,7 +153,7 @@ where
                             self.options,
                         )
                     },
-                    sub_vector.graphblas_vector_ref(),
+                    unsafe { sub_vector.graphblas_vector_ref() },
                 )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
@@ -167,7 +169,7 @@ where
                             self.options,
                         )
                     },
-                    sub_vector.graphblas_vector_ref(),
+                    unsafe { sub_vector.graphblas_vector_ref() },
                 )?;
             }
         }

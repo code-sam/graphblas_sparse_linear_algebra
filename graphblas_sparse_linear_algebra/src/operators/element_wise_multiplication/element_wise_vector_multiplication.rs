@@ -2,16 +2,16 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_types::utilities_to_implement_traits_for_all_value_types::{
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
-use crate::value_types::value_type::{AsBoolean, BuiltInValueType, ValueType};
+use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Monoid, GrB_Semiring, GrB_Vector_eWiseMult_BinaryOp,
@@ -49,9 +49,9 @@ where
 impl<Multiplier, Multiplicant, Product>
     ElementWiseVectorMultiplicationSemiring<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType + BuiltInValueType,
-    Multiplicant: ValueType + BuiltInValueType,
-    Product: ValueType + BuiltInValueType,
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
 {
     pub fn new(
         multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -95,15 +95,15 @@ where
                     self.options,
                 )
             },
-            &product.graphblas_vector(),
+            unsafe { &product.graphblas_vector() },
         )?;
 
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
         product: &mut SparseVector<Product>,
@@ -122,7 +122,7 @@ where
                     self.options,
                 )
             },
-            &product.graphblas_vector(),
+            unsafe { &product.graphblas_vector() },
         )?;
 
         Ok(())
@@ -136,7 +136,7 @@ implement_trait_for_all_value_types!(Send, ElementWiseVectorMultiplicationMonoid
 implement_trait_for_all_value_types!(Sync, ElementWiseVectorMultiplicationMonoidOperator);
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorMultiplicationMonoidOperator<T: ValueType + BuiltInValueType> {
+pub struct ElementWiseVectorMultiplicationMonoidOperator<T: ValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -144,7 +144,7 @@ pub struct ElementWiseVectorMultiplicationMonoidOperator<T: ValueType + BuiltInV
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType + BuiltInValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
+impl<T: ValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
@@ -185,15 +185,15 @@ impl<T: ValueType + BuiltInValueType> ElementWiseVectorMultiplicationMonoidOpera
                     self.options,
                 )
             },
-            &product.graphblas_vector(),
+            unsafe { &product.graphblas_vector() },
         )?;
 
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<T>,
         multiplicant: &SparseVector<T>,
         product: &mut SparseVector<T>,
@@ -212,7 +212,7 @@ impl<T: ValueType + BuiltInValueType> ElementWiseVectorMultiplicationMonoidOpera
                     self.options,
                 )
             },
-            &product.graphblas_vector(),
+            unsafe { &product.graphblas_vector() },
         )?;
 
         Ok(())
@@ -245,9 +245,9 @@ pub struct ElementWiseVectorMultiplicationBinaryOperator<Multiplier, Multiplican
 impl<Multiplier, Multiplicant, Product>
     ElementWiseVectorMultiplicationBinaryOperator<Multiplier, Multiplicant, Product>
 where
-    Multiplier: ValueType + BuiltInValueType,
-    Multiplicant: ValueType + BuiltInValueType,
-    Product: ValueType + BuiltInValueType,
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
 {
     pub fn new(
         multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
@@ -291,15 +291,15 @@ where
                     self.options,
                 )
             },
-            &product.graphblas_vector(),
+            unsafe { &product.graphblas_vector() },
         )?;
 
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean<MaskValueType>>(
+    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        mask: &SparseVector<AsBool>,
+        mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
         product: &mut SparseVector<Product>,
@@ -318,7 +318,7 @@ where
                     self.options,
                 )
             },
-            &product.graphblas_vector(),
+            unsafe { &product.graphblas_vector() },
         )?;
 
         Ok(())

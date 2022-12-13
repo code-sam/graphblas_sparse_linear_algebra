@@ -15,7 +15,7 @@ use crate::{
 use super::FullVectorData;
 use crate::collections::sparse_vector::data::full::FullVectorDataTrait;
 
-pub trait VectorData<T: ValueType + BuiltInValueType> {
+pub trait VectorData<T: ValueType> {
     fn import_full_vector_data(
         &mut self,
         vector_data: &mut FullVectorData<T>,

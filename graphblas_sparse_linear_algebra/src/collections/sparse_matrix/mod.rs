@@ -8,5 +8,5 @@ pub use element::{MatrixElement, MatrixElementList};
 pub use size::Size;
 pub use sparse_matrix::{
     FromMatrixElementList, GetMatrixElement, GetMatrixElementList, GetMatrixElementValue,
-    SetMatrixElement, SparseMatrix, SparseMatrixTrait,
+    GraphblasSparseMatrixTrait, SetMatrixElement, SparseMatrix, SparseMatrixTrait,
 };

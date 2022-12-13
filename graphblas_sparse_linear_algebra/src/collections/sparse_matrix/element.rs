@@ -3,7 +3,7 @@ use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
 };
 use crate::index::ElementIndex;
-use crate::value_types::value_type::ValueType;
+use crate::value_type::ValueType;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MatrixElement<T: ValueType> {
