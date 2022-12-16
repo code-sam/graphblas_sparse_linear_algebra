@@ -1,10 +1,3 @@
-use crate::collections::collection::Collection;
-use crate::collections::sparse_vector::SparseVector;
-use crate::error::{
-    GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType,
-};
-use crate::operators::options::OperatorOptions;
 use std::convert::TryInto;
 use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
@@ -12,11 +5,9 @@ use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
-use suitesparse_graphblas_sys::GxB_Vector_diag;
 
-use super::coordinate::Coordinate;
-use super::element::{MatrixElement, MatrixElementList};
-use super::size::Size;
+use suitesparse_graphblas_sys::{GrB_Matrix_diag, GxB_Vector_diag};
+
 use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
     GrB_Matrix_build_INT16, GrB_Matrix_build_INT32, GrB_Matrix_build_INT64, GrB_Matrix_build_INT8,
@@ -38,6 +29,20 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_INT8, GrB_Matrix_setElement_UINT16, GrB_Matrix_setElement_UINT32,
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
+use crate::collections::collection::Collection;
+use crate::collections::sparse_vector::{
+    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+};
+use crate::error::{
+    GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
+    SparseLinearAlgebraErrorType,
+};
+use crate::operators::options::OperatorOptions;
+
+use super::coordinate::Coordinate;
+use super::element::{MatrixElement, MatrixElementList};
+use super::size::Size;
+
 use crate::context::ContextTrait;
 use crate::context::{CallGraphBlasContext, Context};
 use crate::operators::binary_operator::BinaryOperator;
@@ -94,6 +99,37 @@ impl<T: ValueType> SparseMatrix<T> {
             matrix: matrix,
             value_type: PhantomData,
         });
+    }
+
+    /// Returns a square matrix
+    pub fn from_diagonal_vector(
+        context: &Arc<Context>,
+        diagonal: &SparseVector<T>,
+        diagonal_index: &DiagonalIndex,
+    ) -> Result<Self, SparseLinearAlgebraError> {
+        let diagonal_length = diagonal.length()?;
+
+        let absolute_diagonal_index;
+        match TryInto::<usize>::try_into(diagonal_index.abs()) {
+            Ok(value) => absolute_diagonal_index = value,
+            Err(error) => return Err(LogicError::from(error).into()),
+        };
+
+        let row_height = diagonal_length + absolute_diagonal_index;
+        let column_width = diagonal_length + absolute_diagonal_index;
+
+        let mut matrix: SparseMatrix<T> =
+            SparseMatrix::<T>::new(context, &(row_height, column_width).into())?;
+        let graphblas_diagonal_index = diagonal_index.as_graphblas_index()?;
+
+        context.call_without_detailed_error_information(|| unsafe {
+            GrB_Matrix_diag(
+                matrix.graphblas_matrix_mut_ref(),
+                diagonal.graphblas_vector(),
+                graphblas_diagonal_index,
+            )
+        })?;
+        return Ok(matrix);
     }
 
     // TODO
@@ -630,6 +666,7 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
 mod tests {
 
     use super::*;
+    use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
     use crate::operators::binary_operator::First;
@@ -720,6 +757,48 @@ mod tests {
         // println!("{:?}", matrix.number_of_stored_elements().unwrap());
         // println!("{:?}", matrix.number_of_stored_elements().unwrap());
         // assert_eq!(matrix.number_of_stored_elements().unwrap(), 3);
+    }
+
+    #[test]
+    fn from_diagonal_vector() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = VectorElementList::<isize>::from_element_vector(vec![
+            (1, 1).into(),
+            (2, 2).into(),
+            (5, 5).into(),
+        ]);
+
+        let vector_length = 10;
+        let vector = SparseVector::<isize>::from_element_list(
+            &context,
+            &vector_length,
+            &element_list,
+            &First::<isize, isize, isize>::new(),
+        )
+        .unwrap();
+
+        let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &0).unwrap();
+        assert_eq!(
+            matrix.size().unwrap(),
+            Size::new(vector_length, vector_length)
+        );
+        assert_eq!(matrix.get_element_value(&(5, 5).into()).unwrap(), 5);
+
+        let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &2).unwrap();
+        assert_eq!(
+            matrix.size().unwrap(),
+            Size::new(vector_length + 2, vector_length + 2)
+        );
+        assert_eq!(matrix.get_element_value(&(5, 7).into()).unwrap(), 5);
+
+        let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &-2).unwrap();
+        assert_eq!(
+            matrix.size().unwrap(),
+            Size::new(vector_length + 2, vector_length + 2)
+        );
+        println!("{}", matrix.clone());
+        assert_eq!(matrix.get_element_value(&(7, 5).into()).unwrap(), 5);
     }
 
     #[test]
