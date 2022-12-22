@@ -101,37 +101,6 @@ impl<T: ValueType> SparseMatrix<T> {
         });
     }
 
-    /// Returns a square matrix
-    pub fn from_diagonal_vector(
-        context: &Arc<Context>,
-        diagonal: &SparseVector<T>,
-        diagonal_index: &DiagonalIndex,
-    ) -> Result<Self, SparseLinearAlgebraError> {
-        let diagonal_length = diagonal.length()?;
-
-        let absolute_diagonal_index;
-        match TryInto::<usize>::try_into(diagonal_index.abs()) {
-            Ok(value) => absolute_diagonal_index = value,
-            Err(error) => return Err(LogicError::from(error).into()),
-        };
-
-        let row_height = diagonal_length + absolute_diagonal_index;
-        let column_width = diagonal_length + absolute_diagonal_index;
-
-        let mut matrix: SparseMatrix<T> =
-            SparseMatrix::<T>::new(context, &(row_height, column_width).into())?;
-        let graphblas_diagonal_index = diagonal_index.as_graphblas_index()?;
-
-        context.call_without_detailed_error_information(|| unsafe {
-            GrB_Matrix_diag(
-                matrix.graphblas_matrix_mut_ref(),
-                diagonal.graphblas_vector(),
-                graphblas_diagonal_index,
-            )
-        })?;
-        return Ok(matrix);
-    }
-
     // TODO
     // fn from_matrices(matrices: Vec<SparseMatrix<T>, >) -> Result<Self, SparseLinearAlgebraError> {
 
@@ -313,12 +282,53 @@ macro_rules! implement_display {
 
 implement_macro_for_all_value_types!(implement_display);
 
+pub trait FromDiagonalVector<T: ValueType> {
+    fn from_diagonal_vector(
+        context: &Arc<Context>,
+        diagonal: &SparseVector<T>,
+        diagonal_index: &DiagonalIndex,
+    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
+}
+
+impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
+    /// Returns a square matrix
+    fn from_diagonal_vector(
+        context: &Arc<Context>,
+        diagonal: &SparseVector<T>,
+        diagonal_index: &DiagonalIndex,
+    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
+        let diagonal_length = diagonal.length()?;
+
+        let absolute_diagonal_index;
+        match TryInto::<usize>::try_into(diagonal_index.abs()) {
+            Ok(value) => absolute_diagonal_index = value,
+            Err(error) => return Err(LogicError::from(error).into()),
+        };
+
+        let row_height = diagonal_length + absolute_diagonal_index;
+        let column_width = diagonal_length + absolute_diagonal_index;
+
+        let mut matrix: SparseMatrix<T> =
+            SparseMatrix::<T>::new(context, &(row_height, column_width).into())?;
+        let graphblas_diagonal_index = diagonal_index.as_graphblas_index()?;
+
+        context.call_without_detailed_error_information(|| unsafe {
+            GrB_Matrix_diag(
+                matrix.graphblas_matrix_mut_ref(),
+                diagonal.graphblas_vector(),
+                graphblas_diagonal_index,
+            )
+        })?;
+        return Ok(matrix);
+    }
+}
+
 pub trait FromMatrixElementList<T: ValueType> {
     fn from_element_list(
         context: &Arc<Context>,
         size: &Size,
         elements: &MatrixElementList<T>,
-        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T>,
+        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T, T>,
         // reduction_operator_for_duplicates: Box<dyn BinaryOperator<T, T, T>>,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
 }
@@ -377,6 +387,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 size: &Size,
                 elements: &MatrixElementList<$value_type>,
                 reduction_operator_for_duplicates: &dyn BinaryOperator<
+                    $value_type,
                     $value_type,
                     $value_type,
                     $value_type,
@@ -748,7 +759,7 @@ mod tests {
             &context,
             &(3, 5).into(),
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -774,7 +785,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<isize, isize, isize>::new(),
+            &First::<isize, isize, isize, isize>::new(),
         )
         .unwrap();
 
@@ -940,7 +951,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -961,7 +972,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &empty_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
         assert_eq!(

@@ -136,6 +136,25 @@ macro_rules! implement_trait_for_3_type_data_type_and_all_value_types {
 }
 pub(crate) use implement_trait_for_3_type_data_type_and_all_value_types;
 
+macro_rules! implement_trait_for_4_type_data_type_and_all_value_types {
+    ($trait:ty, $type_identifier:ident) => {
+        unsafe impl $trait for $type_identifier<bool, bool, bool, bool> {}
+        unsafe impl $trait for $type_identifier<i8, i8, i8, i8> {}
+        unsafe impl $trait for $type_identifier<i16, i16, i16, i16> {}
+        unsafe impl $trait for $type_identifier<i32, i32, i32, i32> {}
+        unsafe impl $trait for $type_identifier<i64, i64, i64, i64> {}
+        unsafe impl $trait for $type_identifier<u8, u8, u8, u8> {}
+        unsafe impl $trait for $type_identifier<u16, u16, u16, u16> {}
+        unsafe impl $trait for $type_identifier<u32, u32, u32, u32> {}
+        unsafe impl $trait for $type_identifier<u64, u64, u64, u64> {}
+        unsafe impl $trait for $type_identifier<f32, f32, f32, f32> {}
+        unsafe impl $trait for $type_identifier<f64, f64, f64, f64> {}
+        unsafe impl $trait for $type_identifier<isize, isize, isize, isize> {}
+        unsafe impl $trait for $type_identifier<usize, usize, usize, usize> {}
+    };
+}
+pub(crate) use implement_trait_for_4_type_data_type_and_all_value_types;
+
 macro_rules! implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function {
     ($macro_identifier:ident, $graphblas_identifier:ident) => {
         $macro_identifier!(bool, bool, $graphblas_identifier);
@@ -580,16 +599,16 @@ macro_rules! implement_semiring_for_all_value_types {
     ($macro_identifier:ident, $semiring:ident, $addition_operator:ident, $multiplication_operator:ident, $graphblas_operator:ident) => {
         paste::paste! {
             // $macro_identifier!($semiring, $addition_operator, $multiplication_operator, bool, bool, bool, [<$graphblas_operator _BOOL>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i8, i8, i8, [<$graphblas_operator _INT8>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i16, i16, i16, [<$graphblas_operator _INT16>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i32, i32, i32, [<$graphblas_operator _INT32>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i64, i64, i64, [<$graphblas_operator _INT64>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u8, u8, u8, [<$graphblas_operator _UINT8>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u16, u16, u16, [<$graphblas_operator _UINT16>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u32, u32, u32, [<$graphblas_operator _UINT32>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u64, u64, u64, [<$graphblas_operator _UINT64>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, f32, f32, f32, [<$graphblas_operator _FP32>]);
-            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, f64, f64, f64, [<$graphblas_operator _FP64>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i8, i8, i8, i8, [<$graphblas_operator _INT8>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i16, i16, i16, i16, [<$graphblas_operator _INT16>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i32, i32, i32, i32, [<$graphblas_operator _INT32>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, i64, i64, i64, i64, [<$graphblas_operator _INT64>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u8, u8, u8, u8, [<$graphblas_operator _UINT8>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u16, u16, u16, u16, [<$graphblas_operator _UINT16>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u32, u32, u32, u32, [<$graphblas_operator _UINT32>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, u64, u64, u64, u64, [<$graphblas_operator _UINT64>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, f32, f32, f32, f32, [<$graphblas_operator _FP32>]);
+            $macro_identifier!($semiring, $addition_operator, $multiplication_operator, f64, f64, f64, f64, [<$graphblas_operator _FP64>]);
             graphblas_sparse_linear_algebra_proc_macros::implement_semiring_for_isize!($macro_identifier, $semiring, $addition_operator, $multiplication_operator, $graphblas_operator);
             graphblas_sparse_linear_algebra_proc_macros::implement_semiring_for_usize!($macro_identifier, $semiring, $addition_operator, $multiplication_operator, $graphblas_operator);
         }

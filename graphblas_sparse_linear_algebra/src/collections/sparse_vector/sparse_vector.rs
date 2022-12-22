@@ -40,7 +40,7 @@ use crate::error::{
     SparseLinearAlgebraErrorType,
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
-use crate::operators::binary_operator::BinaryOperator;
+use crate::operators::binary_operator::{BinaryOperator, ReturnsBool};
 use crate::operators::options::OperatorOptions;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
@@ -400,7 +400,7 @@ pub trait FromVectorElementList<T: ValueType> {
         context: &Arc<Context>,
         lenth: &ElementIndex,
         elements: &VectorElementList<T>,
-        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T>,
+        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T, T>,
     ) -> Result<SparseVector<T>, SparseLinearAlgebraError>;
 }
 
@@ -412,6 +412,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 length: &ElementIndex,
                 elements: &VectorElementList<$value_type>,
                 reduction_operator_for_duplicates: &dyn BinaryOperator<
+                    $value_type,
                     $value_type,
                     $value_type,
                     $value_type,
@@ -668,7 +669,9 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
-pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool>> {
+// TODO: add versions where only sorted_values, or only only sorted_indices_in_self are returned
+// (by setting input to NULL)
+pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
     fn sort(
         &self,
         sorted_values: &mut SparseVector<T>,
@@ -677,7 +680,9 @@ pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool>> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType, B: BinaryOperator<T, T, bool>> SortSparseVector<T, B> for SparseVector<T> {
+impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVector<T, B>
+    for SparseVector<T>
+{
     fn sort(
         &self,
         sorted_values: &mut SparseVector<T>,
@@ -709,7 +714,7 @@ mod tests {
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::binary_operator::{First, IsGreaterThan};
+    use crate::operators::binary_operator::{First, IsGreaterThan, IsGreaterThanTyped};
 
     #[test]
     fn new_vector() {
@@ -762,7 +767,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -835,7 +840,7 @@ mod tests {
             &context,
             &10,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -1043,7 +1048,7 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -1064,7 +1069,7 @@ mod tests {
             &context,
             &10,
             &empty_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
         assert_eq!(
@@ -1088,14 +1093,14 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<isize, isize, isize>::new(),
+            &First::<isize, isize, isize, isize>::new(),
         )
         .unwrap();
 
         let mut sorted = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
         let mut indices = sorted.clone();
 
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool>::new();
+        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
 
         vector
             .sort(&mut sorted, &mut indices, &larger_than_operator)
