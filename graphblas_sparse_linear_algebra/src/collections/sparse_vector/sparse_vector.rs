@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
+use std::ptr;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
@@ -669,42 +670,6 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
-// TODO: add versions where only sorted_values, or only only sorted_indices_in_self are returned
-// (by setting input to NULL)
-pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
-    fn sort(
-        &self,
-        sorted_values: &mut SparseVector<T>,
-        sorted_indices_in_self: &mut SparseVector<T>,
-        sort_operator: &B,
-    ) -> Result<(), SparseLinearAlgebraError>;
-}
-
-impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVector<T, B>
-    for SparseVector<T>
-{
-    fn sort(
-        &self,
-        sorted_values: &mut SparseVector<T>,
-        indices_to_sort_self: &mut SparseVector<T>,
-        sort_operator: &B,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        self.context.call(
-            || unsafe {
-                GxB_Vector_sort(
-                    sorted_values.graphblas_vector(),
-                    indices_to_sort_self.graphblas_vector(),
-                    sort_operator.graphblas_type(),
-                    self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
-                )
-            },
-            &self.vector,
-        )?;
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -1078,42 +1043,4 @@ mod tests {
         );
     }
 
-    #[test]
-    fn sort() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
-
-        let element_list = VectorElementList::<isize>::from_element_vector(vec![
-            (1, 1).into(),
-            (2, 2).into(),
-            (4, 6).into(),
-            (6, 4).into(),
-        ]);
-
-        let vector = SparseVector::<isize>::from_element_list(
-            &context.clone(),
-            &10,
-            &element_list,
-            &First::<isize, isize, isize, isize>::new(),
-        )
-        .unwrap();
-
-        let mut sorted = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
-        let mut indices = sorted.clone();
-
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
-
-        vector
-            .sort(&mut sorted, &mut indices, &larger_than_operator)
-            .unwrap();
-
-        assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
-        assert_eq!(sorted.get_element_value(&1).unwrap(), 4);
-        assert_eq!(sorted.get_element_value(&2).unwrap(), 2);
-        assert_eq!(sorted.get_element_value(&3).unwrap(), 1);
-
-        assert_eq!(indices.get_element_value(&0).unwrap(), 4);
-        assert_eq!(indices.get_element_value(&1).unwrap(), 6);
-        assert_eq!(indices.get_element_value(&2).unwrap(), 2);
-        assert_eq!(indices.get_element_value(&3).unwrap(), 1);
-    }
 }
