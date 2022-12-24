@@ -5,20 +5,22 @@ use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::GxB_Vector_sort;
 
 use crate::collections::sparse_vector::SparseVectorTrait;
+use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::index::ElementIndex;
 use crate::operators::options::OperatorOptions;
-use crate::context::{CallGraphBlasContext, ContextTrait};
-use crate::{value_type::ValueType, operators::binary_operator::{BinaryOperator, ReturnsBool}, collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector}, error::SparseLinearAlgebraError};
+use crate::{
+    collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector},
+    error::SparseLinearAlgebraError,
+    operators::binary_operator::{BinaryOperator, ReturnsBool},
+    value_type::ValueType,
+};
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
 // REVIEW: support typecasting for indices and the evaluation domain of the binary operator
 pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
-    fn sort(
-        &mut self,
-        sort_operator: &B,
-    ) -> Result<(), SparseLinearAlgebraError>;
+    fn sort(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError>;
 
     fn sorted_values_and_indices(
         &self,
@@ -27,10 +29,8 @@ pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
         sort_operator: &B,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn sorted_values(
-        &self,
-        sort_operator: &B,
-    ) -> Result<SparseVector<T>, SparseLinearAlgebraError>;
+    fn sorted_values(&self, sort_operator: &B)
+        -> Result<SparseVector<T>, SparseLinearAlgebraError>;
 
     fn indices_to_sort(
         &self,
@@ -41,10 +41,7 @@ pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
 impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVector<T, B>
     for SparseVector<T>
 {
-    fn sort(
-        &mut self,
-        sort_operator: &B,
-    ) -> Result<(), SparseLinearAlgebraError> {
+    fn sort(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError> {
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
@@ -55,7 +52,7 @@ impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVec
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
                 )
             },
-            unsafe{self.graphblas_vector_ref()},
+            unsafe { self.graphblas_vector_ref() },
         )?;
         Ok(())
     }
@@ -76,7 +73,7 @@ impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVec
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
                 )
             },
-            unsafe{self.graphblas_vector_ref()},
+            unsafe { self.graphblas_vector_ref() },
         )?;
         Ok(())
     }
@@ -96,7 +93,7 @@ impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVec
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
                 )
             },
-            unsafe{self.graphblas_vector_ref()},
+            unsafe { self.graphblas_vector_ref() },
         )?;
         Ok(sorted_values)
     }
@@ -105,7 +102,8 @@ impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVec
         &self,
         sort_operator: &B,
     ) -> Result<SparseVector<ElementIndex>, SparseLinearAlgebraError> {
-        let mut indices_to_sort_self = SparseVector::<ElementIndex>::new(self.context_ref(), &self.length()?)?;
+        let mut indices_to_sort_self =
+            SparseVector::<ElementIndex>::new(self.context_ref(), &self.length()?)?;
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
@@ -116,7 +114,7 @@ impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVec
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
                 )
             },
-            unsafe{self.graphblas_vector_ref()},
+            unsafe { self.graphblas_vector_ref() },
         )?;
         Ok(indices_to_sort_self)
     }
@@ -124,11 +122,16 @@ impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVec
 
 #[cfg(test)]
 mod tests {
-    use super::*; 
+    use super::*;
 
-    use crate::collections::sparse_vector::{FromVectorElementList, GetVectorElementValue, SparseVectorTrait};
+    use crate::collections::sparse_vector::{
+        FromVectorElementList, GetVectorElementValue, SparseVectorTrait,
+    };
     use crate::operators::binary_operator::{First, IsGreaterThan};
-    use crate::{context::{Context, Mode}, collections::sparse_vector::{VectorElementList, SparseVector}};
+    use crate::{
+        collections::sparse_vector::{SparseVector, VectorElementList},
+        context::{Context, Mode},
+    };
 
     #[test]
     fn sorted_values_and_indices() {
@@ -190,9 +193,7 @@ mod tests {
 
         let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
 
-        vector
-            .sort(&larger_than_operator)
-            .unwrap();
+        vector.sort(&larger_than_operator).unwrap();
 
         assert_eq!(vector.get_element_value(&0).unwrap(), 6);
         assert_eq!(vector.get_element_value(&1).unwrap(), 4);
@@ -221,9 +222,7 @@ mod tests {
 
         let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
 
-        let sorted = vector
-            .sorted_values(&larger_than_operator)
-            .unwrap();
+        let sorted = vector.sorted_values(&larger_than_operator).unwrap();
 
         assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
         assert_eq!(sorted.get_element_value(&1).unwrap(), 4);
@@ -252,9 +251,7 @@ mod tests {
 
         let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
 
-        let indices = vector
-            .indices_to_sort(&larger_than_operator)
-            .unwrap();
+        let indices = vector.indices_to_sort(&larger_than_operator).unwrap();
 
         assert_eq!(indices.get_element_value(&0).unwrap(), 4);
         assert_eq!(indices.get_element_value(&1).unwrap(), 6);

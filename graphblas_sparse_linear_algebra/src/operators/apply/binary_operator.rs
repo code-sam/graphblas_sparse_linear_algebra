@@ -631,14 +631,14 @@ mod tests {
         );
 
         operator
-        .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
-        .unwrap();
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
 
-    println!("{}", product_vector);
+        println!("{}", product_vector);
 
-    assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-    assert_eq!(product_vector.get_element_value(&2).unwrap(), 1);
-    assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 1);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
 
         // let operator = BinaryOperatorApplier::new(
         //     &First::<u8, u8, u8, u8>::new(),
