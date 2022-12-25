@@ -60,6 +60,63 @@ macro_rules! implement_macro_for_all_value_types_except_bool_ {
 }
 pub(crate) use implement_macro_for_all_value_types_except_bool_;
 
+macro_rules! implement_macro_for_all_integers {
+    ($macro_identifier:ident) => {
+        // $macro_identifier!(bool);
+        $macro_identifier!(i8);
+        $macro_identifier!(i16);
+        $macro_identifier!(i32);
+        $macro_identifier!(i64);
+        $macro_identifier!(u8);
+        $macro_identifier!(u16);
+        $macro_identifier!(u32);
+        $macro_identifier!(u64);
+        // $macro_identifier!(f32);
+        // $macro_identifier!(f64);
+        $macro_identifier!(isize);
+        $macro_identifier!(usize);
+    };
+}
+pub(crate) use implement_macro_for_all_integers;
+
+macro_rules! implement_macro_for_all_graphblas_index_integers {
+    ($macro_identifier:ident) => {
+        // $macro_identifier!(bool);
+        // $macro_identifier!(i8);
+        // $macro_identifier!(i16);
+        $macro_identifier!(i32);
+        $macro_identifier!(i64);
+        // $macro_identifier!(u8);
+        // $macro_identifier!(u16);
+        // $macro_identifier!(u32);
+        // $macro_identifier!(u64);
+        // $macro_identifier!(f32);
+        // $macro_identifier!(f64);
+        // $macro_identifier!(isize);
+        // $macro_identifier!(usize);
+    };
+}
+pub(crate) use implement_macro_for_all_graphblas_index_integers;
+
+macro_rules! implement_macro_for_all_floating_point_value_types {
+    ($macro_identifier:ident) => {
+        // $macro_identifier!(bool);
+        // $macro_identifier!(i8);
+        // $macro_identifier!(i16);
+        // $macro_identifier!(i32);
+        // $macro_identifier!(i64);
+        // $macro_identifier!(u8);
+        // $macro_identifier!(u16);
+        // $macro_identifier!(u32);
+        // $macro_identifier!(u64);
+        $macro_identifier!(f32);
+        $macro_identifier!(f64);
+        // $macro_identifier!(isize);
+        // $macro_identifier!(usize);
+    };
+}
+pub(crate) use implement_macro_for_all_floating_point_value_types;
+
 macro_rules! implement_macro_with_2_types_for_all_value_types {
     ($macro_identifier:ident) => {
         $macro_identifier!(bool, bool);
@@ -362,6 +419,59 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
     };
 }
 pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types;
+
+macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types {
+    ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
+        paste::paste! {
+            // $macro_identifier!($trait, [<$graphblas_identifier _BOOL>], bool);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT8>], i8);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT16>], i16);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT32>], i32);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT64>], i64);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT8>], u8);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT16>], u16);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT32>], u32);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64);
+            // $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32);
+            // $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
+        }
+    };
+}
+pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types;
+
+macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types {
+    ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
+        paste::paste! {
+            // $macro_identifier!($trait, [<$graphblas_identifier _BOOL>], bool);
+            // $macro_identifier!($trait, [<$graphblas_identifier _INT8>], i8);
+            // $macro_identifier!($trait, [<$graphblas_identifier _INT16>], i16);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT32>], i32);
+            $macro_identifier!($trait, [<$graphblas_identifier _INT64>], i64);
+            // $macro_identifier!($trait, [<$graphblas_identifier _UINT8>], u8);
+            // $macro_identifier!($trait, [<$graphblas_identifier _UINT16>], u16);
+            // $macro_identifier!($trait, [<$graphblas_identifier _UINT32>], u32);
+            // $macro_identifier!($trait, [<$graphblas_identifier _UINT64>], u64);
+            // $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32);
+            // $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64);
+            // graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize!($macro_identifier, $trait, $graphblas_identifier);
+            // graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize!($macro_identifier, $trait, $graphblas_identifier);
+        }
+    };
+}
+pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types;
+
+
+macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types {
+    ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
+        paste::paste! {
+            $macro_identifier!($trait, [<$graphblas_identifier _FP32>], f32);
+            $macro_identifier!($trait, [<$graphblas_identifier _FP64>], f64);
+        }
+    };
+}
+pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types;
 
 macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool {
     ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {

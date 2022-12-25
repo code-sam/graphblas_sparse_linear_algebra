@@ -220,14 +220,8 @@ mod tests {
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVectorTrait,
-    };
+    use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, IsGreaterThan};
-    use crate::{
-        collections::sparse_vector::{SparseVector, VectorElementList},
-        context::{Context, Mode},
-    };
 
     #[test]
     fn sorted_values_and_indices() {
@@ -274,5 +268,4 @@ mod tests {
         assert_eq!(indices.get_element_value(&(0, 4).into()).unwrap(), 6);
         assert_eq!(indices.get_element_value(&(1, 4).into()).unwrap(), 2);
     }
-
 }
