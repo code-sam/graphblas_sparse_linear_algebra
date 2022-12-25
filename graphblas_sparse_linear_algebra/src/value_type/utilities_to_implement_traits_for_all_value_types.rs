@@ -462,7 +462,6 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
 }
 pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types;
 
-
 macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types {
     ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
         paste::paste! {

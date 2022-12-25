@@ -3,11 +3,11 @@ use std::marker::PhantomData;
 use crate::bindings_to_graphblas_implementation::*;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types,
-    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types,
 };
-use crate::value_type::{ValueType};
+use crate::value_type::ValueType;
 
 pub trait BinaryOperator<X, Y, Z, T>
 where
@@ -581,10 +581,13 @@ mod tests {
     use crate::{
         collections::{
             collection::Collection,
+            sparse_matrix::{
+                FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+            },
             sparse_scalar::SparseScalar,
             sparse_vector::{
                 FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
-            }, sparse_matrix::{FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix},
+            },
         },
         context::{Context, Mode},
         operators::{
@@ -608,10 +611,8 @@ mod tests {
     fn test_divide_by_zero() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let element_list = VectorElementList::<u8>::from_element_vector(vec![
-            (1, 1).into(),
-            (2, 0).into(),
-        ]);
+        let element_list =
+            VectorElementList::<u8>::from_element_vector(vec![(1, 1).into(), (2, 0).into()]);
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
@@ -647,11 +648,14 @@ mod tests {
 
         let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
         operator
-        .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
-        .unwrap();
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
 
         println!("{}", product_vector);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), u8::MAX as f32);
+        assert_eq!(
+            product_vector.get_element_value(&1).unwrap(),
+            u8::MAX as f32
+        );
         assert_eq!(product_vector.get_element_value(&2).unwrap(), 0f32);
 
         let operator = BinaryOperatorApplier::new(
@@ -660,8 +664,8 @@ mod tests {
             None,
         );
         operator
-        .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
-        .unwrap();
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
         println!("{}", product_vector);
         assert_eq!(product_vector.get_element_value(&1).unwrap(), f32::INFINITY);
         assert!(f32::is_nan(product_vector.get_element_value(&2).unwrap()));
@@ -703,7 +707,6 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&0).unwrap(), 1);
         assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
         assert_eq!(product_vector.get_element_value(&2).unwrap(), 3);
-
     }
 
     #[test]
@@ -733,17 +736,18 @@ mod tests {
             None,
         );
 
-        for i in 0..3  {
-            let second_agrument = SparseScalar::<f32>::from_value(&context, i as f32 + 0.5).unwrap();
+        for i in 0..3 {
+            let second_agrument =
+                SparseScalar::<f32>::from_value(&context, i as f32 + 0.5).unwrap();
             operator
                 .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
                 .unwrap();
-    
+
             println!("{}", product_vector);
             match i {
-                0 => {  
+                0 => {
                     assert_eq!(product_vector.get_element_value(&2).unwrap(), 255f32);
-                },
+                }
                 1 => {
                     assert_eq!(product_vector.get_element_value(&2).unwrap(), 254f32);
                 }
@@ -799,5 +803,4 @@ mod tests {
         assert_eq!(product_matrix.get_element_value(&(4, 2).into()).unwrap(), 4);
         assert_eq!(product_matrix.get_element_value(&(5, 2).into()).unwrap(), 5);
     }
-
 }
