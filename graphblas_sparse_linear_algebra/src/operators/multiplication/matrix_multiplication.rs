@@ -7,7 +7,10 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
+    implement_trait_for_3_type_data_type_and_all_value_types,
+    implement_trait_for_4_type_data_type_and_all_value_types,
+};
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -17,22 +20,24 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_3_type_data_type_and_all_value_types!(Send, MatrixMultiplicationOperator);
-implement_trait_for_3_type_data_type_and_all_value_types!(Sync, MatrixMultiplicationOperator);
+implement_trait_for_4_type_data_type_and_all_value_types!(Send, MatrixMultiplicationOperator);
+implement_trait_for_4_type_data_type_and_all_value_types!(Sync, MatrixMultiplicationOperator);
 
 // TODO: review the use of &'a dyn Trait, removing dynamic dispatch could provide a performance gain. (it might be negated if cloning is necessary though)
 // https://www.joshmcguigan.com/blog/cost-of-indirection-rust/
 #[derive(Debug, Clone)]
-pub struct MatrixMultiplicationOperator<Multiplier, Multiplicant, Product>
+pub struct MatrixMultiplicationOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     // TODO: review if MatrixMultiplicationOperator really needs these types
     _multiplier: PhantomData<Multiplier>,
     _multiplicant: PhantomData<Multiplicant>,
     _product: PhantomData<Product>,
+    _evaluation_domain: PhantomData<EvaluationDomain>,
 
     // mask: GrB_Matrix,
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -40,17 +45,18 @@ where
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product>
-    MatrixMultiplicationOperator<Multiplier, Multiplicant, Product>
+impl<Multiplier, Multiplicant, Product, EvaluationDomain>
+    MatrixMultiplicationOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     pub fn new(
-        semiring: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
+        semiring: &dyn Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -66,6 +72,7 @@ where
             _multiplier: PhantomData,
             _multiplicant: PhantomData,
             _product: PhantomData,
+            _evaluation_domain: PhantomData,
         }
     }
 
@@ -139,10 +146,10 @@ mod tests {
 
     #[test]
     fn create_matrix_multiplier() {
-        let semiring = PlusTimes::<i64, i64, i64>::new();
+        let semiring = PlusTimes::<i64, i64, i64, i64>::new();
         let options = OperatorOptions::new_default();
         let _matrix_multiplier =
-            MatrixMultiplicationOperator::<i64, i64, i64>::new(&semiring, &options, None);
+            MatrixMultiplicationOperator::<i64, i64, i64, i64>::new(&semiring, &options, None);
 
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
@@ -152,9 +159,9 @@ mod tests {
 
         let _mask = SparseMatrix::<f32>::new(&context, &size).unwrap();
 
-        let accumulator = Times::<i64, i64, i64>::new();
+        let accumulator = Times::<i64, i64, i64, i64>::new();
 
-        let _matrix_multiplier = MatrixMultiplicationOperator::<i64, i64, i64>::new(
+        let _matrix_multiplier = MatrixMultiplicationOperator::<i64, i64, i64, i64>::new(
             &semiring,
             &options,
             Some(&accumulator),
@@ -165,10 +172,10 @@ mod tests {
     fn test_multiplication_with_plus_times() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let semiring = PlusTimes::<f32, f32, f32>::new();
+        let semiring = PlusTimes::<f32, f32, f32, f32>::new();
         let options = OperatorOptions::new_default();
         let matrix_multiplier =
-            MatrixMultiplicationOperator::<f32, f32, f32>::new(&semiring, &options, None);
+            MatrixMultiplicationOperator::<f32, f32, f32, f32>::new(&semiring, &options, None);
 
         let height = 2;
         let width = 2;
@@ -198,7 +205,7 @@ mod tests {
             &context,
             &size,
             &multiplier_element_list,
-            &First::<f32, f32, f32>::new(),
+            &First::<f32, f32, f32, f32>::new(),
         )
         .unwrap();
 
@@ -212,7 +219,7 @@ mod tests {
             &context,
             &size,
             &multiplicant_element_list,
-            &First::<f32, f32, f32>::new(),
+            &First::<f32, f32, f32, f32>::new(),
         )
         .unwrap();
 
@@ -238,12 +245,13 @@ mod tests {
         assert_eq!(expected_product, product_element_list);
 
         // test the use of an accumulator
-        let accumulator = Plus::<f32, f32, f32>::new();
-        let matrix_multiplier_with_accumulator = MatrixMultiplicationOperator::<f32, f32, f32>::new(
-            &semiring,
-            &options,
-            Some(&accumulator),
-        );
+        let accumulator = Plus::<f32, f32, f32, f32>::new();
+        let matrix_multiplier_with_accumulator =
+            MatrixMultiplicationOperator::<f32, f32, f32, f32>::new(
+                &semiring,
+                &options,
+                Some(&accumulator),
+            );
 
         matrix_multiplier_with_accumulator
             .apply(&multiplier, &multiplicant, &mut product)
@@ -264,12 +272,12 @@ mod tests {
             &context,
             &size,
             &mask_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
         let matrix_multiplier =
-            MatrixMultiplicationOperator::<f32, f32, f32>::new(&semiring, &options, None);
+            MatrixMultiplicationOperator::<f32, f32, f32, f32>::new(&semiring, &options, None);
 
         let mut product = SparseMatrix::<f32>::new(&context, &size).unwrap();
 

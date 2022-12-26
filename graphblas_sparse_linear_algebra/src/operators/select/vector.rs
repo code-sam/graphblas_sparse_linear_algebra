@@ -38,7 +38,7 @@ pub struct VectorSelector<T: ValueType> {
 impl<T: ValueType> VectorSelector<T> {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -359,7 +359,7 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -404,7 +404,7 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 

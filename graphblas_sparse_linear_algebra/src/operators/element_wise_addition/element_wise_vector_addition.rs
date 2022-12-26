@@ -9,7 +9,8 @@ use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
+    implement_trait_for_3_type_data_type_and_all_value_types,
+    implement_trait_for_4_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -21,36 +22,39 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_3_type_data_type_and_all_value_types!(Send, ElementWiseVectorAdditionSemiring);
-implement_trait_for_3_type_data_type_and_all_value_types!(Sync, ElementWiseVectorAdditionSemiring);
+implement_trait_for_4_type_data_type_and_all_value_types!(Send, ElementWiseVectorAdditionSemiring);
+implement_trait_for_4_type_data_type_and_all_value_types!(Sync, ElementWiseVectorAdditionSemiring);
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product>
+pub struct ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     _multiplier: PhantomData<Multiplier>,
     _multiplicant: PhantomData<Multiplicant>,
     _product: PhantomData<Product>,
+    _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     multiplication_operator: GrB_Semiring, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product>
-    ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product>
+impl<Multiplier, Multiplicant, Product, EvaluationDomain>
+    ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -66,6 +70,7 @@ where
             _multiplier: PhantomData,
             _multiplicant: PhantomData,
             _product: PhantomData,
+            _evaluation_domain: PhantomData,
         }
     }
 
@@ -142,7 +147,7 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -216,37 +221,49 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_3_type_data_type_and_all_value_types!(
+implement_trait_for_4_type_data_type_and_all_value_types!(
     Send,
     ElementWiseVectorAdditionBinaryOperator
 );
-implement_trait_for_3_type_data_type_and_all_value_types!(
+implement_trait_for_4_type_data_type_and_all_value_types!(
     Sync,
     ElementWiseVectorAdditionBinaryOperator
 );
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product> {
+pub struct ElementWiseVectorAdditionBinaryOperator<
+    Multiplier,
+    Multiplicant,
+    Product,
+    EvaluationDomain,
+> {
     _multiplier: PhantomData<Multiplier>,
     _multiplicant: PhantomData<Multiplicant>,
     _product: PhantomData<Product>,
+    _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     multiplication_operator: GrB_BinaryOp, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product>
-    ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product>
+impl<Multiplier, Multiplicant, Product, EvaluationDomain>
+    ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &dyn BinaryOperator<
+            Multiplier,
+            Multiplicant,
+            Product,
+            EvaluationDomain,
+        >, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -262,6 +279,7 @@ where
             _multiplier: PhantomData,
             _multiplicant: PhantomData,
             _product: PhantomData,
+            _evaluation_domain: PhantomData,
         }
     }
 
@@ -331,16 +349,16 @@ mod tests {
 
     #[test]
     fn create_vector_addition_operator() {
-        let operator = Times::<i64, i64, i64>::new();
+        let operator = Times::<i64, i64, i64, i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
-            ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64>::new(
+            ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64, i64>::new(
                 &operator, &options, None,
             );
 
-        let accumulator = Times::<i64, i64, i64>::new();
+        let accumulator = Times::<i64, i64, i64, i64>::new();
 
-        let _matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64>::new(
+        let _matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64, i64>::new(
             &operator,
             &options,
             Some(&accumulator),
@@ -351,10 +369,10 @@ mod tests {
     fn test_element_wise_addition() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let operator = Times::<i32, i32, i32>::new();
+        let operator = Times::<i32, i32, i32, i32>::new();
         let options = OperatorOptions::new_default();
         let element_wise_vector_multiplier =
-            ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32>::new(
+            ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
                 &operator, &options, None,
             );
 
@@ -384,7 +402,7 @@ mod tests {
             &context,
             &length,
             &multiplier_element_list,
-            &First::<i32, i32, i32>::new(),
+            &First::<i32, i32, i32, i32>::new(),
         )
         .unwrap();
 
@@ -398,7 +416,7 @@ mod tests {
             &context,
             &length,
             &multiplicant_element_list,
-            &First::<i32, i32, i32>::new(),
+            &First::<i32, i32, i32, i32>::new(),
         )
         .unwrap();
 
@@ -413,9 +431,9 @@ mod tests {
         assert_eq!(product.get_element_value(&3).unwrap(), 32);
 
         // test the use of an accumulator
-        let accumulator = Plus::<i32, i32, i32>::new();
+        let accumulator = Plus::<i32, i32, i32, i32>::new();
         let matrix_multiplier_with_accumulator =
-            ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32>::new(
+            ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
                 &operator,
                 &options,
                 Some(&accumulator),
@@ -440,11 +458,11 @@ mod tests {
             &context,
             &length,
             &mask_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
-        let matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32>::new(
+        let matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
             &operator, &options, None,
         );
 

@@ -1392,7 +1392,7 @@ pub fn implement_semiring_for_isize(input: TokenStream) -> TokenStream {
         _ => panic!("Unsupported architecture: {:?} bits", isize::BITS)
     };
     let expanded = quote! {
-        #macro_identifier!(#semiring, #addition_operator, #multiplication_operator, isize, isize, isize, #function_identifier);
+        #macro_identifier!(#semiring, #addition_operator, #multiplication_operator, isize, isize, isize, isize, #function_identifier);
     };
     TokenStream::from(expanded)
 }
@@ -1428,7 +1428,7 @@ pub fn implement_semiring_for_usize(input: TokenStream) -> TokenStream {
         _ => panic!("Unsupported architecture: {:?} bits", usize::BITS)
     };
     let expanded = quote! {
-        #macro_identifier!(#semiring, #addition_operator, #multiplication_operator, usize, usize, usize, #function_identifier);
+        #macro_identifier!(#semiring, #addition_operator, #multiplication_operator, usize, usize, usize, usize, #function_identifier);
     };
     TokenStream::from(expanded)
 }

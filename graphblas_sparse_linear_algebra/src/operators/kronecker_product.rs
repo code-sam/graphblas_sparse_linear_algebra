@@ -8,7 +8,10 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_3_type_data_type_and_all_value_types;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
+    implement_trait_for_3_type_data_type_and_all_value_types,
+    implement_trait_for_4_type_data_type_and_all_value_types,
+};
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -19,35 +22,39 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_3_type_data_type_and_all_value_types!(Send, SemiringKroneckerProduct);
-implement_trait_for_3_type_data_type_and_all_value_types!(Sync, SemiringKroneckerProduct);
+implement_trait_for_4_type_data_type_and_all_value_types!(Send, SemiringKroneckerProduct);
+implement_trait_for_4_type_data_type_and_all_value_types!(Sync, SemiringKroneckerProduct);
 
 #[derive(Debug, Clone)]
-pub struct SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
+pub struct SemiringKroneckerProduct<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     _multiplier: PhantomData<Multiplier>,
     _multiplicant: PhantomData<Multiplicant>,
     _product: PhantomData<Product>,
+    _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     multiplication_operator: GrB_Semiring, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product> SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
+impl<Multiplier, Multiplicant, Product, EvaluationDomain>
+    SemiringKroneckerProduct<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -63,6 +70,7 @@ where
             _multiplier: PhantomData,
             _multiplicant: PhantomData,
             _product: PhantomData,
+            _evaluation_domain: PhantomData,
         }
     }
 
@@ -133,7 +141,7 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -223,9 +231,9 @@ where
     Product: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -312,7 +320,7 @@ mod tests {
 
     #[test]
     fn create_matrix_multiplier() {
-        let operator = Times::<i64, i64, i64>::new();
+        let operator = Times::<i64, i64, i64, i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
             BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(&operator, &options, None);
@@ -323,7 +331,7 @@ mod tests {
         let target_width = 5;
         let _size: Size = (target_height, target_width).into();
 
-        let accumulator = Times::<i64, i64, i64>::new();
+        let accumulator = Times::<i64, i64, i64, i64>::new();
 
         let _matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
             &operator,
@@ -336,7 +344,7 @@ mod tests {
     fn test_element_wisemultiplication() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let operator = Times::<i32, i32, i32>::new();
+        let operator = Times::<i32, i32, i32, i32>::new();
         let options = OperatorOptions::new_default();
         let element_wise_matrix_multiplier =
             BinaryOperatorKroneckerProductOperator::<i32, i32, i32>::new(&operator, &options, None);
@@ -370,7 +378,7 @@ mod tests {
             &context,
             &size,
             &multiplier_element_list,
-            &First::<i32, i32, i32>::new(),
+            &First::<i32, i32, i32, i32>::new(),
         )
         .unwrap();
 
@@ -384,7 +392,7 @@ mod tests {
             &context,
             &size,
             &multiplicant_element_list,
-            &First::<i32, i32, i32>::new(),
+            &First::<i32, i32, i32, i32>::new(),
         )
         .unwrap();
 

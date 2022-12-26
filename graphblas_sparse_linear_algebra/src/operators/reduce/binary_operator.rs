@@ -33,9 +33,9 @@ pub struct BinaryOperatorReducer<T: ValueType> {
 
 impl<T: ValueType> BinaryOperatorReducer<T> {
     pub fn new(
-        binary_operator: &dyn BinaryOperator<T, T, T>,
+        binary_operator: &dyn BinaryOperator<T, T, T, T>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -131,7 +131,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -139,7 +139,7 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         let reducer = BinaryOperatorReducer::new(
-            &Plus::<u8, u8, u8>::new(),
+            &Plus::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
             None,
         );
@@ -164,7 +164,7 @@ mod tests {
             &context.clone(),
             &matrix_size.row_height(),
             &mask_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 

@@ -12,6 +12,7 @@ use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
     FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
 };
+use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{
     FromVectorElementList, GetVectorElementValue, VectorElementList,
 };
@@ -31,20 +32,20 @@ fn main() {
         &context.clone(),
         &matrix_size,
         &element_list,
-        &First::<u8, u8, u8>::new(),
+        &First::<u8, u8, u8, u8>::new(),
     )
     .unwrap();
 
     let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
     let operator = BinaryOperatorApplier::new(
-        &First::<u8, u8, u8>::new(),
+        &First::<u8, u8, u8, u8>::new(),
         &OperatorOptions::new_default(),
         None,
     );
-
+    let first_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
     operator
-        .apply_with_matrix_as_first_argument(&matrix, &10, &mut product_matrix)
+        .apply_with_matrix_as_first_argument(&matrix, &first_agrument, &mut product_matrix)
         .unwrap();
 
     println!("{}", product_matrix);
@@ -54,12 +55,13 @@ fn main() {
     assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), 0);
 
     let operator = BinaryOperatorApplier::new(
-        &First::<u8, u8, u8>::new(),
+        &First::<u8, u8, u8, u8>::new(),
         &OperatorOptions::new_default(),
         None,
     );
+    let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
     operator
-        .apply_with_matrix_as_second_argument(&10, &matrix, &mut product_matrix)
+        .apply_with_matrix_as_second_argument(&second_agrument, &matrix, &mut product_matrix)
         .unwrap();
 
     println!("{}", matrix);

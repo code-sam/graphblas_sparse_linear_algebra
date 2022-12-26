@@ -43,7 +43,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<SubMatrix, SubMatrix, SubMatrix>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<SubMatrix, SubMatrix, SubMatrix, SubMatrix>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -328,7 +328,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 

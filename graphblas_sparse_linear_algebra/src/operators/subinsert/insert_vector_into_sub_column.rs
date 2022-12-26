@@ -46,7 +46,12 @@ where
     pub fn new(
         options: &OperatorOptions,
         accumulator: Option<
-            &dyn BinaryOperator<VectorToInsert, MatrixToInsertInto, MatrixToInsertInto>,
+            &dyn BinaryOperator<
+                VectorToInsert,
+                MatrixToInsertInto,
+                MatrixToInsertInto,
+                MatrixToInsertInto,
+            >,
         >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
@@ -259,7 +264,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -275,7 +280,7 @@ mod tests {
             &context,
             &vector_to_insert_length,
             &element_list_to_insert,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -289,7 +294,7 @@ mod tests {
             &context,
             &vector_to_insert_length,
             &mask_element_list,
-            &First::<bool, bool, bool>::new(),
+            &First::<bool, bool, bool, bool>::new(),
         )
         .unwrap();
 
@@ -320,7 +325,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 

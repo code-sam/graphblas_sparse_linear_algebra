@@ -31,7 +31,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Column, Column, Column>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Column, Column, Column, Column>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let transpose_operator = MatrixTranspose::new(options, None);
         let column_extractor = MatrixColumnExtractor::new(options, accumulator);
@@ -138,7 +138,7 @@ mod tests {
             &context.clone(),
             &(3, 2).into(),
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 

@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
+use std::ptr;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
@@ -40,11 +41,11 @@ use crate::error::{
     SparseLinearAlgebraErrorType,
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
-use crate::operators::binary_operator::BinaryOperator;
+use crate::operators::binary_operator::{BinaryOperator};
 use crate::operators::options::OperatorOptions;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_for_all_value_types, implement_trait_for_all_value_types,
+    implement_macro_for_all_value_types,
 };
 use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
 
@@ -62,8 +63,8 @@ pub struct SparseVector<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_all_value_types!(Send, SparseVector);
-implement_trait_for_all_value_types!(Sync, SparseVector);
+unsafe impl<T: ValueType> Send for SparseVector<T> {}
+unsafe impl<T: ValueType> Sync for SparseVector<T> {}
 
 // macro_rules! new_sparse_vector {
 //     ($value_type: ty, $graphblas_type: ident) => {
@@ -400,7 +401,7 @@ pub trait FromVectorElementList<T: ValueType> {
         context: &Arc<Context>,
         lenth: &ElementIndex,
         elements: &VectorElementList<T>,
-        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T>,
+        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T, T>,
     ) -> Result<SparseVector<T>, SparseLinearAlgebraError>;
 }
 
@@ -412,6 +413,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 length: &ElementIndex,
                 elements: &VectorElementList<$value_type>,
                 reduction_operator_for_duplicates: &dyn BinaryOperator<
+                    $value_type,
                     $value_type,
                     $value_type,
                     $value_type,
@@ -668,38 +670,6 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
-pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool>> {
-    fn sort(
-        &self,
-        sorted_values: &mut SparseVector<T>,
-        sorted_indices_in_self: &mut SparseVector<T>,
-        sort_operator: &B,
-    ) -> Result<(), SparseLinearAlgebraError>;
-}
-
-impl<T: ValueType, B: BinaryOperator<T, T, bool>> SortSparseVector<T, B> for SparseVector<T> {
-    fn sort(
-        &self,
-        sorted_values: &mut SparseVector<T>,
-        indices_to_sort_self: &mut SparseVector<T>,
-        sort_operator: &B,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        self.context.call(
-            || unsafe {
-                GxB_Vector_sort(
-                    sorted_values.graphblas_vector(),
-                    indices_to_sort_self.graphblas_vector(),
-                    sort_operator.graphblas_type(),
-                    self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
-                )
-            },
-            &self.vector,
-        )?;
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -709,7 +679,7 @@ mod tests {
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::binary_operator::{First, IsGreaterThan};
+    use crate::operators::binary_operator::{First, IsGreaterThan, IsGreaterThanTyped};
 
     #[test]
     fn new_vector() {
@@ -762,7 +732,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -835,7 +805,7 @@ mod tests {
             &context,
             &10,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -1043,7 +1013,7 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -1064,51 +1034,12 @@ mod tests {
             &context,
             &10,
             &empty_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
         assert_eq!(
             vector.number_of_stored_elements().unwrap(),
             element_list.length()
         );
-    }
-
-    #[test]
-    fn sort() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
-
-        let element_list = VectorElementList::<isize>::from_element_vector(vec![
-            (1, 1).into(),
-            (2, 2).into(),
-            (4, 6).into(),
-            (6, 4).into(),
-        ]);
-
-        let vector = SparseVector::<isize>::from_element_list(
-            &context.clone(),
-            &10,
-            &element_list,
-            &First::<isize, isize, isize>::new(),
-        )
-        .unwrap();
-
-        let mut sorted = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
-        let mut indices = sorted.clone();
-
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool>::new();
-
-        vector
-            .sort(&mut sorted, &mut indices, &larger_than_operator)
-            .unwrap();
-
-        assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
-        assert_eq!(sorted.get_element_value(&1).unwrap(), 4);
-        assert_eq!(sorted.get_element_value(&2).unwrap(), 2);
-        assert_eq!(sorted.get_element_value(&3).unwrap(), 1);
-
-        assert_eq!(indices.get_element_value(&0).unwrap(), 4);
-        assert_eq!(indices.get_element_value(&1).unwrap(), 6);
-        assert_eq!(indices.get_element_value(&2).unwrap(), 2);
-        assert_eq!(indices.get_element_value(&3).unwrap(), 1);
     }
 }

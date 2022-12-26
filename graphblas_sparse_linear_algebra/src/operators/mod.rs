@@ -4,7 +4,7 @@ pub mod element_wise_addition;
 pub mod element_wise_multiplication;
 pub mod extract;
 pub mod insert;
-pub mod iterator;
+// pub mod iterator;
 pub mod kronecker_product;
 pub mod monoid;
 pub mod multiplication;

@@ -44,7 +44,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<SubVector, SubVector, SubVector>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<SubVector, SubVector, SubVector, SubVector>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -203,7 +203,7 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -238,7 +238,7 @@ mod tests {
             &context.clone(),
             &10,
             &vector_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 
@@ -256,7 +256,7 @@ mod tests {
             &context.clone(),
             &4,
             &mask_element_list,
-            &First::<u8, u8, u8>::new(),
+            &First::<u8, u8, u8, u8>::new(),
         )
         .unwrap();
 

@@ -2,233 +2,203 @@ use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_2_type_trait_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types,
 };
 use crate::value_type::ValueType;
 
-pub trait BinaryOperator<X, Y, Z>
+pub trait BinaryOperator<X, Y, Z, T>
 where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
+    X: ValueType, // left-hand-side
+    Y: ValueType, // right-hand-side
+    Z: ValueType, // result
+    T: ValueType,
 {
     fn graphblas_type(&self) -> GrB_BinaryOp;
 }
 
+pub trait ReturnsBool {}
+
 macro_rules! implement_binary_operator {
-    ($operator_name:ident,
+    (
+        $operator_name:ident,
         $graphblas_operator_name:ident,
-        $value_type_left_input:ty,
-        $value_type_right_input:ty,
-        $value_type_output:ty
+        $evaluation_domain: ty
     ) => {
-        impl BinaryOperator<$value_type_left_input, $value_type_right_input, $value_type_output>
-            for $operator_name<$value_type_left_input, $value_type_right_input, $value_type_output>
+        impl<X: ValueType, Y: ValueType, Z: ValueType> BinaryOperator<X, Y, Z, $evaluation_domain>
+            for $operator_name<X, Y, Z, $evaluation_domain>
         {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl $operator_name<$value_type_left_input, $value_type_right_input, $value_type_output> {
+        impl<X: ValueType, Y: ValueType, Z: ValueType> $operator_name<X, Y, Z, $evaluation_domain> {
             pub fn new() -> Self {
                 Self {
                     _value_type_left_input: PhantomData,
                     _value_type_right_input: PhantomData,
                     _value_type_output: PhantomData,
+                    _evaluation_domain: PhantomData,
                 }
             }
         }
     };
 }
 
-// x = first(x,y)
-#[derive(Debug, Clone)]
-pub struct First<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
+macro_rules! implement_binary_operator_with_bool_return_type {
+    (
+        $operator_name:ident,
+        $graphblas_operator_name:ident,
+        $evaluation_domain: ty
+    ) => {
+        impl<X: ValueType, Y: ValueType> BinaryOperator<X, Y, bool, $evaluation_domain>
+            for $operator_name<X, Y, bool, $evaluation_domain>
+        {
+            fn graphblas_type(&self) -> GrB_BinaryOp {
+                unsafe { $graphblas_operator_name }
+            }
+        }
+
+        impl<X: ValueType, Y: ValueType> $operator_name<X, Y, bool, $evaluation_domain> {
+            pub fn new() -> Self {
+                Self {
+                    _value_type_left_input: PhantomData,
+                    _value_type_right_input: PhantomData,
+                    _value_type_output: PhantomData,
+                    _evaluation_domain: PhantomData,
+                }
+            }
+        }
+
+        impl<X: ValueType, Y: ValueType> ReturnsBool
+            for $operator_name<X, Y, bool, $evaluation_domain>
+        {
+        }
+    };
 }
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+macro_rules! implement_binary_operator_for_boolean {
+    (
+        $operator_name:ident,
+        $graphblas_operator_name:ident
+    ) => {
+        impl BinaryOperator<bool, bool, bool, bool> for $operator_name<bool, bool, bool, bool> {
+            fn graphblas_type(&self) -> GrB_BinaryOp {
+                unsafe { $graphblas_operator_name }
+            }
+        }
+
+        impl $operator_name<bool, bool, bool, bool> {
+            pub fn new() -> Self {
+                Self {
+                    _value_type_left_input: PhantomData,
+                    _value_type_right_input: PhantomData,
+                    _value_type_output: PhantomData,
+                    _evaluation_domain: PhantomData,
+                }
+            }
+        }
+
+        impl ReturnsBool for $operator_name<bool, bool, bool, bool> {}
+    };
+}
+
+macro_rules! define_binary_operator {
+    ($identifier: ident) => {
+        #[derive(Debug, Clone)]
+        pub struct $identifier<X, Y, Z, T>
+        where
+            X: ValueType,
+            Y: ValueType,
+            Z: ValueType,
+            T: ValueType,
+        {
+            _value_type_left_input: PhantomData<X>,
+            _value_type_right_input: PhantomData<Y>,
+            _value_type_output: PhantomData<Z>,
+            _evaluation_domain: PhantomData<T>,
+        }
+    };
+}
+
+// x = first(x,y)
+define_binary_operator!(First);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     First,
     GrB_FIRST
 );
 
 // y = second(x,y)
-#[derive(Debug, Clone)]
-pub struct Second<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Second);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Second,
     GrB_SECOND
 );
 
 // z = 1
-#[derive(Debug, Clone)]
-pub struct One<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(One);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     One,
     GrB_ONEB
 );
 
 // z = x^y (z = x.pow(y))
-#[derive(Debug, Clone)]
-pub struct Power<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Power);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Power,
     GxB_POW
 );
 
 // z = x+y
-#[derive(Debug, Clone)]
-pub struct Plus<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Plus);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Plus,
     GrB_PLUS
 );
 
 // z = x-y
-#[derive(Debug, Clone)]
-pub struct Minus<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Minus);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Minus,
     GrB_MINUS
 );
 
 // z = y-x
-#[derive(Debug, Clone)]
-pub struct ReverseMinus<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(ReverseMinus);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     ReverseMinus,
     GxB_RMINUS
 );
 
 // z = x*y
-#[derive(Debug, Clone)]
-pub struct Times<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Times);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Times,
     GrB_TIMES
 );
 
 // z = x/y
-#[derive(Debug, Clone)]
-pub struct Divide<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Divide);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Divide,
     GrB_DIV
 );
 
 // z = x/y
-#[derive(Debug, Clone)]
-pub struct ReverseDivide<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(ReverseDivide);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     ReverseDivide,
     GxB_RDIV
@@ -236,134 +206,81 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x==y
 #[derive(Debug, Clone)]
-pub struct IsEqual<X, Y, bool>
+pub struct IsEqual<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_domain: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator_with_bool_return_type,
     IsEqual,
-    GrB_EQ,
-    bool
+    GrB_EQ
 );
 
 // z = x==y
-#[derive(Debug, Clone)]
-pub struct IsEqualTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(IsEqualTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsEqualTyped,
     GxB_ISEQ
 );
 
-// z = x~!=y
+// z = x!=y
 #[derive(Debug, Clone)]
-pub struct IsNotEqual<X, Y, bool>
+pub struct IsNotEqual<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: ValueType,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_domain: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator_with_bool_return_type,
     IsNotEqual,
-    GrB_NE,
-    bool
+    GrB_NE
 );
 
 // z = x==y
-#[derive(Debug, Clone)]
-pub struct IsNotEqualTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(IsNotEqualTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsNotEqualTyped,
     GxB_ISNE
 );
 
 // z = any(x,y), selected according to fastest computation speed
-#[derive(Debug, Clone)]
-pub struct Any<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Any);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Any,
     GxB_ANY
 );
 
 // z = min(x,y)
-#[derive(Debug, Clone)]
-pub struct Min<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Min);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Min,
     GrB_MIN
 );
 
 // z = max(x,y)
-#[derive(Debug, Clone)]
-pub struct Max<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(Max);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     Max,
     GrB_MAX
@@ -371,38 +288,28 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x>y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThan<X, Y, bool>
+pub struct IsGreaterThan<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_domain: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator_with_bool_return_type,
     IsGreaterThan,
-    GrB_GT,
-    bool
+    GrB_GT
 );
 
 // z = (x>y)
-#[derive(Debug, Clone)]
-pub struct IsGreaterThanTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(IsGreaterThanTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsGreaterThanTyped,
     GxB_ISGT
@@ -410,38 +317,28 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x>=y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThanOrEqualTo<X, Y, bool>
+pub struct IsGreaterThanOrEqualTo<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_domain: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator_with_bool_return_type,
     IsGreaterThanOrEqualTo,
-    GrB_GE,
-    bool
+    GrB_GE
 );
 
 // z = (x>=y)
-#[derive(Debug, Clone)]
-pub struct IsGreaterThanOrEqualToTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(IsGreaterThanOrEqualToTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsGreaterThanOrEqualToTyped,
     GxB_ISGE
@@ -449,38 +346,28 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x<y)
 #[derive(Debug, Clone)]
-pub struct IsLessThan<X, Y, bool>
+pub struct IsLessThan<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_domain: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator_with_bool_return_type,
     IsLessThan,
-    GrB_LT,
-    bool
+    GrB_LT
 );
 
 // z = (x<y)
-#[derive(Debug, Clone)]
-pub struct IsLessThanTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(IsLessThanTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsLessThanTyped,
     GxB_ISLT
@@ -488,219 +375,432 @@ implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x<=y)
 #[derive(Debug, Clone)]
-pub struct IsLessThanOrEqualTo<X, Y, bool>
+pub struct IsLessThanOrEqualTo<X, Y, bool, T>
 where
     X: ValueType,
     Y: ValueType,
     // Z: bool,
+    T: ValueType,
 {
     _value_type_left_input: PhantomData<X>,
     _value_type_right_input: PhantomData<Y>,
     _value_type_output: PhantomData<bool>,
+    _evaluation_domain: PhantomData<T>,
 }
 
-implement_macro_with_2_type_trait_and_output_type_and_typed_graphblas_function_for_all_value_types!(
-    implement_binary_operator,
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_binary_operator_with_bool_return_type,
     IsLessThanOrEqualTo,
-    GrB_LE,
-    bool
+    GrB_LE
 );
 
 // z = (x<=y)
-#[derive(Debug, Clone)]
-pub struct IsLessThanOrEqualToTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(IsLessThanOrEqualToTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     IsLessThanOrEqualToTyped,
     GxB_ISLE
 );
 
 // z = (x|y)
-#[derive(Debug, Clone)]
-pub struct LogicalOr<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_binary_operator!(LogicalOr, GrB_LOR, bool, bool, bool);
+define_binary_operator!(LogicalOr);
+implement_binary_operator_for_boolean!(LogicalOr, GrB_LOR);
 
 // z = (x|y)
-#[derive(Debug, Clone)]
-pub struct LogicalOrTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
-
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+define_binary_operator!(LogicalOrTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     LogicalOrTyped,
     GxB_LOR
 );
 
 // z = (x&y)
-#[derive(Debug, Clone)]
-pub struct LogicalAndTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
+define_binary_operator!(LogicalAnd);
+implement_binary_operator_for_boolean!(LogicalAnd, GrB_LAND);
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+// z = (x&y)
+define_binary_operator!(LogicalAndTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     LogicalAndTyped,
     GxB_LAND
 );
 
-// z = (x&y)
-#[derive(Debug, Clone)]
-pub struct LogicalExclusiveOrTyped<X, Y, Z>
-where
-    X: ValueType,
-    Y: ValueType,
-    Z: ValueType,
-{
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<Z>,
-}
+// z = (x|y)
+define_binary_operator!(LogicalExclusiveOr);
+implement_binary_operator_for_boolean!(LogicalExclusiveOr, GrB_LXOR);
 
-implement_macro_with_3_type_trait_and_typed_graphblas_function_for_all_value_types!(
+// z = (x&y)
+define_binary_operator!(LogicalExclusiveOrTyped);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_binary_operator,
     LogicalExclusiveOrTyped,
     GxB_LXOR
 );
 
+// z = tan^{-1}(y/x)
+define_binary_operator!(FloatingPointFourQuadrantArcTangent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_binary_operator,
+    FloatingPointFourQuadrantArcTangent,
+    GxB_ATAN2
+);
+
+// z = sqrt(x^2 + y^2)
+define_binary_operator!(FloatingPointHypotenuse);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_binary_operator,
+    FloatingPointHypotenuse,
+    GxB_HYPOT
+);
+
+// z = remainder(x,y)
+// Distance to multiple of y closest to x
+define_binary_operator!(FloatingPointRemainder);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_binary_operator,
+    FloatingPointRemainder,
+    GxB_REMAINDER
+);
+
+// z = fmod(x,y)
+// Distance to last full multiple of y smaller than or equal to x
+define_binary_operator!(FloatingPointModulus);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_binary_operator,
+    FloatingPointModulus,
+    GxB_FMOD
+);
+
+// TODO: test for non-integer y
+// z = x*2^y
+define_binary_operator!(LDExp);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_binary_operator,
+    LDExp,
+    GxB_LDEXP
+);
+
+// z = copysign(x,y) => z~f(magnitude(x), sign(y))
+define_binary_operator!(FloatingPointFromMagnitudeAndSign);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_binary_operator,
+    FloatingPointFromMagnitudeAndSign,
+    GxB_COPYSIGN
+);
+
+// NOTE: bitwise operations on signed integers may behave differently between different compilers
+
+define_binary_operator!(BitWiseLogicalOr);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    BitWiseLogicalOr,
+    GrB_BOR
+);
+
+define_binary_operator!(BitWiseLogicalAnd);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    BitWiseLogicalAnd,
+    GrB_BAND
+);
+
+define_binary_operator!(BitWiseLogicalExclusiveNotOr);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    BitWiseLogicalExclusiveNotOr,
+    GrB_BXNOR
+);
+
+define_binary_operator!(BitWiseLogicalExclusiveOr);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    BitWiseLogicalExclusiveOr,
+    GrB_BXOR
+);
+
+define_binary_operator!(GetBit);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    GetBit,
+    GxB_BGET
+);
+
+define_binary_operator!(SetBit);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    SetBit,
+    GxB_BSET
+);
+
+define_binary_operator!(ClearBit);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    ClearBit,
+    GxB_BCLR
+);
+
+// TODO: consider restricting input to u8. This would improve performance and predictability
+define_binary_operator!(ShiftBit);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_binary_operator,
+    ShiftBit,
+    GxB_BSHIFT
+);
+
+define_binary_operator!(RowIndexFirstArgument);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
+    implement_binary_operator,
+    RowIndexFirstArgument,
+    GxB_FIRSTI
+);
+
+define_binary_operator!(ColumnIndexFirstArgument);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
+    implement_binary_operator,
+    ColumnIndexFirstArgument,
+    GxB_FIRSTJ
+);
+
+define_binary_operator!(RowIndexSecondArgument);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
+    implement_binary_operator,
+    RowIndexSecondArgument,
+    GxB_SECONDI
+);
+
+define_binary_operator!(ColumnIndexSecondArgument);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
+    implement_binary_operator,
+    ColumnIndexSecondArgument,
+    GxB_SECONDJ
+);
+
 #[cfg(test)]
 mod tests {
+    use crate::{
+        collections::{
+            collection::Collection,
+            sparse_matrix::{
+                FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+            },
+            sparse_scalar::SparseScalar,
+            sparse_vector::{
+                FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+            },
+        },
+        context::{Context, Mode},
+        operators::{
+            apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait},
+            options::OperatorOptions,
+        },
+    };
+
     use super::*;
 
     #[test]
     fn new_binary_operator() {
-        let first = First::<bool, bool, bool>::new();
+        let first = First::<bool, bool, bool, bool>::new();
         let _graphblas_type = first.graphblas_type();
 
-        let plus = Plus::<i8, i8, i8>::new();
+        let plus = Plus::<i8, i8, i8, i8>::new();
         let _graphblas_type = plus.graphblas_type();
     }
+
+    #[test]
+    fn test_divide_by_zero() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list =
+            VectorElementList::<u8>::from_element_vector(vec![(1, 1).into(), (2, 0).into()]);
+
+        let vector_length: usize = 10;
+        let vector = SparseVector::<u8>::from_element_list(
+            &context.clone(),
+            &vector_length,
+            &element_list,
+            &First::<u8, u8, u8, u8>::new(),
+        )
+        .unwrap();
+
+        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+
+        let operator = BinaryOperatorApplier::new(
+            &Divide::<u8, u8, u8, u8>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        let second_agrument = SparseScalar::<u8>::from_value(&context, 0).unwrap();
+        operator
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
+
+        println!("{}", product_vector);
+        assert_eq!(product_vector.get_element_value(&1).unwrap(), u8::MAX);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 0);
+
+        let operator = BinaryOperatorApplier::new(
+            &Divide::<u8, u8, f32, u8>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
+        operator
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
+
+        println!("{}", product_vector);
+        assert_eq!(
+            product_vector.get_element_value(&1).unwrap(),
+            u8::MAX as f32
+        );
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 0f32);
+
+        let operator = BinaryOperatorApplier::new(
+            &Divide::<u8, u8, f32, f32>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+        operator
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
+        println!("{}", product_vector);
+        assert_eq!(product_vector.get_element_value(&1).unwrap(), f32::INFINITY);
+        assert!(f32::is_nan(product_vector.get_element_value(&2).unwrap()));
+    }
+
+    #[test]
+    fn test_ldexp_and_type_casting_for_floating_point_operators() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = VectorElementList::<u8>::from_element_vector(vec![
+            (0, 1).into(),
+            (1, 2).into(),
+            (2, 3).into(),
+        ]);
+
+        let vector_length: usize = 10;
+        let vector = SparseVector::<u8>::from_element_list(
+            &context.clone(),
+            &vector_length,
+            &element_list,
+            &First::<u8, u8, u8, u8>::new(),
+        )
+        .unwrap();
+
+        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+
+        let operator = BinaryOperatorApplier::new(
+            &LDExp::<u8, f32, u8, f32>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        let second_agrument = SparseScalar::<f32>::from_value(&context, 0.5).unwrap();
+        operator
+            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .unwrap();
+
+        println!("{}", product_vector);
+        assert_eq!(product_vector.get_element_value(&0).unwrap(), 1);
+        assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 3);
+    }
+
+    #[test]
+    fn test_bitshift() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = VectorElementList::<f64>::from_element_vector(vec![
+            (0, u16::MAX as f64).into(),
+            (1, u16::MAX as f64).into(),
+            (2, u16::MAX as f64 + 0.5).into(),
+        ]);
+
+        let vector_length: usize = 10;
+        let vector = SparseVector::<f64>::from_element_list(
+            &context.clone(),
+            &vector_length,
+            &element_list,
+            &First::<f64, f64, f64, f64>::new(),
+        )
+        .unwrap();
+
+        let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
+
+        let operator = BinaryOperatorApplier::new(
+            &ShiftBit::<f64, f32, f32, u8>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        for i in 0..3 {
+            let second_agrument =
+                SparseScalar::<f32>::from_value(&context, i as f32 + 0.5).unwrap();
+            operator
+                .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+                .unwrap();
+
+            println!("{}", product_vector);
+            match i {
+                0 => {
+                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 255f32);
+                }
+                1 => {
+                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 254f32);
+                }
+                2 => {
+                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 252f32);
+                }
+                3 => {
+                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 248f32);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    #[test]
+    fn test_index() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = MatrixElementList::<u8>::from_element_vector(vec![
+            (1, 1, 1).into(),
+            (2, 1, 2).into(),
+            (4, 2, 4).into(),
+            (5, 2, 5).into(),
+        ]);
+
+        let matrix_size: Size = (10, 15).into();
+        let matrix = SparseMatrix::<u8>::from_element_list(
+            &context.clone(),
+            &matrix_size,
+            &element_list,
+            &First::<u8, u8, u8, u8>::new(),
+        )
+        .unwrap();
+
+        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+
+        let operator = BinaryOperatorApplier::new(
+            &RowIndexFirstArgument::<u8, u8, u8, i64>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        operator
+            .apply_with_matrix_as_first_argument(&matrix, &second_agrument, &mut product_matrix)
+            .unwrap();
+
+        println!("{}", product_matrix);
+
+        assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
+        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 1);
+        assert_eq!(product_matrix.get_element_value(&(2, 1).into()).unwrap(), 2);
+        assert_eq!(product_matrix.get_element_value(&(4, 2).into()).unwrap(), 4);
+        assert_eq!(product_matrix.get_element_value(&(5, 2).into()).unwrap(), 5);
+    }
 }
-
-/*
-    // z = x            z = y               z = pow (x,y)
-    GrB_FIRST_BOOL,     GrB_SECOND_BOOL,    GxB_POW_BOOL,
-
-
-    // z = x+y          z = x-y             z = x*y             z = x/y
-    GrB_PLUS_BOOL,      GrB_MINUS_BOOL,     GrB_TIMES_BOOL,     GrB_DIV_BOOL,
-
-
-    // z = y-x          z = y/x             z = 1               z = any(x,y)
-    GxB_RMINUS_BOOL,    GxB_RDIV_BOOL,      GxB_PAIR_BOOL,      GxB_ANY_BOOL,
-
-
-    // The GxB_IS* comparison operators z=f(x,y) return the same type as their
-    // inputs.  Each of them compute z = (x OP y), where x, y, and z all have
-    // the same type.  The value z is either 1 for true or 0 for false, but it
-    // is a value with the same type as x and y.
-
-    // z = (x == y)     z = (x != y)
-    GxB_ISEQ_BOOL,      GxB_ISNE_BOOL,
-
-
-    // z = (x > y)      z = (x < y)         z = (x >= y)     z = (x <= y)
-    GxB_ISGT_BOOL,      GxB_ISLT_BOOL,      GxB_ISGE_BOOL,      GxB_ISLE_BOOL,
-
-    // z = min(x,y)     z = max (x,y)
-    GrB_MIN_BOOL,       GrB_MAX_BOOL,
-
-    // Binary operators for each of the 11 real types:
-
-    // The operators convert non-boolean types internally to boolean and return
-    // a value 1 or 0 in the same type, for true or false.  Each computes z =
-    // ((x != 0) OP (y != 0)), where x, y, and z all the same type.  These
-    // operators are useful as multiplicative operators when combined with
-    // non-boolean monoids of the same type.
-
-    // z = (x || y)     z = (x && y)        z = (x != y)
-    GxB_LOR_BOOL,       GxB_LAND_BOOL,      GxB_LXOR_BOOL,
-
-    // Binary operators that operate only on boolean types: LOR, LAND, LXOR,
-    // and LXNOR.  The naming convention differs (_BOOL is not appended to the
-    // name).  They are the same as GxB_LOR_BOOL, GxB_LAND_BOOL, and
-    // GxB_LXOR_BOOL, and GrB_EQ_BOOL, respectively.
-
-    // z = (x || y)     z = (x && y)        z = (x != y)        z = (x == y)
-    GrB_LOR,            GrB_LAND,           GrB_LXOR,           GrB_LXNOR,
-
-    // Operators for floating-point reals:
-
-    // z = atan2(x,y)   z = hypot(x,y)      z = fmod(x,y)   z = remainder(x,y)
-    GxB_ATAN2_FP32,     GxB_HYPOT_FP32,     GxB_FMOD_FP32,  GxB_REMAINDER_FP32,
-    GxB_ATAN2_FP64,     GxB_HYPOT_FP64,     GxB_FMOD_FP64,  GxB_REMAINDER_FP64,
-
-    // z = ldexp(x,y)   z = copysign (x,y)
-    GxB_LDEXP_FP32,     GxB_COPYSIGN_FP32,
-    GxB_LDEXP_FP64,     GxB_COPYSIGN_FP64,
-
-    // Bitwise operations on signed and unsigned integers: note that
-    // bitwise operations on signed integers can lead to different results,
-    // depending on your compiler; results are implementation-defined.
-
-    // z = (x | y)      z = (x & y)         z = (x ^ y)        z = ~(x ^ y)
-    GrB_BOR_INT8,       GrB_BAND_INT8,      GrB_BXOR_INT8,     GrB_BXNOR_INT8,
-
-    // z = bitget(x,y)  z = bitset(x,y)     z = bitclr(x,y)
-    GxB_BGET_INT8,      GxB_BSET_INT8,      GxB_BCLR_INT8,
-
-
-    // z = bitshift(x,y)
-    GxB_BSHIFT_INT8,
-
-
-    // z = (x == y)     z = (x != y)        z = (x > y)         z = (x < y)
-    GrB_EQ_BOOL,        GrB_NE_BOOL,        GrB_GT_BOOL,        GrB_LT_BOOL,
-
-
-    // z = (x >= y)     z = (x <= y)
-    GrB_GE_BOOL,        GrB_LE_BOOL,
-
-
-    // z = cmplx (x,y)
-    GxB_CMPLX_FP32,
-
-GxB_FIRSTI_INT32,   GxB_FIRSTI_INT64,    // z = first_i(A(i,j),y) == i
-GxB_FIRSTI1_INT32,  GxB_FIRSTI1_INT64,   // z = first_i1(A(i,j),y) == i+1
-GxB_FIRSTJ_INT32,   GxB_FIRSTJ_INT64,    // z = first_j(A(i,j),y) == j
-GxB_FIRSTJ1_INT32,  GxB_FIRSTJ1_INT64,   // z = first_j1(A(i,j),y) == j+1
-GxB_SECONDI_INT32,  GxB_SECONDI_INT64,   // z = second_i(x,B(i,j)) == i
-GxB_SECONDI1_INT32, GxB_SECONDI1_INT64,  // z = second_i1(x,B(i,j)) == i+1
-GxB_SECONDJ_INT32,  GxB_SECONDJ_INT64,   // z = second_j(x,B(i,j)) == j
-GxB_SECONDJ1_INT32, GxB_SECONDJ1_INT64 ; // z = second_j1(x,B(i,j)) == j+1
-
-*/
