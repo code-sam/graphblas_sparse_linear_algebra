@@ -52,8 +52,22 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-// implement_trait_for_3_type_data_type_and_all_value_types!(Send, BinaryOperatorApplier);
-// implement_trait_for_3_type_data_type_and_all_value_types!(Sync, BinaryOperatorApplier);
+unsafe impl<
+        FirstArgument: ValueType,
+        SecondArgument: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Send for BinaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+{
+}
+unsafe impl<
+        FirstArgument: ValueType,
+        SecondArgument: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Sync for BinaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorApplier<

@@ -2,14 +2,19 @@ use std::marker::PhantomData;
 
 use crate::bindings_to_graphblas_implementation::*;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool,
 };
 use crate::value_type::ValueType;
 
-pub trait UnaryOperator<T>
+pub trait UnaryOperator<Argument, Product, EvaluationDomain>
 where
-    T: ValueType,
+    Argument: ValueType,
+    Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     fn graphblas_type(&self) -> GrB_UnaryOp;
 }
@@ -17,153 +22,397 @@ where
 macro_rules! implement_unary_operator {
     ($operator_name:ident,
         $graphblas_operator_name:ident,
-        $value_type:ty
+        $evaluation_domain:ty
     ) => {
-        impl UnaryOperator<$value_type> for $operator_name<$value_type> {
+        impl<Argument: ValueType, Product: ValueType>
+            UnaryOperator<Argument, Product, $evaluation_domain>
+            for $operator_name<Argument, Product, $evaluation_domain>
+        {
             fn graphblas_type(&self) -> GrB_UnaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl $operator_name<$value_type> {
+        impl<Argument: ValueType, Product: ValueType>
+            $operator_name<Argument, Product, $evaluation_domain>
+        {
             pub fn new() -> Self {
                 Self {
-                    _value_type: PhantomData,
+                    _argument_type: PhantomData,
+                    _product_type: PhantomData,
+                    _evaluation_domain: PhantomData,
                 }
             }
         }
     };
 }
 
-///z = x
-#[derive(Debug, Clone)]
-pub struct Identity<T: ValueType> {
-    _value_type: PhantomData<T>,
+macro_rules! define_unary_operator {
+    ($identifier: ident) => {
+        #[derive(Debug, Clone)]
+        pub struct $identifier<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
+        {
+            _argument_type: PhantomData<Argument>,
+            _product_type: PhantomData<Product>,
+            _evaluation_domain: PhantomData<EvaluationDomain>,
+        }
+    };
 }
 
-implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_unary_operator,
-    Identity,
-    GrB_IDENTITY
-);
-
-///z = -x
-#[derive(Debug, Clone)]
-pub struct AdditiveInverse<T: ValueType> {
-    _value_type: PhantomData<T>,
-}
-
-implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_unary_operator,
-    AdditiveInverse,
-    GrB_AINV
-);
-
-///z = 1/x
-#[derive(Debug, Clone)]
-pub struct MultiplicativeInverse<T: ValueType> {
-    _value_type: PhantomData<T>,
-}
-
-implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_unary_operator,
-    MultiplicativeInverse,
-    GrB_MINV
-);
-
-/// z = ! (x != 0)
-#[derive(Debug, Clone)]
-pub struct LogicalNegation<T: ValueType> {
-    _value_type: PhantomData<T>,
-}
-
-implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
-    implement_unary_operator,
-    LogicalNegation,
-    GxB_LNOT
-);
-implement_unary_operator!(LogicalNegation, GrB_LNOT, bool);
-
-/// z = 1
-/// Only operators in non-zero elements
-#[derive(Debug, Clone)]
-pub struct One<T: ValueType> {
-    _value_type: PhantomData<T>,
-}
-
+// z = 1
+define_unary_operator!(One);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_unary_operator,
     One,
     GxB_ONE
 );
 
-///z = abs(x)
-#[derive(Debug, Clone)]
-pub struct AbsoluteValue<T: ValueType> {
-    _value_type: PhantomData<T>,
-}
-
+// z = x
+define_unary_operator!(Identity);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_unary_operator,
-    AbsoluteValue,
-    GrB_ABS
+    Identity,
+    GrB_IDENTITY
+);
+
+//z = -x
+define_unary_operator!(AdditiveInverse);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_unary_operator,
+    AdditiveInverse,
+    GrB_AINV
+);
+
+//z = 1/x
+define_unary_operator!(MultiplicativeInverse);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_unary_operator,
+    MultiplicativeInverse,
+    GrB_MINV
+);
+
+// z = !x
+define_unary_operator!(LogicalNegation);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
+    implement_unary_operator,
+    LogicalNegation,
+    GxB_LNOT
+);
+
+define_unary_operator!(BitwiseNegation);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types!(
+    implement_unary_operator,
+    BitwiseNegation,
+    GrB_BNOT
+);
+
+define_unary_operator!(RowIndex);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
+    implement_unary_operator,
+    RowIndex,
+    GxB_POSITIONI
+);
+
+define_unary_operator!(ColumnIndex);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
+    implement_unary_operator,
+    ColumnIndex,
+    GxB_POSITIONJ
+);
+
+define_unary_operator!(SquareRoot);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    SquareRoot,
+    GxB_SQRT
+);
+
+define_unary_operator!(NaturalLogarithm);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NaturalLogarithm,
+    GxB_LOG
+);
+
+define_unary_operator!(NaturalExponent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NaturalExponent,
+    GxB_EXP
+);
+
+define_unary_operator!(Base10Logarithm);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Base10Logarithm,
+    GxB_LOG10
+);
+
+define_unary_operator!(Base2Logarithm);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Base2Logarithm,
+    GxB_LOG2
+);
+
+define_unary_operator!(Base2Exponent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Base2Exponent,
+    GxB_EXP2
+);
+
+
+// z = exp(x)-1
+define_unary_operator!(NaturalExponentMinus1);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NaturalExponentMinus1,
+    GxB_EXPM1
+);
+
+// z = log_e (x+1)
+define_unary_operator!(NaturalLogarithmOfArgumentPlusOne);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NaturalLogarithmOfArgumentPlusOne,
+    GxB_LOG1P
+);
+
+define_unary_operator!(Sine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Sine,
+    GxB_SIN
+);
+
+define_unary_operator!(Cosine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Cosine,
+    GxB_COS
+);
+
+define_unary_operator!(Tangent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Tangent,
+    GxB_TAN
+);
+
+define_unary_operator!(InverseSine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    InverseSine,
+    GxB_ASIN
+);
+
+define_unary_operator!(InverseCosine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    InverseCosine,
+    GxB_ACOS
+);
+
+define_unary_operator!(InverseTangent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    InverseTangent,
+    GxB_ATAN
+);
+
+define_unary_operator!(HyberbolicSine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    HyberbolicSine,
+    GxB_SINH
+);
+
+define_unary_operator!(HyberbolicCosine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    HyberbolicCosine,
+    GxB_COSH
+);
+
+define_unary_operator!(HyberbolicTangent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    HyberbolicTangent,
+    GxB_TANH
+);
+
+define_unary_operator!(InverseHyberbolicSine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    InverseHyberbolicSine,
+    GxB_ASINH
+);
+
+define_unary_operator!(InverseHyberbolicCosine);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    InverseHyberbolicCosine,
+    GxB_ACOSH
+);
+
+define_unary_operator!(InverseHyberbolicTangent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    InverseHyberbolicTangent,
+    GxB_ATANH
+);
+
+define_unary_operator!(Sign);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Sign,
+    GxB_SIGNUM
+);
+
+define_unary_operator!(Ceiling);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Ceiling,
+    GxB_CEIL
+);
+
+define_unary_operator!(Floor);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Floor,
+    GxB_FLOOR
+);
+
+define_unary_operator!(Round);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Round,
+    GxB_ROUND
+);
+
+define_unary_operator!(Truncate);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    Truncate,
+    GxB_TRUNC
+);
+
+define_unary_operator!(IsInfinite);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    IsInfinite,
+    GxB_ISINF
+);
+
+define_unary_operator!(IsNaN);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    IsNaN,
+    GxB_ISNAN
+);
+
+define_unary_operator!(IsFinite);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    IsFinite,
+    GxB_ISFINITE
+);
+
+define_unary_operator!(NaturalLogarithmOfGammaFunction);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NaturalLogarithmOfGammaFunction,
+    GxB_LGAMMA
+);
+
+define_unary_operator!(GammaFunction);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    GammaFunction,
+    GxB_TGAMMA
+);
+
+define_unary_operator!(ErrorFunction);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    ErrorFunction,
+    GxB_ERF
+);
+
+define_unary_operator!(ComplimentoryErrorFunction);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    ComplimentoryErrorFunction,
+    GxB_ERFC
+);
+
+define_unary_operator!(CubeRoot);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    CubeRoot,
+    GxB_CBRT
+);
+
+define_unary_operator!(NormalisedFraction);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NormalisedFraction,
+    GxB_FREXPX
+);
+
+define_unary_operator!(NormalisedExponent);
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
+    implement_unary_operator,
+    NormalisedExponent,
+    GxB_FREXPE
 );
 
 #[cfg(test)]
 mod tests {
+    use crate::{context::{Context, Mode}, collections::{sparse_vector::{SparseVector, VectorElementList, GetVectorElement, GetVectorElementValue, FromVectorElementList}, collection::Collection}, operators::{apply::{UnaryOperatorApplier, UnaryOperatorApplierTrait}, options::OperatorOptions, binary_operator::First}};
+
     use super::*;
 
     #[test]
     fn new_binary_operator() {
-        let min_monoid = AdditiveInverse::<f32>::new();
+        let min_monoid = AdditiveInverse::<f32, f32, f32>::new();
         let _graphblas_type = min_monoid.graphblas_type();
+    }
+
+    #[test]
+    fn test_is_finite_and_type_casting() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        
+        let element_list = VectorElementList::<i64>::from_element_vector(vec![
+            (1, 1).into(),
+            (3, 2).into(),
+            (6, -3).into(),
+        ]);
+
+        let vector_length: usize = 10;
+        let vector = SparseVector::<i64>::from_element_list(
+            &context.clone(),
+            &vector_length,
+            &element_list,
+            &First::<i64, i64, i64, i64>::new(),
+        )
+        .unwrap();
+        let operator = UnaryOperatorApplier::new(
+            &IsFinite::<i64, u8, f32>::new(),
+            &OperatorOptions::new_default(),
+            None,
+        );
+
+        let mut product = SparseVector::new(&context, &vector_length).unwrap();
+
+        operator
+            .apply_to_vector(&vector, &mut product)
+            .unwrap();
+
+        println!("{}", product);
+
+        assert_eq!(product.get_element_value(&6).unwrap(), 1u8);
     }
 }
 
-/*
-//------------------------------------------------------------------------------
-// built-in unary operators, z = f(x)
-//------------------------------------------------------------------------------
-
-// For these functions z=f(x), z and x have the same type.
-// The suffix in the name is the type of x and z.
-// z = x             z = -x             z = 1/x             z = ! (x != 0)
-// identity          additive           multiplicative      logical
-//                   inverse            inverse             negation
-GrB_IDENTITY_BOOL,   GrB_AINV_BOOL,     GrB_MINV_BOOL,      GxB_LNOT_BOOL,
-GrB_IDENTITY_INT8,   GrB_AINV_INT8,     GrB_MINV_INT8,      GxB_LNOT_INT8,
-GrB_IDENTITY_INT16,  GrB_AINV_INT16,    GrB_MINV_INT16,     GxB_LNOT_INT16,
-GrB_IDENTITY_INT32,  GrB_AINV_INT32,    GrB_MINV_INT32,     GxB_LNOT_INT32,
-GrB_IDENTITY_INT64,  GrB_AINV_INT64,    GrB_MINV_INT64,     GxB_LNOT_INT64,
-GrB_IDENTITY_UINT8,  GrB_AINV_UINT8,    GrB_MINV_UINT8,     GxB_LNOT_UINT8,
-GrB_IDENTITY_UINT16, GrB_AINV_UINT16,   GrB_MINV_UINT16,    GxB_LNOT_UINT16,
-GrB_IDENTITY_UINT32, GrB_AINV_UINT32,   GrB_MINV_UINT32,    GxB_LNOT_UINT32,
-GrB_IDENTITY_UINT64, GrB_AINV_UINT64,   GrB_MINV_UINT64,    GxB_LNOT_UINT64,
-GrB_IDENTITY_FP32,   GrB_AINV_FP32,     GrB_MINV_FP32,      GxB_LNOT_FP32,
-GrB_IDENTITY_FP64,   GrB_AINV_FP64,     GrB_MINV_FP64,      GxB_LNOT_FP64,
-// complex unary operators:
-GxB_IDENTITY_FC32,   GxB_AINV_FC32,     GxB_MINV_FC32,      // no LNOT
-GxB_IDENTITY_FC64,   GxB_AINV_FC64,     GxB_MINV_FC64,      // for complex
-
-// z = 1             z = abs(x)         z = bnot(x)         z = signum
-// one               absolute value     bitwise negation
-GxB_ONE_BOOL,        GrB_ABS_BOOL,
-GxB_ONE_INT8,        GrB_ABS_INT8,      GrB_BNOT_INT8,
-GxB_ONE_INT16,       GrB_ABS_INT16,     GrB_BNOT_INT16,
-GxB_ONE_INT32,       GrB_ABS_INT32,     GrB_BNOT_INT32,
-GxB_ONE_INT64,       GrB_ABS_INT64,     GrB_BNOT_INT64,
-GxB_ONE_UINT8,       GrB_ABS_UINT8,     GrB_BNOT_UINT8,
-GxB_ONE_UINT16,      GrB_ABS_UINT16,    GrB_BNOT_UINT16,
-GxB_ONE_UINT32,      GrB_ABS_UINT32,    GrB_BNOT_UINT32,
-GxB_ONE_UINT64,      GrB_ABS_UINT64,    GrB_BNOT_UINT64,
-GxB_ONE_FP32,        GrB_ABS_FP32,
-GxB_ONE_FP64,        GrB_ABS_FP64,
-// complex unary operators:
-GxB_ONE_FC32,        // for complex types, z = abs(x)
-GxB_ONE_FC64,        // is real; listed below.
-
-// Boolean negation, z = !x, where both z and x are boolean.  There is no
-// suffix since z and x are only boolean.  This operator is identical to
-// GxB_LNOT_BOOL; it just has a different name.
-GrB_LNOT ;
-*/
