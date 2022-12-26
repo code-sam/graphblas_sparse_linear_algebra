@@ -118,7 +118,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         self.row_index.as_slice()
     }
 
-    pub(crate) fn row_index(
+    pub fn row_index(
         &self,
         index: ElementIndex,
     ) -> Result<&ElementIndex, SparseLinearAlgebraError> {
@@ -138,7 +138,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         Ok(&self.row_index[index])
     }
 
-    pub(crate) fn column_index(
+    pub fn column_index(
         &self,
         index: ElementIndex,
     ) -> Result<&ElementIndex, SparseLinearAlgebraError> {
