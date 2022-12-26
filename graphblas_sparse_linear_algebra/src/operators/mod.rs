@@ -3,6 +3,7 @@ pub mod binary_operator;
 pub mod element_wise_addition;
 pub mod element_wise_multiplication;
 pub mod extract;
+pub mod index_unary_operator;
 pub mod insert;
 // pub mod iterator;
 pub mod kronecker_product;

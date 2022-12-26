@@ -12,13 +12,10 @@ use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{
-    binary_operator::BinaryOperator, options::OperatorOptions,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor};
+use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

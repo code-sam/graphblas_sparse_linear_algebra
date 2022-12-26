@@ -24,7 +24,7 @@ use crate::error::{
 use crate::index::{ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_for_all_value_types
+    implement_macro_for_all_value_types,
 };
 use crate::value_type::ConvertScalar;
 use crate::value_type::ValueType;
@@ -59,6 +59,15 @@ impl<T: ValueType> SparseScalar<T> {
             value_type: PhantomData,
         });
     }
+
+    // pub fn from_value(
+    //     context: &Arc<Context>,
+    //     value: &T,
+    // ) -> Result<Self, SparseLinearAlgebraError> {
+    //     let mut sparse_scalar = SparseScalar::new(context)?;
+    //     sparse_scalar.set_value(value)?;
+    //     Ok(sparse_scalar)
+    // }
 }
 
 // impl<T: ValueType + BuiltInValueType + SetScalarValue<T>> SparseScalar<T> {

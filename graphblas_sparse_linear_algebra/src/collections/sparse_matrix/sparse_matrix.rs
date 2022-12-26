@@ -6,7 +6,7 @@ use std::sync::Arc;
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
 
-use suitesparse_graphblas_sys::{GrB_Matrix_diag};
+use suitesparse_graphblas_sys::GrB_Matrix_diag;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
