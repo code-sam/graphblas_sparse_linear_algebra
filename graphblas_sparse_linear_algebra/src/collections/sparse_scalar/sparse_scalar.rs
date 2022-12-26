@@ -24,7 +24,7 @@ use crate::error::{
 use crate::index::{ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_for_all_value_types, implement_trait_for_all_value_types,
+    implement_macro_for_all_value_types
 };
 use crate::value_type::ConvertScalar;
 use crate::value_type::ValueType;
@@ -40,8 +40,8 @@ pub struct SparseScalar<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_all_value_types!(Send, SparseScalar);
-implement_trait_for_all_value_types!(Sync, SparseScalar);
+unsafe impl<T: ValueType> Send for SparseScalar<T> {}
+unsafe impl<T: ValueType> Sync for SparseScalar<T> {}
 
 impl<T: ValueType> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {

@@ -6,7 +6,7 @@ use std::sync::Arc;
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
 
-use suitesparse_graphblas_sys::{GrB_Matrix_diag, GxB_Vector_diag};
+use suitesparse_graphblas_sys::{GrB_Matrix_diag};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
@@ -37,7 +37,7 @@ use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
 };
-use crate::operators::options::OperatorOptions;
+// use crate::operators::options::OperatorOptions;
 
 use super::coordinate::Coordinate;
 use super::element::{MatrixElement, MatrixElementList};
@@ -52,12 +52,11 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,
     implement_macro_for_all_value_types_and_graphblas_function,
-    implement_trait_for_all_value_types,
 };
 use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
 
-static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
-    Lazy::new(|| OperatorOptions::new_default());
+// static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
+//     Lazy::new(|| OperatorOptions::new_default());
 
 pub type ColumnIndex = ElementIndex;
 pub type RowIndex = ElementIndex;
@@ -73,8 +72,8 @@ pub struct SparseMatrix<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_all_value_types!(Send, SparseMatrix);
-implement_trait_for_all_value_types!(Sync, SparseMatrix);
+unsafe impl<T: ValueType> Send for SparseMatrix<T> {}
+unsafe impl<T: ValueType> Sync for SparseMatrix<T> {}
 
 impl<T: ValueType> SparseMatrix<T> {
     pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {

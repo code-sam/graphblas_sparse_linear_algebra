@@ -7,47 +7,18 @@ use suitesparse_graphblas_sys::{
     GrB_Vector_apply_BinaryOp1st_Scalar, GrB_Vector_apply_BinaryOp2nd_Scalar,
 };
 
-use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_scalar::{GetScalarValue, GraphblasSparseScalarTrait, SparseScalar};
+use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    binary_operator::binary_operator::BinaryOperator, options::OperatorOptions,
-};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    convert_scalar_to_type, identity_conversion,
-    implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
-    implement_trait_for_3_type_data_type_and_all_value_types,
+    binary_operator::BinaryOperator, options::OperatorOptions,
 };
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply_BinaryOp1st_BOOL,
-    GrB_Matrix_apply_BinaryOp1st_FP32, GrB_Matrix_apply_BinaryOp1st_FP64,
-    GrB_Matrix_apply_BinaryOp1st_INT16, GrB_Matrix_apply_BinaryOp1st_INT32,
-    GrB_Matrix_apply_BinaryOp1st_INT64, GrB_Matrix_apply_BinaryOp1st_INT8,
-    GrB_Matrix_apply_BinaryOp1st_UINT16, GrB_Matrix_apply_BinaryOp1st_UINT32,
-    GrB_Matrix_apply_BinaryOp1st_UINT64, GrB_Matrix_apply_BinaryOp1st_UINT8,
-    GrB_Matrix_apply_BinaryOp2nd_BOOL, GrB_Matrix_apply_BinaryOp2nd_FP32,
-    GrB_Matrix_apply_BinaryOp2nd_FP64, GrB_Matrix_apply_BinaryOp2nd_INT16,
-    GrB_Matrix_apply_BinaryOp2nd_INT32, GrB_Matrix_apply_BinaryOp2nd_INT64,
-    GrB_Matrix_apply_BinaryOp2nd_INT8, GrB_Matrix_apply_BinaryOp2nd_UINT16,
-    GrB_Matrix_apply_BinaryOp2nd_UINT32, GrB_Matrix_apply_BinaryOp2nd_UINT64,
-    GrB_Matrix_apply_BinaryOp2nd_UINT8, GrB_Vector_apply_BinaryOp1st_BOOL,
-    GrB_Vector_apply_BinaryOp1st_FP32, GrB_Vector_apply_BinaryOp1st_FP64,
-    GrB_Vector_apply_BinaryOp1st_INT16, GrB_Vector_apply_BinaryOp1st_INT32,
-    GrB_Vector_apply_BinaryOp1st_INT64, GrB_Vector_apply_BinaryOp1st_INT8,
-    GrB_Vector_apply_BinaryOp1st_UINT16, GrB_Vector_apply_BinaryOp1st_UINT32,
-    GrB_Vector_apply_BinaryOp1st_UINT64, GrB_Vector_apply_BinaryOp1st_UINT8,
-    GrB_Vector_apply_BinaryOp2nd_BOOL, GrB_Vector_apply_BinaryOp2nd_FP32,
-    GrB_Vector_apply_BinaryOp2nd_FP64, GrB_Vector_apply_BinaryOp2nd_INT16,
-    GrB_Vector_apply_BinaryOp2nd_INT32, GrB_Vector_apply_BinaryOp2nd_INT64,
-    GrB_Vector_apply_BinaryOp2nd_INT8, GrB_Vector_apply_BinaryOp2nd_UINT16,
-    GrB_Vector_apply_BinaryOp2nd_UINT32, GrB_Vector_apply_BinaryOp2nd_UINT64,
-    GrB_Vector_apply_BinaryOp2nd_UINT8,
-};
+    GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
@@ -416,6 +387,7 @@ impl<
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };

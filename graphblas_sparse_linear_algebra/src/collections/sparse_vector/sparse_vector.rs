@@ -41,11 +41,11 @@ use crate::error::{
     SparseLinearAlgebraErrorType,
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
-use crate::operators::binary_operator::{BinaryOperator, ReturnsBool};
+use crate::operators::binary_operator::{BinaryOperator};
 use crate::operators::options::OperatorOptions;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_for_all_value_types, implement_trait_for_all_value_types,
+    implement_macro_for_all_value_types,
 };
 use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
 
@@ -63,8 +63,8 @@ pub struct SparseVector<T: ValueType> {
 // Code review must consider that the correct lock is made via
 // SparseMatrix::get_write_lock() and SparseMatrix::get_read_lock().
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_all_value_types!(Send, SparseVector);
-implement_trait_for_all_value_types!(Sync, SparseVector);
+unsafe impl<T: ValueType> Send for SparseVector<T> {}
+unsafe impl<T: ValueType> Sync for SparseVector<T> {}
 
 // macro_rules! new_sparse_vector {
 //     ($value_type: ty, $graphblas_type: ident) => {

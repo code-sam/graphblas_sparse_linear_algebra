@@ -1,18 +1,12 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
-};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_macro_with_2_types_for_all_value_types,
-    implement_macro_with_3_types_and_4_graphblas_functions_with_scalar_conversion_for_all_data_types,
-    implement_trait_for_3_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -213,6 +207,7 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
 mod tests {
     use super::*;
 
+    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
