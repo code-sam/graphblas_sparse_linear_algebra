@@ -162,7 +162,6 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
     GxB_EXP2
 );
 
-
 // z = exp(x)-1
 define_unary_operator!(NaturalExponentMinus1);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
@@ -370,7 +369,21 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 
 #[cfg(test)]
 mod tests {
-    use crate::{context::{Context, Mode}, collections::{sparse_vector::{SparseVector, VectorElementList, GetVectorElement, GetVectorElementValue, FromVectorElementList}, collection::Collection}, operators::{apply::{UnaryOperatorApplier, UnaryOperatorApplierTrait}, options::OperatorOptions, binary_operator::First}};
+    use crate::{
+        collections::{
+            collection::Collection,
+            sparse_vector::{
+                FromVectorElementList, GetVectorElement, GetVectorElementValue, SparseVector,
+                VectorElementList,
+            },
+        },
+        context::{Context, Mode},
+        operators::{
+            apply::{UnaryOperatorApplier, UnaryOperatorApplierTrait},
+            binary_operator::First,
+            options::OperatorOptions,
+        },
+    };
 
     use super::*;
 
@@ -383,7 +396,7 @@ mod tests {
     #[test]
     fn test_is_finite_and_type_casting() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
-        
+
         let element_list = VectorElementList::<i64>::from_element_vector(vec![
             (1, 1).into(),
             (3, 2).into(),
@@ -406,13 +419,10 @@ mod tests {
 
         let mut product = SparseVector::new(&context, &vector_length).unwrap();
 
-        operator
-            .apply_to_vector(&vector, &mut product)
-            .unwrap();
+        operator.apply_to_vector(&vector, &mut product).unwrap();
 
         println!("{}", product);
 
         assert_eq!(product.get_element_value(&6).unwrap(), 1u8);
     }
 }
-
