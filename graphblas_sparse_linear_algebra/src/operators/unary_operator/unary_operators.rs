@@ -379,7 +379,7 @@ mod tests {
         },
         context::{Context, Mode},
         operators::{
-            apply::{UnaryOperatorApplier, UnaryOperatorApplierTrait},
+            apply::{ApplyUnaryOperator, UnaryOperatorApplier},
             binary_operator::First,
             options::OperatorOptions,
         },

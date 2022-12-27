@@ -5,20 +5,64 @@ use std::ptr;
 use suitesparse_graphblas_sys::{
     GrB_Matrix_apply_BinaryOp1st_Scalar, GrB_Matrix_apply_BinaryOp2nd_Scalar,
     GrB_Vector_apply_BinaryOp1st_Scalar, GrB_Vector_apply_BinaryOp2nd_Scalar,
+    GrB_Matrix_apply_BinaryOp1st_BOOL,
+    GrB_Matrix_apply_BinaryOp1st_INT8,
+    GrB_Matrix_apply_BinaryOp1st_INT16,
+    GrB_Matrix_apply_BinaryOp1st_INT32,
+    GrB_Matrix_apply_BinaryOp1st_INT64,
+    GrB_Matrix_apply_BinaryOp1st_UINT8,
+    GrB_Matrix_apply_BinaryOp1st_UINT16,
+    GrB_Matrix_apply_BinaryOp1st_UINT32,
+    GrB_Matrix_apply_BinaryOp1st_UINT64,
+    GrB_Matrix_apply_BinaryOp1st_FP32,
+    GrB_Matrix_apply_BinaryOp1st_FP64,
+    GrB_Matrix_apply_BinaryOp2nd_BOOL,
+    GrB_Matrix_apply_BinaryOp2nd_INT8,
+    GrB_Matrix_apply_BinaryOp2nd_INT16,
+    GrB_Matrix_apply_BinaryOp2nd_INT32,
+    GrB_Matrix_apply_BinaryOp2nd_INT64,
+    GrB_Matrix_apply_BinaryOp2nd_UINT8,
+    GrB_Matrix_apply_BinaryOp2nd_UINT16,
+    GrB_Matrix_apply_BinaryOp2nd_UINT32,
+    GrB_Matrix_apply_BinaryOp2nd_UINT64,
+    GrB_Matrix_apply_BinaryOp2nd_FP32,
+    GrB_Matrix_apply_BinaryOp2nd_FP64,
+    GrB_Vector_apply_BinaryOp1st_BOOL,
+    GrB_Vector_apply_BinaryOp1st_INT8,
+    GrB_Vector_apply_BinaryOp1st_INT16,
+    GrB_Vector_apply_BinaryOp1st_INT32,
+    GrB_Vector_apply_BinaryOp1st_INT64,
+    GrB_Vector_apply_BinaryOp1st_UINT8,
+    GrB_Vector_apply_BinaryOp1st_UINT16,
+    GrB_Vector_apply_BinaryOp1st_UINT32,
+    GrB_Vector_apply_BinaryOp1st_UINT64,
+    GrB_Vector_apply_BinaryOp1st_FP32,
+    GrB_Vector_apply_BinaryOp1st_FP64,
+    GrB_Vector_apply_BinaryOp2nd_BOOL,
+    GrB_Vector_apply_BinaryOp2nd_INT8,
+    GrB_Vector_apply_BinaryOp2nd_INT16,
+    GrB_Vector_apply_BinaryOp2nd_INT32,
+    GrB_Vector_apply_BinaryOp2nd_INT64,
+    GrB_Vector_apply_BinaryOp2nd_UINT8,
+    GrB_Vector_apply_BinaryOp2nd_UINT16,
+    GrB_Vector_apply_BinaryOp2nd_UINT32,
+    GrB_Vector_apply_BinaryOp2nd_UINT64,
+    GrB_Vector_apply_BinaryOp2nd_FP32,
+    GrB_Vector_apply_BinaryOp2nd_FP64,
 };
 
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::{implement_macro_for_all_value_types, implement_macro_for_all_value_types_and_graphblas_function, implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type, implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type};
+use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
-// Code review must consider that no mtable access is provided.
+// Code review must consider that no mutable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
 unsafe impl<
         FirstArgument: ValueType,
@@ -88,9 +132,19 @@ impl<
             _evaluation_domain: PhantomData,
         }
     }
+
+    pub(crate) unsafe fn binary_operator(&self) -> GrB_BinaryOp {
+        self.binary_operator
+    }
+    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
+        self.accumulator
+    }
+    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
+        self.options
+    }
 }
 
-pub trait BinaryOperatorApplierTrait<FirstArgument, SecondArgument, Product, EvaluationDomain>
+pub trait ApplyBinaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
 where
     FirstArgument: ValueType,
     SecondArgument: ValueType,
@@ -100,13 +154,13 @@ where
     fn apply_with_vector_as_first_argument(
         &self,
         first_argument: &SparseVector<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
+        second_argument: &EvaluationDomain,
         product: &mut SparseVector<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_second_argument(
         &self,
-        first_argument: &SparseScalar<FirstArgument>,
+        first_argument: &EvaluationDomain,
         second_argument: &SparseVector<SecondArgument>,
         product: &mut SparseVector<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -114,14 +168,14 @@ where
     fn apply_with_vector_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         first_argument: &SparseVector<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
+        second_argument: &EvaluationDomain,
         product: &mut SparseVector<Product>,
         mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        first_argument: &SparseScalar<FirstArgument>,
+        first_argument: &EvaluationDomain,
         second_argument: &SparseVector<SecondArgument>,
         product: &mut SparseVector<Product>,
         mask: &SparseVector<MaskValueType>,
@@ -130,13 +184,13 @@ where
     fn apply_with_matrix_as_first_argument(
         &self,
         first_argument: &SparseMatrix<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
+        second_argument: &EvaluationDomain,
         product: &mut SparseMatrix<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_second_argument(
         &self,
-        first_argument: &SparseScalar<FirstArgument>,
+        first_argument: &EvaluationDomain,
         second_argument: &SparseMatrix<SecondArgument>,
         product: &mut SparseMatrix<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -144,241 +198,260 @@ where
     fn apply_with_matrix_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         first_argument: &SparseMatrix<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
+        second_argument: &EvaluationDomain,
         product: &mut SparseMatrix<Product>,
         mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        first_argument: &SparseScalar<FirstArgument>,
+        first_argument: &EvaluationDomain,
         second_argument: &SparseMatrix<SecondArgument>,
         product: &mut SparseMatrix<Product>,
         mask: &SparseMatrix<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > BinaryOperatorApplierTrait<FirstArgument, SecondArgument, Product, EvaluationDomain>
-    for BinaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
-{
-    fn apply_with_vector_as_first_argument(
-        &self,
-        first_argument: &SparseVector<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseVector<Product>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-        let second_argument = second_argument.clone();
+macro_rules! implement_apply_binary_operator {
+    ($value_type: ty, $_implementation_type: ty, $graphblas_function_1: ident, $graphblas_function_2: ident, $graphblas_function_3: ident, $graphblas_function_4: ident) => {
+        impl<
+            FirstArgument: ValueType,
+            SecondArgument: ValueType,
+            Product: ValueType,
+        > ApplyBinaryOperator<FirstArgument, SecondArgument, Product, $value_type>
+        for BinaryOperatorApplier<FirstArgument, SecondArgument, Product, $value_type>
+        {
+            fn apply_with_vector_as_first_argument(
+                &self,
+                first_argument: &SparseVector<FirstArgument>,
+                second_argument: &$value_type,
+                product: &mut SparseVector<Product>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let second_argument = second_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Vector_apply_BinaryOp2nd_Scalar(
-                    product.graphblas_vector(),
-                    ptr::null_mut(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_vector(),
-                    second_argument.graphblas_scalar(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_vector() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_1(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_vector(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_vector() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_vector_as_second_argument(
-        &self,
-        first_argument: &SparseScalar<FirstArgument>,
-        second_argument: &SparseVector<SecondArgument>,
-        product: &mut SparseVector<Product>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_vector_as_second_argument(
+                &self,
+                first_argument: &$value_type,
+                second_argument: &SparseVector<SecondArgument>,
+                product: &mut SparseVector<Product>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let first_argument = first_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Vector_apply_BinaryOp1st_Scalar(
-                    product.graphblas_vector(),
-                    ptr::null_mut(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_scalar(),
-                    second_argument.graphblas_vector(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_vector() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_2(
+                            product.graphblas_vector(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_vector(),
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_vector() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_vector_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
-        &self,
-        first_argument: &SparseVector<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_vector_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
+                &self,
+                first_argument: &SparseVector<FirstArgument>,
+                second_argument: &$value_type,
+                product: &mut SparseVector<Product>,
+                mask: &SparseVector<MaskValueType>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let second_argument = second_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Vector_apply_BinaryOp2nd_Scalar(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_vector(),
-                    second_argument.graphblas_scalar(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_vector() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_1(
+                            product.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_vector(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_vector() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_vector_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
-        &self,
-        first_argument: &SparseScalar<FirstArgument>,
-        second_argument: &SparseVector<SecondArgument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_vector_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
+                &self,
+                first_argument: &$value_type,
+                second_argument: &SparseVector<SecondArgument>,
+                product: &mut SparseVector<Product>,
+                mask: &SparseVector<MaskValueType>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let first_argument = first_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Vector_apply_BinaryOp1st_Scalar(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_scalar(),
-                    second_argument.graphblas_vector(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_vector() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_2(
+                            product.graphblas_vector(),
+                            mask.graphblas_vector(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_vector(),
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_vector() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_matrix_as_first_argument(
-        &self,
-        first_argument: &SparseMatrix<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_matrix_as_first_argument(
+                &self,
+                first_argument: &SparseMatrix<FirstArgument>,
+                second_argument: &$value_type,
+                product: &mut SparseMatrix<Product>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let second_argument = second_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Matrix_apply_BinaryOp2nd_Scalar(
-                    product.graphblas_matrix(),
-                    ptr::null_mut(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_matrix(),
-                    second_argument.graphblas_scalar(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_3(
+                            product.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_matrix(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_matrix() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_matrix_as_second_argument(
-        &self,
-        first_argument: &SparseScalar<FirstArgument>,
-        second_argument: &SparseMatrix<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_matrix_as_second_argument(
+                &self,
+                first_argument: &$value_type,
+                second_argument: &SparseMatrix<SecondArgument>,
+                product: &mut SparseMatrix<Product>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let first_argument = first_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Matrix_apply_BinaryOp1st_Scalar(
-                    product.graphblas_matrix(),
-                    ptr::null_mut(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_scalar(),
-                    second_argument.graphblas_matrix(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_4(
+                            product.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_matrix(),
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_matrix() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_matrix_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
-        &self,
-        first_argument: &SparseMatrix<FirstArgument>,
-        second_argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_matrix_as_first_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
+                &self,
+                first_argument: &SparseMatrix<FirstArgument>,
+                second_argument: &$value_type,
+                product: &mut SparseMatrix<Product>,
+                mask: &SparseMatrix<MaskValueType>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let second_argument = second_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Matrix_apply_BinaryOp2nd_Scalar(
-                    product.graphblas_matrix(),
-                    mask.graphblas_matrix(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_matrix(),
-                    second_argument.graphblas_scalar(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_3(
+                            product.graphblas_matrix(),
+                            mask.graphblas_matrix(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument.graphblas_matrix(),
+                            second_argument,
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_matrix() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
 
-    fn apply_with_matrix_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
-        &self,
-        first_argument: &SparseScalar<FirstArgument>,
-        second_argument: &SparseMatrix<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+            fn apply_with_matrix_as_second_argument_and_mask<MaskValueType: ValueType + AsBoolean>(
+                &self,
+                first_argument: &$value_type,
+                second_argument: &SparseMatrix<SecondArgument>,
+                product: &mut SparseMatrix<Product>,
+                mask: &SparseMatrix<MaskValueType>,
+            ) -> Result<(), SparseLinearAlgebraError> {
+                let context = product.context();
+                let first_argument = first_argument.clone().to_type()?;
 
-        context.call(
-            || unsafe {
-                GrB_Matrix_apply_BinaryOp1st_Scalar(
-                    product.graphblas_matrix(),
-                    mask.graphblas_matrix(),
-                    self.accumulator,
-                    self.binary_operator,
-                    first_argument.graphblas_scalar(),
-                    second_argument.graphblas_matrix(),
-                    self.options,
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
+                context.call(
+                    || unsafe {
+                        $graphblas_function_4(
+                            product.graphblas_matrix(),
+                            mask.graphblas_matrix(),
+                            self.accumulator,
+                            self.binary_operator,
+                            first_argument,
+                            second_argument.graphblas_matrix(),
+                            self.options,
+                        )
+                    },
+                    unsafe { &product.graphblas_matrix() },
+                )?;
 
-        Ok(())
-    }
+                Ok(())
+            }
+
+        }
+    };
 }
+
+implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type!(
+    implement_apply_binary_operator,
+    GrB_Vector_apply_BinaryOp2nd,
+    GrB_Vector_apply_BinaryOp1st,
+    GrB_Matrix_apply_BinaryOp2nd,
+    GrB_Matrix_apply_BinaryOp1st
+);
 
 #[cfg(test)]
 mod tests {
@@ -422,7 +495,7 @@ mod tests {
             None,
         );
 
-        let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let second_agrument = 10;
         operator
             .apply_with_matrix_as_first_argument(&matrix, &second_agrument, &mut product_matrix)
             .unwrap();
@@ -438,7 +511,7 @@ mod tests {
             &OperatorOptions::new_default(),
             None,
         );
-        let first_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let first_agrument = 10;
         operator
             .apply_with_matrix_as_second_argument(&first_agrument, &matrix, &mut product_matrix)
             .unwrap();
@@ -482,7 +555,7 @@ mod tests {
             None,
         );
 
-        let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let second_agrument = 10;
         operator
             .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
             .unwrap();
@@ -498,7 +571,7 @@ mod tests {
             &OperatorOptions::new_default(),
             None,
         );
-        let first_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let first_argument = 10;
         operator
             .apply_with_vector_as_second_argument(&first_argument, &vector, &mut product_vector)
             .unwrap();
@@ -539,7 +612,7 @@ mod tests {
             None,
         );
 
-        let second_agrument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
+        let second_agrument = 10;
         operator
             .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
             .unwrap();
@@ -555,7 +628,7 @@ mod tests {
             &OperatorOptions::new_default(),
             None,
         );
-        let first_agrument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
+        let first_agrument = 10;
         operator
             .apply_with_vector_as_second_argument(&first_agrument, &vector, &mut product_vector)
             .unwrap();
@@ -591,20 +664,20 @@ mod tests {
         let mut product_vector = SparseVector::<i8>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &Plus::<u8, bool, i8, u8>::new(),
+            &Plus::<u8, bool, i8, bool>::new(),
             &OperatorOptions::new_default(),
             None,
         );
 
-        let second_agrument = SparseScalar::<bool>::from_value(&context, true).unwrap();
+        let second_argument = true;
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_first_argument(&vector, &second_argument, &mut product_vector)
             .unwrap();
 
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 3);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), 1);
         assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
 
         let operator = BinaryOperatorApplier::new(
@@ -614,7 +687,7 @@ mod tests {
         );
 
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_first_argument(&vector, &second_argument, &mut product_vector)
             .unwrap();
 
         println!("{}", product_vector);

@@ -50,8 +50,12 @@ macro_rules! implement_generic_index_unary_operator {
     ($operator_name:ident,
         $graphblas_operator_name:ident
     ) => {
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-            IndexUnaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+        impl<
+                FirstArgument: ValueType,
+                SecondArgument: ValueType,
+                Product: ValueType,
+                EvaluationDomain: ValueType,
+            > IndexUnaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
             for $operator_name<FirstArgument, SecondArgument, Product, EvaluationDomain>
         {
             fn graphblas_type(&self) -> GrB_IndexUnaryOp {
@@ -59,8 +63,12 @@ macro_rules! implement_generic_index_unary_operator {
             }
         }
 
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-            $operator_name<FirstArgument, SecondArgument, Product, EvaluationDomain>
+        impl<
+                FirstArgument: ValueType,
+                SecondArgument: ValueType,
+                Product: ValueType,
+                EvaluationDomain: ValueType,
+            > $operator_name<FirstArgument, SecondArgument, Product, EvaluationDomain>
         {
             pub fn new() -> Self {
                 Self {
@@ -77,8 +85,12 @@ macro_rules! implement_generic_index_unary_operator {
 macro_rules! define_index_unary_operator {
     ($identifier: ident) => {
         #[derive(Debug, Clone)]
-        pub struct $identifier<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-        {
+        pub struct $identifier<
+            FirstArgument: ValueType,
+            SecondArgument: ValueType,
+            Product: ValueType,
+            EvaluationDomain: ValueType,
+        > {
             _first_argument_type: PhantomData<FirstArgument>,
             _second_argument_type: PhantomData<SecondArgument>,
             _product_type: PhantomData<Product>,
@@ -185,7 +197,7 @@ mod tests {
         },
         context::{Context, Mode},
         operators::{
-            apply::{UnaryOperatorApplier, UnaryOperatorApplierTrait},
+            apply::{ApplyIndexUnaryOperator, UnaryOperatorApplier},
             binary_operator::First,
             options::OperatorOptions,
         },

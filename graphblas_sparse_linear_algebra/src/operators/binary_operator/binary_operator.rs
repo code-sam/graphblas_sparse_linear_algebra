@@ -591,7 +591,7 @@ mod tests {
         },
         context::{Context, Mode},
         operators::{
-            apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait},
+            apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
             options::OperatorOptions,
         },
     };
