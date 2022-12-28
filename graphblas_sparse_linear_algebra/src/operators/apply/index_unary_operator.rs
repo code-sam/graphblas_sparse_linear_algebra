@@ -1,29 +1,16 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use suitesparse_graphblas_sys::{GrB_IndexUnaryOp,
-    GrB_Matrix_apply_IndexOp_BOOL,
-    GrB_Matrix_apply_IndexOp_INT8,
-    GrB_Matrix_apply_IndexOp_INT16,
-    GrB_Matrix_apply_IndexOp_INT32,
-    GrB_Matrix_apply_IndexOp_INT64,
-    GrB_Matrix_apply_IndexOp_UINT8,
-    GrB_Matrix_apply_IndexOp_UINT16,
-    GrB_Matrix_apply_IndexOp_UINT32,
-    GrB_Matrix_apply_IndexOp_UINT64,
-    GrB_Matrix_apply_IndexOp_FP32,
-    GrB_Matrix_apply_IndexOp_FP64,
-    GrB_Vector_apply_IndexOp_BOOL,
-    GrB_Vector_apply_IndexOp_INT8,
-    GrB_Vector_apply_IndexOp_INT16,
-    GrB_Vector_apply_IndexOp_INT32,
-    GrB_Vector_apply_IndexOp_INT64,
+use suitesparse_graphblas_sys::{
+    GrB_IndexUnaryOp, GrB_Matrix_apply_IndexOp_BOOL, GrB_Matrix_apply_IndexOp_FP32,
+    GrB_Matrix_apply_IndexOp_FP64, GrB_Matrix_apply_IndexOp_INT16, GrB_Matrix_apply_IndexOp_INT32,
+    GrB_Matrix_apply_IndexOp_INT64, GrB_Matrix_apply_IndexOp_INT8, GrB_Matrix_apply_IndexOp_UINT16,
+    GrB_Matrix_apply_IndexOp_UINT32, GrB_Matrix_apply_IndexOp_UINT64,
+    GrB_Matrix_apply_IndexOp_UINT8, GrB_Vector_apply_IndexOp_BOOL, GrB_Vector_apply_IndexOp_FP32,
+    GrB_Vector_apply_IndexOp_FP64, GrB_Vector_apply_IndexOp_INT16, GrB_Vector_apply_IndexOp_INT32,
+    GrB_Vector_apply_IndexOp_INT64, GrB_Vector_apply_IndexOp_INT8, GrB_Vector_apply_IndexOp_UINT16,
+    GrB_Vector_apply_IndexOp_UINT32, GrB_Vector_apply_IndexOp_UINT64,
     GrB_Vector_apply_IndexOp_UINT8,
-    GrB_Vector_apply_IndexOp_UINT16,
-    GrB_Vector_apply_IndexOp_UINT32,
-    GrB_Vector_apply_IndexOp_UINT64,
-    GrB_Vector_apply_IndexOp_FP32,
-    GrB_Vector_apply_IndexOp_FP64,
 };
 
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
@@ -167,12 +154,9 @@ where
 
 macro_rules! implement_apply_index_binary_operator {
     ($value_type: ty, $_implementation_type: ty, $graphblas_function_1: ident, $graphblas_function_2: ident) => {
-        impl<
-            FirstArgument: ValueType,
-            SecondArgument: ValueType,
-            Product: ValueType,
-        > ApplyIndexUnaryOperator<FirstArgument, SecondArgument, Product, $value_type>
-        for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, $value_type>
+        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
+            ApplyIndexUnaryOperator<FirstArgument, SecondArgument, Product, $value_type>
+            for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, $value_type>
         {
             fn apply_to_vector(
                 &self,
@@ -283,7 +267,7 @@ macro_rules! implement_apply_index_binary_operator {
 
                 Ok(())
             }
-        }       
+        }
     };
 }
 
