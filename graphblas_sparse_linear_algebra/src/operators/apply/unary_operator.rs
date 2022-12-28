@@ -11,7 +11,7 @@ use crate::operators::{
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply, GrB_UnaryOp, GrB_Vector_apply,
+    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply, GrB_UnaryOp, GrB_Vector_apply
 };
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
@@ -65,9 +65,19 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
             _evaluation_domain: PhantomData,
         }
     }
+
+    pub(crate) unsafe fn unary_operator(&self) -> GrB_UnaryOp {
+        self.unary_operator
+    }
+    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
+        self.accumulator
+    }
+    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
+        self.options
+    }
 }
 
-pub trait UnaryOperatorApplierTrait<Argument, Product, EvaluationDomain>
+pub trait ApplyUnaryOperator<Argument, Product, EvaluationDomain>
 where
     Argument: ValueType,
     Product: ValueType,
@@ -101,7 +111,7 @@ where
 }
 
 impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-    UnaryOperatorApplierTrait<Argument, Product, EvaluationDomain>
+    ApplyUnaryOperator<Argument, Product, EvaluationDomain>
     for UnaryOperatorApplier<Argument, Product, EvaluationDomain>
 {
     fn apply_to_vector(

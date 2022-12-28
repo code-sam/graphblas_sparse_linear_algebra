@@ -6,7 +6,7 @@ Rust wrapper for SuiteSparse:GraphBLAS
 ```rust
 use graphblas_sparse_linear_algebra::collections::collection::Collection;
 use graphblas_sparse_linear_algebra::context::{Context, Mode};
-use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, BinaryOperatorApplierTrait};
+use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, ApplyBinaryOperator};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{First};
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
@@ -43,7 +43,7 @@ fn main() {
         &OperatorOptions::new_default(),
         None,
     );
-    let first_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+    let first_agrument = 10;
     operator
         .apply_with_matrix_as_first_argument(&matrix, &first_agrument, &mut product_matrix)
         .unwrap();
@@ -59,7 +59,7 @@ fn main() {
         &OperatorOptions::new_default(),
         None,
     );
-    let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+    let second_agrument = 10;
     operator
         .apply_with_matrix_as_second_argument(&second_agrument, &matrix, &mut product_matrix)
         .unwrap();

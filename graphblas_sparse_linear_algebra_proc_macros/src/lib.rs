@@ -795,6 +795,225 @@ pub fn implement_1_type_macro_for_usize_and_typed_graphblas_function_with_implem
     TokenStream::from(expanded)
 }
 
+#[proc_macro]
+pub fn implement_1_type_macro_for_isize_and_2_typed_graphblas_functions_with_implementation_type(input: TokenStream) -> TokenStream {
+    // TODO: develop a more structured, reliable, and self-documenting way to parse the input.
+    // Maybe by defining a data struct, and implementing Parse?
+    let idents: Vec<syn::Ident> = parse_macro_input!(
+        input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
+        .into_iter()
+        .collect();
+    let macro_identifier = idents[0].clone();
+    let graphblas_function_identifier_1 = idents[1].clone();
+    let graphblas_function_identifier_2 = idents[2].clone();
+    
+    let function_identifier_1;
+    let function_identifier_2;
+    let expanded;
+    match isize::BITS {
+        8 => {
+            function_identifier_1 = format_ident!("{}_INT8", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_INT8", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(isize, i8, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        16 => {
+            function_identifier_1 = format_ident!("{}_INT16", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_INT16", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(isize, i16, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        32 => {
+            function_identifier_1 = format_ident!("{}_UINT32", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT32", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(isize, i32, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        64 => {
+            function_identifier_1 = format_ident!("{}_INT64", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_INT64", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(isize, i64, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        _ => panic!("Unsupported architecture: {:?} bits", isize::BITS)
+    };
+    TokenStream::from(expanded)
+}
+
+#[proc_macro]
+pub fn implement_1_type_macro_for_usize_and_2_typed_graphblas_functions_with_implementation_type(input: TokenStream) -> TokenStream {
+    // TODO: develop a more structured, reliable, and self-documenting way to parse the input.
+    // Maybe by defining a data struct, and implementing Parse?
+    let idents: Vec<syn::Ident> = parse_macro_input!(
+        input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
+        .into_iter()
+        .collect();
+    let macro_identifier = idents[0].clone();
+    let graphblas_function_identifier_1 = idents[1].clone();
+    let graphblas_function_identifier_2 = idents[2].clone();
+    
+    let function_identifier_1;
+    let function_identifier_2;
+    let expanded;
+    match usize::BITS {
+        8 => {
+            function_identifier_1 = format_ident!("{}_UINT8", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT8", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(usize, u8, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        16 => {
+            function_identifier_1 = format_ident!("{}_UINT16", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT16", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(usize, u16, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        32 => {
+            function_identifier_1 = format_ident!("{}_UINT32", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT32", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(usize, u32, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        64 => {
+            function_identifier_1 = format_ident!("{}_UINT64", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT64", graphblas_function_identifier_2);
+            expanded = quote! {
+                #macro_identifier!(usize, u64, #function_identifier_1, #function_identifier_2);
+            };
+        }
+        _ => panic!("Unsupported architecture: {:?} bits", usize::BITS)
+    };
+    TokenStream::from(expanded)
+}
+
+#[proc_macro]
+pub fn implement_1_type_macro_for_isize_and_4_typed_graphblas_functions_with_implementation_type(input: TokenStream) -> TokenStream {
+    // TODO: develop a more structured, reliable, and self-documenting way to parse the input.
+    // Maybe by defining a data struct, and implementing Parse?
+    let idents: Vec<syn::Ident> = parse_macro_input!(
+        input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
+        .into_iter()
+        .collect();
+    let macro_identifier = idents[0].clone();
+    let graphblas_function_identifier_1 = idents[1].clone();
+    let graphblas_function_identifier_2 = idents[2].clone();
+    let graphblas_function_identifier_3 = idents[3].clone();
+    let graphblas_function_identifier_4 = idents[4].clone();
+    
+    let function_identifier_1;
+    let function_identifier_2;
+    let function_identifier_3;
+    let function_identifier_4;
+    let expanded;
+    match isize::BITS {
+        8 => {
+            function_identifier_1 = format_ident!("{}_INT8", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_INT8", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_INT8", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_INT8", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(isize, i8, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        16 => {
+            function_identifier_1 = format_ident!("{}_INT16", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_INT16", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_INT16", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_INT16", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(isize, i16, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        32 => {
+            function_identifier_1 = format_ident!("{}_UINT32", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT32", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_UINT32", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_UINT32", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(isize, i32, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        64 => {
+            function_identifier_1 = format_ident!("{}_INT64", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_INT64", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_INT64", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_INT64", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(isize, i64, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        _ => panic!("Unsupported architecture: {:?} bits", isize::BITS)
+    };
+    TokenStream::from(expanded)
+}
+
+#[proc_macro]
+pub fn implement_1_type_macro_for_usize_and_4_typed_graphblas_functions_with_implementation_type(input: TokenStream) -> TokenStream {
+    // TODO: develop a more structured, reliable, and self-documenting way to parse the input.
+    // Maybe by defining a data struct, and implementing Parse?
+    let idents: Vec<syn::Ident> = parse_macro_input!(
+        input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
+        .into_iter()
+        .collect();
+    let macro_identifier = idents[0].clone();
+    let graphblas_function_identifier_1 = idents[1].clone();
+    let graphblas_function_identifier_2 = idents[2].clone();
+    let graphblas_function_identifier_3 = idents[3].clone();
+    let graphblas_function_identifier_4 = idents[4].clone();
+    
+    let function_identifier_1;
+    let function_identifier_2;
+    let function_identifier_3;
+    let function_identifier_4;
+    let expanded;
+    match usize::BITS {
+        8 => {
+            function_identifier_1 = format_ident!("{}_UINT8", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT8", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_UINT8", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_UINT8", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(usize, u8, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        16 => {
+            function_identifier_1 = format_ident!("{}_UINT16", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT16", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_UINT16", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_UINT16", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(usize, u16, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        32 => {
+            function_identifier_1 = format_ident!("{}_UINT32", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT32", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_UINT32", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_UINT32", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(usize, u32, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        64 => {
+            function_identifier_1 = format_ident!("{}_UINT64", graphblas_function_identifier_1);
+            function_identifier_2 = format_ident!("{}_UINT64", graphblas_function_identifier_2);
+            function_identifier_3 = format_ident!("{}_UINT64", graphblas_function_identifier_3);
+            function_identifier_4 = format_ident!("{}_UINT64", graphblas_function_identifier_4);
+            expanded = quote! {
+                #macro_identifier!(usize, u64, #function_identifier_1, #function_identifier_2, #function_identifier_3, #function_identifier_4);
+            };
+        }
+        _ => panic!("Unsupported architecture: {:?} bits", usize::BITS)
+    };
+    TokenStream::from(expanded)
+}
 
 #[proc_macro]
 pub fn implement_2_type_macro_for_isize_and_typed_graphblas_function_with_type_conversion(input: TokenStream) -> TokenStream {
