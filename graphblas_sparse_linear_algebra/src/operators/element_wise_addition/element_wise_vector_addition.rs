@@ -636,39 +636,3 @@ mod tests {
         assert_eq!(product.get_element_value(&3).unwrap(), 32);
     }
 }
-
-// GB_PUBLIC
-// GrB_Info GrB_Vector_eWiseMult_Semiring       // w<Mask> = accum (w, u.*v)
-// (
-//     GrB_Vector w,                   // input/output vector for results
-//     const GrB_Vector mask,          // optional mask for w, unused if NULL
-//     const GrB_BinaryOp accum,       // optional accum for z=accum(w,t)
-//     const GrB_Semiring semiring,    // defines '.*' for t=u.*v
-//     const GrB_Vector u,             // first input:  vector u
-//     const GrB_Vector v,             // second input: vector v
-//     const GrB_Descriptor desc       // descriptor for w and mask
-// ) ;
-
-// GB_PUBLIC
-// GrB_Info GrB_Vector_eWiseMult_Monoid         // w<Mask> = accum (w, u.*v)
-// (
-//     GrB_Vector w,                   // input/output vector for results
-//     const GrB_Vector mask,          // optional mask for w, unused if NULL
-//     const GrB_BinaryOp accum,       // optional accum for z=accum(w,t)
-//     const GrB_Monoid monoid,        // defines '.*' for t=u.*v
-//     const GrB_Vector u,             // first input:  vector u
-//     const GrB_Vector v,             // second input: vector v
-//     const GrB_Descriptor desc       // descriptor for w and mask
-// ) ;
-
-// GB_PUBLIC
-// GrB_Info GrB_Vector_eWiseMult_BinaryOp       // w<Mask> = accum (w, u.*v)
-// (
-//     GrB_Vector w,                   // input/output vector for results
-//     const GrB_Vector mask,          // optional mask for w, unused if NULL
-//     const GrB_BinaryOp accum,       // optional accum for z=accum(w,t)
-//     const GrB_BinaryOp mult,        // defines '.*' for t=u.*v
-//     const GrB_Vector u,             // first input:  vector u
-//     const GrB_Vector v,             // second input: vector v
-//     const GrB_Descriptor desc       // descriptor for w and mask
-// ) ;
