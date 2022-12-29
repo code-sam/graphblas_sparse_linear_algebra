@@ -28,7 +28,12 @@ unsafe impl<
         Product: ValueType,
         EvaluationDomain: ValueType,
     > Sync
-    for ElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+    for ElementWiseVectorAdditionSemiringOperator<
+        Multiplier,
+        Multiplicant,
+        Product,
+        EvaluationDomain,
+    >
 {
 }
 unsafe impl<
@@ -37,7 +42,12 @@ unsafe impl<
         Product: ValueType,
         EvaluationDomain: ValueType,
     > Send
-    for ElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+    for ElementWiseVectorAdditionSemiringOperator<
+        Multiplier,
+        Multiplicant,
+        Product,
+        EvaluationDomain,
+    >
 {
 }
 
@@ -105,7 +115,12 @@ where
     }
 }
 
-pub trait ApplyElementWiseVectorAdditionSemiringOperator<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> {
+pub trait ApplyElementWiseVectorAdditionSemiringOperator<
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
+>
+{
     fn apply(
         &self,
         multiplier: &SparseVector<Multiplier>,
@@ -122,7 +137,19 @@ pub trait ApplyElementWiseVectorAdditionSemiringOperator<Multiplier: ValueType, 
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product> for ElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product, EvaluationDomain> {
+impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > ApplyElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product>
+    for ElementWiseVectorAdditionSemiringOperator<
+        Multiplier,
+        Multiplicant,
+        Product,
+        EvaluationDomain,
+    >
+{
     fn apply(
         &self,
         multiplier: &SparseVector<Multiplier>,
@@ -180,18 +207,8 @@ impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, Evaluat
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        T: ValueType
-    > Sync
-    for ElementWiseVectorAdditionMonoidOperator<T>
-{
-}
-unsafe impl<
-        T: ValueType
-    > Send
-    for ElementWiseVectorAdditionMonoidOperator<T>
-{
-}
+unsafe impl<T: ValueType> Sync for ElementWiseVectorAdditionMonoidOperator<T> {}
+unsafe impl<T: ValueType> Send for ElementWiseVectorAdditionMonoidOperator<T> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType> {
@@ -251,7 +268,9 @@ pub trait ApplyElementWiseVectorAdditionMonoidOperator<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<T> for ElementWiseVectorAdditionMonoidOperator<T> {
+impl<T: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<T>
+    for ElementWiseVectorAdditionMonoidOperator<T>
+{
     fn apply(
         &self,
         multiplier: &SparseVector<T>,
@@ -392,7 +411,12 @@ where
     }
 }
 
-pub trait ApplyElementWiseVectorAdditionBinaryOperator<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> {
+pub trait ApplyElementWiseVectorAdditionBinaryOperator<
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
+>
+{
     fn apply(
         &self,
         multiplier: &SparseVector<Multiplier>,
@@ -409,7 +433,14 @@ pub trait ApplyElementWiseVectorAdditionBinaryOperator<Multiplier: ValueType, Mu
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product> for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain> {
+impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > ApplyElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product>
+    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
     fn apply(
         &self,
         multiplier: &SparseVector<Multiplier>,
