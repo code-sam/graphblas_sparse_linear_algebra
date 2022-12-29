@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::bindings_to_graphblas_implementation::*;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool,
-    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix,
+    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix, implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix,
 };
 use crate::value_type::ValueType;
 
@@ -115,6 +115,42 @@ implement_monoid_operator!(LogicalOr, GrB_LOR_MONOID_BOOL, bool);
 implement_monoid_operator!(LogicalAnd, GrB_LAND_MONOID_BOOL, bool);
 implement_monoid_operator!(LogicalExclusiveOr, GrB_LXOR_MONOID_BOOL, bool);
 implement_monoid_operator!(Equal, GrB_LXNOR_MONOID_BOOL, bool);
+
+#[derive(Debug, Clone)]
+pub struct BitwiseLogicalOr<T: ValueType> {
+    _value_type: PhantomData<T>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BitwiseLogicalAnd<T: ValueType> {
+    _value_type: PhantomData<T>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BitwiseLogicalExclusiveOr<T: ValueType> {
+    _value_type: PhantomData<T>,
+}
+
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix!(
+    implement_monoid_operator,
+    BitwiseLogicalOr,
+    GxB_BOR,
+    MONOID
+);
+
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix!(
+    implement_monoid_operator,
+    BitwiseLogicalAnd,
+    GxB_BAND,
+    MONOID
+);
+
+implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix!(
+    implement_monoid_operator,
+    BitwiseLogicalExclusiveOr,
+    GxB_BXOR,
+    MONOID
+);
 
 #[cfg(test)]
 mod tests {

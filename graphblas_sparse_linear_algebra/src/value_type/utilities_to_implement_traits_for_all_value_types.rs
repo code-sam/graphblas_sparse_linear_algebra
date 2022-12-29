@@ -579,6 +579,27 @@ macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_
 }
 pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix;
 
+macro_rules! implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix {
+    ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident, $postfix:ident) => {
+        paste::paste! {
+            // $macro_identifier!($trait, [<$graphblas_identifier _BOOL_ $postfix>], bool);
+            // $macro_identifier!($trait, [<$graphblas_identifier _INT8_ $postfix>], i8);
+            // $macro_identifier!($trait, [<$graphblas_identifier _INT16_ $postfix>], i16);
+            // $macro_identifier!($trait, [<$graphblas_identifier _INT32_ $postfix>], i32);
+            // $macro_identifier!($trait, [<$graphblas_identifier _INT64_ $postfix>], i64);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT8_ $postfix>], u8);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT16_ $postfix>], u16);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT32_ $postfix>], u32);
+            $macro_identifier!($trait, [<$graphblas_identifier _UINT64_ $postfix>], u64);
+            // $macro_identifier!($trait, [<$graphblas_identifier _FP32_ $postfix>], f32);
+            // $macro_identifier!($trait, [<$graphblas_identifier _FP64_ $postfix>], f64);
+            // graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize_with_postfix!($macro_identifier, $trait, $graphblas_identifier,  $postfix);
+            graphblas_sparse_linear_algebra_proc_macros::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize_with_postfix!($macro_identifier, $trait, $graphblas_identifier,  $postfix);
+        }
+    };
+}
+pub(crate) use implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix;
+
 macro_rules! implement_macro_with_2_type_trait_and_typed_graphblas_function_for_all_value_types {
     ($macro_identifier:ident, $trait:ty, $graphblas_identifier:ident) => {
         paste::paste! {
