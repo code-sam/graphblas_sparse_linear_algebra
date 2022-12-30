@@ -8,7 +8,10 @@ mod tests {
     };
     use graphblas_sparse_linear_algebra::context::{Context, Mode};
     use graphblas_sparse_linear_algebra::operators::binary_operator::Plus;
-    use graphblas_sparse_linear_algebra::operators::element_wise_multiplication::ElementWiseMatrixMultiplicationBinaryOperator;
+    use graphblas_sparse_linear_algebra::operators::element_wise_multiplication::{
+        ApplyElementWiseMatrixMultiplicationBinaryOperator,
+        ElementWiseMatrixMultiplicationBinaryOperator,
+    };
     use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
     #[test]

@@ -1,3 +1,3 @@
 mod semiring;
 
-pub use semiring::{PlusTimes, Semiring};
+pub use semiring::*;

@@ -22,12 +22,42 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_4_type_data_type_and_all_value_types!(Send, ElementWiseVectorAdditionSemiring);
-implement_trait_for_4_type_data_type_and_all_value_types!(Sync, ElementWiseVectorAdditionSemiring);
+unsafe impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Sync
+    for ElementWiseVectorAdditionSemiringOperator<
+        Multiplier,
+        Multiplicant,
+        Product,
+        EvaluationDomain,
+    >
+{
+}
+unsafe impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Send
+    for ElementWiseVectorAdditionSemiringOperator<
+        Multiplier,
+        Multiplicant,
+        Product,
+        EvaluationDomain,
+    >
+{
+}
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product, EvaluationDomain>
-where
+pub struct ElementWiseVectorAdditionSemiringOperator<
+    Multiplier,
+    Multiplicant,
+    Product,
+    EvaluationDomain,
+> where
     Multiplier: ValueType,
     Multiplicant: ValueType,
     Product: ValueType,
@@ -44,7 +74,7 @@ where
 }
 
 impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    ElementWiseVectorAdditionSemiring<Multiplier, Multiplicant, Product, EvaluationDomain>
+    ElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
@@ -74,7 +104,53 @@ where
         }
     }
 
-    pub fn apply(
+    pub(crate) unsafe fn multiplication_operator(&self) -> GrB_Semiring {
+        self.multiplication_operator
+    }
+    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
+        self.accumulator
+    }
+    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
+        self.options
+    }
+}
+
+pub trait ApplyElementWiseVectorAdditionSemiringOperator<
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
+>
+{
+    fn apply(
+        &self,
+        multiplier: &SparseVector<Multiplier>,
+        multiplicant: &SparseVector<Multiplicant>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        mask: &SparseVector<MaskValueType>,
+        multiplier: &SparseVector<Multiplier>,
+        multiplicant: &SparseVector<Multiplicant>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > ApplyElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product>
+    for ElementWiseVectorAdditionSemiringOperator<
+        Multiplier,
+        Multiplicant,
+        Product,
+        EvaluationDomain,
+    >
+{
+    fn apply(
         &self,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
@@ -100,7 +176,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<Multiplier>,
@@ -131,8 +207,8 @@ where
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_all_value_types!(Send, ElementWiseVectorAdditionMonoidOperator);
-implement_trait_for_all_value_types!(Sync, ElementWiseVectorAdditionMonoidOperator);
+unsafe impl<T: ValueType> Sync for ElementWiseVectorAdditionMonoidOperator<T> {}
+unsafe impl<T: ValueType> Send for ElementWiseVectorAdditionMonoidOperator<T> {}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType> {
@@ -164,7 +240,38 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
         }
     }
 
-    pub fn apply(
+    pub(crate) unsafe fn multiplication_operator(&self) -> GrB_Monoid {
+        self.multiplication_operator
+    }
+    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
+        self.accumulator
+    }
+    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
+        self.options
+    }
+}
+
+pub trait ApplyElementWiseVectorAdditionMonoidOperator<T: ValueType> {
+    fn apply(
+        &self,
+        multiplier: &SparseVector<T>,
+        multiplicant: &SparseVector<T>,
+        product: &mut SparseVector<T>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        mask: &SparseVector<MaskValueType>,
+        multiplier: &SparseVector<T>,
+        multiplicant: &SparseVector<T>,
+        product: &mut SparseVector<T>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<T: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<T>
+    for ElementWiseVectorAdditionMonoidOperator<T>
+{
+    fn apply(
         &self,
         multiplier: &SparseVector<T>,
         multiplicant: &SparseVector<T>,
@@ -190,7 +297,7 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<T>,
@@ -221,14 +328,24 @@ impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_4_type_data_type_and_all_value_types!(
-    Send,
-    ElementWiseVectorAdditionBinaryOperator
-);
-implement_trait_for_4_type_data_type_and_all_value_types!(
-    Sync,
-    ElementWiseVectorAdditionBinaryOperator
-);
+unsafe impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Sync
+    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
+}
+unsafe impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Send
+    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct ElementWiseVectorAdditionBinaryOperator<
@@ -283,7 +400,48 @@ where
         }
     }
 
-    pub fn apply(
+    pub(crate) unsafe fn multiplication_operator(&self) -> GrB_BinaryOp {
+        self.multiplication_operator
+    }
+    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
+        self.accumulator
+    }
+    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
+        self.options
+    }
+}
+
+pub trait ApplyElementWiseVectorAdditionBinaryOperator<
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
+>
+{
+    fn apply(
+        &self,
+        multiplier: &SparseVector<Multiplier>,
+        multiplicant: &SparseVector<Multiplicant>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        mask: &SparseVector<MaskValueType>,
+        multiplier: &SparseVector<Multiplier>,
+        multiplicant: &SparseVector<Multiplicant>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > ApplyElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product>
+    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
+    fn apply(
         &self,
         multiplier: &SparseVector<Multiplier>,
         multiplicant: &SparseVector<Multiplicant>,
@@ -309,7 +467,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         mask: &SparseVector<MaskValueType>,
         multiplier: &SparseVector<Multiplier>,
@@ -478,39 +636,3 @@ mod tests {
         assert_eq!(product.get_element_value(&3).unwrap(), 32);
     }
 }
-
-// GB_PUBLIC
-// GrB_Info GrB_Vector_eWiseMult_Semiring       // w<Mask> = accum (w, u.*v)
-// (
-//     GrB_Vector w,                   // input/output vector for results
-//     const GrB_Vector mask,          // optional mask for w, unused if NULL
-//     const GrB_BinaryOp accum,       // optional accum for z=accum(w,t)
-//     const GrB_Semiring semiring,    // defines '.*' for t=u.*v
-//     const GrB_Vector u,             // first input:  vector u
-//     const GrB_Vector v,             // second input: vector v
-//     const GrB_Descriptor desc       // descriptor for w and mask
-// ) ;
-
-// GB_PUBLIC
-// GrB_Info GrB_Vector_eWiseMult_Monoid         // w<Mask> = accum (w, u.*v)
-// (
-//     GrB_Vector w,                   // input/output vector for results
-//     const GrB_Vector mask,          // optional mask for w, unused if NULL
-//     const GrB_BinaryOp accum,       // optional accum for z=accum(w,t)
-//     const GrB_Monoid monoid,        // defines '.*' for t=u.*v
-//     const GrB_Vector u,             // first input:  vector u
-//     const GrB_Vector v,             // second input: vector v
-//     const GrB_Descriptor desc       // descriptor for w and mask
-// ) ;
-
-// GB_PUBLIC
-// GrB_Info GrB_Vector_eWiseMult_BinaryOp       // w<Mask> = accum (w, u.*v)
-// (
-//     GrB_Vector w,                   // input/output vector for results
-//     const GrB_Vector mask,          // optional mask for w, unused if NULL
-//     const GrB_BinaryOp accum,       // optional accum for z=accum(w,t)
-//     const GrB_BinaryOp mult,        // defines '.*' for t=u.*v
-//     const GrB_Vector u,             // first input:  vector u
-//     const GrB_Vector v,             // second input: vector v
-//     const GrB_Descriptor desc       // descriptor for w and mask
-// ) ;

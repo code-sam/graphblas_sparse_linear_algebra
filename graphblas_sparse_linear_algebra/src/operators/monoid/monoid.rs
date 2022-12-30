@@ -126,7 +126,9 @@ mod tests {
     };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
-    use crate::operators::element_wise_addition::ElementWiseVectorAdditionMonoidOperator;
+    use crate::operators::element_wise_addition::{
+        ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
+    };
     use crate::operators::options::OperatorOptions;
 
     #[test]

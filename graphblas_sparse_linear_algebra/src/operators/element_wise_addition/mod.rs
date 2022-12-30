@@ -2,10 +2,12 @@ mod element_wise_matrix_addition;
 mod element_wise_vector_addition;
 
 pub use element_wise_matrix_addition::{
-    ElementWiseMatrixAdditionBinaryOperator, ElementWiseMatrixAdditionMonoidOperator,
-    ElementWiseMatrixAdditionSemiring,
+    ApplyElementWiseMatrixAdditionBinaryOperator, ApplyElementWiseMatrixAdditionMonoidOperator,
+    ApplyElementWiseMatrixAdditionSemiring, ElementWiseMatrixAdditionBinaryOperator,
+    ElementWiseMatrixAdditionMonoidOperator, ElementWiseMatrixAdditionSemiringOperator,
 };
 pub use element_wise_vector_addition::{
-    ElementWiseVectorAdditionBinaryOperator, ElementWiseVectorAdditionMonoidOperator,
-    ElementWiseVectorAdditionSemiring,
+    ApplyElementWiseVectorAdditionBinaryOperator, ApplyElementWiseVectorAdditionMonoidOperator,
+    ApplyElementWiseVectorAdditionSemiringOperator, ElementWiseVectorAdditionBinaryOperator,
+    ElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionSemiringOperator,
 };
