@@ -1,3 +1,3 @@
 mod monoid;
 
-pub use monoid::{*};
+pub use monoid::*;

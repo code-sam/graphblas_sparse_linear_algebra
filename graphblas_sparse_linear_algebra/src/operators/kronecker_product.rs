@@ -22,11 +22,17 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_4_type_data_type_and_all_value_types!(Send, SemiringKroneckerProduct);
-implement_trait_for_4_type_data_type_and_all_value_types!(Sync, SemiringKroneckerProduct);
+unsafe impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> Send
+    for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
+}
+unsafe impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> Sync
+    for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
+}
 
 #[derive(Debug, Clone)]
-pub struct SemiringKroneckerProduct<Multiplier, Multiplicant, Product, EvaluationDomain>
+pub struct SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
@@ -44,7 +50,7 @@ where
 }
 
 impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    SemiringKroneckerProduct<Multiplier, Multiplicant, Product, EvaluationDomain>
+    SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 where
     Multiplier: ValueType,
     Multiplicant: ValueType,
@@ -73,8 +79,27 @@ where
             _evaluation_domain: PhantomData,
         }
     }
+}
 
-    pub fn apply(
+pub trait SemiringKroneckerProduct<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> {
+    fn apply(
+        &self,
+        multiplier: &SparseMatrix<Multiplier>,
+        multiplicant: &SparseMatrix<Multiplicant>,
+        product: &mut SparseMatrix<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean>(
+        &self,
+        mask: &SparseMatrix<AsBool>,
+        multiplier: &SparseMatrix<Multiplier>,
+        multiplicant: &SparseMatrix<Multiplicant>,
+        product: &mut SparseMatrix<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> SemiringKroneckerProduct<Multiplier, Multiplicant, Product> for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain> {
+    fn apply(
         &self,
         multiplier: &SparseMatrix<Multiplier>,
         multiplicant: &SparseMatrix<Multiplicant>,
@@ -100,7 +125,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean>(
         &self,
         mask: &SparseMatrix<AsBool>,
         multiplier: &SparseMatrix<Multiplier>,
@@ -128,8 +153,9 @@ where
     }
 }
 
+// TODO: review type constraints, is type casting possible?
 #[derive(Debug, Clone)]
-pub struct MonoidKroneckerProduct<T: ValueType> {
+pub struct MonoidKroneckerProductOperator<T: ValueType> {
     _value: PhantomData<T>,
 
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
@@ -137,7 +163,7 @@ pub struct MonoidKroneckerProduct<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> MonoidKroneckerProduct<T> {
+impl<T: ValueType> MonoidKroneckerProductOperator<T> {
     pub fn new(
         multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
@@ -157,8 +183,27 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
             _value: PhantomData,
         }
     }
+}
 
-    pub fn apply(
+pub trait MonoidKroneckerProduct<T: ValueType> {
+    fn apply(
+        &self,
+        multiplier: &SparseMatrix<T>,
+        multiplicant: &SparseMatrix<T>,
+        product: &mut SparseMatrix<T>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        mask: &SparseMatrix<MaskValueType>,
+        multiplier: &SparseMatrix<T>,
+        multiplicant: &SparseMatrix<T>,
+        product: &mut SparseMatrix<T>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<T: ValueType> MonoidKroneckerProduct<T> for MonoidKroneckerProductOperator<T> {
+    fn apply(
         &self,
         multiplier: &SparseMatrix<T>,
         multiplicant: &SparseMatrix<T>,
@@ -184,7 +229,7 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         mask: &SparseMatrix<MaskValueType>,
         multiplier: &SparseMatrix<T>,
@@ -211,6 +256,7 @@ impl<T: ValueType> MonoidKroneckerProduct<T> {
         Ok(())
     }
 }
+
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product> {
@@ -251,8 +297,27 @@ where
             _product: PhantomData,
         }
     }
+}
 
-    pub fn apply(
+pub trait BinaryOperatorKroneckerProduct<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> {
+    fn apply(
+        &self,
+        multiplier: &SparseMatrix<Multiplier>,
+        multiplicant: &SparseMatrix<Multiplicant>,
+        product: &mut SparseMatrix<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        mask: &SparseMatrix<MaskValueType>,
+        multiplier: &SparseMatrix<Multiplier>,
+        multiplicant: &SparseMatrix<Multiplicant>,
+        product: &mut SparseMatrix<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> BinaryOperatorKroneckerProduct<Multiplier, Multiplicant, Product> for BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product> {
+    fn apply(
         &self,
         multiplier: &SparseMatrix<Multiplier>,
         multiplicant: &SparseMatrix<Multiplicant>,
@@ -278,7 +343,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         mask: &SparseMatrix<MaskValueType>,
         multiplier: &SparseMatrix<Multiplier>,
@@ -310,7 +375,7 @@ where
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Times};
 

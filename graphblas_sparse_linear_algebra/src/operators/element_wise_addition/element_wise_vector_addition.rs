@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
@@ -502,6 +501,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
 

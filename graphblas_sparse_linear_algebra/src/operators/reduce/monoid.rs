@@ -12,7 +12,6 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
-use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
@@ -25,45 +24,29 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,
     implement_trait_for_all_value_types,
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_all_value_types!(Send, MonoidReducer);
-implement_trait_for_all_value_types!(Sync, MonoidReducer);
+unsafe impl<Argument: ValueType, Product: ValueType> Send for MonoidReducer<Argument, Product> {}
+unsafe impl<Argument: ValueType, Product: ValueType> Sync for MonoidReducer<Argument, Product> {}
 
 #[derive(Debug, Clone)]
-pub struct MonoidReducer<T: ValueType> {
-    _value: PhantomData<T>,
+pub struct MonoidReducer<Argument: ValueType, Product: ValueType> {
+    _argument: PhantomData<Argument>,
+    _product: PhantomData<Product>,
 
     monoid: GrB_Monoid,
     accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
-pub trait MonoidScalarReducer<T>
-where
-    T: ValueType,
-{
-    fn matrix_to_scalar(
-        &self,
-        argument: &SparseMatrix<T>,
-        product: &mut T,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn vector_to_scalar(
-        &self,
-        argument: &SparseVector<T>,
-        product: &mut T,
-    ) -> Result<(), SparseLinearAlgebraError>;
-}
-
-impl<T: ValueType> MonoidReducer<T> {
+impl<Argument: ValueType, Product: ValueType> MonoidReducer<Argument, Product> {
     pub fn new(
-        monoid: &dyn Monoid<T>,
+        monoid: &dyn Monoid<Argument>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&dyn BinaryOperator<Argument, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -76,14 +59,34 @@ impl<T: ValueType> MonoidReducer<T> {
             accumulator: accumulator_to_use,
             options: options.to_graphblas_descriptor(),
 
-            _value: PhantomData,
+            _argument: PhantomData,
+            _product: PhantomData,
         }
     }
+}
 
-    pub fn to_vector(
+pub trait MonoidVectorReducer<Argument: ValueType, Product: ValueType> {
+    fn to_vector(
         &self,
-        argument: &SparseMatrix<T>,
-        product: &mut SparseVector<T>,
+        argument: &SparseMatrix<Argument>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        argument: &SparseMatrix<Argument>,
+        product: &mut SparseVector<Product>,
+        mask: &SparseVector<MaskValueType>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Argument: ValueType, Product: ValueType> MonoidVectorReducer<Argument, Product>
+    for MonoidReducer<Argument, Product>
+{
+    fn to_vector(
+        &self,
+        argument: &SparseMatrix<Argument>,
+        product: &mut SparseVector<Product>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -104,10 +107,10 @@ impl<T: ValueType> MonoidReducer<T> {
         Ok(())
     }
 
-    pub fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        argument: &SparseMatrix<T>,
-        product: &mut SparseVector<T>,
+        argument: &SparseMatrix<Argument>,
+        product: &mut SparseVector<Product>,
         mask: &SparseVector<MaskValueType>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -130,17 +133,32 @@ impl<T: ValueType> MonoidReducer<T> {
     }
 }
 
+pub trait MonoidScalarReducer<Argument: ValueType, Product: ValueType> {
+    fn matrix_to_scalar(
+        &self,
+        argument: &SparseMatrix<Argument>,
+        product: &mut Product,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn vector_to_scalar(
+        &self,
+        argument: &SparseVector<Argument>,
+        product: &mut Product,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
 macro_rules! implement_monoid_reducer {
     ($value_type:ty, $graphblas_implementation_type:ty, $matrix_reducer_operator:ident, $vector_reducer_operator:ident, $convert_to_type:ident) => {
-        impl MonoidScalarReducer<$value_type> for MonoidReducer<$value_type> {
+        impl<Argument: ValueType> MonoidScalarReducer<Argument, $value_type>
+            for MonoidReducer<Argument, $value_type>
+        {
             fn matrix_to_scalar(
                 &self,
-                argument: &SparseMatrix<$value_type>,
+                argument: &SparseMatrix<Argument>,
                 product: &mut $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                let mut tmp_product = product.clone();
-                $convert_to_type!(tmp_product, $graphblas_implementation_type);
+                let mut tmp_product = product.clone().to_type()?;
 
                 // TODO: support detailed error information
                 context.call_without_detailed_error_information(|| unsafe {
@@ -161,12 +179,11 @@ macro_rules! implement_monoid_reducer {
             // TODO: support detailed error information
             fn vector_to_scalar(
                 &self,
-                argument: &SparseVector<$value_type>,
+                argument: &SparseVector<Argument>,
                 product: &mut $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                let mut tmp_product = product.clone();
-                $convert_to_type!(tmp_product, $graphblas_implementation_type);
+                let mut tmp_product = product.clone().to_type()?;
 
                 context.call_without_detailed_error_information(|| unsafe {
                     $vector_reducer_operator(
@@ -196,6 +213,7 @@ implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable
 mod tests {
     use super::*;
 
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::monoid::Plus as MonoidPlus;

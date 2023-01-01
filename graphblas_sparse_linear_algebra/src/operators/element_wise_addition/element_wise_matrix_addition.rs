@@ -497,10 +497,10 @@ impl<
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
 

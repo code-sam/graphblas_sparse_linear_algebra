@@ -444,13 +444,13 @@ implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus};
 

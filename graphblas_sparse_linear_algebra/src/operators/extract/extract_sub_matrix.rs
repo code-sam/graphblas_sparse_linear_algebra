@@ -20,8 +20,14 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, SubMatrixExtractor);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, SubMatrixExtractor);
+unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Send
+    for SubMatrixExtractor<Matrix, SubMatrix>
+{
+}
+unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Sync
+    for SubMatrixExtractor<Matrix, SubMatrix>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct SubMatrixExtractor<Matrix, SubMatrix>
@@ -59,8 +65,31 @@ where
             _sub_matrix: PhantomData,
         }
     }
+}
 
-    pub fn apply(
+pub trait ExtractSubMatrix<Matrix: ValueType, SubMatrix: ValueType> {
+    fn apply(
+        &self,
+        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
+        columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
+        sub_matrix: &mut SparseMatrix<SubMatrix>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
+        columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
+        sub_matrix: &mut SparseMatrix<SubMatrix>,
+        mask: &SparseMatrix<MaskValueType>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Matrix: ValueType, SubMatrix: ValueType> ExtractSubMatrix<Matrix, SubMatrix>
+    for SubMatrixExtractor<Matrix, SubMatrix>
+{
+    fn apply(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
@@ -180,7 +209,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
@@ -306,10 +335,10 @@ where
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

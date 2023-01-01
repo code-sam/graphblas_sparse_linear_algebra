@@ -25,8 +25,14 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertVectorIntoRow);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertVectorIntoRow);
+unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Send
+    for InsertVectorIntoRow<MatrixToInsertInto, VectorToInsert>
+{
+}
+unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Sync
+    for InsertVectorIntoRow<MatrixToInsertInto, VectorToInsert>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoRow<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -96,19 +102,16 @@ where
 
 macro_rules! implement_insert_vector_into_row_trait {
     (
-        $value_type_matrix_to_insert_into:ty, $value_type_vector_to_insert:ty, $graphblas_insert_function:ident
+        $_value_type_matrix_to_insert_into:ty, $value_type_vector_to_insert:ty, $graphblas_insert_function:ident
     ) => {
-        impl
-            InsertVectorIntoRowTrait<
-                $value_type_matrix_to_insert_into,
-                $value_type_vector_to_insert,
-            >
-            for InsertVectorIntoRow<$value_type_matrix_to_insert_into, $value_type_vector_to_insert>
+        impl<MatrixToInsertInto: ValueType>
+            InsertVectorIntoRowTrait<MatrixToInsertInto, $value_type_vector_to_insert>
+            for InsertVectorIntoRow<MatrixToInsertInto, $value_type_vector_to_insert>
         {
             /// replace option applies to entire matrix_to_insert_to
             fn apply(
                 &self,
-                matrix_to_insert_into: &mut SparseMatrix<$value_type_matrix_to_insert_into>,
+                matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
                 row_indices_to_insert_into: &ElementIndexSelector,
                 row_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
@@ -166,7 +169,7 @@ macro_rules! implement_insert_vector_into_row_trait {
             /// mask and replace option apply to entire matrix_to_insert_to
             fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
-                matrix_to_insert_into: &mut SparseMatrix<$value_type_matrix_to_insert_into>,
+                matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
                 row_indices_to_insert_into: &ElementIndexSelector,
                 row_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
@@ -234,7 +237,7 @@ implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 
