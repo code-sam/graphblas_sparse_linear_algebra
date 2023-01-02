@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
@@ -8,7 +7,6 @@ use crate::bindings_to_graphblas_implementation::{
     GxB_Vector_subassign_INT64, GxB_Vector_subassign_INT8, GxB_Vector_subassign_UINT16,
     GxB_Vector_subassign_UINT32, GxB_Vector_subassign_UINT64, GxB_Vector_subassign_UINT8,
 };
-use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
@@ -16,20 +14,22 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    convert_scalar_to_type, identity_conversion,
-    implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion,
-    implement_trait_for_2_type_data_type_and_all_value_types,
-};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
+use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
 // TODO: explicitly define how dupicates are handled
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertScalarIntoSubVector);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertScalarIntoSubVector);
+unsafe impl<VectorToInsertInto: ValueType, ScalarToInsert: ValueType> Send
+    for InsertScalarIntoSubVector<VectorToInsertInto, ScalarToInsert>
+{
+}
+unsafe impl<VectorToInsertInto: ValueType, ScalarToInsert: ValueType> Sync
+    for InsertScalarIntoSubVector<VectorToInsertInto, ScalarToInsert>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct InsertScalarIntoSubVector<VectorToInsertInto: ValueType, ScalarToInsert: ValueType> {
@@ -98,28 +98,21 @@ where
 
 macro_rules! implement_insert_scalar_into_sub_vector_trait {
     (
-        $value_type_vector_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
+        $_value_type_vector_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
-        impl
-            InsertScalarIntoSubVectorTrait<
-                $value_type_vector_to_insert_into,
-                $value_type_scalar_to_insert,
-            >
-            for InsertScalarIntoSubVector<
-                $value_type_vector_to_insert_into,
-                $value_type_scalar_to_insert,
-            >
+        impl<VectorToInsertInto: ValueType>
+            InsertScalarIntoSubVectorTrait<VectorToInsertInto, $value_type_scalar_to_insert>
+            for InsertScalarIntoSubVector<VectorToInsertInto, $value_type_scalar_to_insert>
         {
             /// replace option applies to entire matrix_to_insert_to
             fn apply(
                 &self,
-                vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
+                vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.clone();
-                $convert_to_type!(scalar_to_insert, $graphblas_implementation_type);
+                let scalar_to_insert = scalar_to_insert.clone().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into
                     .number_of_selected_elements(vector_to_insert_into.length()?)?
@@ -169,14 +162,13 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
             /// mask and replace option apply to entire matrix_to_insert_to
             fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
-                vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
+                vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.clone();
-                $convert_to_type!(scalar_to_insert, $graphblas_implementation_type);
+                let scalar_to_insert = scalar_to_insert.clone().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into
                     .number_of_selected_elements(vector_to_insert_into.length()?)?
@@ -235,6 +227,7 @@ implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_sca
 mod tests {
     use super::*;
 
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

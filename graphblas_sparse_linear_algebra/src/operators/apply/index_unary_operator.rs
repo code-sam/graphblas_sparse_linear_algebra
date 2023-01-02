@@ -14,52 +14,45 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::binary_operator::Second;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
-use crate::operators::{
-    binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
-};
+use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply_IndexOp_Scalar, GrB_UnaryOp,
-    GrB_Vector_apply_IndexOp_Scalar,
-};
+use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
 unsafe impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
+        ApplyTo: ValueType,
+        OperatorArgument: ValueType,
         Product: ValueType,
         EvaluationDomain: ValueType,
-    > Send for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+    > Send for IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
 {
 }
 unsafe impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
+        ApplyTo: ValueType,
+        OperatorArgument: ValueType,
         Product: ValueType,
         EvaluationDomain: ValueType,
-    > Sync for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+    > Sync for IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
 pub struct IndexUnaryOperatorApplier<
-    FirstArgument: ValueType,
-    SecondArgument: ValueType,
+    ApplyTo: ValueType,
+    OperatorArgument: ValueType,
     Product: ValueType,
     EvaluationDomain: ValueType,
 > {
-    _first_argument: PhantomData<FirstArgument>,
-    _second_argument: PhantomData<SecondArgument>,
+    _first_argument: PhantomData<ApplyTo>,
+    _second_argument: PhantomData<OperatorArgument>,
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
@@ -69,16 +62,16 @@ pub struct IndexUnaryOperatorApplier<
 }
 
 impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
+        ApplyTo: ValueType,
+        OperatorArgument: ValueType,
         Product: ValueType,
         EvaluationDomain: ValueType,
-    > IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+    > IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
 {
     pub fn new(
         index_unary_operator: &dyn IndexUnaryOperator<
-            FirstArgument,
-            SecondArgument,
+            ApplyTo,
+            OperatorArgument,
             Product,
             EvaluationDomain,
         >,
@@ -114,23 +107,23 @@ impl<
     }
 }
 
-pub trait ApplyIndexUnaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+pub trait ApplyIndexUnaryOperator<ApplyTo, OperatorArgument, Product, EvaluationDomain>
 where
-    FirstArgument: ValueType,
-    SecondArgument: ValueType,
+    ApplyTo: ValueType,
+    OperatorArgument: ValueType,
     Product: ValueType,
     EvaluationDomain: ValueType,
 {
     fn apply_to_vector(
         &self,
-        vector: &SparseVector<FirstArgument>,
+        vector: &SparseVector<ApplyTo>,
         argument: &EvaluationDomain,
         product: &mut SparseVector<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        vector: &SparseVector<FirstArgument>,
+        vector: &SparseVector<ApplyTo>,
         argument: &EvaluationDomain,
         product: &mut SparseVector<Product>,
         mask: &SparseVector<MaskValueType>,
@@ -138,14 +131,14 @@ where
 
     fn apply_to_matrix(
         &self,
-        matrix: &SparseMatrix<FirstArgument>,
+        matrix: &SparseMatrix<ApplyTo>,
         argument: &EvaluationDomain,
         product: &mut SparseMatrix<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
-        matrix: &SparseMatrix<FirstArgument>,
+        matrix: &SparseMatrix<ApplyTo>,
         argument: &EvaluationDomain,
         product: &mut SparseMatrix<Product>,
         mask: &SparseMatrix<MaskValueType>,
@@ -154,13 +147,13 @@ where
 
 macro_rules! implement_apply_index_binary_operator {
     ($value_type: ty, $_implementation_type: ty, $graphblas_function_1: ident, $graphblas_function_2: ident) => {
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
-            ApplyIndexUnaryOperator<FirstArgument, SecondArgument, Product, $value_type>
-            for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, $value_type>
+        impl<ApplyTo: ValueType, OperatorArgument: ValueType, Product: ValueType>
+            ApplyIndexUnaryOperator<ApplyTo, OperatorArgument, Product, $value_type>
+            for IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, $value_type>
         {
             fn apply_to_vector(
                 &self,
-                vector: &SparseVector<FirstArgument>,
+                vector: &SparseVector<ApplyTo>,
                 argument: &$value_type,
                 product: &mut SparseVector<Product>,
             ) -> Result<(), SparseLinearAlgebraError> {
@@ -187,7 +180,7 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
-                vector: &SparseVector<FirstArgument>,
+                vector: &SparseVector<ApplyTo>,
                 argument: &$value_type,
                 product: &mut SparseVector<Product>,
                 mask: &SparseVector<MaskValueType>,
@@ -215,7 +208,7 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_matrix(
                 &self,
-                matrix: &SparseMatrix<FirstArgument>,
+                matrix: &SparseMatrix<ApplyTo>,
                 argument: &$value_type,
                 product: &mut SparseMatrix<Product>,
             ) -> Result<(), SparseLinearAlgebraError> {
@@ -242,7 +235,7 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_matrix_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
-                matrix: &SparseMatrix<FirstArgument>,
+                matrix: &SparseMatrix<ApplyTo>,
                 argument: &$value_type,
                 product: &mut SparseMatrix<Product>,
                 mask: &SparseMatrix<MaskValueType>,
@@ -281,13 +274,10 @@ implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
-    };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::index_unary_operator::IsValueGreaterThan;

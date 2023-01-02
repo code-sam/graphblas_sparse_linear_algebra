@@ -7,10 +7,11 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
 };
 use crate::value_type::ValueType;
 
-pub trait IndexUnaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+// TODO: review EvaluationDomain. Typecasting may not work as expected, e.g. for less-than ot greater-than operators.
+pub trait IndexUnaryOperator<SelectFrom, SelectorArgument, Product, EvaluationDomain>
 where
-    FirstArgument: ValueType,
-    SecondArgument: ValueType,
+    SelectFrom: ValueType,
+    SelectorArgument: ValueType,
     Product: ValueType,
     EvaluationDomain: ValueType,
 {
@@ -22,22 +23,22 @@ macro_rules! implement_index_unary_operator {
         $graphblas_operator_name:ident,
         $evaluation_domain:ty
     ) => {
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
-            IndexUnaryOperator<FirstArgument, SecondArgument, Product, $evaluation_domain>
-            for $operator_name<FirstArgument, SecondArgument, Product, $evaluation_domain>
+        impl<SelectFrom: ValueType, SelectorArgument: ValueType, Product: ValueType>
+            IndexUnaryOperator<SelectFrom, SelectorArgument, Product, $evaluation_domain>
+            for $operator_name<SelectFrom, SelectorArgument, Product, $evaluation_domain>
         {
             fn graphblas_type(&self) -> GrB_IndexUnaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
-            $operator_name<FirstArgument, SecondArgument, Product, $evaluation_domain>
+        impl<SelectFrom: ValueType, SelectorArgument: ValueType, Product: ValueType>
+            $operator_name<SelectFrom, SelectorArgument, Product, $evaluation_domain>
         {
             pub fn new() -> Self {
                 Self {
-                    _first_argument_type: PhantomData,
-                    _second_argument_type: PhantomData,
+                    _argument_type: PhantomData,
+                    _selector_argument_type: PhantomData,
                     _product_type: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
@@ -51,12 +52,12 @@ macro_rules! implement_generic_index_unary_operator {
         $graphblas_operator_name:ident
     ) => {
         impl<
-                FirstArgument: ValueType,
-                SecondArgument: ValueType,
+                SelectFrom: ValueType,
+                SelectorArgument: ValueType,
                 Product: ValueType,
                 EvaluationDomain: ValueType,
-            > IndexUnaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
-            for $operator_name<FirstArgument, SecondArgument, Product, EvaluationDomain>
+            > IndexUnaryOperator<SelectFrom, SelectorArgument, Product, EvaluationDomain>
+            for $operator_name<SelectFrom, SelectorArgument, Product, EvaluationDomain>
         {
             fn graphblas_type(&self) -> GrB_IndexUnaryOp {
                 unsafe { $graphblas_operator_name }
@@ -64,16 +65,16 @@ macro_rules! implement_generic_index_unary_operator {
         }
 
         impl<
-                FirstArgument: ValueType,
-                SecondArgument: ValueType,
+                SelectFrom: ValueType,
+                SelectorArgument: ValueType,
                 Product: ValueType,
                 EvaluationDomain: ValueType,
-            > $operator_name<FirstArgument, SecondArgument, Product, EvaluationDomain>
+            > $operator_name<SelectFrom, SelectorArgument, Product, EvaluationDomain>
         {
             pub fn new() -> Self {
                 Self {
-                    _first_argument_type: PhantomData,
-                    _second_argument_type: PhantomData,
+                    _argument_type: PhantomData,
+                    _selector_argument_type: PhantomData,
                     _product_type: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
@@ -86,13 +87,13 @@ macro_rules! define_index_unary_operator {
     ($identifier: ident) => {
         #[derive(Debug, Clone)]
         pub struct $identifier<
-            FirstArgument: ValueType,
-            SecondArgument: ValueType,
+            SelectFrom: ValueType,
+            SelectorArgument: ValueType,
             Product: ValueType,
             EvaluationDomain: ValueType,
         > {
-            _first_argument_type: PhantomData<FirstArgument>,
-            _second_argument_type: PhantomData<SecondArgument>,
+            _argument_type: PhantomData<SelectFrom>,
+            _selector_argument_type: PhantomData<SelectorArgument>,
             _product_type: PhantomData<Product>,
             _evaluation_domain: PhantomData<EvaluationDomain>,
         }
@@ -189,11 +190,11 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 mod tests {
     use crate::{
         collections::{
-            collection::Collection,
             sparse_vector::{
                 FromVectorElementList, GetVectorElement, GetVectorElementValue, SparseVector,
                 VectorElementList,
             },
+            Collection,
         },
         context::{Context, Mode},
         operators::{

@@ -1,20 +1,13 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_vector::{
-    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
-};
+use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_trait_for_3_type_data_type_and_all_value_types,
-    implement_trait_for_4_type_data_type_and_all_value_types,
-};
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -24,8 +17,24 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_4_type_data_type_and_all_value_types!(Send, MatrixVectorMultiplicationOperator);
-implement_trait_for_4_type_data_type_and_all_value_types!(Sync, MatrixVectorMultiplicationOperator);
+unsafe impl<
+        FirstArgument: ValueType,
+        SecondArgument: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Send
+    for MatrixVectorMultiplicationOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+{
+}
+unsafe impl<
+        FirstArgument: ValueType,
+        SecondArgument: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Sync
+    for MatrixVectorMultiplicationOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+{
+}
 
 // TODO: review the use of &'a dyn Trait, removing dynamic dispatch could provide a performance gain. (it might be negated if cloning is necessary though)
 // https://www.joshmcguigan.com/blog/cost-of-indirection-rust/
@@ -77,9 +86,38 @@ where
             _evaluation_domain: PhantomData,
         }
     }
+}
 
+pub trait MultiplyMatrixByVector<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType>
+{
     // TODO: consider a version where the resulting product matrix is generated in the function body
-    pub fn apply(
+    fn apply(
+        &self,
+        // mask: Option<&SparseMatrix<AsBoolean<ValueType>>>,
+        multiplier: &SparseMatrix<Multiplier>,
+        multiplicant: &SparseVector<Multiplicant>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        mask: &SparseVector<MaskValueType>,
+        multiplier: &SparseMatrix<Multiplier>,
+        multiplicant: &SparseVector<Multiplicant>,
+        product: &mut SparseVector<Product>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > MultiplyMatrixByVector<Multiplier, Multiplicant, Product>
+    for MatrixVectorMultiplicationOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
+    // TODO: consider a version where the resulting product matrix is generated in the function body
+    fn apply(
         &self,
         // mask: Option<&SparseMatrix<AsBoolean<ValueType>>>,
         multiplier: &SparseMatrix<Multiplier>,
@@ -106,7 +144,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         mask: &SparseVector<MaskValueType>,
         multiplier: &SparseMatrix<Multiplier>,
@@ -142,6 +180,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::binary_operator::Plus;

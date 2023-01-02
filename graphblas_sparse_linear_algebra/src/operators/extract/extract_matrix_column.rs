@@ -11,7 +11,6 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
@@ -19,8 +18,8 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract,
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, MatrixColumnExtractor);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixColumnExtractor);
+unsafe impl<Matrix: ValueType, Column: ValueType> Sync for MatrixColumnExtractor<Matrix, Column> {}
+unsafe impl<Matrix: ValueType, Column: ValueType> Send for MatrixColumnExtractor<Matrix, Column> {}
 
 #[derive(Debug, Clone)]
 pub struct MatrixColumnExtractor<Matrix, Column>
@@ -58,8 +57,31 @@ where
             _column: PhantomData,
         }
     }
+}
 
-    pub fn apply(
+pub trait ExtractMatrixColumn<Matrix: ValueType, Column: ValueType> {
+    fn apply(
+        &self,
+        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        column_index_to_extract: &ElementIndex,
+        indices_to_extract: &ElementIndexSelector,
+        column_vector: &mut SparseVector<Column>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        column_index_to_extract: &ElementIndex,
+        indices_to_extract: &ElementIndexSelector,
+        column_vector: &mut SparseVector<Column>,
+        mask: &SparseVector<MaskValueType>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Matrix: ValueType, Column: ValueType> ExtractMatrixColumn<Matrix, Column>
+    for MatrixColumnExtractor<Matrix, Column>
+{
+    fn apply(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         column_index_to_extract: &ElementIndex,
@@ -121,7 +143,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         column_index_to_extract: &ElementIndex,
@@ -189,9 +211,9 @@ where
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::collections::sparse_vector::GetVectorElementValue;
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

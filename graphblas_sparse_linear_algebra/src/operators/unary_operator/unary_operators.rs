@@ -6,7 +6,6 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_integer_value_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool,
 };
 use crate::value_type::ValueType;
 
@@ -371,11 +370,11 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 mod tests {
     use crate::{
         collections::{
-            collection::Collection,
             sparse_vector::{
                 FromVectorElementList, GetVectorElement, GetVectorElementValue, SparseVector,
                 VectorElementList,
             },
+            Collection,
         },
         context::{Context, Mode},
         operators::{

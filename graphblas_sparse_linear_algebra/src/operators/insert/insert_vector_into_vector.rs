@@ -2,7 +2,6 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
-use crate::collections::collection::Collection;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
@@ -11,10 +10,7 @@ use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
-    implement_trait_for_2_type_data_type_and_all_value_types,
-};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -26,8 +22,14 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertVectorIntoVector);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertVectorIntoVector);
+unsafe impl<VectorToInsertInto: ValueType, VectorToInsert: ValueType> Send
+    for InsertVectorIntoVector<VectorToInsertInto, VectorToInsert>
+{
+}
+unsafe impl<VectorToInsertInto: ValueType, VectorToInsert: ValueType> Sync
+    for InsertVectorIntoVector<VectorToInsertInto, VectorToInsert>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoVector<VectorToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -95,22 +97,16 @@ where
 
 macro_rules! implement_insert_vector_into_vector_trait {
     (
-        $value_type_vector_to_insert_into:ty, $value_type_vector_to_insert:ty, $graphblas_insert_function:ident
+        $_value_type_vector_to_insert_into:ty, $value_type_vector_to_insert:ty, $graphblas_insert_function:ident
     ) => {
-        impl
-            InsertVectorIntoVectorTrait<
-                $value_type_vector_to_insert_into,
-                $value_type_vector_to_insert,
-            >
-            for InsertVectorIntoVector<
-                $value_type_vector_to_insert_into,
-                $value_type_vector_to_insert,
-            >
+        impl<VectorToInsertInto: ValueType>
+            InsertVectorIntoVectorTrait<VectorToInsertInto, $value_type_vector_to_insert>
+            for InsertVectorIntoVector<VectorToInsertInto, $value_type_vector_to_insert>
         {
             /// replace option applies to entire matrix_to_insert_to
             fn apply(
                 &self,
-                vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
+                vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
             ) -> Result<(), SparseLinearAlgebraError> {
@@ -164,7 +160,7 @@ macro_rules! implement_insert_vector_into_vector_trait {
             /// mask and replace option apply to entire matrix_to_insert_to
             fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
                 &self,
-                vector_to_insert_into: &mut SparseVector<$value_type_vector_to_insert_into>,
+                vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
                 mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
@@ -228,6 +224,7 @@ implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
 mod tests {
     use super::*;
 
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

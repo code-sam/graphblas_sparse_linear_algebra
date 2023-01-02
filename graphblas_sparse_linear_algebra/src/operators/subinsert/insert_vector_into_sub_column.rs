@@ -14,10 +14,6 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
-    implement_trait_for_2_type_data_type_and_all_value_types,
-};
 use crate::value_type::{AsBoolean, ValueType};
 
 // TODO: explicitly define how dupicates are handled
@@ -25,8 +21,14 @@ use crate::value_type::{AsBoolean, ValueType};
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, InsertVectorIntoSubColumn);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, InsertVectorIntoSubColumn);
+unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Send
+    for InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
+{
+}
+unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Sync
+    for InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
@@ -95,155 +97,138 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-macro_rules! implement_insert_vector_into_sub_column_trait {
-    (
-        $value_type_matrix_to_insert_into:ty, $value_type_vector_to_insert:ty, $graphblas_insert_function:ident
-    ) => {
-        impl
-            InsertVectorIntoSubColumnTrait<
-                $value_type_matrix_to_insert_into,
-                $value_type_vector_to_insert,
-            >
-            for InsertVectorIntoSubColumn<
-                $value_type_matrix_to_insert_into,
-                $value_type_vector_to_insert,
-            >
-        {
-            /// replace option applies to entire matrix_to_insert_to
-            fn apply(
-                &self,
-                matrix_to_insert_into: &mut SparseMatrix<$value_type_matrix_to_insert_into>,
-                column_indices_to_insert_into: &ElementIndexSelector,
-                column_to_insert_into: &ElementIndex,
-                vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let context = matrix_to_insert_into.context();
+impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType>
+    InsertVectorIntoSubColumnTrait<MatrixToInsertInto, VectorToInsert>
+    for InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
+{
+    /// replace option applies to entire matrix_to_insert_to
+    fn apply(
+        &self,
+        matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
+        column_indices_to_insert_into: &ElementIndexSelector,
+        column_to_insert_into: &ElementIndex,
+        vector_to_insert: &SparseVector<VectorToInsert>,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        let context = matrix_to_insert_into.context();
 
-                let number_of_indices_to_insert_into = column_indices_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
-                    .to_graphblas_index()?;
+        let number_of_indices_to_insert_into = column_indices_to_insert_into
+            .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
+            .to_graphblas_index()?;
 
-                let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
-                let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
+        let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
+        let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
 
-                match indices_to_insert_into {
-                    ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    self.accumulator,
-                                    vector_to_insert.graphblas_vector(),
-                                    index.as_ptr(),
-                                    number_of_indices_to_insert_into,
-                                    column_to_insert_into,
-                                    self.options,
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-
-                    ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    self.accumulator,
-                                    vector_to_insert.graphblas_vector(),
-                                    index,
-                                    number_of_indices_to_insert_into,
-                                    column_to_insert_into,
-                                    self.options,
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-                }
-
-                Ok(())
+        match indices_to_insert_into {
+            ElementIndexSelectorGraphblasType::Index(index) => {
+                context.call(
+                    || unsafe {
+                        GxB_Col_subassign(
+                            matrix_to_insert_into.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            vector_to_insert.graphblas_vector(),
+                            index.as_ptr(),
+                            number_of_indices_to_insert_into,
+                            column_to_insert_into,
+                            self.options,
+                        )
+                    },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                )?;
             }
 
-            /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
-                &self,
-                matrix_to_insert_into: &mut SparseMatrix<$value_type_matrix_to_insert_into>,
-                column_indices_to_insert_into: &ElementIndexSelector,
-                column_to_insert_into: &ElementIndex,
-                vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
-                mask_for_column_to_insert_into: &SparseVector<MaskValueType>,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let context = matrix_to_insert_into.context();
-
-                let number_of_indices_to_insert_into = column_indices_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
-                    .to_graphblas_index()?;
-
-                let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
-                let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
-
-                match indices_to_insert_into {
-                    ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    mask_for_column_to_insert_into.graphblas_vector(),
-                                    self.accumulator,
-                                    vector_to_insert.graphblas_vector(),
-                                    index.as_ptr(),
-                                    number_of_indices_to_insert_into,
-                                    column_to_insert_into,
-                                    self.options,
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-
-                    ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    mask_for_column_to_insert_into.graphblas_vector(),
-                                    self.accumulator,
-                                    vector_to_insert.graphblas_vector(),
-                                    index,
-                                    number_of_indices_to_insert_into,
-                                    column_to_insert_into,
-                                    self.options,
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-                }
-
-                Ok(())
+            ElementIndexSelectorGraphblasType::All(index) => {
+                context.call(
+                    || unsafe {
+                        GxB_Col_subassign(
+                            matrix_to_insert_into.graphblas_matrix(),
+                            ptr::null_mut(),
+                            self.accumulator,
+                            vector_to_insert.graphblas_vector(),
+                            index,
+                            number_of_indices_to_insert_into,
+                            column_to_insert_into,
+                            self.options,
+                        )
+                    },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                )?;
             }
         }
-    };
-}
 
-implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
-    implement_insert_vector_into_sub_column_trait,
-    GxB_Col_subassign
-);
+        Ok(())
+    }
+
+    /// mask and replace option apply to entire matrix_to_insert_to
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
+        column_indices_to_insert_into: &ElementIndexSelector,
+        column_to_insert_into: &ElementIndex,
+        vector_to_insert: &SparseVector<VectorToInsert>,
+        mask_for_column_to_insert_into: &SparseVector<MaskValueType>,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        let context = matrix_to_insert_into.context();
+
+        let number_of_indices_to_insert_into = column_indices_to_insert_into
+            .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
+            .to_graphblas_index()?;
+
+        let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
+        let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
+
+        match indices_to_insert_into {
+            ElementIndexSelectorGraphblasType::Index(index) => {
+                context.call(
+                    || unsafe {
+                        GxB_Col_subassign(
+                            matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_column_to_insert_into.graphblas_vector(),
+                            self.accumulator,
+                            vector_to_insert.graphblas_vector(),
+                            index.as_ptr(),
+                            number_of_indices_to_insert_into,
+                            column_to_insert_into,
+                            self.options,
+                        )
+                    },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                )?;
+            }
+
+            ElementIndexSelectorGraphblasType::All(index) => {
+                context.call(
+                    || unsafe {
+                        GxB_Col_subassign(
+                            matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_column_to_insert_into.graphblas_vector(),
+                            self.accumulator,
+                            vector_to_insert.graphblas_vector(),
+                            index,
+                            number_of_indices_to_insert_into,
+                            column_to_insert_into,
+                            self.options,
+                        )
+                    },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                )?;
+            }
+        }
+
+        Ok(())
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
     use crate::collections::sparse_vector::FromVectorElementList;
     use crate::collections::sparse_vector::VectorElementList;
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::First;

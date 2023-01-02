@@ -3,7 +3,6 @@ use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use once_cell::sync::Lazy;
 use rayon::prelude::*;
 
 use suitesparse_graphblas_sys::GrB_Matrix_diag;

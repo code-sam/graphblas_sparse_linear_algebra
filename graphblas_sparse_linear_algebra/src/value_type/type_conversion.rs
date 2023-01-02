@@ -3,16 +3,9 @@ use std::sync::{Arc, Mutex};
 
 use rayon::prelude::*;
 
-use suitesparse_graphblas_sys::{
-    GrB_BOOL, GrB_FP32, GrB_FP64, GrB_INT16, GrB_INT32, GrB_INT64, GrB_INT8, GrB_Type, GrB_UINT16,
-    GrB_UINT32, GrB_UINT64, GrB_UINT8,
-};
-
 use crate::{
     error::{LogicError, SparseLinearAlgebraError, SystemError, SystemErrorType},
-    value_type::utilities_to_implement_traits_for_all_value_types::{
-        implement_macro_for_all_value_types_and_graphblas_function, implement_type_conversion_macro,
-    },
+    value_type::utilities_to_implement_traits_for_all_value_types::implement_type_conversion_macro,
 };
 
 use super::ValueType;

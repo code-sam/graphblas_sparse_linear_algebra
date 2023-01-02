@@ -4,10 +4,11 @@ use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::{
-    binary_operator::BinaryOperator, extract::MatrixColumnExtractor, options::OperatorOptions,
-    transpose::MatrixTranspose,
+    binary_operator::BinaryOperator,
+    extract::{ExtractMatrixColumn, MatrixColumnExtractor},
+    options::OperatorOptions,
+    transpose::{MatrixTranspose, TransposeMatrix},
 };
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
@@ -20,9 +21,8 @@ where
     column_extractor: MatrixColumnExtractor<Matrix, Column>,
 }
 
-// TODO: why does implementation yield compiler warnings?
-// implement_trait_for_2_type_data_type_and_all_value_types!(Send, MatrixRowExtractor);
-// implement_trait_for_2_type_data_type_and_all_value_types!(Sync, MatrixRowExtractor);
+unsafe impl<Matrix: ValueType, Column: ValueType> Send for MatrixRowExtractor<Matrix, Column> {}
+unsafe impl<Matrix: ValueType, Column: ValueType> Sync for MatrixRowExtractor<Matrix, Column> {}
 
 impl<Matrix, Column> MatrixRowExtractor<Matrix, Column>
 where
@@ -41,8 +41,31 @@ where
             column_extractor,
         }
     }
+}
 
-    pub fn apply(
+pub trait ExtractMatrixRow<Matrix: ValueType, Column: ValueType> {
+    fn apply(
+        &self,
+        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        row_index_to_extract: &ElementIndex,
+        indices_to_extract: &ElementIndexSelector,
+        row_vector: &mut SparseVector<Column>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        row_index_to_extract: &ElementIndex,
+        indices_to_extract: &ElementIndexSelector,
+        row_vector: &mut SparseVector<Column>,
+        mask: &SparseVector<MaskValueType>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
+    for MatrixRowExtractor<Matrix, Column>
+{
+    fn apply(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         row_index_to_extract: &ElementIndex,
@@ -74,7 +97,7 @@ where
         Ok(())
     }
 
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         matrix_to_extract_from: &SparseMatrix<Matrix>,
         row_index_to_extract: &ElementIndex,
@@ -89,15 +112,14 @@ where
             matrix_to_extract_from.row_height()?,
         )
             .into();
-        // creating a new matrix, instead of cloning, requires to specify if if the value type is built-in or custom, as this is required for the SparseMatrix::new() constructor.
-        // let mut transposed_matrix = SparseMatrix::<ValueType>::new(&context, &size_of_transposed_matrix)?;
-        let mut transposed_matrix = matrix_to_extract_from.clone();
+        let mut transposed_matrix = SparseMatrix::<Matrix>::new(
+            matrix_to_extract_from.context_ref(),
+            &size_of_transposed_matrix,
+        )?;
         transposed_matrix.resize(&size_of_transposed_matrix)?;
 
         self.transpose_operator
             .apply(&matrix_to_extract_from, &mut transposed_matrix)?;
-
-        // let row_index_to_extract = ElementIndex::from(matrix_to_extract_from.row_height()? - row_index_to_extract);
 
         self.column_extractor.apply_with_mask(
             &matrix_to_extract_from,
@@ -115,9 +137,9 @@ where
 mod tests {
     use super::*;
 
-    use crate::collections::collection::Collection;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::collections::sparse_vector::GetVectorElementValue;
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

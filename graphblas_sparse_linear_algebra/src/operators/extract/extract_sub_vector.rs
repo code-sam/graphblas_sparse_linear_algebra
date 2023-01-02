@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
@@ -11,7 +10,6 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -21,8 +19,14 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-implement_trait_for_2_type_data_type_and_all_value_types!(Send, SubVectorExtractor);
-implement_trait_for_2_type_data_type_and_all_value_types!(Sync, SubVectorExtractor);
+unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Send
+    for SubVectorExtractor<Matrix, SubMatrix>
+{
+}
+unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Sync
+    for SubVectorExtractor<Matrix, SubMatrix>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct SubVectorExtractor<Argument, Product>
@@ -60,8 +64,30 @@ where
             _product: PhantomData,
         }
     }
+}
 
-    pub fn apply(
+pub trait ExtractSubVector<Vector: ValueType, SubVector: ValueType> {
+    fn apply(
+        &self,
+        vector_to_extract_from: &SparseVector<Vector>,
+        indices_to_extract: &ElementIndexSelector,
+        sub_vector: &mut SparseVector<SubVector>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    /// Length of the mask must equal length of sub_vector
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+        &self,
+        vector_to_extract_from: &SparseVector<Vector>,
+        indices_to_extract: &ElementIndexSelector,
+        sub_vector: &mut SparseVector<SubVector>,
+        mask: &SparseVector<MaskValueType>,
+    ) -> Result<(), SparseLinearAlgebraError>;
+}
+
+impl<Vector: ValueType, SubVector: ValueType> ExtractSubVector<Vector, SubVector>
+    for SubVectorExtractor<Vector, SubVector>
+{
+    fn apply(
         &self,
         vector_to_extract_from: &SparseVector<Vector>,
         indices_to_extract: &ElementIndexSelector,
@@ -119,7 +145,7 @@ where
     }
 
     /// Length of the mask must equal length of sub_vector
-    pub fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
         &self,
         vector_to_extract_from: &SparseVector<Vector>,
         indices_to_extract: &ElementIndexSelector,
@@ -185,6 +211,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
 

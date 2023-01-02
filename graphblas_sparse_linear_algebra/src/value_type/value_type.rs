@@ -2,10 +2,8 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_BOOL, GrB_FP32, GrB_FP64, GrB_INT16, GrB_INT32, GrB_INT64, GrB_INT8, GrB_Type, GrB_UINT16,
     GrB_UINT32, GrB_UINT64, GrB_UINT8,
 };
-use crate::error::{LogicError, LogicErrorType, SparseLinearAlgebraError};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_macro_for_all_value_types, implement_macro_for_all_value_types_and_graphblas_function,
-};
+
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_and_graphblas_function;
 
 use super::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_for_all_floating_point_value_types,

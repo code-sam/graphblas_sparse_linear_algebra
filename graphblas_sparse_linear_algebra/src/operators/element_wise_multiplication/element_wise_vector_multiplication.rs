@@ -1,16 +1,11 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
-};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_trait_for_3_type_data_type_and_all_value_types,
-    implement_trait_for_4_type_data_type_and_all_value_types, implement_trait_for_all_value_types,
 };
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -527,6 +522,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
     };
+    use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus, Times};
 

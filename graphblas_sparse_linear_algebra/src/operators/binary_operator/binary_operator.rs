@@ -580,7 +580,6 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas
 mod tests {
     use crate::{
         collections::{
-            collection::Collection,
             sparse_matrix::{
                 FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
             },
@@ -588,6 +587,7 @@ mod tests {
             sparse_vector::{
                 FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
             },
+            Collection,
         },
         context::{Context, Mode},
         operators::{
