@@ -14,15 +14,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SetScalarValue, SparseScalar};
 use crate::operators::index_unary_operator::IndexUnaryOperator;
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function,
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_custom_input_version_1_for_all_value_types,
-    implement_trait_for_all_value_types,
-};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{

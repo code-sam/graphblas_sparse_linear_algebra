@@ -6,7 +6,6 @@ use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
@@ -25,14 +24,8 @@ where
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Applicant: ValueType, Product: ValueType> Send
-    for MatrixTranspose<Applicant, Product>
-{
-}
-unsafe impl<Applicant: ValueType, Product: ValueType> Sync
-    for MatrixTranspose<Applicant, Product>
-{
-}
+unsafe impl<Applicant: ValueType, Product: ValueType> Send for MatrixTranspose<Applicant, Product> {}
+unsafe impl<Applicant: ValueType, Product: ValueType> Sync for MatrixTranspose<Applicant, Product> {}
 
 impl<Applicant, Product> MatrixTranspose<Applicant, Product>
 where
@@ -74,7 +67,9 @@ pub trait TransposeMatrix<Applicant: ValueType, Product: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Applicant: ValueType, Product: ValueType> TransposeMatrix<Applicant, Product> for MatrixTranspose<Applicant, Product> {
+impl<Applicant: ValueType, Product: ValueType> TransposeMatrix<Applicant, Product>
+    for MatrixTranspose<Applicant, Product>
+{
     fn apply(
         &self,
         matrix: &SparseMatrix<Applicant>,

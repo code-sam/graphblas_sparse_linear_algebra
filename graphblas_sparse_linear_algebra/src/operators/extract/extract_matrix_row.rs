@@ -7,9 +7,8 @@ use crate::operators::{
     binary_operator::BinaryOperator,
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
     options::OperatorOptions,
-    transpose::{TransposeMatrix, MatrixTranspose},
+    transpose::{MatrixTranspose, TransposeMatrix},
 };
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_trait_for_2_type_data_type_and_all_value_types;
 use crate::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]

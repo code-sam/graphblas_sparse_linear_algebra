@@ -1,11 +1,10 @@
 use std::cmp::min;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
-use std::ptr;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_sort};
+use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag};
 
 use super::element::{VectorElement, VectorElementList};
 use crate::bindings_to_graphblas_implementation::{

@@ -1,8 +1,3 @@
-use rayon::prelude::*;
-
-use crate::error::SparseLinearAlgebraError;
-use crate::value_type::value_type::ValueType;
-
 macro_rules! implement_macro_for_all_value_types {
     ($macro_identifier:ident) => {
         $macro_identifier!(bool);

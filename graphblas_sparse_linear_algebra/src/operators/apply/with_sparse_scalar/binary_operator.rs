@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-use std::marker::PhantomData;
 use std::ptr;
 
 use suitesparse_graphblas_sys::{
@@ -13,10 +11,7 @@ use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::BinaryOperatorApplier;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
-
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 pub trait ApplyBinaryOperatorWithSparseScalar<
     FirstArgument,
@@ -325,6 +320,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, Plus};
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_matrix_binary_operator_application() {

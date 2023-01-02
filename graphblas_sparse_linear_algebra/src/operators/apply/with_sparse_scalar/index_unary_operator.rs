@@ -1,7 +1,4 @@
-use std::marker::PhantomData;
 use std::ptr;
-
-use suitesparse_graphblas_sys::GrB_IndexUnaryOp;
 
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
 use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
@@ -9,16 +6,10 @@ use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::IndexUnaryOperatorApplier;
-use crate::operators::binary_operator::Second;
-use crate::operators::index_unary_operator::IndexUnaryOperator;
-use crate::operators::{
-    binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
-};
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply_IndexOp_Scalar, GrB_UnaryOp,
-    GrB_Vector_apply_IndexOp_Scalar,
+    GrB_Matrix_apply_IndexOp_Scalar, GrB_Vector_apply_IndexOp_Scalar,
 };
 
 pub trait ApplyIndexUnaryOperatorWithSparseScalar<
@@ -190,13 +181,11 @@ mod tests {
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
     };
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
-    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::First;
     use crate::operators::index_unary_operator::IsValueGreaterThan;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_matrix_index_unary_operator() {

@@ -10,10 +10,7 @@ use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function,
-    implement_trait_for_2_type_data_type_and_all_value_types,
-};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{

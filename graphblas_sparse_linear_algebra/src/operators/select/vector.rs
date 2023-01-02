@@ -13,26 +13,12 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SetScalarValue, SparseScalar};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::operators::index_unary_operator::IndexUnaryOperator;
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function,
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types,
-    implement_macro_with_custom_input_version_1_for_all_value_types,
-    implement_trait_for_all_value_types,
-};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GxB_DIAG, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
-    GxB_GT_THUNK, GxB_GT_ZERO, GxB_LE_THUNK, GxB_LE_ZERO, GxB_LT_THUNK, GxB_LT_ZERO, GxB_NE_THUNK,
-    GxB_NONZERO, GxB_OFFDIAG, GxB_TRIL, GxB_TRIU, GxB_Vector_select,
-};
-
-// use super::diagonal_index::{DiagonalIndex, DiagonalIndexGraphblasType};
-use crate::index::{DiagonalIndex, DiagonalIndexConversion, GraphblasDiagionalIndex};
+use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

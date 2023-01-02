@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use std::marker::PhantomData;
 use std::ptr;
 
@@ -6,25 +5,23 @@ use suitesparse_graphblas_sys::{
     GrB_Matrix_apply_BinaryOp1st_BOOL, GrB_Matrix_apply_BinaryOp1st_FP32,
     GrB_Matrix_apply_BinaryOp1st_FP64, GrB_Matrix_apply_BinaryOp1st_INT16,
     GrB_Matrix_apply_BinaryOp1st_INT32, GrB_Matrix_apply_BinaryOp1st_INT64,
-    GrB_Matrix_apply_BinaryOp1st_INT8, GrB_Matrix_apply_BinaryOp1st_Scalar,
-    GrB_Matrix_apply_BinaryOp1st_UINT16, GrB_Matrix_apply_BinaryOp1st_UINT32,
-    GrB_Matrix_apply_BinaryOp1st_UINT64, GrB_Matrix_apply_BinaryOp1st_UINT8,
-    GrB_Matrix_apply_BinaryOp2nd_BOOL, GrB_Matrix_apply_BinaryOp2nd_FP32,
-    GrB_Matrix_apply_BinaryOp2nd_FP64, GrB_Matrix_apply_BinaryOp2nd_INT16,
-    GrB_Matrix_apply_BinaryOp2nd_INT32, GrB_Matrix_apply_BinaryOp2nd_INT64,
-    GrB_Matrix_apply_BinaryOp2nd_INT8, GrB_Matrix_apply_BinaryOp2nd_Scalar,
+    GrB_Matrix_apply_BinaryOp1st_INT8, GrB_Matrix_apply_BinaryOp1st_UINT16,
+    GrB_Matrix_apply_BinaryOp1st_UINT32, GrB_Matrix_apply_BinaryOp1st_UINT64,
+    GrB_Matrix_apply_BinaryOp1st_UINT8, GrB_Matrix_apply_BinaryOp2nd_BOOL,
+    GrB_Matrix_apply_BinaryOp2nd_FP32, GrB_Matrix_apply_BinaryOp2nd_FP64,
+    GrB_Matrix_apply_BinaryOp2nd_INT16, GrB_Matrix_apply_BinaryOp2nd_INT32,
+    GrB_Matrix_apply_BinaryOp2nd_INT64, GrB_Matrix_apply_BinaryOp2nd_INT8,
     GrB_Matrix_apply_BinaryOp2nd_UINT16, GrB_Matrix_apply_BinaryOp2nd_UINT32,
     GrB_Matrix_apply_BinaryOp2nd_UINT64, GrB_Matrix_apply_BinaryOp2nd_UINT8,
     GrB_Vector_apply_BinaryOp1st_BOOL, GrB_Vector_apply_BinaryOp1st_FP32,
     GrB_Vector_apply_BinaryOp1st_FP64, GrB_Vector_apply_BinaryOp1st_INT16,
     GrB_Vector_apply_BinaryOp1st_INT32, GrB_Vector_apply_BinaryOp1st_INT64,
-    GrB_Vector_apply_BinaryOp1st_INT8, GrB_Vector_apply_BinaryOp1st_Scalar,
-    GrB_Vector_apply_BinaryOp1st_UINT16, GrB_Vector_apply_BinaryOp1st_UINT32,
-    GrB_Vector_apply_BinaryOp1st_UINT64, GrB_Vector_apply_BinaryOp1st_UINT8,
-    GrB_Vector_apply_BinaryOp2nd_BOOL, GrB_Vector_apply_BinaryOp2nd_FP32,
-    GrB_Vector_apply_BinaryOp2nd_FP64, GrB_Vector_apply_BinaryOp2nd_INT16,
-    GrB_Vector_apply_BinaryOp2nd_INT32, GrB_Vector_apply_BinaryOp2nd_INT64,
-    GrB_Vector_apply_BinaryOp2nd_INT8, GrB_Vector_apply_BinaryOp2nd_Scalar,
+    GrB_Vector_apply_BinaryOp1st_INT8, GrB_Vector_apply_BinaryOp1st_UINT16,
+    GrB_Vector_apply_BinaryOp1st_UINT32, GrB_Vector_apply_BinaryOp1st_UINT64,
+    GrB_Vector_apply_BinaryOp1st_UINT8, GrB_Vector_apply_BinaryOp2nd_BOOL,
+    GrB_Vector_apply_BinaryOp2nd_FP32, GrB_Vector_apply_BinaryOp2nd_FP64,
+    GrB_Vector_apply_BinaryOp2nd_INT16, GrB_Vector_apply_BinaryOp2nd_INT32,
+    GrB_Vector_apply_BinaryOp2nd_INT64, GrB_Vector_apply_BinaryOp2nd_INT8,
     GrB_Vector_apply_BinaryOp2nd_UINT16, GrB_Vector_apply_BinaryOp2nd_UINT32,
     GrB_Vector_apply_BinaryOp2nd_UINT64, GrB_Vector_apply_BinaryOp2nd_UINT8,
 };
@@ -34,12 +31,7 @@ use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type,
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_for_all_value_types,
-    implement_macro_for_all_value_types_and_graphblas_function,
-};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};

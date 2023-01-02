@@ -8,10 +8,6 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_trait_for_3_type_data_type_and_all_value_types,
-    implement_trait_for_4_type_data_type_and_all_value_types,
-};
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
@@ -22,11 +18,21 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> Send
+unsafe impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Send
     for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 {
 }
-unsafe impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> Sync
+unsafe impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > Sync
     for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
 {
 }
@@ -81,7 +87,12 @@ where
     }
 }
 
-pub trait SemiringKroneckerProduct<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> {
+pub trait SemiringKroneckerProduct<
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
+>
+{
     fn apply(
         &self,
         multiplier: &SparseMatrix<Multiplier>,
@@ -98,7 +109,14 @@ pub trait SemiringKroneckerProduct<Multiplier: ValueType, Multiplicant: ValueTyp
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType, EvaluationDomain: ValueType> SemiringKroneckerProduct<Multiplier, Multiplicant, Product> for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain> {
+impl<
+        Multiplier: ValueType,
+        Multiplicant: ValueType,
+        Product: ValueType,
+        EvaluationDomain: ValueType,
+    > SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
+    for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+{
     fn apply(
         &self,
         multiplier: &SparseMatrix<Multiplier>,
@@ -257,7 +275,6 @@ impl<T: ValueType> MonoidKroneckerProduct<T> for MonoidKroneckerProductOperator<
     }
 }
 
-
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product> {
     _multiplier: PhantomData<Multiplier>,
@@ -299,7 +316,12 @@ where
     }
 }
 
-pub trait BinaryOperatorKroneckerProduct<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> {
+pub trait BinaryOperatorKroneckerProduct<
+    Multiplier: ValueType,
+    Multiplicant: ValueType,
+    Product: ValueType,
+>
+{
     fn apply(
         &self,
         multiplier: &SparseMatrix<Multiplier>,
@@ -316,7 +338,10 @@ pub trait BinaryOperatorKroneckerProduct<Multiplier: ValueType, Multiplicant: Va
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType> BinaryOperatorKroneckerProduct<Multiplier, Multiplicant, Product> for BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product> {
+impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType>
+    BinaryOperatorKroneckerProduct<Multiplier, Multiplicant, Product>
+    for BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product>
+{
     fn apply(
         &self,
         multiplier: &SparseMatrix<Multiplier>,
