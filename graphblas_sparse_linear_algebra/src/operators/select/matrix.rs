@@ -236,10 +236,28 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 0).into())
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 0).into())
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 1).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            4
+        );
 
         let diagonal_index = -1;
 
@@ -250,10 +268,24 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 0);
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 0).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 0).into())
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 1).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(1, 1).into()).unwrap(),
+            None
+        );
     }
 
     #[test]
@@ -290,10 +322,28 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 3);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 0).into())
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(1, 0).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 1).into())
+                .unwrap(),
+            3
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            4
+        );
 
         let diagonal_index = -1;
 
@@ -304,10 +354,30 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 3);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 0).into())
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 0).into())
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 1).into())
+                .unwrap(),
+            3
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            4
+        );
     }
 
     #[test]
@@ -344,10 +414,26 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 0).into())
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(1, 0).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 1).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            4
+        );
 
         let diagonal_index = -1;
         // let diagonal_index = DiagonalIndex::Default();
@@ -359,10 +445,26 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 0);
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 0).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 0).into())
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 1).into())
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(1, 1).into()).unwrap(),
+            None
+        );
     }
 
     // #[test]
@@ -448,10 +550,30 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 1);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 3);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 4);
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 0).into())
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 0).into())
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(0, 1).into())
+                .unwrap(),
+            3
+        );
+        assert_eq!(
+            product_matrix
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            4
+        );
 
         let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
         let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
@@ -460,10 +582,22 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(0, 0).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 0).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(0, 1).into()).unwrap(), 0);
-        assert_eq!(product_matrix.get_element_value(&(1, 1).into()).unwrap(), 0);
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 0).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(1, 0).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(0, 1).into()).unwrap(),
+            None
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(1, 1).into()).unwrap(),
+            None
+        );
     }
 
     // #[test]

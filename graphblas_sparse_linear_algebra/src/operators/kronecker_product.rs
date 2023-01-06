@@ -456,7 +456,7 @@ mod tests {
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);
-        assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), 0); // NoValue
+        assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), None); // NoValue
 
         let multiplier_element_list = MatrixElementList::<i32>::from_element_vector(vec![
             (0, 0, 1).into(),
@@ -491,25 +491,105 @@ mod tests {
             .apply(&multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&(0, 0).into()).unwrap(), 5);
-        assert_eq!(product.get_element_value(&(1, 0).into()).unwrap(), 6);
-        assert_eq!(product.get_element_value(&(0, 1).into()).unwrap(), 7);
-        assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), 8);
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(0, 0).into())
+                .unwrap(),
+            5
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(1, 0).into())
+                .unwrap(),
+            6
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(0, 1).into())
+                .unwrap(),
+            7
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            8
+        );
 
-        assert_eq!(product.get_element_value(&(2, 0).into()).unwrap(), 10);
-        assert_eq!(product.get_element_value(&(3, 0).into()).unwrap(), 12);
-        assert_eq!(product.get_element_value(&(2, 1).into()).unwrap(), 14);
-        assert_eq!(product.get_element_value(&(3, 1).into()).unwrap(), 16);
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(2, 0).into())
+                .unwrap(),
+            10
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(3, 0).into())
+                .unwrap(),
+            12
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(2, 1).into())
+                .unwrap(),
+            14
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(3, 1).into())
+                .unwrap(),
+            16
+        );
 
-        assert_eq!(product.get_element_value(&(0, 2).into()).unwrap(), 15);
-        assert_eq!(product.get_element_value(&(1, 2).into()).unwrap(), 18);
-        assert_eq!(product.get_element_value(&(0, 3).into()).unwrap(), 21);
-        assert_eq!(product.get_element_value(&(1, 3).into()).unwrap(), 24);
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(0, 2).into())
+                .unwrap(),
+            15
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(1, 2).into())
+                .unwrap(),
+            18
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(0, 3).into())
+                .unwrap(),
+            21
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(1, 3).into())
+                .unwrap(),
+            24
+        );
 
-        assert_eq!(product.get_element_value(&(2, 2).into()).unwrap(), 20);
-        assert_eq!(product.get_element_value(&(3, 2).into()).unwrap(), 24);
-        assert_eq!(product.get_element_value(&(2, 3).into()).unwrap(), 28);
-        assert_eq!(product.get_element_value(&(3, 3).into()).unwrap(), 32);
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(2, 2).into())
+                .unwrap(),
+            20
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(3, 2).into())
+                .unwrap(),
+            24
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(2, 3).into())
+                .unwrap(),
+            28
+        );
+        assert_eq!(
+            product
+                .get_element_value_or_default(&(3, 3).into())
+                .unwrap(),
+            32
+        );
 
         // // test the use of an accumulator
         // let accumulator = Plus::<i32, i32, i32>::new();

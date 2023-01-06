@@ -211,7 +211,7 @@ mod tests {
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);
-        assert_eq!(product.get_element_value(&1).unwrap(), 0.); // NoValue
+        assert_eq!(product.get_element_value(&1).unwrap(), None); // NoValue
 
         let multiplier_element_list =
             VectorElementList::<f32>::from_element_vector(vec![(0, 1.0).into(), (1, 2.0).into()]);
@@ -242,8 +242,8 @@ mod tests {
             .apply(&multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&0).unwrap(), 17.);
-        assert_eq!(product.get_element_value(&1).unwrap(), 23.);
+        assert_eq!(product.get_element_value_or_default(&0).unwrap(), 17.);
+        assert_eq!(product.get_element_value_or_default(&1).unwrap(), 23.);
 
         // TODO: this test is not generic over column/row storage format.
         // Equality checks should be done at a matrix level, since the ordering of the element list is not guaranteed.
@@ -265,8 +265,8 @@ mod tests {
             .apply(&multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&0).unwrap(), 17. * 2.);
-        assert_eq!(product.get_element_value(&1).unwrap(), 23. * 2.);
+        assert_eq!(product.get_element_value_or_default(&0).unwrap(), 17. * 2.);
+        assert_eq!(product.get_element_value_or_default(&1).unwrap(), 23. * 2.);
 
         // test the use of a mask
         let mask_element_list =
@@ -291,7 +291,7 @@ mod tests {
             .apply_with_mask(&mask, &multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&0).unwrap(), 17.);
-        assert_eq!(product.get_element_value(&1).unwrap(), 0.);
+        assert_eq!(product.get_element_value_or_default(&0).unwrap(), 17.);
+        assert_eq!(product.get_element_value(&1).unwrap(), None);
     }
 }

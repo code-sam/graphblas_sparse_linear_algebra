@@ -4,7 +4,9 @@ use std::mem::MaybeUninit;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag};
+use suitesparse_graphblas_sys::{
+    GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
+};
 
 use super::element::{VectorElement, VectorElementList};
 use crate::bindings_to_graphblas_implementation::{
@@ -292,6 +294,7 @@ pub trait SparseVectorTrait {
         &mut self,
         index_to_delete: ElementIndex,
     ) -> Result<(), SparseLinearAlgebraError>;
+    fn is_element(&self, index: ElementIndex) -> Result<bool, SparseLinearAlgebraError>;
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn resize(&mut self, new_length: ElementIndex) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -308,6 +311,23 @@ impl<T: ValueType> SparseVectorTrait for SparseVector<T> {
             &self.vector,
         )?;
         Ok(())
+    }
+
+    fn is_element(&self, index: ElementIndex) -> Result<bool, SparseLinearAlgebraError> {
+        let index = index.to_graphblas_index()?;
+
+        match self.context.call(
+            || unsafe { GxB_Vector_isStoredElement(self.vector, index) },
+            &self.vector,
+        ) {
+            Ok(_) => Ok(true),
+            Err(error) => match error.error_type() {
+                SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
+                    GraphBlasErrorType::NoValue,
+                )) => Ok(false),
+                _ => Err(error),
+            },
+        }
     }
 
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
@@ -519,7 +539,14 @@ macro_rules! implement_set_element_for_custom_type {
 // implement_set_element_for_custom_type!(u128);
 
 pub trait GetVectorElementValue<T: ValueType + Default> {
-    fn get_element_value(&self, index: &ElementIndex) -> Result<T, SparseLinearAlgebraError>;
+    fn get_element_value(
+        &self,
+        index: &ElementIndex,
+    ) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn get_element_value_or_default(
+        &self,
+        index: &ElementIndex,
+    ) -> Result<T, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_element_value_for_built_in_type {
@@ -528,7 +555,7 @@ macro_rules! implement_get_element_value_for_built_in_type {
             fn get_element_value(
                 &self,
                 index: &ElementIndex,
-            ) -> Result<$value_type, SparseLinearAlgebraError> {
+            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
                 let index_to_get = index.to_graphblas_index()?;
 
@@ -542,15 +569,22 @@ macro_rules! implement_get_element_value_for_built_in_type {
                 match result {
                     Ok(_) => {
                         let value = unsafe { value.assume_init() };
-                        value.to_type()
+                        Ok(Some(value.to_type()?))
                     }
                     Err(error) => match error.error_type() {
                         SparseLinearAlgebraErrorType::LogicErrorType(
                             LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
-                        ) => Ok(<$value_type>::default()),
+                        ) => Ok(None),
                         _ => Err(error),
                     },
                 }
+            }
+
+            fn get_element_value_or_default(
+                &self,
+                index: &ElementIndex,
+            ) -> Result<$value_type, SparseLinearAlgebraError> {
+                Ok(self.get_element_value(index)?.unwrap_or_default())
             }
         }
     };
@@ -565,6 +599,10 @@ pub trait GetVectorElement<T: ValueType> {
     fn get_element(
         &self,
         index: ElementIndex,
+    ) -> Result<Option<VectorElement<T>>, SparseLinearAlgebraError>;
+    fn get_element_or_default(
+        &self,
+        index: ElementIndex,
     ) -> Result<VectorElement<T>, SparseLinearAlgebraError>;
 }
 
@@ -574,8 +612,21 @@ macro_rules! implement_get_element_for_built_in_type {
             fn get_element(
                 &self,
                 index: ElementIndex,
+            ) -> Result<Option<VectorElement<$value_type>>, SparseLinearAlgebraError> {
+                match self.get_element_value(&index)? {
+                    Some(value) => Ok(Some(VectorElement::new(index, value))),
+                    None => Ok(None),
+                }
+            }
+
+            fn get_element_or_default(
+                &self,
+                index: ElementIndex,
             ) -> Result<VectorElement<$value_type>, SparseLinearAlgebraError> {
-                Ok(VectorElement::new(index, self.get_element_value(&index)?))
+                Ok(VectorElement::new(
+                    index,
+                    self.get_element_value_or_default(&index)?,
+                ))
             }
         }
     };
@@ -583,31 +634,31 @@ macro_rules! implement_get_element_for_built_in_type {
 
 implement_macro_for_all_value_types!(implement_get_element_for_built_in_type);
 
-macro_rules! implement_get_element_for_custom_type {
-    ($value_type:ty) => {
-        impl GetVectorElement<$value_type> for SparseVector<$value_type> {
-            fn get_element(
-                &self,
-                index: ElementIndex,
-            ) -> Result<VectorElement<$value_type>, SparseLinearAlgebraError> {
-                let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
-                let pointer_to_value: *mut c_void = &mut value as *mut _ as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
-                let index_to_get = index.to_graphblas_index()?;
+// macro_rules! implement_get_element_for_custom_type {
+//     ($value_type:ty) => {
+//         impl GetVectorElement<$value_type> for SparseVector<$value_type> {
+//             fn get_element(
+//                 &self,
+//                 index: ElementIndex,
+//             ) -> Result<VectorElement<$value_type>, SparseLinearAlgebraError> {
+//                 let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
+//                 let pointer_to_value: *mut c_void = &mut value as *mut _ as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
+//                 let index_to_get = index.to_graphblas_index()?;
 
-                self.context.call(
-                    || unsafe {
-                        GrB_Vector_extractElement_UDT(pointer_to_value, self.vector, index_to_get)
-                    },
-                    &self.vector,
-                )?;
+//                 self.context.call(
+//                     || unsafe {
+//                         GrB_Vector_extractElement_UDT(pointer_to_value, self.vector, index_to_get)
+//                     },
+//                     &self.vector,
+//                 )?;
 
-                let value = unsafe { value.assume_init() };
+//                 let value = unsafe { value.assume_init() };
 
-                Ok(VectorElement::new(index, value))
-            }
-        }
-    };
-}
+//                 Ok(VectorElement::new(index, value))
+//             }
+//         }
+//     };
+// }
 
 // implement_get_element_for_custom_type!(i128);
 // implement_get_element_for_custom_type!(u128);
@@ -709,7 +760,10 @@ mod tests {
             sparse_vector.number_of_stored_elements().unwrap()
         );
         for index in indices {
-            assert_eq!(sparse_vector.get_element_value(&index).unwrap(), value);
+            assert_eq!(
+                sparse_vector.get_element_value_or_default(&index).unwrap(),
+                value
+            );
         }
     }
 
@@ -738,19 +792,19 @@ mod tests {
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &0).unwrap();
         assert_eq!(diagonal.length().unwrap(), 10);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(diagonal.get_element_value(&0).unwrap(), 0);
-        assert_eq!(diagonal.get_element_value(&2).unwrap(), 4);
+        assert_eq!(diagonal.get_element_value_or_default(&0).unwrap(), 0);
+        assert_eq!(diagonal.get_element_value_or_default(&2).unwrap(), 4);
 
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &2).unwrap();
         assert_eq!(diagonal.length().unwrap(), 10);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(diagonal.get_element_value(&0).unwrap(), 2);
-        assert_eq!(diagonal.get_element_value(&2).unwrap(), 6);
+        assert_eq!(diagonal.get_element_value_or_default(&0).unwrap(), 2);
+        assert_eq!(diagonal.get_element_value_or_default(&2).unwrap(), 6);
 
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &-2).unwrap();
         assert_eq!(diagonal.length().unwrap(), 8);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 1);
-        assert_eq!(diagonal.get_element_value(&1).unwrap(), 4);
+        assert_eq!(diagonal.get_element_value_or_default(&1).unwrap(), 4);
     }
 
     #[test]
@@ -963,11 +1017,15 @@ mod tests {
 
         assert_eq!(
             element_1,
-            sparse_vector.get_element(element_1.index()).unwrap()
+            sparse_vector
+                .get_element_or_default(element_1.index())
+                .unwrap()
         );
         assert_eq!(
             element_2,
-            sparse_vector.get_element(element_2.index()).unwrap()
+            sparse_vector
+                .get_element_or_default(element_2.index())
+                .unwrap()
         );
     }
 

@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use rayon::prelude::*;
 
-use suitesparse_graphblas_sys::GrB_Matrix_diag;
+use suitesparse_graphblas_sys::{GrB_Matrix_diag, GxB_Matrix_isStoredElement};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
@@ -156,6 +156,7 @@ impl<T: ValueType> GraphblasSparseMatrixTrait for SparseMatrix<T> {
 pub trait SparseMatrixTrait<T: ValueType> {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
+    fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError>;
     /// All elements of self with an index coordinate outside of the new size are dropped.
     fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError>;
     fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
@@ -185,6 +186,26 @@ impl<T: ValueType> SparseMatrixTrait<T> for SparseMatrix<T> {
             &self.matrix,
         )?;
         Ok(())
+    }
+
+    fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError> {
+        let row_index = coordinate.row_index().to_graphblas_index()?;
+        let column_index = coordinate.column_index().to_graphblas_index()?;
+
+        let context = self.context.clone();
+        let result = context.call(
+            || unsafe { GxB_Matrix_isStoredElement(self.matrix, row_index, column_index) },
+            &self.matrix,
+        );
+        match result {
+            Ok(_) => Ok(true),
+            Err(error) => match error.error_type() {
+                SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
+                    GraphBlasErrorType::NoValue,
+                )) => Ok(false),
+                _ => Err(error),
+            },
+        }
     }
 
     /// All elements of self with an index coordinate outside of the new size are dropped.
@@ -487,7 +508,14 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
 );
 
 pub trait GetMatrixElementValue<T: ValueType + Default> {
-    fn get_element_value(&self, coordinate: &Coordinate) -> Result<T, SparseLinearAlgebraError>;
+    fn get_element_value(
+        &self,
+        coordinate: &Coordinate,
+    ) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn get_element_value_or_default(
+        &self,
+        coordinate: &Coordinate,
+    ) -> Result<T, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_element_value {
@@ -496,7 +524,7 @@ macro_rules! implement_get_element_value {
             fn get_element_value(
                 &self,
                 coordinate: &Coordinate,
-            ) -> Result<$value_type, SparseLinearAlgebraError> {
+            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 // let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
                 let mut value = MaybeUninit::uninit();
                 let row_index_to_get = coordinate.row_index().to_graphblas_index()?;
@@ -518,14 +546,24 @@ macro_rules! implement_get_element_value {
                     Ok(_) => {
                         let value = unsafe { value.assume_init() };
                         // Casting to support isize and usize, redundant for other types. TODO: review performance improvements
-                        Ok(value.try_into().unwrap())
+                        Ok(Some(value.try_into().unwrap()))
                     }
                     Err(error) => match error.error_type() {
                         SparseLinearAlgebraErrorType::LogicErrorType(
                             LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
-                        ) => Ok(<$value_type>::default()),
+                        ) => Ok(None),
                         _ => Err(error),
                     },
+                }
+            }
+
+            fn get_element_value_or_default(
+                &self,
+                coordinate: &Coordinate,
+            ) -> Result<$value_type, SparseLinearAlgebraError> {
+                match self.get_element_value(coordinate)? {
+                    Some(value) => Ok(value),
+                    None => Ok(<$value_type>::default()),
                 }
             }
         }
@@ -541,15 +579,20 @@ pub trait GetMatrixElement<T: ValueType> {
     fn get_element(
         &self,
         coordinate: Coordinate,
+    ) -> Result<Option<MatrixElement<T>>, SparseLinearAlgebraError>;
+
+    fn get_element_or_default(
+        &self,
+        coordinate: Coordinate,
     ) -> Result<MatrixElement<T>, SparseLinearAlgebraError>;
 }
 
-// impl<T: ValueType> GetElement<T> for SparseMatrix<T> {
+// impl<T: ValueType> GetMatrixElement<T> for SparseMatrix<T> {
 //     fn get_element(
-//         matrix: &dyn GetElementValue<T>,
+//         &self,
 //         coordinate: Coordinate,
 //     ) -> Result<MatrixElement<T>, SparseLinearAlgebraError> {
-//         let value = matrix.get_element_value(coordinate)?;
+//         let value = self.get_element_value(coordinate)?;
 
 //         Ok(MatrixElement::new(coordinate, value))
 //     }
@@ -561,15 +604,23 @@ macro_rules! implement_get_element {
             fn get_element(
                 &self,
                 coordinate: Coordinate,
-            ) -> Result<MatrixElement<$value_type>, SparseLinearAlgebraError> {
-                let value = self.get_element_value(&coordinate)?;
+            ) -> Result<Option<MatrixElement<$value_type>>, SparseLinearAlgebraError> {
+                match self.get_element_value(&coordinate)? {
+                    Some(value) => Ok(Some(MatrixElement::new(coordinate, value))),
+                    None => Ok(None),
+                }
+            }
 
+            fn get_element_or_default(
+                &self,
+                coordinate: Coordinate,
+            ) -> Result<MatrixElement<$value_type>, SparseLinearAlgebraError> {
+                let value = self.get_element_value_or_default(&coordinate)?;
                 Ok(MatrixElement::new(coordinate, value))
             }
         }
     };
 }
-
 implement_macro_for_all_value_types!(implement_get_element);
 
 // macro_rules! implement_get_element {
@@ -792,14 +843,20 @@ mod tests {
             matrix.size().unwrap(),
             Size::new(vector_length, vector_length)
         );
-        assert_eq!(matrix.get_element_value(&(5, 5).into()).unwrap(), 5);
+        assert_eq!(
+            matrix.get_element_value(&(5, 5).into()).unwrap().unwrap(),
+            5
+        );
 
         let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
         );
-        assert_eq!(matrix.get_element_value(&(5, 7).into()).unwrap(), 5);
+        assert_eq!(
+            matrix.get_element_value(&(5, 7).into()).unwrap().unwrap(),
+            5
+        );
 
         let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &-2).unwrap();
         assert_eq!(
@@ -807,7 +864,10 @@ mod tests {
             Size::new(vector_length + 2, vector_length + 2)
         );
         println!("{}", matrix.clone());
-        assert_eq!(matrix.get_element_value(&(7, 5).into()).unwrap(), 5);
+        assert_eq!(
+            matrix.get_element_value(&(7, 5).into()).unwrap().unwrap(),
+            5
+        );
     }
 
     #[test]
@@ -899,11 +959,17 @@ mod tests {
 
         assert_eq!(
             element_1,
-            sparse_matrix.get_element(element_1.coordinate()).unwrap()
+            sparse_matrix
+                .get_element(element_1.coordinate())
+                .unwrap()
+                .unwrap()
         );
         assert_eq!(
             element_2,
-            sparse_matrix.get_element(element_2.coordinate()).unwrap()
+            sparse_matrix
+                .get_element(element_2.coordinate())
+                .unwrap()
+                .unwrap()
         );
     }
 
@@ -925,11 +991,17 @@ mod tests {
 
         assert_eq!(
             element_1,
-            sparse_matrix.get_element(element_1.coordinate()).unwrap()
+            sparse_matrix
+                .get_element(element_1.coordinate())
+                .unwrap()
+                .unwrap()
         );
         assert_eq!(
             element_2,
-            sparse_matrix.get_element(element_2.coordinate()).unwrap()
+            sparse_matrix
+                .get_element(element_2.coordinate())
+                .unwrap()
+                .unwrap()
         );
     }
 

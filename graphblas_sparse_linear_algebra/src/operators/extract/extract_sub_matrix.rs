@@ -382,7 +382,12 @@ mod tests {
             sub_matrix.number_of_stored_elements().unwrap(),
             element_list.length()
         );
-        assert_eq!(sub_matrix.get_element_value(&(2, 5).into()).unwrap(), 11);
+        assert_eq!(
+            sub_matrix
+                .get_element_value_or_default(&(2, 5).into())
+                .unwrap(),
+            11
+        );
 
         // Test extraction of suplicate rowsRowOrColumnSelector
         let rows_to_extract = vec![1, 1, 1];
@@ -400,7 +405,12 @@ mod tests {
             .unwrap();
 
         assert_eq!(sub_matrix.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(sub_matrix.get_element_value(&(1, 5).into()).unwrap(), 0);
-        assert_eq!(sub_matrix.get_element_value(&(1, 1).into()).unwrap(), 1);
+        assert_eq!(sub_matrix.get_element_value(&(1, 5).into()).unwrap(), None);
+        assert_eq!(
+            sub_matrix
+                .get_element_value_or_default(&(1, 1).into())
+                .unwrap(),
+            1
+        );
     }
 }

@@ -482,8 +482,14 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_matrix.get_element_value(&(2, 1).into()).unwrap(), 2);
-        assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), 0);
+        assert_eq!(
+            product_matrix.get_element_value(&(2, 1).into()).unwrap(),
+            Some(2)
+        );
+        assert_eq!(
+            product_matrix.get_element_value(&(9, 1).into()).unwrap(),
+            None
+        );
 
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
@@ -501,9 +507,12 @@ mod tests {
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
         assert_eq!(
             product_matrix.get_element_value(&(2, 1).into()).unwrap(),
-            10
+            Some(10)
         );
-        assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), 0);
+        assert_eq!(
+            product_matrix.get_element_value(&(9, 1).into()).unwrap(),
+            None
+        );
     }
 
     #[test]
@@ -542,8 +551,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
@@ -559,8 +568,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 10);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 10);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
     }
 
     #[test]
@@ -599,8 +608,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
@@ -616,8 +625,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 10);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 10);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
     }
 
     #[test]
@@ -656,8 +665,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 1);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, bool>::new(),
@@ -672,8 +681,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 1);
+        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         // let operator = BinaryOperatorApplier::new(
         //     &First::<u8, u8, u8, u8>::new(),

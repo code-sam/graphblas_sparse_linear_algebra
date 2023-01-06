@@ -312,11 +312,20 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 6);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), 0);
-        assert_eq!(matrix.get_element_value(&(1, 2).into()).unwrap(), 1);
-        assert_eq!(matrix.get_element_value(&(5, 2).into()).unwrap(), 12);
-        assert_eq!(matrix.get_element_value(&(2, 0).into()).unwrap(), 0);
-        assert_eq!(matrix.get_element_value(&(2, 4).into()).unwrap(), 11);
+        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), None);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(1, 2).into()).unwrap(),
+            1
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(5, 2).into()).unwrap(),
+            12
+        );
+        assert_eq!(matrix.get_element_value(&(2, 0).into()).unwrap(), None);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 4).into()).unwrap(),
+            11
+        );
 
         let mut matrix = SparseMatrix::<u8>::from_element_list(
             &context,
@@ -339,11 +348,23 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 5);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), 0);
-        assert_eq!(matrix.get_element_value(&(2, 2).into()).unwrap(), 3);
-        assert_eq!(matrix.get_element_value(&(1, 2).into()).unwrap(), 1);
-        assert_eq!(matrix.get_element_value(&(5, 2).into()).unwrap(), 12);
-        assert_eq!(matrix.get_element_value(&(2, 4).into()).unwrap(), 11);
-        assert_eq!(matrix.get_element_value(&(2, 1).into()).unwrap(), 0);
+        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), None);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 2).into()).unwrap(),
+            3
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(1, 2).into()).unwrap(),
+            1
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(5, 2).into()).unwrap(),
+            12
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 4).into()).unwrap(),
+            11
+        );
+        assert_eq!(matrix.get_element_value(&(2, 1).into()).unwrap(), None);
     }
 }

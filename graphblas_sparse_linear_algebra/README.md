@@ -51,8 +51,8 @@ fn main() {
     println!("{}", product_matrix);
 
     assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-    assert_eq!(product_matrix.get_element_value(&(2, 1).into()).unwrap(), 2);
-    assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), 0);
+    assert_eq!(product_matrix.get_element_value(&(2, 1).into()).unwrap(), Some(2));
+    assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
 
     let operator = BinaryOperatorApplier::new(
         &First::<u8, u8, u8, u8>::new(),
@@ -70,9 +70,9 @@ fn main() {
     assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
     assert_eq!(
         product_matrix.get_element_value(&(2, 1).into()).unwrap(),
-        10
+        Some(10)
     );
-    assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), 0);
+    assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
  }
  ```
 
