@@ -161,15 +161,15 @@ mod tests {
             .sorted_values_and_indices(&mut sorted, &mut indices, &larger_than_operator)
             .unwrap();
 
-        assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
-        assert_eq!(sorted.get_element_value(&1).unwrap(), 4);
-        assert_eq!(sorted.get_element_value(&2).unwrap(), 2);
-        assert_eq!(sorted.get_element_value(&3).unwrap(), 1);
+        assert_eq!(sorted.get_element_value_or_default(&0).unwrap(), 6);
+        assert_eq!(sorted.get_element_value_or_default(&1).unwrap(), 4);
+        assert_eq!(sorted.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(sorted.get_element_value_or_default(&3).unwrap(), 1);
 
-        assert_eq!(indices.get_element_value(&0).unwrap(), 4);
-        assert_eq!(indices.get_element_value(&1).unwrap(), 6);
-        assert_eq!(indices.get_element_value(&2).unwrap(), 2);
-        assert_eq!(indices.get_element_value(&3).unwrap(), 1);
+        assert_eq!(indices.get_element_value_or_default(&0).unwrap(), 4);
+        assert_eq!(indices.get_element_value_or_default(&1).unwrap(), 6);
+        assert_eq!(indices.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(indices.get_element_value_or_default(&3).unwrap(), 1);
     }
 
     #[test]
@@ -195,10 +195,10 @@ mod tests {
 
         vector.sort(&larger_than_operator).unwrap();
 
-        assert_eq!(vector.get_element_value(&0).unwrap(), 6);
-        assert_eq!(vector.get_element_value(&1).unwrap(), 4);
-        assert_eq!(vector.get_element_value(&2).unwrap(), 2);
-        assert_eq!(vector.get_element_value(&3).unwrap(), 1);
+        assert_eq!(vector.get_element_value_or_default(&0).unwrap(), 6);
+        assert_eq!(vector.get_element_value_or_default(&1).unwrap(), 4);
+        assert_eq!(vector.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(vector.get_element_value_or_default(&3).unwrap(), 1);
     }
 
     #[test]
@@ -224,10 +224,10 @@ mod tests {
 
         let sorted = vector.sorted_values(&larger_than_operator).unwrap();
 
-        assert_eq!(sorted.get_element_value(&0).unwrap(), 6);
-        assert_eq!(sorted.get_element_value(&1).unwrap(), 4);
-        assert_eq!(sorted.get_element_value(&2).unwrap(), 2);
-        assert_eq!(sorted.get_element_value(&3).unwrap(), 1);
+        assert_eq!(sorted.get_element_value_or_default(&0).unwrap(), 6);
+        assert_eq!(sorted.get_element_value_or_default(&1).unwrap(), 4);
+        assert_eq!(sorted.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(sorted.get_element_value_or_default(&3).unwrap(), 1);
     }
 
     #[test]
@@ -253,9 +253,9 @@ mod tests {
 
         let indices = vector.indices_to_sort(&larger_than_operator).unwrap();
 
-        assert_eq!(indices.get_element_value(&0).unwrap(), 4);
-        assert_eq!(indices.get_element_value(&1).unwrap(), 6);
-        assert_eq!(indices.get_element_value(&2).unwrap(), 2);
-        assert_eq!(indices.get_element_value(&3).unwrap(), 1);
+        assert_eq!(indices.get_element_value_or_default(&0).unwrap(), 4);
+        assert_eq!(indices.get_element_value_or_default(&1).unwrap(), 6);
+        assert_eq!(indices.get_element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(indices.get_element_value_or_default(&3).unwrap(), 1);
     }
 }

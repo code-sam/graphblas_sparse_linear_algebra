@@ -219,10 +219,10 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value(&0).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 3);
-        assert_eq!(product_vector.get_element_value(&3).unwrap(), 4);
+        assert_eq!(product_vector.get_element_value_or_default(&0).unwrap(), 1);
+        assert_eq!(product_vector.get_element_value_or_default(&1).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
+        assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
         let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
         let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
@@ -231,10 +231,7 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&0).unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&3).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value(&0).unwrap(), None);
     }
 
     #[test]
@@ -267,10 +264,10 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(product_vector.get_element_value(&0).unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 3);
-        assert_eq!(product_vector.get_element_value(&3).unwrap(), 4);
+        assert_eq!(product_vector.get_element_value(&0).unwrap(), None);
+        assert_eq!(product_vector.get_element_value_or_default(&1).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
+        assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
         let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
         let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
@@ -279,9 +276,9 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&0).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value(&1).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), 0);
-        assert_eq!(product_vector.get_element_value(&3).unwrap(), 0);
+        assert_eq!(product_vector.get_element_value_or_default(&0).unwrap(), 1);
+        assert_eq!(product_vector.get_element_value_or_default(&1).unwrap(), 2);
+        assert_eq!(product_vector.get_element_value(&2).unwrap(), None);
+        assert_eq!(product_vector.get_element_value(&3).unwrap(), None);
     }
 }

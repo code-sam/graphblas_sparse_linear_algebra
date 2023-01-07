@@ -211,7 +211,7 @@ macro_rules! implement_dispay {
     ($value_type:ty) => {
         impl std::fmt::Display for SparseScalar<$value_type> {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                let value: $value_type;
+                let value: Option<$value_type>;
                 match self.get_value() {
                     Err(_error) => return Err(std::fmt::Error),
                     Ok(inner_value) => {
@@ -305,13 +305,14 @@ macro_rules! implement_set_value_for_built_in_type {
 implement_macro_for_all_value_types!(implement_set_value_for_built_in_type);
 
 pub trait GetScalarValue<T: ValueType + Default> {
-    fn get_value(&self) -> Result<T, SparseLinearAlgebraError>;
+    fn get_value(&self) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn get_value_or_default(&self) -> Result<T, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_value_for_built_in_type {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_value_function:ident) => {
         impl GetScalarValue<$value_type> for SparseScalar<$value_type> {
-            fn get_value(&self) -> Result<$value_type, SparseLinearAlgebraError> {
+            fn get_value(&self) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
 
                 let result = self.context.call(
@@ -322,14 +323,21 @@ macro_rules! implement_get_value_for_built_in_type {
                 match result {
                     Ok(_) => {
                         let value = unsafe { value.assume_init() };
-                        Ok(<$graphblas_implementation_type>::to_type(value)?)
+                        Ok(Some(<$graphblas_implementation_type>::to_type(value)?))
                     }
                     Err(error) => match error.error_type() {
                         SparseLinearAlgebraErrorType::LogicErrorType(
                             LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
-                        ) => Ok(<$value_type>::default()),
+                        ) => Ok(None),
                         _ => Err(error),
                     },
+                }
+            }
+
+            fn get_value_or_default(&self) -> Result<$value_type, SparseLinearAlgebraError> {
+                match self.get_value()? {
+                    Some(value) => Ok(value),
+                    None => Ok(<$value_type>::default())
                 }
             }
         }
@@ -396,7 +404,7 @@ mod tests {
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
 
-        assert_eq!(2, sparse_scalar.get_value().unwrap());
+        assert_eq!(2, sparse_scalar.get_value_or_default().unwrap());
 
         sparse_scalar.clear().unwrap();
 
@@ -413,6 +421,6 @@ mod tests {
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
 
-        assert_eq!(2, sparse_scalar.get_value().unwrap());
+        assert_eq!(2, sparse_scalar.get_value_or_default().unwrap());
     }
 }

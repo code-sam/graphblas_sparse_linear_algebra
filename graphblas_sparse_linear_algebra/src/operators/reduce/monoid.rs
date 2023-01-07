@@ -259,9 +259,9 @@ mod tests {
                     println!("{}", product_vector);
 
                     assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-                    assert_eq!(product_vector.get_element_value(&1).unwrap(), 2 as $value_type);
-                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 2 as $value_type);
-                    assert_eq!(product_vector.get_element_value(&9).unwrap(), 0 as $value_type);
+                    assert_eq!(product_vector.get_element_value_or_default(&1).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
                     let mask_element_list = VectorElementList::<$value_type>::from_element_vector(vec![
                         (1, 1 as $value_type).into(),
@@ -289,10 +289,10 @@ mod tests {
                     println!("{}", product_vector);
 
                     assert_eq!(product_vector.number_of_stored_elements().unwrap(), 3);
-                    assert_eq!(product_vector.get_element_value(&1).unwrap(), 2 as $value_type);
-                    assert_eq!(product_vector.get_element_value(&2).unwrap(), 2 as $value_type);
-                    assert_eq!(product_vector.get_element_value(&5).unwrap(), 0 as $value_type);
-                    assert_eq!(product_vector.get_element_value(&9).unwrap(), 0 as $value_type);
+                    assert_eq!(product_vector.get_element_value_or_default(&1).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2 as $value_type);
+                    assert_eq!(product_vector.get_element_value(&5).unwrap(), None);
+                    assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
                 }
 
                 #[test]

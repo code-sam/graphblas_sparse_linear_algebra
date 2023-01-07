@@ -56,6 +56,7 @@ mod tests {
             result_matrix
                 .get_element(Coordinate::new(1, 2))
                 .unwrap()
+                .unwrap()
                 .value()
         );
     }

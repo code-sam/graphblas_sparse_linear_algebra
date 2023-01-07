@@ -407,10 +407,19 @@ mod tests {
             .unwrap();
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 18);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(2, 2).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(2, 4).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(9, 14).into()).unwrap(), 0);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(0, 0).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 2).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 4).into()).unwrap(),
+            8
+        );
+        assert_eq!(matrix.get_element_value(&(9, 14).into()).unwrap(), None);
 
         let mut matrix = SparseMatrix::<u8>::from_element_list(
             &context,
@@ -433,11 +442,23 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), 0);
-        assert_eq!(matrix.get_element_value(&(2, 2).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(2, 4).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(2, 5).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(1, 1).into()).unwrap(), 1);
+        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), None);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 2).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 4).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 5).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(1, 1).into()).unwrap(),
+            1
+        );
     }
 
     #[test]
@@ -480,9 +501,18 @@ mod tests {
 
         println!("{}", matrix);
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 18);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(2, 2).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(2, 4).into()).unwrap(), 8);
-        assert_eq!(matrix.get_element_value(&(9, 14).into()).unwrap(), 0);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(0, 0).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 2).into()).unwrap(),
+            8
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 4).into()).unwrap(),
+            8
+        );
+        assert_eq!(matrix.get_element_value(&(9, 14).into()).unwrap(), None);
     }
 }

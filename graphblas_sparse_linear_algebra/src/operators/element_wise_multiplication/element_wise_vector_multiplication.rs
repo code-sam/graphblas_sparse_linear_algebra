@@ -570,7 +570,7 @@ mod tests {
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);
-        assert_eq!(product.get_element_value(&1).unwrap(), 0); // NoValue
+        assert_eq!(product.get_element_value(&1).unwrap(), None); // NoValue
 
         let multiplier_element_list = VectorElementList::<i32>::from_element_vector(vec![
             (0, 1).into(),
@@ -605,10 +605,10 @@ mod tests {
             .apply(&multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&0).unwrap(), 5);
-        assert_eq!(product.get_element_value(&1).unwrap(), 12);
-        assert_eq!(product.get_element_value(&2).unwrap(), 21);
-        assert_eq!(product.get_element_value(&3).unwrap(), 32);
+        assert_eq!(product.get_element_value_or_default(&0).unwrap(), 5);
+        assert_eq!(product.get_element_value_or_default(&1).unwrap(), 12);
+        assert_eq!(product.get_element_value_or_default(&2).unwrap(), 21);
+        assert_eq!(product.get_element_value_or_default(&3).unwrap(), 32);
 
         // test the use of an accumulator
         let accumulator = Plus::<i32, i32, i32, i32>::new();
@@ -623,10 +623,10 @@ mod tests {
             .apply(&multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&0).unwrap(), 5 * 2);
-        assert_eq!(product.get_element_value(&1).unwrap(), 12 * 2);
-        assert_eq!(product.get_element_value(&2).unwrap(), 21 * 2);
-        assert_eq!(product.get_element_value(&3).unwrap(), 32 * 2);
+        assert_eq!(product.get_element_value_or_default(&0).unwrap(), 5 * 2);
+        assert_eq!(product.get_element_value_or_default(&1).unwrap(), 12 * 2);
+        assert_eq!(product.get_element_value_or_default(&2).unwrap(), 21 * 2);
+        assert_eq!(product.get_element_value_or_default(&3).unwrap(), 32 * 2);
 
         // test the use of a mask
         let mask_element_list = VectorElementList::<u8>::from_element_vector(vec![
@@ -653,9 +653,9 @@ mod tests {
             .apply_with_mask(&mask, &multiplier, &multiplicant, &mut product)
             .unwrap();
 
-        assert_eq!(product.get_element_value(&0).unwrap(), 5);
-        assert_eq!(product.get_element_value(&1).unwrap(), 0);
-        assert_eq!(product.get_element_value(&2).unwrap(), 0);
-        assert_eq!(product.get_element_value(&3).unwrap(), 32);
+        assert_eq!(product.get_element_value_or_default(&0).unwrap(), 5);
+        assert_eq!(product.get_element_value(&1).unwrap(), None);
+        assert_eq!(product.get_element_value(&2).unwrap(), None);
+        assert_eq!(product.get_element_value_or_default(&3).unwrap(), 32);
     }
 }
