@@ -1,7 +1,7 @@
 [package]
 name = "suitesparse_graphblas_sys"
 description = "Rust bindings for SuiteSparse::GraphBLAS"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 license = "CC-BY-NC-4.0"
 authors = ["code_sam <mail@samdekker.nl>"]
@@ -19,4 +19,4 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 [build-dependencies]
 bindgen = "0.60"
 cmake = "0.1"
-git2 = "0.15"
+git2 = "0.16"
