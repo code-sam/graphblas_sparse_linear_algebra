@@ -1,8 +1,8 @@
 use std::collections::HashSet;
-use std::{env};
+use std::env;
 use std::ffi::OsString;
 use std::fs;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 use git2::{Object, Oid, Repository};
 
@@ -62,21 +62,21 @@ fn path_with_graphblas_library() -> PathBuf {
 // export KEY="value"
 // restart VM (on WSL => wsl --shutdown)
 fn path_with_openmp() -> PathBuf {
-    match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH") { 
+    match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH") {
         Ok(path) => return PathBuf::from(path),
-        Err(error) => {
-            match search_compiler_path() {
-                Some(path) => {
-                    println!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH: {}", error);
-                    println!("Automatically use default compiler path: {}", path.display());
-                    return path
-                },
-                None => {
-                    panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH. For example, when using GCC on Ubuntu 22.04, please set it to \"/usr/lib/gcc/x86_64-linux-gnu/11\". {}", error)
-                }
+        Err(error) => match search_compiler_path() {
+            Some(path) => {
+                println!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH: {}", error);
+                println!(
+                    "Automatically use default compiler path: {}",
+                    path.display()
+                );
+                return path;
             }
-            
-        }
+            None => {
+                panic!("Unable to read environment variable SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH. For example, when using GCC on Ubuntu 22.04, please set it to \"/usr/lib/gcc/x86_64-linux-gnu/11\". {}", error)
+            }
+        },
     }
 }
 
@@ -86,10 +86,9 @@ fn search_compiler_path() -> Option<PathBuf> {
         path.push("OpenMP");
         path.push("linux");
         Some(path)
-        
     } else {
         println!("Unable to select a default OpenMP archive for this operating system and architecture, please the SUITESPARSE_GRAPHBLAS_SYS_COMPILER_PATH environment variable.");
-        return None
+        return None;
     }
 }
 
@@ -98,7 +97,7 @@ fn search_compiler_path() -> Option<PathBuf> {
 // export KEY="value"
 // restart VM (on WSL => wsl --shutdown)
 fn name_of_openmp_library() -> String {
-    match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME") { 
+    match std::env::var("SUITESPARSE_GRAPHBLAS_SYS_OPENMP_STATIC_LIBRARY_NAME") {
         Ok(name) => return name,
         Err(error) => {
             println!("{}", error);
@@ -112,7 +111,7 @@ fn name_of_openmp_library() -> String {
 // TODO: as soon as automatic searching is supported for non-linux operating systems, and other compilers than GCC,
 // this function must be implemented with an actual search algorithm.
 fn search_openmp() -> Option<String> {
-    return Some(String::from("gomp"))
+    return Some(String::from("gomp"));
 }
 
 fn build_and_link_dependencies() {
@@ -123,7 +122,10 @@ fn build_and_link_dependencies() {
         path_with_suitesparse_graphblas_implementation();
 
     // SuiteSparse::GraphBLAS repository is too large to fit a crate on crates.io (repo exceeds maximum allowed size of 10MB)
-    clone_and_checkout_repository(&path_with_graphblas_header_file, &path_with_suitesparse_graphblas_implementation);
+    clone_and_checkout_repository(
+        &path_with_graphblas_header_file,
+        &path_with_suitesparse_graphblas_implementation,
+    );
 
     build_static_graphblas_implementation(&cargo_build_directory);
 
@@ -152,7 +154,10 @@ fn build_and_link_dependencies() {
     clean_build_artifacts(&cargo_build_directory)
 }
 
-fn clone_and_checkout_repository(path_with_graphblas_header_file: &PathBuf, path_with_suitesparse_graphblas_implementation: &PathBuf) {
+fn clone_and_checkout_repository(
+    path_with_graphblas_header_file: &PathBuf,
+    path_with_suitesparse_graphblas_implementation: &PathBuf,
+) {
     let graphblas_repo;
     match path_with_graphblas_header_file.try_exists() {
         Err(error) => {
@@ -209,7 +214,6 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         "cargo:rustc-link-search=native={}",
         path_with_graphblas_library().display()
     );
-
 }
 
 fn declare_build_invalidation_conditions(
@@ -237,7 +241,7 @@ fn declare_build_invalidation_conditions(
         "cargo:rerun-if-changed = {}",
         path_with_openmp()
             .clone()
-            .join(format!("lib{}.a",name_of_openmp_library()))
+            .join(format!("lib{}.a", name_of_openmp_library()))
             .to_str()
             .unwrap()
             .to_owned()

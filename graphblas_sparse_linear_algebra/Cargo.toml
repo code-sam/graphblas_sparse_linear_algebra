@@ -21,7 +21,9 @@ rayon = {version = "1.6"}
 
 [dev-dependencies]
 criterion = "0.4"
+rand = "0.8"
 
 [[bench]]
-name = "insert_scalar_into_matrix"
+# name = "insert_scalar_into_matrix"
+name = "vector_indices"
 harness = false

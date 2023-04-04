@@ -5,7 +5,8 @@ use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
-    GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
+    GxB_Iterator, GxB_Iterator_new, GxB_Vector_Iterator_attach, GxB_Vector_Iterator_getIndex,
+    GxB_Vector_Iterator_next, GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
 };
 
 use super::element::{VectorElement, VectorElementList};
@@ -295,6 +296,7 @@ pub trait SparseVectorTrait {
         index_to_delete: ElementIndex,
     ) -> Result<(), SparseLinearAlgebraError>;
     fn is_element(&self, index: ElementIndex) -> Result<bool, SparseLinearAlgebraError>;
+    fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn resize(&mut self, new_length: ElementIndex) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -328,6 +330,42 @@ impl<T: ValueType> SparseVectorTrait for SparseVector<T> {
                 _ => Err(error),
             },
         }
+    }
+
+    fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
+        let mut iterator = MaybeUninit::uninit();
+        self.context().call(
+            || unsafe { GxB_Iterator_new(iterator.as_mut_ptr()) },
+            &self.vector,
+        )?;
+        let iterator = unsafe { iterator.assume_init() };
+
+        self.context().call(
+            || unsafe {
+                GxB_Vector_Iterator_attach(
+                    iterator,
+                    self.vector,
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                )
+            },
+            &self.vector,
+        )?;
+
+        let number_of_stored_elements = self.number_of_stored_elements()?;
+        let mut indices = Vec::with_capacity(number_of_stored_elements);
+        for _i in 0..number_of_stored_elements {
+            println!("{:?}",_i);
+            // unsafe { GxB_Vector_Iterator_next(iterator) };
+            indices.push(ElementIndex::from_graphblas_index(unsafe {
+                GxB_Vector_Iterator_getIndex(iterator)
+            })?);
+            self.context().call(
+                || unsafe { GxB_Vector_Iterator_next(iterator) },
+                &self.vector,
+            )?;
+            // println!("{:?}", unsafe{GxB_Vector_Iterator_getIndex(iterator)});
+        }
+        Ok(indices)
     }
 
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
@@ -744,6 +782,27 @@ mod tests {
     }
 
     #[test]
+    fn get_indices() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let length: ElementIndex = 10;
+        let value: usize = 11;
+        let indices = vec![2, 3, 5];
+
+        let sparse_vector =
+            SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
+        
+        assert_eq!(indices, sparse_vector.indices().unwrap());
+
+        let indices = vec![0,1,2,3,4,5,6,7,8,9];
+
+        let sparse_vector =
+            SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
+        
+        assert_eq!(indices, sparse_vector.indices().unwrap());
+    }
+
+    #[test]
     fn from_value() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
@@ -1099,4 +1158,5 @@ mod tests {
             element_list.length()
         );
     }
+
 }

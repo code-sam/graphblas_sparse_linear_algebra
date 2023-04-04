@@ -165,7 +165,7 @@ fn initialize(
     number_of_ready_contexts: MutexGuard<AtomicIsize>,
 ) -> Result<Status, SparseLinearAlgebraError> {
     // println!("Trying to initialize a context");
-    let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+    // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
     // println!("Got a lock to initialize a context! {:?}", is_graphblas_busy.load(Ordering::SeqCst));
     let status = unsafe {
         graphblas_result(GrB_init(mode.into()), || -> String {
@@ -215,7 +215,7 @@ where
     F: FnMut() -> GrB_Info,
 {
     // thread::sleep(time::Duration::from_secs(2));
-    let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+    // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
     graphblas_result(function_to_call(), || -> String {
         String::from("Something went wrong while calling the GraphBLAS context.")
     })
@@ -252,7 +252,7 @@ macro_rules! implement_CallGraphBlasContext {
                     let get_detailed_error_information =
                         [<generate_closure_to_retrieve_detailed_error_message_ $graphblas_type>](reference_to_debug_info);
                     // thread::sleep(time::Duration::from_secs(2));
-                    let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
+                    // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
                     graphblas_result(function_to_call(), get_detailed_error_information)
                 }
             }
