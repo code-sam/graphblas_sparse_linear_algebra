@@ -296,7 +296,7 @@ pub trait SparseVectorTrait {
         index_to_delete: ElementIndex,
     ) -> Result<(), SparseLinearAlgebraError>;
     fn is_element(&self, index: ElementIndex) -> Result<bool, SparseLinearAlgebraError>;
-    fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
+    // fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn resize(&mut self, new_length: ElementIndex) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -332,41 +332,47 @@ impl<T: ValueType> SparseVectorTrait for SparseVector<T> {
         }
     }
 
-    fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
-        let mut iterator = MaybeUninit::uninit();
-        self.context().call(
-            || unsafe { GxB_Iterator_new(iterator.as_mut_ptr()) },
-            &self.vector,
-        )?;
-        let iterator = unsafe { iterator.assume_init() };
+    // Iterator-based implementation is slower (> 5X) than element_indices()
+    // fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
+    //     let mut iterator = MaybeUninit::uninit();
+    //     self.context().call(
+    //         || unsafe { GxB_Iterator_new(iterator.as_mut_ptr()) },
+    //         &self.vector,
+    //     )?;
+    //     let iterator = unsafe { iterator.assume_init() };
 
-        self.context().call(
-            || unsafe {
-                GxB_Vector_Iterator_attach(
-                    iterator,
-                    self.vector,
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
-                )
-            },
-            &self.vector,
-        )?;
+    //     self.context().call(
+    //         || unsafe {
+    //             GxB_Vector_Iterator_attach(
+    //                 iterator,
+    //                 self.vector,
+    //                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+    //             )
+    //         },
+    //         &self.vector,
+    //     )?;
 
-        let number_of_stored_elements = self.number_of_stored_elements()?;
-        let mut indices = Vec::with_capacity(number_of_stored_elements);
-        for _i in 0..number_of_stored_elements {
-            println!("{:?}",_i);
-            // unsafe { GxB_Vector_Iterator_next(iterator) };
-            indices.push(ElementIndex::from_graphblas_index(unsafe {
-                GxB_Vector_Iterator_getIndex(iterator)
-            })?);
-            self.context().call(
-                || unsafe { GxB_Vector_Iterator_next(iterator) },
-                &self.vector,
-            )?;
-            // println!("{:?}", unsafe{GxB_Vector_Iterator_getIndex(iterator)});
-        }
-        Ok(indices)
-    }
+    //     let number_of_stored_elements = self.number_of_stored_elements()?;
+    //     let mut indices = Vec::with_capacity(number_of_stored_elements);
+
+    //     let mut iter_start_index = 0;
+    //     if self.is_element(0)? {
+    //         // Iterator already on the first element, does not need to be moved
+    //         indices.push(0);
+    //         iter_start_index = 1;
+    //     }
+    //     for _i in iter_start_index..number_of_stored_elements {
+    //         self.context().call(
+    //             || unsafe { GxB_Vector_Iterator_next(iterator) },
+    //             &self.vector,
+    //         )?;
+
+    //         indices.push(ElementIndex::from_graphblas_index(unsafe {
+    //             GxB_Vector_Iterator_getIndex(iterator)
+    //         })?);
+    //     }
+    //     Ok(indices)
+    // }
 
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut length: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
@@ -758,6 +764,106 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
+pub trait GetElementIndices<T: ValueType> {
+    fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
+}
+
+macro_rules! implement_get_element_indices {
+    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
+        impl GetElementIndices<$value_type> for SparseVector<$value_type> {
+            fn element_indices(
+                &self,
+            ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
+                let number_of_stored_elements = self.number_of_stored_elements()?;
+
+                let mut graphblas_indices: Vec<GrB_Index> = Vec::with_capacity(number_of_stored_elements);
+
+                let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
+
+                self.context.call(|| unsafe {
+                    $get_element_function(
+                        graphblas_indices.as_mut_ptr(),
+                        std::ptr::null_mut(),
+                        &mut number_of_stored_and_returned_elements,
+                        self.vector)
+                }, &self.vector)?;
+
+                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
+
+                unsafe {
+                    if length_of_element_list == number_of_stored_elements {
+                        graphblas_indices.set_len(length_of_element_list);
+                    } else {
+                        let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
+                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
+                        return Err(err)
+                    }
+                };
+
+                let mut indices: Vec<ElementIndex> = Vec::with_capacity(length_of_element_list);
+
+                for index in graphblas_indices.into_iter() {
+                    indices.push(ElementIndex::from_graphblas_index(index)?);
+                }
+                Ok(indices)
+            }
+        }
+    };
+}
+
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
+    implement_get_element_indices,
+    GrB_Vector_extractTuples
+);
+
+pub trait GetElementValues<T: ValueType> {
+    fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError>;
+}
+
+macro_rules! implement_get_element_values {
+    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
+        impl GetElementValues<$value_type> for SparseVector<$value_type> {
+            fn element_values(
+                &self,
+            ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {
+                let number_of_stored_elements = self.number_of_stored_elements()?;
+
+                let mut values: Vec<$graphblas_implementation_type> = Vec::with_capacity(number_of_stored_elements);
+
+                let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
+
+                self.context.call(|| unsafe {
+                    $get_element_function(
+                        std::ptr::null_mut(),
+                        values.as_mut_ptr(),
+                        &mut number_of_stored_and_returned_elements,
+                        self.vector)
+                }, &self.vector)?;
+
+                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
+
+                unsafe {
+                    if length_of_element_list == number_of_stored_elements {
+                        values.set_len(length_of_element_list);
+                    } else {
+                        let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
+                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
+                        return Err(err)
+                    }
+                };
+
+                let values = ConvertVector::<$graphblas_implementation_type, $value_type>::to_type(values)?;
+                Ok(values)
+            }
+        }
+    };
+}
+
+implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
+    implement_get_element_values,
+    GrB_Vector_extractTuples
+);
+
 #[cfg(test)]
 mod tests {
 
@@ -791,15 +897,36 @@ mod tests {
 
         let sparse_vector =
             SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
-        
-        assert_eq!(indices, sparse_vector.indices().unwrap());
 
-        let indices = vec![0,1,2,3,4,5,6,7,8,9];
+        assert_eq!(indices, sparse_vector.element_indices().unwrap());
+
+        let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         let sparse_vector =
             SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
-        
-        assert_eq!(indices, sparse_vector.indices().unwrap());
+
+        assert_eq!(indices, sparse_vector.element_indices().unwrap());
+    }
+
+    #[test]
+    fn get_values() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let length: ElementIndex = 10;
+        let value: u8 = 11;
+        let indices = vec![2, 3, 5];
+
+        let sparse_vector =
+            SparseVector::<u8>::from_value(&context, &length, indices.clone(), value).unwrap();
+
+        assert_eq!(vec![11, 11, 11], sparse_vector.element_values().unwrap());
+
+        let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+        let sparse_vector =
+            SparseVector::<u8>::from_value(&context, &length, indices.clone(), value).unwrap();
+
+        assert_eq!(vec![11, 11, 11, 11, 11, 11, 11, 11, 11, 11], sparse_vector.element_values().unwrap());
     }
 
     #[test]
@@ -1158,5 +1285,4 @@ mod tests {
             element_list.length()
         );
     }
-
 }

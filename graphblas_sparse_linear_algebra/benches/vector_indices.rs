@@ -1,9 +1,10 @@
+use graphblas_sparse_linear_algebra::collections::sparse_vector::GetElementIndices;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::GetVectorElementList;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::SetVectorElement;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::SparseVectorTrait;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{SparseVector, VectorElement};
 use graphblas_sparse_linear_algebra::context::{Context, Mode};
-use graphblas_sparse_linear_algebra::index::{ElementIndex};
-use graphblas_sparse_linear_algebra::collections::sparse_vector::SparseVectorTrait;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::SetVectorElement;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::GetVectorElementList;
+use graphblas_sparse_linear_algebra::index::ElementIndex;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand::prelude::*;
@@ -18,7 +19,9 @@ fn bench_vector_indices(c: &mut Criterion) {
     for i in 0..vector.length().unwrap() {
         let s: f64 = rng.gen();
         if s <= fill_factor {
-            vector.set_element(VectorElement::new(i as ElementIndex, i)).unwrap();
+            vector
+                .set_element(VectorElement::new(i as ElementIndex, i))
+                .unwrap();
         }
     }
 
@@ -34,12 +37,12 @@ fn bench_vector_indices(c: &mut Criterion) {
 criterion_group!(benches, bench_vector_indices);
 criterion_main!(benches);
 
-fn bench_index_iterator(vector: SparseVector<ElementIndex>) {
-    let indices = vector.indices().unwrap();
-    println!("{:?}", indices)
-}
+// fn bench_index_iterator(vector: SparseVector<ElementIndex>) {
+//     let indices = vector.indices().unwrap();
+//     // println!("{:?}", indices)
+// }
 
 fn bench_element_list(vector: SparseVector<ElementIndex>) {
-    let indices = vector.get_element_list().unwrap();
-    println!("{:?}", indices)
+    let indices = vector.element_indices().unwrap();
+    // println!("{:?}", indices)
 }
