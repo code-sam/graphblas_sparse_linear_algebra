@@ -337,7 +337,7 @@ macro_rules! implement_get_value_for_built_in_type {
             fn get_value_or_default(&self) -> Result<$value_type, SparseLinearAlgebraError> {
                 match self.get_value()? {
                     Some(value) => Ok(value),
-                    None => Ok(<$value_type>::default())
+                    None => Ok(<$value_type>::default()),
                 }
             }
         }
