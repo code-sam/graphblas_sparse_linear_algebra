@@ -296,6 +296,8 @@ pub trait SparseVectorTrait {
         index_to_delete: ElementIndex,
     ) -> Result<(), SparseLinearAlgebraError>;
     fn is_element(&self, index: ElementIndex) -> Result<bool, SparseLinearAlgebraError>;
+    fn try_is_element(&self, index: ElementIndex) -> Result<(), SparseLinearAlgebraError>;
+
     // fn indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
     fn length(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn resize(&mut self, new_length: ElementIndex) -> Result<(), SparseLinearAlgebraError>;
@@ -329,6 +331,18 @@ impl<T: ValueType> SparseVectorTrait for SparseVector<T> {
                 )) => Ok(false),
                 _ => Err(error),
             },
+        }
+    }
+
+    fn try_is_element(&self, index: ElementIndex) -> Result<(), SparseLinearAlgebraError> {
+        let index = index.to_graphblas_index()?;
+
+        match self.context.call(
+            || unsafe { GxB_Vector_isStoredElement(self.vector, index) },
+            &self.vector,
+        ) {
+            Ok(_) => Ok(()),
+            Err(error) => Err(error),
         }
     }
 
@@ -926,7 +940,10 @@ mod tests {
         let sparse_vector =
             SparseVector::<u8>::from_value(&context, &length, indices.clone(), value).unwrap();
 
-        assert_eq!(vec![11, 11, 11, 11, 11, 11, 11, 11, 11, 11], sparse_vector.element_values().unwrap());
+        assert_eq!(
+            vec![11, 11, 11, 11, 11, 11, 11, 11, 11, 11],
+            sparse_vector.element_values().unwrap()
+        );
     }
 
     #[test]

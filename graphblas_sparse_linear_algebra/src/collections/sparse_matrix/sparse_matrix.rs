@@ -157,6 +157,8 @@ pub trait SparseMatrixTrait<T: ValueType> {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
     fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError>;
+    fn try_is_element(&self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
+
     /// All elements of self with an index coordinate outside of the new size are dropped.
     fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError>;
     fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
@@ -205,6 +207,21 @@ impl<T: ValueType> SparseMatrixTrait<T> for SparseMatrix<T> {
                 )) => Ok(false),
                 _ => Err(error),
             },
+        }
+    }
+
+    fn try_is_element(&self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
+        let row_index = coordinate.row_index().to_graphblas_index()?;
+        let column_index = coordinate.column_index().to_graphblas_index()?;
+
+        let context = self.context.clone();
+        let result = context.call(
+            || unsafe { GxB_Matrix_isStoredElement(self.matrix, row_index, column_index) },
+            &self.matrix,
+        );
+        match result {
+            Ok(_) => Ok(()),
+            Err(error) => Err(error),
         }
     }
 
