@@ -342,7 +342,7 @@ impl<T: ValueType> SparseVectorTrait for SparseVector<T> {
             &self.vector,
         ) {
             Ok(_) => Ok(()),
-            Err(error) => Err(error)
+            Err(error) => Err(error),
         }
     }
 
@@ -915,7 +915,6 @@ mod tests {
         assert_eq!(indices, sparse_vector.element_indices().unwrap());
 
         let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         let sparse_vector =
             SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
@@ -941,7 +940,10 @@ mod tests {
         let sparse_vector =
             SparseVector::<u8>::from_value(&context, &length, indices.clone(), value).unwrap();
 
-        assert_eq!(vec![11, 11, 11, 11, 11, 11, 11, 11, 11, 11], sparse_vector.element_values().unwrap());
+        assert_eq!(
+            vec![11, 11, 11, 11, 11, 11, 11, 11, 11, 11],
+            sparse_vector.element_values().unwrap()
+        );
     }
 
     #[test]
