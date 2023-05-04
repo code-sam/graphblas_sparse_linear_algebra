@@ -8,6 +8,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
+use super::binary_operator::AccumulatorBinaryOperator;
+
 #[derive(Debug, Clone)]
 pub struct MatrixTranspose<Applicant, Product>
 where
@@ -17,7 +19,7 @@ where
     _applicant: PhantomData<Applicant>,
     _product: PhantomData<Product>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -34,16 +36,10 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _applicant: PhantomData,
@@ -125,7 +121,7 @@ mod tests {
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
     };
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_transpose() {
@@ -148,7 +144,10 @@ mod tests {
 
         let mut matrix_transpose = SparseMatrix::<u8>::new(&context, &(2, 2).into()).unwrap();
 
-        let transpose_operator = MatrixTranspose::new(&OperatorOptions::new_default(), None);
+        let transpose_operator = MatrixTranspose::new(
+            &OperatorOptions::new_default(),
+            &Assignment::<u8, u8, u8, u8>::new(),
+        );
 
         transpose_operator
             .apply(&matrix, &mut matrix_transpose)

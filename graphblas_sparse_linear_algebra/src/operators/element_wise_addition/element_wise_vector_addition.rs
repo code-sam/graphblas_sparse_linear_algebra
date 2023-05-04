@@ -4,6 +4,7 @@ use std::ptr;
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
@@ -63,7 +64,7 @@ pub struct ElementWiseVectorAdditionSemiringOperator<
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     multiplication_operator: GrB_Semiring, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -77,18 +78,12 @@ where
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
@@ -209,25 +204,19 @@ unsafe impl<T: ValueType> Send for ElementWiseVectorAdditionMonoidOperator<T> {}
 pub struct ElementWiseVectorAdditionMonoidOperator<T: ValueType> {
     _value: PhantomData<T>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     multiplication_operator: GrB_Monoid, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
 
 impl<T: ValueType> ElementWiseVectorAdditionMonoidOperator<T> {
     pub fn new(
-        multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<T, T, T, T>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
@@ -354,7 +343,7 @@ pub struct ElementWiseVectorAdditionBinaryOperator<
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     multiplication_operator: GrB_BinaryOp, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -368,23 +357,17 @@ where
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn BinaryOperator<
+        multiplication_operator: &impl BinaryOperator<
             Multiplier,
             Multiplicant,
             Product,
             EvaluationDomain,
         >, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
@@ -499,7 +482,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus, Times};
+    use crate::operators::binary_operator::{Assignment, First, Plus, Times};
 
     #[test]
     fn create_vector_addition_operator() {
@@ -507,7 +490,9 @@ mod tests {
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
             ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64, i64>::new(
-                &operator, &options, None,
+                &operator,
+                &options,
+                &Assignment::<i64, i64, i64, i64>::new(),
             );
 
         let accumulator = Times::<i64, i64, i64, i64>::new();
@@ -515,7 +500,7 @@ mod tests {
         let _matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64, i64>::new(
             &operator,
             &options,
-            Some(&accumulator),
+            &accumulator,
         );
     }
 
@@ -527,7 +512,9 @@ mod tests {
         let options = OperatorOptions::new_default();
         let element_wise_vector_multiplier =
             ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
-                &operator, &options, None,
+                &operator,
+                &options,
+                &Assignment::<i32, i32, i32, i32>::new(),
             );
 
         let length = 4;
@@ -586,12 +573,12 @@ mod tests {
 
         // test the use of an accumulator
         let accumulator = Plus::<i32, i32, i32, i32>::new();
-        let matrix_multiplier_with_accumulator =
-            ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
-                &operator,
-                &options,
-                Some(&accumulator),
-            );
+        let matrix_multiplier_with_accumulator = ElementWiseVectorAdditionBinaryOperator::<
+            i32,
+            i32,
+            i32,
+            i32,
+        >::new(&operator, &options, &accumulator);
 
         matrix_multiplier_with_accumulator
             .apply(&multiplier, &multiplicant, &mut product)
@@ -617,7 +604,9 @@ mod tests {
         .unwrap();
 
         let matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
-            &operator, &options, None,
+            &operator,
+            &options,
+            &Assignment::<i32, i32, i32, i32>::new(),
         );
 
         let mut product = SparseVector::<i32>::new(&context, &length).unwrap();

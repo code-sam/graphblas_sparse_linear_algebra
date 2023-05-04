@@ -40,7 +40,7 @@ mod tests {
             ElementWiseMatrixMultiplicationBinaryOperator::<i32, i32, i32, i32>::new(
                 &add_operator,
                 &options,
-                Some(&add_operator),
+                &add_operator,
             );
 
         matrices.par_iter().for_each(|matrix| {

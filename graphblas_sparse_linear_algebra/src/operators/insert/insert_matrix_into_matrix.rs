@@ -7,6 +7,7 @@ use crate::collections::sparse_matrix::{
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -33,7 +34,7 @@ pub struct InsertMatrixIntoMatrix<MatrixToInsertInto: ValueType, MatrixToInsert:
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _matrix_to_insert: PhantomData<MatrixToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -44,23 +45,15 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                MatrixToInsert,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<
+            MatrixToInsert,
+            MatrixToInsertInto,
+            MatrixToInsert,
+            MatrixToInsert,
+        >, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix_to_insert_into: PhantomData,
@@ -332,7 +325,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_insert_matrix_into_matrix() {
@@ -389,7 +382,10 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..10).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertMatrixIntoMatrix::new(&OperatorOptions::new_default(), None);
+        let insert_operator = InsertMatrixIntoMatrix::new(
+            &OperatorOptions::new_default(),
+            &Assignment::<u8, u8, u8, u8>::new(),
+        );
 
         insert_operator
             .apply(

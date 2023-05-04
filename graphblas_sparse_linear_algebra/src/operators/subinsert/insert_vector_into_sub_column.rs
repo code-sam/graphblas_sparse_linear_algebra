@@ -13,6 +13,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -35,7 +36,7 @@ pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType, VectorToInse
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _vector_to_insert: PhantomData<VectorToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -47,23 +48,15 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                VectorToInsert,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<
+            VectorToInsert,
+            MatrixToInsertInto,
+            MatrixToInsertInto,
+            MatrixToInsertInto,
+        >,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix_to_insert_into: PhantomData,
@@ -231,7 +224,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_insert_vector_into_column() {
@@ -286,7 +279,8 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..vector_to_insert_length).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertVectorIntoSubColumn::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertVectorIntoSubColumn::new(&OperatorOptions::new_default(), &Assignment::new());
 
         let column_to_insert_into: ElementIndex = 2;
 

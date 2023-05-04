@@ -183,7 +183,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
     use crate::operators::options::OperatorOptions;
 
@@ -214,7 +214,7 @@ mod tests {
         let operator = IndexUnaryOperatorApplier::new(
             &IsValueGreaterThan::<u8, i8, f32, i16>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
         operator

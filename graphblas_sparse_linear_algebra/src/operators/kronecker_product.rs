@@ -15,6 +15,8 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_kronecker_Semiring, GrB_Monoid, GrB_Semiring,
 };
 
+use super::binary_operator::AccumulatorBinaryOperator;
+
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
@@ -50,7 +52,7 @@ where
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     multiplication_operator: GrB_Semiring, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -64,18 +66,12 @@ where
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
@@ -183,18 +179,12 @@ pub struct MonoidKroneckerProductOperator<T: ValueType> {
 
 impl<T: ValueType> MonoidKroneckerProductOperator<T> {
     pub fn new(
-        multiplication_operator: &dyn Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<T, T, T, T>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<T, T, T, T>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
@@ -281,7 +271,7 @@ pub struct BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Prod
     _multiplicant: PhantomData<Multiplicant>,
     _product: PhantomData<Product>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, //  determines how results are written into the result matrix C
     multiplication_operator: GrB_BinaryOp, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -294,18 +284,12 @@ where
     Product: ValueType,
 {
     pub fn new(
-        multiplication_operator: &dyn BinaryOperator<Multiplier, Multiplicant, Product, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl BinaryOperator<Multiplier, Multiplicant, Product, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
@@ -402,7 +386,7 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Times};
+    use crate::operators::binary_operator::{Assignment, First, Times};
 
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
@@ -413,7 +397,11 @@ mod tests {
         let operator = Times::<i64, i64, i64, i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
-            BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(&operator, &options, None);
+            BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
+                &operator,
+                &options,
+                &Assignment::<i64, i64, i64, i64>::new(),
+            );
 
         let _context = Context::init_ready(Mode::NonBlocking).unwrap();
 
@@ -426,7 +414,7 @@ mod tests {
         let _matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
             &operator,
             &options,
-            Some(&accumulator),
+            &accumulator,
         );
     }
 
@@ -437,7 +425,11 @@ mod tests {
         let operator = Times::<i32, i32, i32, i32>::new();
         let options = OperatorOptions::new_default();
         let element_wise_matrix_multiplier =
-            BinaryOperatorKroneckerProductOperator::<i32, i32, i32>::new(&operator, &options, None);
+            BinaryOperatorKroneckerProductOperator::<i32, i32, i32>::new(
+                &operator,
+                &options,
+                &Assignment::<i32, i32, i32, i32>::new(),
+            );
 
         let height = 2;
         let width = 2;

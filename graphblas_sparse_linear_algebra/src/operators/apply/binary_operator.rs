@@ -81,14 +81,9 @@ impl<
     > BinaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
 {
     pub fn new(
-        binary_operator: &dyn BinaryOperator<
-            FirstArgument,
-            SecondArgument,
-            Product,
-            EvaluationDomain,
-        >,
+        binary_operator: &impl BinaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, EvaluationDomain>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: Option<&impl BinaryOperator<Product, Product, Product, EvaluationDomain>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
         let accumulator_to_use;
         match accumulator {
@@ -471,7 +466,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
 
         let second_agrument = 10;
@@ -494,7 +489,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
         let first_agrument = 10;
         operator
@@ -540,7 +535,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
 
         let second_agrument = 10;
@@ -557,7 +552,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
         let first_argument = 10;
         operator
@@ -597,7 +592,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<usize, usize, usize, usize>>,
         );
 
         let second_agrument = 10;
@@ -614,7 +609,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<usize, usize, usize, usize>>,
         );
         let first_agrument = 10;
         operator
@@ -654,7 +649,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, bool>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Plus<i8, i8, i8, bool>>,
         );
 
         let second_argument = true;
@@ -671,7 +666,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, bool>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Plus<i8, i8, i8, bool>>,
         );
 
         operator

@@ -347,7 +347,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
@@ -370,7 +370,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
         let first_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
         operator
@@ -416,7 +416,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
@@ -433,7 +433,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<u8, u8, u8, u8>>,
         );
         let first_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
         operator
@@ -473,7 +473,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<usize, usize, usize, usize>>,
         );
 
         let second_agrument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
@@ -490,7 +490,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&First<usize, usize, usize, usize>>,
         );
         let first_agrument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
         operator
@@ -530,7 +530,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Plus<i8, i8, i8, u8>>,
         );
 
         let second_agrument = SparseScalar::<bool>::from_value(&context, true).unwrap();
@@ -547,7 +547,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, bool>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Plus<i8, i8, i8, bool>>,
         );
 
         operator

@@ -3,6 +3,7 @@ use crate::collections::sparse_vector::SparseVector;
 use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
+use crate::operators::binary_operator::{AccumulatorBinaryOperator, Assignment};
 use crate::operators::{
     binary_operator::BinaryOperator,
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
@@ -31,9 +32,12 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Column, Column, Column, Column>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Column, Column, Column, Column>, // determines how results are written into the result matrix C
     ) -> Self {
-        let transpose_operator = MatrixTranspose::new(options, None);
+        let transpose_operator = MatrixTranspose::new(
+            options,
+            &Assignment::<Matrix, Matrix, Matrix, Matrix>::new(),
+        );
         let column_extractor = MatrixColumnExtractor::new(options, accumulator);
 
         Self {
@@ -169,7 +173,10 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = vec![0, 1];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor = MatrixRowExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor = MatrixRowExtractor::new(
+            &OperatorOptions::new_default(),
+            &Assignment::<u8, u8, u8, u8>::new(),
+        );
 
         extractor
             .apply(&matrix, &2, &indices_to_extract, &mut column_vector)

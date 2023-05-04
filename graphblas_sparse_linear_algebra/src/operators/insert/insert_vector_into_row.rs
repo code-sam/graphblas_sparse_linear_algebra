@@ -11,6 +11,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::{AsBoolean, ValueType};
@@ -36,7 +37,7 @@ pub struct InsertVectorIntoRow<MatrixToInsertInto: ValueType, VectorToInsert: Va
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _vector_to_insert: PhantomData<VectorToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -47,23 +48,15 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                VectorToInsert,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<
+            VectorToInsert,
+            MatrixToInsertInto,
+            MatrixToInsertInto,
+            MatrixToInsertInto,
+        >, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix_to_insert_into: PhantomData,
@@ -236,7 +229,7 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
@@ -296,7 +289,8 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..vector_to_insert_length).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertVectorIntoRow::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertVectorIntoRow::new(&OperatorOptions::new_default(), &Assignment::new());
 
         let row_to_insert_into: ElementIndex = 2;
 

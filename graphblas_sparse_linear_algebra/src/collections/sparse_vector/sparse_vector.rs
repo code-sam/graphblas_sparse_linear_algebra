@@ -478,7 +478,7 @@ pub trait FromVectorElementList<T: ValueType> {
         context: &Arc<Context>,
         lenth: &ElementIndex,
         elements: &VectorElementList<T>,
-        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T, T>,
+        reduction_operator_for_duplicates: &impl BinaryOperator<T, T, T, T>,
     ) -> Result<SparseVector<T>, SparseLinearAlgebraError>;
 }
 
@@ -489,7 +489,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 context: &Arc<Context>,
                 length: &ElementIndex,
                 elements: &VectorElementList<$value_type>,
-                reduction_operator_for_duplicates: &dyn BinaryOperator<
+                reduction_operator_for_duplicates: &impl BinaryOperator<
                     $value_type,
                     $value_type,
                     $value_type,

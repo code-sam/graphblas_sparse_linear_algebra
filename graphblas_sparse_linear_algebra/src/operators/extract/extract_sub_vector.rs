@@ -9,6 +9,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -37,7 +38,7 @@ where
     _argument: PhantomData<Argument>,
     _product: PhantomData<Product>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -48,16 +49,10 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<SubVector, SubVector, SubVector, SubVector>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<SubVector, SubVector, SubVector, SubVector>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _argument: PhantomData,
@@ -213,7 +208,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_vector_extraction() {
@@ -239,7 +234,10 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = (0..3).collect();
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor = SubVectorExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor = SubVectorExtractor::new(
+            &OperatorOptions::new_default(),
+            &Assignment::<u8, u8, u8, u8>::new(),
+        );
 
         extractor
             .apply(&vector, &indices_to_extract, &mut sub_vector)
@@ -293,7 +291,10 @@ mod tests {
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
         // let indices_to_extract = ElementIndexSelector::All;
 
-        let extractor = SubVectorExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor = SubVectorExtractor::new(
+            &OperatorOptions::new_default(),
+            &Assignment::<u8, u8, u8, u8>::new(),
+        );
 
         extractor
             .apply_with_mask(&vector, &indices_to_extract, &mut sub_vector, &mask)

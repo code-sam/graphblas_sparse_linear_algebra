@@ -10,6 +10,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -30,7 +31,7 @@ where
     _matrix: PhantomData<Matrix>,
     _column: PhantomData<Column>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -41,16 +42,10 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Column, Column, Column, Column>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Column, Column, Column, Column>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix: PhantomData,
@@ -215,7 +210,7 @@ mod tests {
     use crate::collections::sparse_vector::GetVectorElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_column_extraction() {
@@ -243,7 +238,10 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = vec![0, 2];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor = MatrixColumnExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor = MatrixColumnExtractor::new(
+            &OperatorOptions::new_default(),
+            &Assignment::<u8, u8, u8, u8>::new(),
+        );
 
         extractor
             .apply(&matrix, &0, &indices_to_extract, &mut column_vector)

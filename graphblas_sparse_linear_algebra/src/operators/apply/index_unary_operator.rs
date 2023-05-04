@@ -17,6 +17,7 @@ use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
@@ -57,7 +58,7 @@ pub struct IndexUnaryOperatorApplier<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     index_unary_operator: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -69,24 +70,18 @@ impl<
     > IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
 {
     pub fn new(
-        index_unary_operator: &dyn IndexUnaryOperator<
+        index_unary_operator: &impl IndexUnaryOperator<
             ApplyTo,
             OperatorArgument,
             Product,
             EvaluationDomain,
         >,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             index_unary_operator: index_unary_operator.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _first_argument: PhantomData,
@@ -279,7 +274,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
 
     #[test]
@@ -309,7 +304,7 @@ mod tests {
         let operator = IndexUnaryOperatorApplier::new(
             &IsValueGreaterThan::<u8, i8, f32, i8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::<f32, f32, f32, i8>::new(),
         );
 
         operator

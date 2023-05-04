@@ -379,7 +379,7 @@ mod tests {
         context::{Context, Mode},
         operators::{
             apply::{ApplyUnaryOperator, UnaryOperatorApplier},
-            binary_operator::First,
+            binary_operator::{Assignment, First},
             options::OperatorOptions,
         },
     };
@@ -413,7 +413,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &IsFinite::<i64, u8, f32>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
         let mut product = SparseVector::new(&context, &vector_length).unwrap();

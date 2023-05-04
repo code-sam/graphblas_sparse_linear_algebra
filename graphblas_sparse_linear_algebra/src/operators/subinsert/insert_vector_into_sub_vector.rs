@@ -10,6 +10,7 @@ use crate::collections::sparse_vector::{
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::{AsBoolean, ValueType};
 
@@ -32,7 +33,7 @@ pub struct InsertVectorIntoSubVector<VectorToInsertInto: ValueType, VectorToInse
     _vector_to_insert_into: PhantomData<VectorToInsertInto>,
     _vector_to_insert: PhantomData<VectorToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -44,23 +45,15 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                VectorToInsert,
-                VectorToInsertInto,
-                VectorToInsertInto,
-                VectorToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<
+            VectorToInsert,
+            VectorToInsertInto,
+            VectorToInsertInto,
+            VectorToInsertInto,
+        >,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _vector_to_insert_into: PhantomData,
@@ -216,7 +209,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_insert_vector_into_vector() {
@@ -271,7 +264,8 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..5).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertVectorIntoSubVector::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertVectorIntoSubVector::new(&OperatorOptions::new_default(), &Assignment::new());
 
         insert_operator
             .apply(&mut vector, &indices_to_insert, &vector_to_insert)

@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::*;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
@@ -9,7 +10,17 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
 };
 use crate::value_type::ValueType;
 
-pub trait BinaryOperator<X, Y, Z, T>
+pub trait AccumulatorBinaryOperator<X, Y, Z, T>
+where
+    X: ValueType, // left-hand-side
+    Y: ValueType, // right-hand-side
+    Z: ValueType, // result
+    T: ValueType,
+{
+    fn accumulator_graphblas_type(&self) -> GrB_BinaryOp;
+}
+
+pub trait BinaryOperator<X, Y, Z, T>: AccumulatorBinaryOperator<X, Y, Z, T>
 where
     X: ValueType, // left-hand-side
     Y: ValueType, // right-hand-side
@@ -31,6 +42,15 @@ macro_rules! implement_binary_operator {
             for $operator_name<X, Y, Z, $evaluation_domain>
         {
             fn graphblas_type(&self) -> GrB_BinaryOp {
+                unsafe { $graphblas_operator_name }
+            }
+        }
+
+        impl<X: ValueType, Y: ValueType, Z: ValueType>
+            AccumulatorBinaryOperator<X, Y, Z, $evaluation_domain>
+            for $operator_name<X, Y, Z, $evaluation_domain>
+        {
+            fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
@@ -62,6 +82,14 @@ macro_rules! implement_binary_operator_with_bool_return_type {
             }
         }
 
+        impl<X: ValueType, Y: ValueType> AccumulatorBinaryOperator<X, Y, bool, $evaluation_domain>
+            for $operator_name<X, Y, bool, $evaluation_domain>
+        {
+            fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
+                unsafe { $graphblas_operator_name }
+            }
+        }
+
         impl<X: ValueType, Y: ValueType> $operator_name<X, Y, bool, $evaluation_domain> {
             pub fn new() -> Self {
                 Self {
@@ -87,6 +115,14 @@ macro_rules! implement_binary_operator_for_boolean {
     ) => {
         impl BinaryOperator<bool, bool, bool, bool> for $operator_name<bool, bool, bool, bool> {
             fn graphblas_type(&self) -> GrB_BinaryOp {
+                unsafe { $graphblas_operator_name }
+            }
+        }
+
+        impl AccumulatorBinaryOperator<bool, bool, bool, bool>
+            for $operator_name<bool, bool, bool, bool>
+        {
+            fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
@@ -122,6 +158,26 @@ macro_rules! define_binary_operator {
             _evaluation_domain: PhantomData<T>,
         }
     };
+}
+
+define_binary_operator!(Assignment);
+impl<X: ValueType, Y: ValueType, Z: ValueType, T: ValueType> AccumulatorBinaryOperator<X, Y, Z, T>
+    for Assignment<X, Y, Z, T>
+{
+    fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
+        ptr::null_mut()
+    }
+}
+
+impl<X: ValueType, Y: ValueType, Z: ValueType, T: ValueType> Assignment<X, Y, Z, T> {
+    pub fn new() -> Self {
+        Self {
+            _value_type_left_input: PhantomData,
+            _value_type_right_input: PhantomData,
+            _value_type_output: PhantomData,
+            _evaluation_domain: PhantomData,
+        }
+    }
 }
 
 // x = first(x,y)
@@ -628,7 +684,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Divide::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Divide<u8, u8, u8, u8>>,
         );
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 0).unwrap();
@@ -646,7 +702,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Divide::<u8, u8, f32, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Divide<f32, f32, f32, u8>>,
         );
 
         let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
@@ -667,7 +723,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Divide::<u8, u8, f32, f32>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&Divide<f32, f32, f32, f32>>,
         );
         operator
             .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
@@ -706,7 +762,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &LDExp::<u8, f32, u8, f32>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&LDExp<u8, u8, u8, f32>>,
         );
 
         let second_agrument = SparseScalar::<f32>::from_value(&context, 0.5).unwrap();
@@ -744,7 +800,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &ShiftBit::<f64, f32, f32, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&ShiftBit<f32, f32, f32, u8>>,
         );
 
         for i in 0..3 {
@@ -810,7 +866,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &RowIndexFirstArgument::<u8, u8, u8, i64>::new(),
             &OperatorOptions::new_default(),
-            None,
+            None::<&RowIndexFirstArgument<u8, u8, u8, i64>>,
         );
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();

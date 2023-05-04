@@ -11,6 +11,7 @@ use suitesparse_graphblas_sys::{
 
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
@@ -53,7 +54,7 @@ pub struct VectorSelector<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result vector C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -65,19 +66,13 @@ impl<
     > VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
 {
     pub fn new(
-        selector: &dyn IndexUnaryOperator<Vector, SelectorArgument, Product, EvaluationDomain>,
+        selector: &impl IndexUnaryOperator<Vector, SelectorArgument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Vector, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result vector C
+        accumulator: &impl AccumulatorBinaryOperator<Vector, Product, Product, Product>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             selector: selector.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _vector: PhantomData,
@@ -182,7 +177,7 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
@@ -212,7 +207,11 @@ mod tests {
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
         let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         selector.apply(&vector, &mut product_vector, &0).unwrap();
 
@@ -225,7 +224,11 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
         let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
         selector.apply(&vector, &mut product_vector, &0).unwrap();
 
         println!("{}", product_vector);
@@ -257,7 +260,11 @@ mod tests {
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
         let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         selector.apply(&vector, &mut product_vector, &1).unwrap();
 
@@ -270,7 +277,11 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
         let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
         selector.apply(&vector, &mut product_vector, &3).unwrap();
 
         println!("{}", product_vector);

@@ -5,6 +5,7 @@ use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{
     binary_operator::BinaryOperator, options::OperatorOptions, unary_operator::UnaryOperator,
 };
@@ -37,7 +38,7 @@ pub struct UnaryOperatorApplier<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     unary_operator: GrB_UnaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -45,19 +46,13 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
     UnaryOperatorApplier<Argument, Product, EvaluationDomain>
 {
     pub fn new(
-        unary_operator: &dyn UnaryOperator<Argument, Product, EvaluationDomain>,
+        unary_operator: &impl UnaryOperator<Argument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Product, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             unary_operator: unary_operator.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _argument: PhantomData,
@@ -225,7 +220,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::unary_operator::{Identity, LogicalNegation, One};
 
     #[test]
@@ -253,7 +248,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &One::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::<u8, u8, u8, u8>::new(),
         );
 
         operator
@@ -277,7 +272,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &Identity::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::<u8, u8, u8, u8>::new(),
         );
         operator
             .apply_to_matrix(&matrix, &mut product_matrix)
@@ -324,7 +319,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &One::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::<u8, u8, u8, u8>::new(),
         );
 
         operator
@@ -340,7 +335,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &Identity::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::<u8, u8, u8, u8>::new(),
         );
         operator
             .apply_to_vector(&vector, &mut product_vector)
@@ -366,7 +361,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &LogicalNegation::<bool, bool, bool>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::<bool, bool, bool, bool>::new(),
         );
 
         operator

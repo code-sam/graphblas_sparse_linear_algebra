@@ -11,6 +11,7 @@ use suitesparse_graphblas_sys::{
 
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
@@ -60,7 +61,7 @@ pub struct MatrixSelector<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
     options: GrB_Descriptor,
 }
 
@@ -72,19 +73,13 @@ impl<
     > MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
 {
     pub fn new(
-        selector: &dyn IndexUnaryOperator<Matrix, SelectorArgument, Product, EvaluationDomain>,
+        selector: &impl IndexUnaryOperator<Matrix, SelectorArgument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Matrix, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Matrix, Product, Product, Product>, // determines how results are written into the result matrix C
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             selector: selector.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix: PhantomData,
@@ -189,7 +184,7 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
@@ -224,7 +219,7 @@ mod tests {
         let selector = MatrixSelector::<u8, i8, u8, i8>::new(
             &index_operator,
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
         let diagonal_index = 0;
@@ -311,7 +306,11 @@ mod tests {
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsOnOrAboveDiagonal::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         let diagonal_index = 0;
 
@@ -403,7 +402,11 @@ mod tests {
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsOnDiagonal::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         let diagonal_index = 0;
 
@@ -543,7 +546,11 @@ mod tests {
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         selector.apply(&matrix, &mut product_matrix, &0).unwrap();
 
@@ -576,7 +583,11 @@ mod tests {
         );
 
         let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
         selector.apply(&matrix, &mut product_matrix, &0).unwrap();
 
         println!("{}", product_matrix);
