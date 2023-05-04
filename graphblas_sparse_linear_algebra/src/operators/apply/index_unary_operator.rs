@@ -58,7 +58,7 @@ pub struct IndexUnaryOperatorApplier<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     index_unary_operator: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -77,7 +77,7 @@ impl<
             EvaluationDomain,
         >,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             index_unary_operator: index_unary_operator.graphblas_type(),
@@ -304,7 +304,7 @@ mod tests {
         let operator = IndexUnaryOperatorApplier::new(
             &IsValueGreaterThan::<u8, i8, f32, i8>::new(),
             &OperatorOptions::new_default(),
-            &Assignment::<f32, f32, f32, i8>::new(),
+            &Assignment::new(),
         );
 
         operator
