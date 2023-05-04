@@ -68,7 +68,7 @@ where
     pub fn new(
         multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),

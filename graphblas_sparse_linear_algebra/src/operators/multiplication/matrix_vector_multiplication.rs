@@ -49,7 +49,7 @@ where
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     semiring: GrB_Semiring,    // defines '+' and '*' for A*B (not optional for GrB_mxm)
     options: GrB_Descriptor,
 }
@@ -65,7 +65,7 @@ where
     pub fn new(
         semiring: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),

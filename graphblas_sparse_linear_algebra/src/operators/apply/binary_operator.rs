@@ -30,6 +30,7 @@ use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
@@ -69,7 +70,7 @@ pub struct BinaryOperatorApplier<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     binary_operator: GrB_BinaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -83,17 +84,11 @@ impl<
     pub fn new(
         binary_operator: &impl BinaryOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&impl BinaryOperator<Product, Product, Product, EvaluationDomain>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             binary_operator: binary_operator.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _first_argument: PhantomData,
@@ -439,7 +434,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus};
+    use crate::operators::binary_operator::{First, Plus, Assignment};
 
     #[test]
     fn test_matrix_binary_operator_application() {
@@ -466,7 +461,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&First<u8, u8, u8, u8>>,
+            &Assignment::new(),
         );
 
         let second_agrument = 10;
@@ -489,7 +484,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&First<u8, u8, u8, u8>>,
+            &Assignment::new(),
         );
         let first_agrument = 10;
         operator
@@ -535,7 +530,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&First<u8, u8, u8, u8>>,
+            &Assignment::new(),
         );
 
         let second_agrument = 10;
@@ -552,7 +547,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&First<u8, u8, u8, u8>>,
+            &Assignment::new(),
         );
         let first_argument = 10;
         operator
@@ -592,7 +587,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
-            None::<&First<usize, usize, usize, usize>>,
+            &Assignment::new(),
         );
 
         let second_agrument = 10;
@@ -609,7 +604,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &First::<usize, usize, usize, usize>::new(),
             &OperatorOptions::new_default(),
-            None::<&First<usize, usize, usize, usize>>,
+            &Assignment::new(),
         );
         let first_agrument = 10;
         operator
@@ -649,7 +644,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, bool>::new(),
             &OperatorOptions::new_default(),
-            None::<&Plus<i8, i8, i8, bool>>,
+            &Assignment::new(),
         );
 
         let second_argument = true;
@@ -666,7 +661,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Plus::<u8, bool, i8, bool>::new(),
             &OperatorOptions::new_default(),
-            None::<&Plus<i8, i8, i8, bool>>,
+            &Assignment::new(),
         );
 
         operator

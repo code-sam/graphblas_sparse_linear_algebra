@@ -64,7 +64,7 @@ pub struct ElementWiseVectorMultiplicationSemiringOperator<
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     multiplication_operator: GrB_Semiring, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -85,7 +85,7 @@ where
     pub fn new(
         multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -209,7 +209,7 @@ unsafe impl<T: ValueType> Send for ElementWiseVectorMultiplicationMonoidOperator
 pub struct ElementWiseVectorMultiplicationMonoidOperator<T: ValueType> {
     _value: PhantomData<T>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     multiplication_operator: GrB_Monoid, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -218,7 +218,7 @@ impl<T: ValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
     pub fn new(
         multiplication_operator: &impl Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<T, T, T, T>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<T, T, T, T>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -358,7 +358,7 @@ pub struct ElementWiseVectorMultiplicationBinaryOperator<
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     multiplication_operator: GrB_BinaryOp, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -384,7 +384,7 @@ where
             EvaluationDomain,
         >, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),

@@ -36,7 +36,7 @@ pub struct BinaryOperatorReducer<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     binary_operator: GrB_BinaryOp,
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -46,7 +46,7 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
     pub fn new(
         binary_operator: &impl BinaryOperator<Argument, Argument, Argument, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             binary_operator: binary_operator.graphblas_type(),

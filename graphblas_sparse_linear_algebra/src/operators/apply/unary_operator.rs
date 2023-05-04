@@ -38,7 +38,7 @@ pub struct UnaryOperatorApplier<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     unary_operator: GrB_UnaryOp,
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -48,7 +48,7 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
     pub fn new(
         unary_operator: &impl UnaryOperator<Argument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             unary_operator: unary_operator.graphblas_type(),

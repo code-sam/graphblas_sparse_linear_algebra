@@ -684,7 +684,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Divide::<u8, u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&Divide<u8, u8, u8, u8>>,
+            &Assignment::new(),
         );
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 0).unwrap();
@@ -702,7 +702,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Divide::<u8, u8, f32, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&Divide<f32, f32, f32, u8>>,
+            &Assignment::new(),
         );
 
         let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
@@ -723,7 +723,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &Divide::<u8, u8, f32, f32>::new(),
             &OperatorOptions::new_default(),
-            None::<&Divide<f32, f32, f32, f32>>,
+            &Assignment::new(),
         );
         operator
             .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
@@ -762,7 +762,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &LDExp::<u8, f32, u8, f32>::new(),
             &OperatorOptions::new_default(),
-            None::<&LDExp<u8, u8, u8, f32>>,
+            &Assignment::new(),
         );
 
         let second_agrument = SparseScalar::<f32>::from_value(&context, 0.5).unwrap();
@@ -800,7 +800,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &ShiftBit::<f64, f32, f32, u8>::new(),
             &OperatorOptions::new_default(),
-            None::<&ShiftBit<f32, f32, f32, u8>>,
+            &Assignment::new(),
         );
 
         for i in 0..3 {
@@ -866,7 +866,7 @@ mod tests {
         let operator = BinaryOperatorApplier::new(
             &RowIndexFirstArgument::<u8, u8, u8, i64>::new(),
             &OperatorOptions::new_default(),
-            None::<&RowIndexFirstArgument<u8, u8, u8, i64>>,
+            &Assignment::new(),
         );
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();

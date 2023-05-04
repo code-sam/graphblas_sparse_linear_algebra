@@ -80,7 +80,7 @@ where
     pub fn new(
         multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -342,7 +342,7 @@ pub struct ElementWiseMatrixAdditionBinaryOperator<
     _product: PhantomData<Product>,
     _evaluation_space: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     multiplication_operator: GrB_BinaryOp, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -361,9 +361,9 @@ where
             Multiplicant,
             Product,
             EvaluationDomain,
-        >, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        >,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, EvaluationDomain>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
