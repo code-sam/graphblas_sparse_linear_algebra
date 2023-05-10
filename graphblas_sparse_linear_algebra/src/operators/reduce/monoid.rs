@@ -36,7 +36,7 @@ pub struct MonoidReducer<Argument: ValueType, Product: ValueType> {
     _product: PhantomData<Product>,
 
     monoid: GrB_Monoid,
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -44,7 +44,7 @@ impl<Argument: ValueType, Product: ValueType> MonoidReducer<Argument, Product> {
     pub fn new(
         monoid: &impl Monoid<Argument>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Argument, Product, Product, Product>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             monoid: monoid.graphblas_type(),
@@ -237,7 +237,7 @@ mod tests {
                         &context.clone(),
                         &matrix_size,
                         &element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -247,7 +247,7 @@ mod tests {
                     let reducer = MonoidReducer::new(
                         &MonoidPlus::<$value_type>::new(),
                         &OperatorOptions::new_default(),
-                        &Assignment::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &Assignment::<$value_type>::new(),
                     );
 
                     reducer.to_vector(&matrix, &mut product_vector).unwrap();
@@ -270,7 +270,7 @@ mod tests {
                         &context.clone(),
                         &matrix_size.row_height(),
                         &mask_element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -308,7 +308,7 @@ mod tests {
                         &context.clone(),
                         &matrix_size,
                         &element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -343,7 +343,7 @@ mod tests {
                         &context.clone(),
                         &vector_length,
                         &element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 

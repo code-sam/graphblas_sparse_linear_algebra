@@ -32,11 +32,11 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Column, Column, Column, Column>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Column>,
     ) -> Self {
         let transpose_operator = MatrixTranspose::new(
             options,
-            &Assignment::<Matrix, Matrix, Matrix, Matrix>::new(),
+            &Assignment::<Matrix>::new(),
         );
         let column_extractor = MatrixColumnExtractor::new(options, accumulator);
 
@@ -164,7 +164,7 @@ mod tests {
             &context.clone(),
             &(3, 2).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -175,7 +175,7 @@ mod tests {
 
         let extractor = MatrixRowExtractor::new(
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         extractor

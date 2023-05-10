@@ -77,7 +77,7 @@ impl<
             EvaluationDomain,
         >,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             index_unary_operator: index_unary_operator.graphblas_type(),
@@ -295,7 +295,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

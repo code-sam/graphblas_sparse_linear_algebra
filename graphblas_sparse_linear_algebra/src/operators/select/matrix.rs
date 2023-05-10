@@ -61,7 +61,7 @@ pub struct MatrixSelector<
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -75,7 +75,7 @@ impl<
     pub fn new(
         selector: &impl IndexUnaryOperator<Matrix, SelectorArgument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Matrix, Product, Product, Product>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             selector: selector.graphblas_type(),
@@ -209,7 +209,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -299,7 +299,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -395,7 +395,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -539,7 +539,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

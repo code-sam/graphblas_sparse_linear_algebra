@@ -407,7 +407,7 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<i64, i64, i64, i64>::new(),
+            &First::<i64>::new(),
         )
         .unwrap();
         let operator = UnaryOperatorApplier::new(

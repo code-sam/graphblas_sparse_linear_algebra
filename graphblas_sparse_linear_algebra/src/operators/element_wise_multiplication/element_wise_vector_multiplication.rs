@@ -85,7 +85,7 @@ where
     pub fn new(
         multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -218,7 +218,7 @@ impl<T: ValueType> ElementWiseVectorMultiplicationMonoidOperator<T> {
     pub fn new(
         multiplication_operator: &impl Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<T, T, T, T>,
+        accumulator: &impl AccumulatorBinaryOperator<T>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -378,13 +378,10 @@ where
 {
     pub fn new(
         multiplication_operator: &impl BinaryOperator<
-            Multiplier,
-            Multiplicant,
-            Product,
             EvaluationDomain,
         >, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -511,16 +508,16 @@ mod tests {
 
     #[test]
     fn create_vector_multiplier() {
-        let operator = Times::<i64, i64, i64, i64>::new();
+        let operator = Times::<i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
             ElementWiseVectorMultiplicationBinaryOperator::<i64, i64, i64, i64>::new(
                 &operator,
                 &options,
-                &Assignment::<i64, i64, i64, i64>::new(),
+                &Assignment::<i64>::new(),
             );
 
-        let accumulator = Times::<i64, i64, i64, i64>::new();
+        let accumulator = Times::<i64>::new();
 
         let _matrix_multiplier =
             ElementWiseVectorMultiplicationBinaryOperator::<i64, i64, i64, i64>::new(
@@ -534,13 +531,13 @@ mod tests {
     fn test_element_wisemultiplication() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let operator = Times::<i32, i32, i32, i32>::new();
+        let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();
         let element_wise_vector_multiplier =
             ElementWiseVectorMultiplicationBinaryOperator::<i32, i32, i32, i32>::new(
                 &operator,
                 &options,
-                &Assignment::<i32, i32, i32, i32>::new(),
+                &Assignment::<i32>::new(),
             );
 
         let length = 4;
@@ -569,7 +566,7 @@ mod tests {
             &context,
             &length,
             &multiplier_element_list,
-            &First::<i32, i32, i32, i32>::new(),
+            &First::<i32>::new(),
         )
         .unwrap();
 
@@ -583,7 +580,7 @@ mod tests {
             &context,
             &length,
             &multiplicant_element_list,
-            &First::<i32, i32, i32, i32>::new(),
+            &First::<i32>::new(),
         )
         .unwrap();
 
@@ -598,7 +595,7 @@ mod tests {
         assert_eq!(product.get_element_value_or_default(&3).unwrap(), 32);
 
         // test the use of an accumulator
-        let accumulator = Plus::<i32, i32, i32, i32>::new();
+        let accumulator = Plus::<i32>::new();
         let matrix_multiplier_with_accumulator = ElementWiseVectorMultiplicationBinaryOperator::<
             i32,
             i32,
@@ -625,7 +622,7 @@ mod tests {
             &context,
             &length,
             &mask_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -633,7 +630,7 @@ mod tests {
             ElementWiseVectorMultiplicationBinaryOperator::<i32, i32, i32, i32>::new(
                 &operator,
                 &options,
-                &Assignment::<i32, i32, i32, i32>::new(),
+                &Assignment::<i32>::new(),
             );
 
         let mut product = SparseVector::<i32>::new(&context, &length).unwrap();

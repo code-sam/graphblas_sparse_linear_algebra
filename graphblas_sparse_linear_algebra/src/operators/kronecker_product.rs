@@ -52,7 +52,7 @@ where
     _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     multiplication_operator: GrB_Semiring, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -68,7 +68,7 @@ where
     pub fn new(
         multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product>, 
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -172,7 +172,7 @@ impl<
 pub struct MonoidKroneckerProductOperator<T: ValueType> {
     _value: PhantomData<T>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     multiplication_operator: GrB_Monoid, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
@@ -181,7 +181,7 @@ impl<T: ValueType> MonoidKroneckerProductOperator<T> {
     pub fn new(
         multiplication_operator: &impl Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<T, T, T, T>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<T>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -284,9 +284,9 @@ where
     Product: ValueType,
 {
     pub fn new(
-        multiplication_operator: &impl BinaryOperator<Multiplier, Multiplicant, Product, Product>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl BinaryOperator<Product>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -394,13 +394,13 @@ mod tests {
 
     #[test]
     fn create_matrix_multiplier() {
-        let operator = Times::<i64, i64, i64, i64>::new();
+        let operator = Times::<i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
             BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
                 &operator,
                 &options,
-                &Assignment::<i64, i64, i64, i64>::new(),
+                &Assignment::<i64>::new(),
             );
 
         let _context = Context::init_ready(Mode::NonBlocking).unwrap();
@@ -409,7 +409,7 @@ mod tests {
         let target_width = 5;
         let _size: Size = (target_height, target_width).into();
 
-        let accumulator = Times::<i64, i64, i64, i64>::new();
+        let accumulator = Times::<i64>::new();
 
         let _matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
             &operator,
@@ -422,13 +422,13 @@ mod tests {
     fn test_element_wisemultiplication() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let operator = Times::<i32, i32, i32, i32>::new();
+        let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();
         let element_wise_matrix_multiplier =
             BinaryOperatorKroneckerProductOperator::<i32, i32, i32>::new(
                 &operator,
                 &options,
-                &Assignment::<i32, i32, i32, i32>::new(),
+                &Assignment::<i32>::new(),
             );
 
         let height = 2;
@@ -460,7 +460,7 @@ mod tests {
             &context,
             &size,
             &multiplier_element_list,
-            &First::<i32, i32, i32, i32>::new(),
+            &First::<i32>::new(),
         )
         .unwrap();
 
@@ -474,7 +474,7 @@ mod tests {
             &context,
             &size,
             &multiplicant_element_list,
-            &First::<i32, i32, i32, i32>::new(),
+            &First::<i32>::new(),
         )
         .unwrap();
 

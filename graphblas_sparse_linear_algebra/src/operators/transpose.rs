@@ -36,7 +36,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product>, // determines how results are written into the result matrix C
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -138,7 +138,7 @@ mod tests {
             &context,
             &(2, 2).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -146,7 +146,7 @@ mod tests {
 
         let transpose_operator = MatrixTranspose::new(
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         transpose_operator

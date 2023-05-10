@@ -65,7 +65,7 @@ where
     pub fn new(
         semiring: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
         options: OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -211,7 +211,7 @@ mod tests {
             &context,
             &length,
             &multiplier_element_list,
-            &First::<f32, f32, f32, f32>::new(),
+            &First::<f32>::new(),
         )
         .unwrap();
 
@@ -225,7 +225,7 @@ mod tests {
             &context,
             &size,
             &multiplicant_element_list,
-            &First::<f32, f32, f32, f32>::new(),
+            &First::<f32>::new(),
         )
         .unwrap();
 
@@ -245,7 +245,7 @@ mod tests {
         assert_eq!(expected_product, product_element_list);
 
         // test the use of an accumulator
-        let accumulator = Plus::<f32, f32, f32, f32>::new();
+        let accumulator = Plus::<f32>::new();
         let matrix_multiplier_with_accumulator =
             VectorMatrixMultiplicationOperator::<f32, f32, f32, f32>::new(
                 &semiring,
@@ -267,7 +267,7 @@ mod tests {
             &context,
             &length,
             &mask_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

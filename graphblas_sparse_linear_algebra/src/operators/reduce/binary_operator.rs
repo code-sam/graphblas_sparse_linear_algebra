@@ -44,9 +44,9 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
     BinaryOperatorReducer<Argument, Product, EvaluationDomain>
 {
     pub fn new(
-        binary_operator: &impl BinaryOperator<Argument, Argument, Argument, EvaluationDomain>,
+        binary_operator: &impl BinaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             binary_operator: binary_operator.graphblas_type(),
@@ -159,7 +159,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -167,7 +167,7 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         let reducer = BinaryOperatorReducer::new(
-            &Plus::<u8, u8, u8, u8>::new(),
+            &Plus::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -192,7 +192,7 @@ mod tests {
             &context.clone(),
             &matrix_size.row_height(),
             &mask_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

@@ -32,7 +32,7 @@ mod tests {
                 .unwrap()
         });
 
-        let add_operator = Plus::<i32, i32, i32, i32>::new();
+        let add_operator = Plus::<i32>::new();
         let options = OperatorOptions::new_default();
         let result_matrix = Mutex::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap());
 

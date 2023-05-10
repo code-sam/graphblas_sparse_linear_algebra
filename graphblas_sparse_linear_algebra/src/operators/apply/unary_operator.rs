@@ -48,7 +48,7 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
     pub fn new(
         unary_operator: &impl UnaryOperator<Argument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             unary_operator: unary_operator.graphblas_type(),
@@ -239,7 +239,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -248,7 +248,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &One::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         operator
@@ -272,7 +272,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &Identity::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
         operator
             .apply_to_matrix(&matrix, &mut product_matrix)
@@ -310,7 +310,7 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -319,7 +319,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &One::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         operator
@@ -335,7 +335,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &Identity::<u8, u8, u8>::new(),
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
         operator
             .apply_to_vector(&vector, &mut product_vector)
@@ -361,7 +361,7 @@ mod tests {
         let operator = UnaryOperatorApplier::new(
             &LogicalNegation::<bool, bool, bool>::new(),
             &OperatorOptions::new_default(),
-            &Assignment::<bool, bool, bool, bool>::new(),
+            &Assignment::<bool>::new(),
         );
 
         operator

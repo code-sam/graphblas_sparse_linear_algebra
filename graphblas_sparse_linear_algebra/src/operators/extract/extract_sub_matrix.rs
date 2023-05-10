@@ -38,7 +38,7 @@ where
     _matrix: PhantomData<Matrix>,
     _sub_matrix: PhantomData<SubMatrix>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -49,7 +49,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<SubMatrix, SubMatrix, SubMatrix, SubMatrix>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -351,7 +351,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -364,7 +364,7 @@ mod tests {
 
         let extractor = SubMatrixExtractor::new(
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         extractor

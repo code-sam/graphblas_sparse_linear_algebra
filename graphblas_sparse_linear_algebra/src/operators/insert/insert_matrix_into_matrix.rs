@@ -47,9 +47,6 @@ where
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<
             MatrixToInsert,
-            MatrixToInsertInto,
-            MatrixToInsert,
-            MatrixToInsert,
         >, // determines how results are written into the result matrix C
     ) -> Self {
         Self {
@@ -343,7 +340,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -359,7 +356,7 @@ mod tests {
             &context,
             &matrix_size_to_insert,
             &element_list_to_insert,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -373,7 +370,7 @@ mod tests {
             &context,
             &matrix_size,
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -384,7 +381,7 @@ mod tests {
 
         let insert_operator = InsertMatrixIntoMatrix::new(
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         insert_operator
@@ -421,7 +418,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

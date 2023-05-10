@@ -50,9 +50,6 @@ where
     pub fn new(
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<
-            ScalarToInsert,
-            VectorToInsertInto,
-            VectorToInsertInto,
             VectorToInsertInto,
         >,
     ) -> Self {
@@ -245,7 +242,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -259,7 +256,7 @@ mod tests {
             &context,
             &3,
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -285,7 +282,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

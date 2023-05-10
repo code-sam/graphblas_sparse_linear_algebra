@@ -210,7 +210,7 @@ mod tests {
             &context,
             &length,
             &multiplier_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -224,7 +224,7 @@ mod tests {
             &context,
             &length,
             &multiplicant_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 

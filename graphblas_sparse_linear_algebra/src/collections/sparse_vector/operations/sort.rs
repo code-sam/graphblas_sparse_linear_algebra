@@ -19,7 +19,7 @@ static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
 // REVIEW: support typecasting for indices and the evaluation domain of the binary operator
-pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
+pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T>> {
     fn sort(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError>;
 
     fn sorted_values_and_indices(
@@ -38,7 +38,7 @@ pub trait SortSparseVector<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
     ) -> Result<SparseVector<ElementIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseVector<T, B>
+impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B>
     for SparseVector<T>
 {
     fn sort(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError> {
@@ -148,14 +148,14 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
         let mut sorted = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
         let mut indices = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
 
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
+        let larger_than_operator = IsGreaterThan::<isize>::new();
 
         vector
             .sorted_values_and_indices(&mut sorted, &mut indices, &larger_than_operator)
@@ -187,11 +187,11 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
+        let larger_than_operator = IsGreaterThan::<isize>::new();
 
         vector.sort(&larger_than_operator).unwrap();
 
@@ -216,11 +216,11 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
+        let larger_than_operator = IsGreaterThan::<isize>::new();
 
         let sorted = vector.sorted_values(&larger_than_operator).unwrap();
 
@@ -245,11 +245,11 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
+        let larger_than_operator = IsGreaterThan::<isize>::new();
 
         let indices = vector.indices_to_sort(&larger_than_operator).unwrap();
 

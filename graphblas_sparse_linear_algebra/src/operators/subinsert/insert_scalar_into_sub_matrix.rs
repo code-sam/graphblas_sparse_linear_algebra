@@ -50,9 +50,6 @@ where
     pub fn new(
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<
-            ScalarToInsert,
-            MatrixToInsertInto,
-            MatrixToInsertInto,
             MatrixToInsertInto,
         >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
     ) -> Self {
@@ -361,7 +358,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -375,7 +372,7 @@ mod tests {
             &context,
             &(3, 6).into(),
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -417,7 +414,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

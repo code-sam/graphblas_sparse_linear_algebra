@@ -91,7 +91,7 @@ impl<
         Product: ValueType,
         EvaluationDomain: ValueType,
     > ApplyBinaryOperatorWithSparseScalar<FirstArgument, SecondArgument, Product, EvaluationDomain>
-    for BinaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+    for BinaryOperatorApplier<EvaluationDomain>
 {
     fn apply_with_vector_as_first_argument(
         &self,
@@ -338,14 +338,14 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -368,7 +368,7 @@ mod tests {
         );
 
         let operator = BinaryOperatorApplier::new(
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -407,14 +407,14 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -431,7 +431,7 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new(
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -464,14 +464,14 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<usize, usize, usize, usize>::new(),
+            &First::<usize>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<usize>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &First::<usize, usize, usize, usize>::new(),
+            &First::<usize>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -488,7 +488,7 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new(
-            &First::<usize, usize, usize, usize>::new(),
+            &First::<usize>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -521,14 +521,14 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<i8>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &Plus::<u8, bool, i8, u8>::new(),
+            &Plus::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -545,7 +545,7 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new(
-            &Plus::<u8, bool, i8, bool>::new(),
+            &Plus::<bool>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );

@@ -46,7 +46,7 @@ fn bench_test(context: Arc<Context>) {
         &context,
         &matrix_size,
         &element_list,
-        &First::<u8, u8, u8, u8>::new(),
+        &First::<u8>::new(),
     )
     .unwrap();
 
@@ -60,7 +60,7 @@ fn bench_test(context: Arc<Context>) {
         &context,
         &matrix_size,
         &mask_element_list,
-        &First::<bool, bool, bool, bool>::new(),
+        &First::<bool>::new(),
     )
     .unwrap();
 
@@ -86,7 +86,7 @@ fn bench_test(context: Arc<Context>) {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

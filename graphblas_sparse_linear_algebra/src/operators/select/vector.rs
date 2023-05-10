@@ -68,7 +68,7 @@ impl<
     pub fn new(
         selector: &impl IndexUnaryOperator<Vector, SelectorArgument, Product, EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Vector, Product, Product, Product>,
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             selector: selector.graphblas_type(),
@@ -200,7 +200,7 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -253,7 +253,7 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

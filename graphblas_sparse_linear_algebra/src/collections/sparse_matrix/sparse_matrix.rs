@@ -364,7 +364,7 @@ pub trait FromMatrixElementList<T: ValueType> {
         context: &Arc<Context>,
         size: &Size,
         elements: &MatrixElementList<T>,
-        reduction_operator_for_duplicates: &impl BinaryOperator<T, T, T, T>,
+        reduction_operator_for_duplicates: &impl BinaryOperator<T>,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
 }
 
@@ -422,9 +422,6 @@ macro_rules! sparse_matrix_from_element_vector {
                 size: &Size,
                 elements: &MatrixElementList<$value_type>,
                 reduction_operator_for_duplicates: &impl BinaryOperator<
-                    $value_type,
-                    $value_type,
-                    $value_type,
                     $value_type,
                 >,
             ) -> Result<Self, SparseLinearAlgebraError> {
@@ -824,7 +821,7 @@ mod tests {
             &context,
             &(3, 5).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -850,7 +847,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
@@ -1037,7 +1034,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -1058,7 +1055,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &empty_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
         assert_eq!(

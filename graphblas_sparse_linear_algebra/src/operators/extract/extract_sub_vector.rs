@@ -38,7 +38,7 @@ where
     _argument: PhantomData<Argument>,
     _product: PhantomData<Product>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -49,7 +49,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<SubVector, SubVector, SubVector, SubVector>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -225,7 +225,7 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -236,7 +236,7 @@ mod tests {
 
         let extractor = SubVectorExtractor::new(
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         extractor
@@ -263,7 +263,7 @@ mod tests {
             &context.clone(),
             &10,
             &vector_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -281,7 +281,7 @@ mod tests {
             &context.clone(),
             &4,
             &mask_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -293,7 +293,7 @@ mod tests {
 
         let extractor = SubVectorExtractor::new(
             &OperatorOptions::new_default(),
-            &Assignment::<u8, u8, u8, u8>::new(),
+            &Assignment::<u8>::new(),
         );
 
         extractor

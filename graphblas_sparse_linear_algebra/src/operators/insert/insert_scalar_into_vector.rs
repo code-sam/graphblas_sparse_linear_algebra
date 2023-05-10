@@ -38,7 +38,7 @@ pub struct InsertScalarIntoVector<VectorToInsertInto: ValueType, ScalarToInsert:
     _vector_to_insert_into: PhantomData<VectorToInsertInto>,
     _scalar_to_insert: PhantomData<ScalarToInsert>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -50,11 +50,8 @@ where
     pub fn new(
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<
-            ScalarToInsert,
             VectorToInsertInto,
-            VectorToInsertInto,
-            VectorToInsertInto,
-        >, // determines how results are written into the result matrix C
+        >,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -244,7 +241,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -258,7 +255,7 @@ mod tests {
             &context,
             &vector_length,
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -284,7 +281,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

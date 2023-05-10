@@ -10,21 +10,14 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
 };
 use crate::value_type::ValueType;
 
-pub trait AccumulatorBinaryOperator<X, Y, Z, T>
-where
-    X: ValueType, // left-hand-side
-    Y: ValueType, // right-hand-side
-    Z: ValueType, // result
-    T: ValueType,
+pub trait AccumulatorBinaryOperator<T>
+where T: ValueType,
 {
     fn accumulator_graphblas_type(&self) -> GrB_BinaryOp;
 }
 
-pub trait BinaryOperator<X, Y, Z, T>: AccumulatorBinaryOperator<X, Y, Z, T>
+pub trait BinaryOperator<T>: AccumulatorBinaryOperator<T>
 where
-    X: ValueType, // left-hand-side
-    Y: ValueType, // right-hand-side
-    Z: ValueType, // result
     T: ValueType,
 {
     fn graphblas_type(&self) -> GrB_BinaryOp;
@@ -38,29 +31,25 @@ macro_rules! implement_binary_operator {
         $graphblas_operator_name:ident,
         $evaluation_domain: ty
     ) => {
-        impl<X: ValueType, Y: ValueType, Z: ValueType> BinaryOperator<X, Y, Z, $evaluation_domain>
-            for $operator_name<X, Y, Z, $evaluation_domain>
+        impl BinaryOperator<$evaluation_domain>
+            for $operator_name<$evaluation_domain>
         {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl<X: ValueType, Y: ValueType, Z: ValueType>
-            AccumulatorBinaryOperator<X, Y, Z, $evaluation_domain>
-            for $operator_name<X, Y, Z, $evaluation_domain>
+        impl AccumulatorBinaryOperator<$evaluation_domain>
+            for $operator_name<$evaluation_domain>
         {
             fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl<X: ValueType, Y: ValueType, Z: ValueType> $operator_name<X, Y, Z, $evaluation_domain> {
+        impl $operator_name<$evaluation_domain> {
             pub fn new() -> Self {
                 Self {
-                    _value_type_left_input: PhantomData,
-                    _value_type_right_input: PhantomData,
-                    _value_type_output: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
             }
@@ -74,35 +63,32 @@ macro_rules! implement_binary_operator_with_bool_return_type {
         $graphblas_operator_name:ident,
         $evaluation_domain: ty
     ) => {
-        impl<X: ValueType, Y: ValueType> BinaryOperator<X, Y, bool, $evaluation_domain>
-            for $operator_name<X, Y, bool, $evaluation_domain>
+        impl BinaryOperator<$evaluation_domain>
+            for $operator_name<$evaluation_domain>
         {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl<X: ValueType, Y: ValueType> AccumulatorBinaryOperator<X, Y, bool, $evaluation_domain>
-            for $operator_name<X, Y, bool, $evaluation_domain>
+        impl AccumulatorBinaryOperator<$evaluation_domain>
+            for $operator_name<$evaluation_domain>
         {
             fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl<X: ValueType, Y: ValueType> $operator_name<X, Y, bool, $evaluation_domain> {
+        impl $operator_name<$evaluation_domain> {
             pub fn new() -> Self {
                 Self {
-                    _value_type_left_input: PhantomData,
-                    _value_type_right_input: PhantomData,
-                    _value_type_output: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
             }
         }
 
-        impl<X: ValueType, Y: ValueType> ReturnsBool
-            for $operator_name<X, Y, bool, $evaluation_domain>
+        impl ReturnsBool
+            for $operator_name<$evaluation_domain>
         {
         }
     };
@@ -113,68 +99,56 @@ macro_rules! implement_binary_operator_for_boolean {
         $operator_name:ident,
         $graphblas_operator_name:ident
     ) => {
-        impl BinaryOperator<bool, bool, bool, bool> for $operator_name<bool, bool, bool, bool> {
+        impl BinaryOperator<bool> for $operator_name<bool> {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl AccumulatorBinaryOperator<bool, bool, bool, bool>
-            for $operator_name<bool, bool, bool, bool>
+        impl AccumulatorBinaryOperator<bool>
+            for $operator_name<bool>
         {
             fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl $operator_name<bool, bool, bool, bool> {
+        impl $operator_name<bool> {
             pub fn new() -> Self {
                 Self {
-                    _value_type_left_input: PhantomData,
-                    _value_type_right_input: PhantomData,
-                    _value_type_output: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
             }
         }
 
-        impl ReturnsBool for $operator_name<bool, bool, bool, bool> {}
+        impl ReturnsBool for $operator_name<bool> {}
     };
 }
 
 macro_rules! define_binary_operator {
     ($identifier: ident) => {
         #[derive(Debug, Clone)]
-        pub struct $identifier<X, Y, Z, T>
+        pub struct $identifier<T>
         where
-            X: ValueType,
-            Y: ValueType,
-            Z: ValueType,
             T: ValueType,
         {
-            _value_type_left_input: PhantomData<X>,
-            _value_type_right_input: PhantomData<Y>,
-            _value_type_output: PhantomData<Z>,
             _evaluation_domain: PhantomData<T>,
         }
     };
 }
 
 define_binary_operator!(Assignment);
-impl<X: ValueType, Y: ValueType, Z: ValueType, T: ValueType> AccumulatorBinaryOperator<X, Y, Z, T>
-    for Assignment<X, Y, Z, T>
+impl<T: ValueType> AccumulatorBinaryOperator<T>
+    for Assignment<T>
 {
     fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
         ptr::null_mut()
     }
 }
 
-impl<X: ValueType, Y: ValueType, Z: ValueType, T: ValueType> Assignment<X, Y, Z, T> {
+impl<T: ValueType> Assignment<T> {
     pub fn new() -> Self {
         Self {
-            _value_type_left_input: PhantomData,
-            _value_type_right_input: PhantomData,
-            _value_type_output: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
@@ -262,16 +236,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x==y
 #[derive(Debug, Clone)]
-pub struct IsEqual<X, Y, bool, T>
+pub struct IsEqual<T>
 where
-    X: ValueType,
-    Y: ValueType,
-    // Z: ValueType,
     T: ValueType,
 {
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<bool>,
     _evaluation_domain: PhantomData<T>,
 }
 
@@ -291,16 +259,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = x!=y
 #[derive(Debug, Clone)]
-pub struct IsNotEqual<X, Y, bool, T>
+pub struct IsNotEqual<T>
 where
-    X: ValueType,
-    Y: ValueType,
-    // Z: ValueType,
     T: ValueType,
 {
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<bool>,
     _evaluation_domain: PhantomData<T>,
 }
 
@@ -344,16 +306,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x>y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThan<X, Y, bool, T>
+pub struct IsGreaterThan<T>
 where
-    X: ValueType,
-    Y: ValueType,
-    // Z: bool,
     T: ValueType,
 {
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<bool>,
     _evaluation_domain: PhantomData<T>,
 }
 
@@ -373,16 +329,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x>=y)
 #[derive(Debug, Clone)]
-pub struct IsGreaterThanOrEqualTo<X, Y, bool, T>
+pub struct IsGreaterThanOrEqualTo<T>
 where
-    X: ValueType,
-    Y: ValueType,
-    // Z: bool,
     T: ValueType,
 {
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<bool>,
     _evaluation_domain: PhantomData<T>,
 }
 
@@ -402,16 +352,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x<y)
 #[derive(Debug, Clone)]
-pub struct IsLessThan<X, Y, bool, T>
+pub struct IsLessThan<T>
 where
-    X: ValueType,
-    Y: ValueType,
-    // Z: bool,
     T: ValueType,
 {
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<bool>,
     _evaluation_domain: PhantomData<T>,
 }
 
@@ -431,16 +375,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 // z = (x<=y)
 #[derive(Debug, Clone)]
-pub struct IsLessThanOrEqualTo<X, Y, bool, T>
+pub struct IsLessThanOrEqualTo<T>
 where
-    X: ValueType,
-    Y: ValueType,
-    // Z: bool,
     T: ValueType,
 {
-    _value_type_left_input: PhantomData<X>,
-    _value_type_right_input: PhantomData<Y>,
-    _value_type_output: PhantomData<bool>,
     _evaluation_domain: PhantomData<T>,
 }
 
@@ -656,10 +594,10 @@ mod tests {
 
     #[test]
     fn new_binary_operator() {
-        let first = First::<bool, bool, bool, bool>::new();
+        let first = First::<bool>::new();
         let _graphblas_type = first.graphblas_type();
 
-        let plus = Plus::<i8, i8, i8, i8>::new();
+        let plus = Plus::<i8>::new();
         let _graphblas_type = plus.graphblas_type();
     }
 
@@ -675,14 +613,14 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &Divide::<u8, u8, u8, u8>::new(),
+            &Divide::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -700,7 +638,7 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&2).unwrap(), Some(0));
 
         let operator = BinaryOperatorApplier::new(
-            &Divide::<u8, u8, f32, u8>::new(),
+            &Divide::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -721,7 +659,7 @@ mod tests {
         );
 
         let operator = BinaryOperatorApplier::new(
-            &Divide::<u8, u8, f32, f32>::new(),
+            &Divide::<f32>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -753,14 +691,14 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &LDExp::<u8, f32, u8, f32>::new(),
+            &LDExp::<f32>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -791,14 +729,14 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<f64, f64, f64, f64>::new(),
+            &First::<f64>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &ShiftBit::<f64, f32, f32, u8>::new(),
+            &ShiftBit::<u8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
@@ -857,14 +795,14 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let operator = BinaryOperatorApplier::new(
-            &RowIndexFirstArgument::<u8, u8, u8, i64>::new(),
+            &RowIndexFirstArgument::<i64>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
