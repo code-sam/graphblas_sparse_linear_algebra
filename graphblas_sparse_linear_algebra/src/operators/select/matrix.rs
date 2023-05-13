@@ -73,7 +73,7 @@ impl<
     > MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
 {
     pub fn new(
-        selector: &impl IndexUnaryOperator<Matrix, SelectorArgument, Product, EvaluationDomain>,
+        selector: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
@@ -545,7 +545,7 @@ mod tests {
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
-        let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
+        let index_operator = IsValueGreaterThan::<u8>::new();
         let selector = MatrixSelector::new(
             &index_operator,
             &OperatorOptions::new_default(),
@@ -582,7 +582,7 @@ mod tests {
             4
         );
 
-        let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
+        let index_operator = IsValueLessThan::<u8>::new();
         let selector = MatrixSelector::new(
             &index_operator,
             &OperatorOptions::new_default(),

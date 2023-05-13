@@ -29,32 +29,20 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
 unsafe impl<
-        ApplyTo: ValueType,
-        OperatorArgument: ValueType,
-        Product: ValueType,
         EvaluationDomain: ValueType,
-    > Send for IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
+    > Send for IndexUnaryOperatorApplier<EvaluationDomain>
 {
 }
 unsafe impl<
-        ApplyTo: ValueType,
-        OperatorArgument: ValueType,
-        Product: ValueType,
         EvaluationDomain: ValueType,
-    > Sync for IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
+    > Sync for IndexUnaryOperatorApplier<EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
 pub struct IndexUnaryOperatorApplier<
-    ApplyTo: ValueType,
-    OperatorArgument: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 > {
-    _first_argument: PhantomData<ApplyTo>,
-    _second_argument: PhantomData<OperatorArgument>,
-    _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     index_unary_operator: GrB_IndexUnaryOp,
@@ -63,30 +51,21 @@ pub struct IndexUnaryOperatorApplier<
 }
 
 impl<
-        ApplyTo: ValueType,
-        OperatorArgument: ValueType,
-        Product: ValueType,
         EvaluationDomain: ValueType,
-    > IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, EvaluationDomain>
+    > IndexUnaryOperatorApplier<EvaluationDomain>
 {
     pub fn new(
         index_unary_operator: &impl IndexUnaryOperator<
-            ApplyTo,
-            OperatorArgument,
-            Product,
             EvaluationDomain,
         >,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             index_unary_operator: index_unary_operator.graphblas_type(),
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _first_argument: PhantomData,
-            _second_argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
@@ -102,55 +81,52 @@ impl<
     }
 }
 
-pub trait ApplyIndexUnaryOperator<ApplyTo, OperatorArgument, Product, EvaluationDomain>
+pub trait ApplyIndexUnaryOperator<EvaluationDomain>
 where
-    ApplyTo: ValueType,
-    OperatorArgument: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     fn apply_to_vector(
         &self,
-        vector: &SparseVector<ApplyTo>,
+        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
         argument: &EvaluationDomain,
-        product: &mut SparseVector<Product>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_to_vector_with_mask(
         &self,
-        vector: &SparseVector<ApplyTo>,
+        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
         argument: &EvaluationDomain,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
-        matrix: &SparseMatrix<ApplyTo>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         argument: &EvaluationDomain,
-        product: &mut SparseMatrix<Product>,
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_to_matrix_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_to_matrix_with_mask(
         &self,
-        matrix: &SparseMatrix<ApplyTo>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         argument: &EvaluationDomain,
-        product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_apply_index_binary_operator {
     ($value_type: ty, $_implementation_type: ty, $graphblas_function_1: ident, $graphblas_function_2: ident) => {
-        impl<ApplyTo: ValueType, OperatorArgument: ValueType, Product: ValueType>
-            ApplyIndexUnaryOperator<ApplyTo, OperatorArgument, Product, $value_type>
-            for IndexUnaryOperatorApplier<ApplyTo, OperatorArgument, Product, $value_type>
+        impl
+            ApplyIndexUnaryOperator<$value_type>
+            for IndexUnaryOperatorApplier<$value_type>
         {
             fn apply_to_vector(
                 &self,
-                vector: &SparseVector<ApplyTo>,
+                vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
                 argument: &$value_type,
-                product: &mut SparseVector<Product>,
+                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.clone().to_type()?;
@@ -173,12 +149,12 @@ macro_rules! implement_apply_index_binary_operator {
                 Ok(())
             }
 
-            fn apply_to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_to_vector_with_mask(
                 &self,
-                vector: &SparseVector<ApplyTo>,
+                vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
                 argument: &$value_type,
-                product: &mut SparseVector<Product>,
-                mask: &SparseVector<MaskValueType>,
+                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+                mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.clone().to_type()?;
@@ -203,9 +179,9 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_matrix(
                 &self,
-                matrix: &SparseMatrix<ApplyTo>,
+                matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
                 argument: &$value_type,
-                product: &mut SparseMatrix<Product>,
+                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.clone().to_type()?;
@@ -228,12 +204,12 @@ macro_rules! implement_apply_index_binary_operator {
                 Ok(())
             }
 
-            fn apply_to_matrix_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_to_matrix_with_mask(
                 &self,
-                matrix: &SparseMatrix<ApplyTo>,
+                matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
                 argument: &$value_type,
-                product: &mut SparseMatrix<Product>,
-                mask: &SparseMatrix<MaskValueType>,
+                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+                mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.clone().to_type()?;
@@ -302,7 +278,7 @@ mod tests {
         let mut product_matrix = SparseMatrix::<f32>::new(&context, &matrix_size).unwrap();
 
         let operator = IndexUnaryOperatorApplier::new(
-            &IsValueGreaterThan::<u8, i8, f32, i8>::new(),
+            &IsValueGreaterThan::<i8>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );

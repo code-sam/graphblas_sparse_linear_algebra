@@ -66,7 +66,7 @@ impl<
     > VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
 {
     pub fn new(
-        selector: &impl IndexUnaryOperator<Vector, SelectorArgument, Product, EvaluationDomain>,
+        selector: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
@@ -206,7 +206,7 @@ mod tests {
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
+        let index_operator = IsValueGreaterThan::<u8>::new();
         let selector = VectorSelector::new(
             &index_operator,
             &OperatorOptions::new_default(),
@@ -223,7 +223,7 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
         assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
-        let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
+        let index_operator = IsValueLessThan::<u8>::new();
         let selector = VectorSelector::new(
             &index_operator,
             &OperatorOptions::new_default(),
@@ -259,7 +259,7 @@ mod tests {
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
+        let index_operator = IsValueGreaterThan::<u8>::new();
         let selector = VectorSelector::new(
             &index_operator,
             &OperatorOptions::new_default(),
@@ -276,7 +276,7 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
         assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
-        let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
+        let index_operator = IsValueLessThan::<u8>::new();
         let selector = VectorSelector::new(
             &index_operator,
             &OperatorOptions::new_default(),

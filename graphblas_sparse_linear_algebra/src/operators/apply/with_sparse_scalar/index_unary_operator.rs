@@ -65,7 +65,7 @@ impl<
         SecondArgument,
         Product,
         EvaluationDomain,
-    > for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+    > for IndexUnaryOperatorApplier<EvaluationDomain>
 {
     fn apply_to_vector(
         &self,
@@ -212,7 +212,7 @@ mod tests {
         let mut product_matrix = SparseMatrix::<f32>::new(&context, &matrix_size).unwrap();
 
         let operator = IndexUnaryOperatorApplier::new(
-            &IsValueGreaterThan::<u8, i8, f32, i16>::new(),
+            &IsValueGreaterThan::<i16>::new(),
             &OperatorOptions::new_default(),
             &Assignment::new(),
         );
