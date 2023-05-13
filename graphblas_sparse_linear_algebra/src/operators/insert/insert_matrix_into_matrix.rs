@@ -34,7 +34,7 @@ pub struct InsertMatrixIntoMatrix<MatrixToInsertInto: ValueType, MatrixToInsert:
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _matrix_to_insert: PhantomData<MatrixToInsert>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -45,9 +45,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<
-            MatrixToInsert,
-        >, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsert>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -379,10 +377,8 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..10).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertMatrixIntoMatrix::new(
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let insert_operator =
+            InsertMatrixIntoMatrix::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         insert_operator
             .apply(

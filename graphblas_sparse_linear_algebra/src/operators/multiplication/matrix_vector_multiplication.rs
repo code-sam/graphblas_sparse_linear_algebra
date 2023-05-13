@@ -50,7 +50,7 @@ where
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp,
-    semiring: GrB_Semiring,    // defines '+' and '*' for A*B (not optional for GrB_mxm)
+    semiring: GrB_Semiring, // defines '+' and '*' for A*B (not optional for GrB_mxm)
     options: GrB_Descriptor,
 }
 

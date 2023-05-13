@@ -238,10 +238,8 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = vec![0, 2];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor = MatrixColumnExtractor::new(
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let extractor =
+            MatrixColumnExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         extractor
             .apply(&matrix, &0, &indices_to_extract, &mut column_vector)

@@ -421,9 +421,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 context: &Arc<Context>,
                 size: &Size,
                 elements: &MatrixElementList<$value_type>,
-                reduction_operator_for_duplicates: &impl BinaryOperator<
-                    $value_type,
-                >,
+                reduction_operator_for_duplicates: &impl BinaryOperator<$value_type>,
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints

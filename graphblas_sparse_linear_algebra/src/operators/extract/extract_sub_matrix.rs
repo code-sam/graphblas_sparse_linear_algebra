@@ -362,10 +362,8 @@ mod tests {
         let columns_to_extract: Vec<ElementIndex> = (0..6).collect();
         let columns_to_extract = ElementIndexSelector::Index(&columns_to_extract);
 
-        let extractor = SubMatrixExtractor::new(
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let extractor =
+            SubMatrixExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         extractor
             .apply(

@@ -144,10 +144,8 @@ mod tests {
 
         let mut matrix_transpose = SparseMatrix::<u8>::new(&context, &(2, 2).into()).unwrap();
 
-        let transpose_operator = MatrixTranspose::new(
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let transpose_operator =
+            MatrixTranspose::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         transpose_operator
             .apply(&matrix, &mut matrix_transpose)

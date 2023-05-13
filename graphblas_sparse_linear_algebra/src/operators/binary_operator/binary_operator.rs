@@ -11,7 +11,8 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
 use crate::value_type::ValueType;
 
 pub trait AccumulatorBinaryOperator<T>
-where T: ValueType,
+where
+    T: ValueType,
 {
     fn accumulator_graphblas_type(&self) -> GrB_BinaryOp;
 }
@@ -31,17 +32,13 @@ macro_rules! implement_binary_operator {
         $graphblas_operator_name:ident,
         $evaluation_domain: ty
     ) => {
-        impl BinaryOperator<$evaluation_domain>
-            for $operator_name<$evaluation_domain>
-        {
+        impl BinaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl AccumulatorBinaryOperator<$evaluation_domain>
-            for $operator_name<$evaluation_domain>
-        {
+        impl AccumulatorBinaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
@@ -63,17 +60,13 @@ macro_rules! implement_binary_operator_with_bool_return_type {
         $graphblas_operator_name:ident,
         $evaluation_domain: ty
     ) => {
-        impl BinaryOperator<$evaluation_domain>
-            for $operator_name<$evaluation_domain>
-        {
+        impl BinaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl AccumulatorBinaryOperator<$evaluation_domain>
-            for $operator_name<$evaluation_domain>
-        {
+        impl AccumulatorBinaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
@@ -87,10 +80,7 @@ macro_rules! implement_binary_operator_with_bool_return_type {
             }
         }
 
-        impl ReturnsBool
-            for $operator_name<$evaluation_domain>
-        {
-        }
+        impl ReturnsBool for $operator_name<$evaluation_domain> {}
     };
 }
 
@@ -105,9 +95,7 @@ macro_rules! implement_binary_operator_for_boolean {
             }
         }
 
-        impl AccumulatorBinaryOperator<bool>
-            for $operator_name<bool>
-        {
+        impl AccumulatorBinaryOperator<bool> for $operator_name<bool> {
             fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
                 unsafe { $graphblas_operator_name }
             }
@@ -138,9 +126,7 @@ macro_rules! define_binary_operator {
 }
 
 define_binary_operator!(Assignment);
-impl<T: ValueType> AccumulatorBinaryOperator<T>
-    for Assignment<T>
-{
+impl<T: ValueType> AccumulatorBinaryOperator<T> for Assignment<T> {
     fn accumulator_graphblas_type(&self) -> GrB_BinaryOp {
         ptr::null_mut()
     }

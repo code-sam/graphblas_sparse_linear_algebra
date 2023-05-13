@@ -319,7 +319,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus, Assignment};
+    use crate::operators::binary_operator::{Assignment, First, Plus};
     use crate::operators::options::OperatorOptions;
 
     #[test]

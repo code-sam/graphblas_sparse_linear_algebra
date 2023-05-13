@@ -56,9 +56,7 @@ pub trait SortSparseMatrix<T: ValueType, B: BinaryOperator<T>> {
     ) -> Result<SparseMatrix<ElementIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B>
-    for SparseMatrix<T>
-{
+impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> for SparseMatrix<T> {
     fn sort_rows(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError> {
         self.context_ref().call(
             || unsafe {

@@ -356,9 +356,7 @@ where
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &impl BinaryOperator<
-            EvaluationDomain,
-        >,
+        multiplication_operator: &impl BinaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {

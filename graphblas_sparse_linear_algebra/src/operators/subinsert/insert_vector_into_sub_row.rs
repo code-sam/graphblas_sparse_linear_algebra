@@ -47,9 +47,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<
-            MatrixToInsertInto,
-        >,
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),

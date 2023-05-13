@@ -357,9 +357,7 @@ where
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &impl BinaryOperator<
-            EvaluationDomain,
-        >, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl BinaryOperator<EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
