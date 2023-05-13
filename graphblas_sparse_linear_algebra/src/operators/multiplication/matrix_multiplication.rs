@@ -64,7 +64,7 @@ where
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        semiring: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
+        semiring: &impl Semiring<EvaluationDomain>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn create_matrix_multiplier() {
-        let semiring = PlusTimes::<i64, i64, i64, i64>::new();
+        let semiring = PlusTimes::<i64>::new();
         let options = OperatorOptions::new_default();
         let _matrix_multiplier = MatrixMultiplicationOperator::<i64, i64, i64, i64>::new(
             &semiring,
@@ -206,7 +206,7 @@ mod tests {
     fn test_multiplication_with_plus_times() {
         let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
-        let semiring = PlusTimes::<f32, f32, f32, f32>::new();
+        let semiring = PlusTimes::<f32>::new();
         let options = OperatorOptions::new_default();
         let matrix_multiplier = MatrixMultiplicationOperator::<f32, f32, f32, f32>::new(
             &semiring,

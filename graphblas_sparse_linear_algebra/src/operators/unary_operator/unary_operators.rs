@@ -21,18 +21,13 @@ macro_rules! implement_unary_operator {
         $graphblas_operator_name:ident,
         $evaluation_domain:ty
     ) => {
-        impl
-            UnaryOperator<$evaluation_domain>
-            for $operator_name<$evaluation_domain>
-        {
+        impl UnaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn graphblas_type(&self) -> GrB_UnaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl
-            $operator_name<$evaluation_domain>
-        {
+        impl $operator_name<$evaluation_domain> {
             pub fn new() -> Self {
                 Self {
                     _evaluation_domain: PhantomData,
@@ -45,8 +40,7 @@ macro_rules! implement_unary_operator {
 macro_rules! define_unary_operator {
     ($identifier: ident) => {
         #[derive(Debug, Clone)]
-        pub struct $identifier<EvaluationDomain: ValueType>
-        {
+        pub struct $identifier<EvaluationDomain: ValueType> {
             _evaluation_domain: PhantomData<EvaluationDomain>,
         }
     };

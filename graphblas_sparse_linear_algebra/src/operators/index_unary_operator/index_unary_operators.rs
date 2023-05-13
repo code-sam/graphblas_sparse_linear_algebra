@@ -20,18 +20,13 @@ macro_rules! implement_index_unary_operator {
         $graphblas_operator_name:ident,
         $evaluation_domain:ty
     ) => {
-        impl
-            IndexUnaryOperator<$evaluation_domain>
-            for $operator_name<$evaluation_domain>
-        {
+        impl IndexUnaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn graphblas_type(&self) -> GrB_IndexUnaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl
-            $operator_name<$evaluation_domain>
-        {
+        impl $operator_name<$evaluation_domain> {
             pub fn new() -> Self {
                 Self {
                     _evaluation_domain: PhantomData,
@@ -45,9 +40,7 @@ macro_rules! implement_generic_index_unary_operator {
     ($operator_name:ident,
         $graphblas_operator_name:ident
     ) => {
-        impl<
-                EvaluationDomain: ValueType,
-            > IndexUnaryOperator<EvaluationDomain>
+        impl<EvaluationDomain: ValueType> IndexUnaryOperator<EvaluationDomain>
             for $operator_name<EvaluationDomain>
         {
             fn graphblas_type(&self) -> GrB_IndexUnaryOp {
@@ -55,10 +48,7 @@ macro_rules! implement_generic_index_unary_operator {
             }
         }
 
-        impl<
-                EvaluationDomain: ValueType,
-            > $operator_name<EvaluationDomain>
-        {
+        impl<EvaluationDomain: ValueType> $operator_name<EvaluationDomain> {
             pub fn new() -> Self {
                 Self {
                     _evaluation_domain: PhantomData,
@@ -71,9 +61,7 @@ macro_rules! implement_generic_index_unary_operator {
 macro_rules! define_index_unary_operator {
     ($identifier: ident) => {
         #[derive(Debug, Clone)]
-        pub struct $identifier<
-            EvaluationDomain: ValueType,
-        > {
+        pub struct $identifier<EvaluationDomain: ValueType> {
             _evaluation_domain: PhantomData<EvaluationDomain>,
         }
     };

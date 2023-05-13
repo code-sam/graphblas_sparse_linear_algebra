@@ -18,50 +18,20 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync
-    for ElementWiseVectorAdditionSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+unsafe impl<EvaluationDomain: ValueType> Sync
+    for ElementWiseVectorAdditionSemiringOperator<EvaluationDomain>
 {
 }
-unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send
-    for ElementWiseVectorAdditionSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+unsafe impl<EvaluationDomain: ValueType> Send
+    for ElementWiseVectorAdditionSemiringOperator<EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorAdditionSemiringOperator<
-    Multiplier,
-    Multiplicant,
-    Product,
-    EvaluationDomain,
-> where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+pub struct ElementWiseVectorAdditionSemiringOperator<EvaluationDomain>
+where
     EvaluationDomain: ValueType,
 {
-    _multiplier: PhantomData<Multiplier>,
-    _multiplicant: PhantomData<Multiplicant>,
-    _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp,
@@ -69,27 +39,20 @@ pub struct ElementWiseVectorAdditionSemiringOperator<
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    ElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+impl<EvaluationDomain> ElementWiseVectorAdditionSemiringOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Semiring<EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _multiplier: PhantomData,
-            _multiplicant: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
@@ -105,46 +68,31 @@ where
     }
 }
 
-pub trait ApplyElementWiseVectorAdditionSemiringOperator<
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
->
-{
+pub trait ApplyElementWiseVectorAdditionSemiringOperator {
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > ApplyElementWiseVectorAdditionSemiringOperator<Multiplier, Multiplicant, Product>
-    for ElementWiseVectorAdditionSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionSemiringOperator
+    for ElementWiseVectorAdditionSemiringOperator<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -166,12 +114,12 @@ impl<
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -312,35 +260,17 @@ impl<T: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<T>
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync
-    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+unsafe impl<EvaluationDomain: ValueType> Sync
+    for ElementWiseVectorAdditionBinaryOperator<EvaluationDomain>
 {
 }
-unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send
-    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+unsafe impl<EvaluationDomain: ValueType> Send
+    for ElementWiseVectorAdditionBinaryOperator<EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorAdditionBinaryOperator<
-    Multiplier,
-    Multiplicant,
-    Product,
-    EvaluationDomain,
-> {
-    _multiplier: PhantomData<Multiplier>,
-    _multiplicant: PhantomData<Multiplicant>,
-    _product: PhantomData<Product>,
+pub struct ElementWiseVectorAdditionBinaryOperator<EvaluationDomain> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp,
@@ -348,27 +278,20 @@ pub struct ElementWiseVectorAdditionBinaryOperator<
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+impl<EvaluationDomain> ElementWiseVectorAdditionBinaryOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     pub fn new(
         multiplication_operator: &impl BinaryOperator<EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _multiplier: PhantomData,
-            _multiplicant: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
@@ -384,41 +307,31 @@ where
     }
 }
 
-pub trait ApplyElementWiseVectorAdditionBinaryOperator<
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
->
-{
+pub trait ApplyElementWiseVectorAdditionBinaryOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > ApplyElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product>
-    for ElementWiseVectorAdditionBinaryOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<EvaluationDomain>
+    for ElementWiseVectorAdditionBinaryOperator<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -440,12 +353,12 @@ impl<
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -483,20 +396,16 @@ mod tests {
     fn create_vector_addition_operator() {
         let operator = Times::<i64>::new();
         let options = OperatorOptions::new_default();
-        let _element_wise_matrix_multiplier =
-            ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64, i64>::new(
-                &operator,
-                &options,
-                &Assignment::<i64>::new(),
-            );
+        let _element_wise_matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i64>::new(
+            &operator,
+            &options,
+            &Assignment::<i64>::new(),
+        );
 
         let accumulator = Times::<i64>::new();
 
-        let _matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i64, i64, i64, i64>::new(
-            &operator,
-            &options,
-            &accumulator,
-        );
+        let _matrix_multiplier =
+            ElementWiseVectorAdditionBinaryOperator::<i64>::new(&operator, &options, &accumulator);
     }
 
     #[test]
@@ -505,12 +414,11 @@ mod tests {
 
         let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();
-        let element_wise_vector_multiplier =
-            ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
-                &operator,
-                &options,
-                &Assignment::<i32>::new(),
-            );
+        let element_wise_vector_multiplier = ElementWiseVectorAdditionBinaryOperator::<i32>::new(
+            &operator,
+            &options,
+            &Assignment::<i32>::new(),
+        );
 
         let length = 4;
 
@@ -568,12 +476,8 @@ mod tests {
 
         // test the use of an accumulator
         let accumulator = Plus::<i32>::new();
-        let matrix_multiplier_with_accumulator = ElementWiseVectorAdditionBinaryOperator::<
-            i32,
-            i32,
-            i32,
-            i32,
-        >::new(&operator, &options, &accumulator);
+        let matrix_multiplier_with_accumulator =
+            ElementWiseVectorAdditionBinaryOperator::<i32>::new(&operator, &options, &accumulator);
 
         matrix_multiplier_with_accumulator
             .apply(&multiplier, &multiplicant, &mut product)
@@ -598,7 +502,7 @@ mod tests {
         )
         .unwrap();
 
-        let matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i32, i32, i32, i32>::new(
+        let matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::<i32>::new(
             &operator,
             &options,
             &Assignment::<i32>::new(),

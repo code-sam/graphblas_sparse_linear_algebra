@@ -18,50 +18,20 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync
-    for ElementWiseVectorMultiplicationSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+unsafe impl<EvaluationDomain: ValueType> Sync
+    for ElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain>
 {
 }
-unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send
-    for ElementWiseVectorMultiplicationSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+unsafe impl<EvaluationDomain: ValueType> Send
+    for ElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
-pub struct ElementWiseVectorMultiplicationSemiringOperator<
-    Multiplier,
-    Multiplicant,
-    Product,
-    EvaluationDomain,
-> where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+pub struct ElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain>
+where
     EvaluationDomain: ValueType,
 {
-    _multiplier: PhantomData<Multiplier>,
-    _multiplicant: PhantomData<Multiplicant>,
-    _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp,
@@ -69,32 +39,20 @@ pub struct ElementWiseVectorMultiplicationSemiringOperator<
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    ElementWiseVectorMultiplicationSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+impl<EvaluationDomain> ElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &impl Semiring<Multiplier, Multiplicant, Product, EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Semiring<EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _multiplier: PhantomData,
-            _multiplicant: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
@@ -110,46 +68,31 @@ where
     }
 }
 
-pub trait ApplyElementWiseVectorMultiplicationSemiringOperator<
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
->
-{
+pub trait ApplyElementWiseVectorMultiplicationSemiringOperator {
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > ApplyElementWiseVectorMultiplicationSemiringOperator<Multiplier, Multiplicant, Product>
-    for ElementWiseVectorMultiplicationSemiringOperator<
-        Multiplier,
-        Multiplicant,
-        Product,
-        EvaluationDomain,
-    >
+impl<EvaluationDomain: ValueType> ApplyElementWiseVectorMultiplicationSemiringOperator
+    for ElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -171,12 +114,12 @@ impl<
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseVector<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 

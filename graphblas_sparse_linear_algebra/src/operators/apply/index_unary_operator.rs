@@ -28,21 +28,11 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        EvaluationDomain: ValueType,
-    > Send for IndexUnaryOperatorApplier<EvaluationDomain>
-{
-}
-unsafe impl<
-        EvaluationDomain: ValueType,
-    > Sync for IndexUnaryOperatorApplier<EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for IndexUnaryOperatorApplier<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for IndexUnaryOperatorApplier<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct IndexUnaryOperatorApplier<
-    EvaluationDomain: ValueType,
-> {
+pub struct IndexUnaryOperatorApplier<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     index_unary_operator: GrB_IndexUnaryOp,
@@ -50,14 +40,9 @@ pub struct IndexUnaryOperatorApplier<
     options: GrB_Descriptor,
 }
 
-impl<
-        EvaluationDomain: ValueType,
-    > IndexUnaryOperatorApplier<EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> IndexUnaryOperatorApplier<EvaluationDomain> {
     pub fn new(
-        index_unary_operator: &impl IndexUnaryOperator<
-            EvaluationDomain,
-        >,
+        index_unary_operator: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
@@ -118,10 +103,7 @@ where
 
 macro_rules! implement_apply_index_binary_operator {
     ($value_type: ty, $_implementation_type: ty, $graphblas_function_1: ident, $graphblas_function_2: ident) => {
-        impl
-            ApplyIndexUnaryOperator<$value_type>
-            for IndexUnaryOperatorApplier<$value_type>
-        {
+        impl ApplyIndexUnaryOperator<$value_type> for IndexUnaryOperatorApplier<$value_type> {
             fn apply_to_vector(
                 &self,
                 vector: &(impl GraphblasSparseVectorTrait + ContextTrait),

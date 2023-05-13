@@ -18,19 +18,11 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<EvaluationDomain: ValueType> Send
-    for UnaryOperatorApplier<EvaluationDomain>
-{
-}
-unsafe impl<EvaluationDomain: ValueType> Sync
-    for UnaryOperatorApplier<EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for UnaryOperatorApplier<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for UnaryOperatorApplier<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct UnaryOperatorApplier<
-    EvaluationDomain: ValueType,
-> {
+pub struct UnaryOperatorApplier<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     unary_operator: GrB_UnaryOp,
@@ -38,9 +30,7 @@ pub struct UnaryOperatorApplier<
     options: GrB_Descriptor,
 }
 
-impl<EvaluationDomain: ValueType>
-    UnaryOperatorApplier<EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> UnaryOperatorApplier<EvaluationDomain> {
     pub fn new(
         unary_operator: &impl UnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
@@ -97,8 +87,7 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<EvaluationDomain: ValueType>
-    ApplyUnaryOperator<EvaluationDomain>
+impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
     for UnaryOperatorApplier<EvaluationDomain>
 {
     fn apply_to_vector(
