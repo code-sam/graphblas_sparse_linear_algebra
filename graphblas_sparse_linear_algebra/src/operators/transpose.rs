@@ -13,7 +13,7 @@ use super::binary_operator::AccumulatorBinaryOperator;
 #[derive(Debug, Clone)]
 pub struct MatrixTranspose<Product>
 where
-    Product: ValueType
+    Product: ValueType,
 {
     _product: PhantomData<Product>,
 
@@ -29,7 +29,7 @@ unsafe impl<Product: ValueType> Sync for MatrixTranspose<Product> {}
 
 impl<Product> MatrixTranspose<Product>
 where
-    Product: ValueType
+    Product: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -39,7 +39,7 @@ where
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _product: PhantomData
+            _product: PhantomData,
         }
     }
 }
@@ -59,9 +59,7 @@ pub trait TransposeMatrix<Product: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Product: ValueType> TransposeMatrix<Product>
-    for MatrixTranspose<Product>
-{
+impl<Product: ValueType> TransposeMatrix<Product> for MatrixTranspose<Product> {
     fn apply(
         &self,
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),

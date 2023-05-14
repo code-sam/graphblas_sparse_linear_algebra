@@ -1,14 +1,14 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::binary_operator::{AccumulatorBinaryOperator, BinaryOperator};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::semiring::Semiring;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_vxm,
@@ -137,9 +137,12 @@ impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::collections::sparse_matrix::{
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    };
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

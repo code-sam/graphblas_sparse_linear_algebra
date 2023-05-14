@@ -1,9 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_matrix::{
-    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
-};
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrixTrait};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
@@ -11,8 +9,8 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
 
@@ -200,7 +198,9 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Co
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_matrix::{
+        FromMatrixElementList, MatrixElementList, SparseMatrix,
+    };
     use crate::collections::sparse_vector::GetVectorElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

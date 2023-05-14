@@ -2,13 +2,13 @@ use std::ptr;
 
 use std::marker::PhantomData;
 
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_kronecker_BinaryOp, GrB_Matrix_kronecker_Monoid,
@@ -20,15 +20,11 @@ use super::binary_operator::AccumulatorBinaryOperator;
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        EvaluationDomain: ValueType,
-    > Send
+unsafe impl<EvaluationDomain: ValueType> Send
     for SemiringKroneckerProductOperator<EvaluationDomain>
 {
 }
-unsafe impl<
-        EvaluationDomain: ValueType,
-    > Sync
+unsafe impl<EvaluationDomain: ValueType> Sync
     for SemiringKroneckerProductOperator<EvaluationDomain>
 {
 }
@@ -45,8 +41,7 @@ where
     options: GrB_Descriptor,
 }
 
-impl<EvaluationDomain>
-    SemiringKroneckerProductOperator<EvaluationDomain>
+impl<EvaluationDomain> SemiringKroneckerProductOperator<EvaluationDomain>
 where
     EvaluationDomain: ValueType,
 {
@@ -65,10 +60,7 @@ where
     }
 }
 
-pub trait SemiringKroneckerProduct<
-    EvaluationDomain: ValueType,
->
-{
+pub trait SemiringKroneckerProduct<EvaluationDomain: ValueType> {
     fn apply(
         &self,
         multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -85,9 +77,7 @@ pub trait SemiringKroneckerProduct<
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        EvaluationDomain: ValueType,
-    > SemiringKroneckerProduct<EvaluationDomain>
+impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
     for SemiringKroneckerProductOperator<EvaluationDomain>
 {
     fn apply(
@@ -187,7 +177,9 @@ pub trait MonoidKroneckerProduct<EvaluationDomain: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain> for MonoidKroneckerProductOperator<EvaluationDomain> {
+impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
+    for MonoidKroneckerProductOperator<EvaluationDomain>
+{
     fn apply(
         &self,
         multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -251,8 +243,7 @@ pub struct BinaryOperatorKroneckerProductOperator<EvaluationDomain> {
     options: GrB_Descriptor,
 }
 
-impl<EvaluationDomain>
-    BinaryOperatorKroneckerProductOperator<EvaluationDomain>
+impl<EvaluationDomain> BinaryOperatorKroneckerProductOperator<EvaluationDomain>
 where
     EvaluationDomain: ValueType,
 {
@@ -271,10 +262,7 @@ where
     }
 }
 
-pub trait BinaryOperatorKroneckerProduct<
-    EvaluationDomain: ValueType,
->
-{
+pub trait BinaryOperatorKroneckerProduct<EvaluationDomain: ValueType> {
     fn apply(
         &self,
         multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -291,8 +279,7 @@ pub trait BinaryOperatorKroneckerProduct<
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<EvaluationDomain: ValueType>
-    BinaryOperatorKroneckerProduct<EvaluationDomain>
+impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomain>
     for BinaryOperatorKroneckerProductOperator<EvaluationDomain>
 {
     fn apply(
@@ -358,19 +345,19 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First, Times};
 
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
+        FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList,
+        Size, SparseMatrix,
     };
 
     #[test]
     fn create_matrix_multiplier() {
         let operator = Times::<i64>::new();
         let options = OperatorOptions::new_default();
-        let _element_wise_matrix_multiplier =
-            BinaryOperatorKroneckerProductOperator::<i64>::new(
-                &operator,
-                &options,
-                &Assignment::<i64>::new(),
-            );
+        let _element_wise_matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64>::new(
+            &operator,
+            &options,
+            &Assignment::<i64>::new(),
+        );
 
         let _context = Context::init_ready(Mode::NonBlocking).unwrap();
 
@@ -380,11 +367,8 @@ mod tests {
 
         let accumulator = Times::<i64>::new();
 
-        let _matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64>::new(
-            &operator,
-            &options,
-            &accumulator,
-        );
+        let _matrix_multiplier =
+            BinaryOperatorKroneckerProductOperator::<i64>::new(&operator, &options, &accumulator);
     }
 
     #[test]
@@ -393,12 +377,11 @@ mod tests {
 
         let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();
-        let element_wise_matrix_multiplier =
-            BinaryOperatorKroneckerProductOperator::<i32>::new(
-                &operator,
-                &options,
-                &Assignment::<i32>::new(),
-            );
+        let element_wise_matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i32>::new(
+            &operator,
+            &options,
+            &Assignment::<i32>::new(),
+        );
 
         let height = 2;
         let width = 2;

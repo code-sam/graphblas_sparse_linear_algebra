@@ -5,7 +5,6 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::{AccumulatorBinaryOperator, Assignment};
 use crate::operators::{
-    binary_operator::BinaryOperator,
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
     options::OperatorOptions,
     transpose::{MatrixTranspose, TransposeMatrix},
