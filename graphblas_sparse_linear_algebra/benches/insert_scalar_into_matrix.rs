@@ -96,7 +96,7 @@ fn bench_test(context: Arc<Context>) {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
-                &mask.clone().into(),
+                &mask.clone(),
             )
             .unwrap();
     }

@@ -20,31 +20,22 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Send
-    for SubVectorExtractor<Matrix, SubMatrix>
-{
-}
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Sync
-    for SubVectorExtractor<Matrix, SubMatrix>
-{
-}
+unsafe impl<SubVector: ValueType> Send for SubVectorExtractor<SubVector> {}
+unsafe impl<SubVector: ValueType> Sync for SubVectorExtractor<SubVector> {}
 
 #[derive(Debug, Clone)]
-pub struct SubVectorExtractor<Argument, Product>
+pub struct SubVectorExtractor<Product>
 where
-    Argument: ValueType,
     Product: ValueType,
 {
-    _argument: PhantomData<Argument>,
     _product: PhantomData<Product>,
 
     accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Vector, SubVector> SubVectorExtractor<Vector, SubVector>
+impl<SubVector> SubVectorExtractor<SubVector>
 where
-    Vector: ValueType,
     SubVector: ValueType,
 {
     pub fn new(
@@ -55,36 +46,33 @@ where
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _argument: PhantomData,
             _product: PhantomData,
         }
     }
 }
 
-pub trait ExtractSubVector<Vector: ValueType, SubVector: ValueType> {
+pub trait ExtractSubVector<SubVector: ValueType> {
     fn apply(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// Length of the mask must equal length of sub_vector
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
-        mask: &SparseVector<MaskValueType>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Vector: ValueType, SubVector: ValueType> ExtractSubVector<Vector, SubVector>
-    for SubVectorExtractor<Vector, SubVector>
-{
+impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<SubVector> {
     fn apply(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -140,12 +128,12 @@ impl<Vector: ValueType, SubVector: ValueType> ExtractSubVector<Vector, SubVector
     }
 
     /// Length of the mask must equal length of sub_vector
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
-        mask: &SparseVector<MaskValueType>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 

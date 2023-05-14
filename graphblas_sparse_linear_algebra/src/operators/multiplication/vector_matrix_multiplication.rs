@@ -17,36 +17,20 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send
-    for VectorMatrixMultiplicationOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+unsafe impl<EvaluationDomain: ValueType> Send
+    for VectorMatrixMultiplicationOperator<EvaluationDomain>
 {
 }
-unsafe impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync
-    for VectorMatrixMultiplicationOperator<FirstArgument, SecondArgument, Product, EvaluationDomain>
+unsafe impl<EvaluationDomain: ValueType> Sync
+    for VectorMatrixMultiplicationOperator<EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
-pub struct VectorMatrixMultiplicationOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+pub struct VectorMatrixMultiplicationOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
-    _multiplier: PhantomData<Multiplier>,
-    _multiplicant: PhantomData<Multiplicant>,
-    _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp,
@@ -54,65 +38,52 @@ where
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    VectorMatrixMultiplicationOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+impl<EvaluationDomain> VectorMatrixMultiplicationOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     pub fn new(
         semiring: &impl Semiring<EvaluationDomain>, // defines '+' and '*' for A*B (not optional for GrB_mxm)
         options: OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             semiring: semiring.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _multiplier: PhantomData,
-            _multiplicant: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait MultiplyVectorByMatrix<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType>
-{
+pub trait MultiplyVectorByMatrix {
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > MultiplyVectorByMatrix<Multiplier, Multiplicant, Product>
-    for VectorMatrixMultiplicationOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix
+    for VectorMatrixMultiplicationOperator<EvaluationDomain>
 {
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -134,12 +105,12 @@ impl<
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseVector<MaskValueType>,
-        multiplier: &SparseVector<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseVector<Product>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -182,7 +153,7 @@ mod tests {
 
         let semiring = PlusTimes::<f32>::new();
         let options = OperatorOptions::new_default();
-        let matrix_multiplier = VectorMatrixMultiplicationOperator::<f32, f32, f32, f32>::new(
+        let matrix_multiplier = VectorMatrixMultiplicationOperator::<f32>::new(
             &semiring,
             options.clone(),
             &Assignment::new(),
@@ -246,12 +217,11 @@ mod tests {
 
         // test the use of an accumulator
         let accumulator = Plus::<f32>::new();
-        let matrix_multiplier_with_accumulator =
-            VectorMatrixMultiplicationOperator::<f32, f32, f32, f32>::new(
-                &semiring,
-                options.clone(),
-                &accumulator,
-            );
+        let matrix_multiplier_with_accumulator = VectorMatrixMultiplicationOperator::<f32>::new(
+            &semiring,
+            options.clone(),
+            &accumulator,
+        );
 
         matrix_multiplier_with_accumulator
             .apply(&multiplier, &multiplicant, &mut product)
@@ -271,7 +241,7 @@ mod tests {
         )
         .unwrap();
 
-        let matrix_multiplier = VectorMatrixMultiplicationOperator::<f32, f32, f32, f32>::new(
+        let matrix_multiplier = VectorMatrixMultiplicationOperator::<f32>::new(
             &semiring,
             options.clone(),
             &Assignment::new(),

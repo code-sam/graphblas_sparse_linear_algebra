@@ -31,33 +31,11 @@ use crate::index::{DiagonalIndex, DiagonalIndexConversion, GraphblasDiagionalInd
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Matrix: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send for MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
-{
-}
-unsafe impl<
-        Matrix: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync for MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for MatrixSelector<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for MatrixSelector<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct MatrixSelector<
-    Matrix: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
-> {
-    _matrix: PhantomData<Matrix>,
-    _second_argument: PhantomData<SelectorArgument>,
-    _product: PhantomData<Product>,
+pub struct MatrixSelector<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
@@ -65,64 +43,46 @@ pub struct MatrixSelector<
     options: GrB_Descriptor,
 }
 
-impl<
-        Matrix: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> MatrixSelector<EvaluationDomain> {
     pub fn new(
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             selector: selector.graphblas_type(),
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _matrix: PhantomData,
-            _second_argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait SelectFromMatrix<
-    Matrix: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
->
-{
+pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        argument: &SparseMatrix<Matrix>,
-        product: &mut SparseMatrix<Product>,
-        selector_argument: &SelectorArgument,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        argument: &SparseMatrix<Matrix>,
-        product: &mut SparseMatrix<Product>,
-        selector_argument: &SelectorArgument,
-        mask: &SparseMatrix<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_select_from_matrix {
-    ($selector_argument_type:ty, $_graphblas_implementatio_type:ty, $graphblas_operator:ident) => {
-        impl<Matrix: ValueType, Product: ValueType>
-            SelectFromMatrix<Matrix, $selector_argument_type, Product, $selector_argument_type>
-            for MatrixSelector<Matrix, $selector_argument_type, Product, $selector_argument_type>
-        {
+    ($selector_argument_type:ty, $_graphblas_implementation_type:ty, $graphblas_operator:ident) => {
+        impl SelectFromMatrix<$selector_argument_type> for MatrixSelector<$selector_argument_type> {
             fn apply(
                 &self,
-                argument: &SparseMatrix<Matrix>,
-                product: &mut SparseMatrix<Product>,
+                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
@@ -144,12 +104,12 @@ macro_rules! implement_select_from_matrix {
                 Ok(())
             }
 
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
-                argument: &SparseMatrix<Matrix>,
-                product: &mut SparseMatrix<Product>,
+                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
-                mask: &SparseMatrix<MaskValueType>,
+                mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
                 argument.context_ref().call(
@@ -216,7 +176,7 @@ mod tests {
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsOnOrBelowDiagonal::new();
-        let selector = MatrixSelector::<u8, i8, u8, i8>::new(
+        let selector = MatrixSelector::<i8>::new(
             &index_operator,
             &OperatorOptions::new_default(),
             &Assignment::new(),

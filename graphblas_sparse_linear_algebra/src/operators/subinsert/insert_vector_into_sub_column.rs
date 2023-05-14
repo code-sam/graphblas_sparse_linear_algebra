@@ -22,29 +22,20 @@ use crate::value_type::{AsBoolean, ValueType};
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Send
-    for InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
-{
-}
-unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Sync
-    for InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
-{
-}
+unsafe impl<MatrixToInsertInto: ValueType> Send for InsertVectorIntoSubColumn<MatrixToInsertInto> {}
+unsafe impl<MatrixToInsertInto: ValueType> Sync for InsertVectorIntoSubColumn<MatrixToInsertInto> {}
 
 #[derive(Debug, Clone)]
-pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
+pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType> {
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
-    _vector_to_insert: PhantomData<VectorToInsert>,
 
     accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<MatrixToInsertInto, VectorToInsert>
-    InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
+impl<MatrixToInsertInto> InsertVectorIntoSubColumn<MatrixToInsertInto>
 where
     MatrixToInsertInto: ValueType,
-    VectorToInsert: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
@@ -55,15 +46,13 @@ where
             options: options.to_graphblas_descriptor(),
 
             _matrix_to_insert_into: PhantomData,
-            _vector_to_insert: PhantomData,
         }
     }
 }
 
-pub trait InsertVectorIntoSubColumnTrait<MatrixToInsertInto, VectorToInsert>
+pub trait InsertVectorIntoSubColumnTrait<MatrixToInsertInto>
 where
     MatrixToInsertInto: ValueType,
-    VectorToInsert: ValueType,
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -71,23 +60,22 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
-        vector_to_insert: &SparseVector<VectorToInsert>,
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
-        vector_to_insert: &SparseVector<VectorToInsert>,
-        mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType>
-    InsertVectorIntoSubColumnTrait<MatrixToInsertInto, VectorToInsert>
-    for InsertVectorIntoSubColumn<MatrixToInsertInto, VectorToInsert>
+impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInsertInto>
+    for InsertVectorIntoSubColumn<MatrixToInsertInto>
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -95,7 +83,7 @@ impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType>
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
-        vector_to_insert: &SparseVector<VectorToInsert>,
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -148,13 +136,13 @@ impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType>
     }
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
-        vector_to_insert: &SparseVector<VectorToInsert>,
-        mask_for_column_to_insert_into: &SparseVector<MaskValueType>,
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask_for_column_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 

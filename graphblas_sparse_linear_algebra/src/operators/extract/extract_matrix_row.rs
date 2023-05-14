@@ -19,7 +19,7 @@ where
     Column: ValueType,
 {
     transpose_operator: MatrixTranspose<Matrix, Matrix>,
-    column_extractor: MatrixColumnExtractor<Matrix, Column>,
+    column_extractor: MatrixColumnExtractor<Column>,
 }
 
 unsafe impl<Matrix: ValueType, Column: ValueType> Send for MatrixRowExtractor<Matrix, Column> {}
@@ -123,7 +123,7 @@ impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
             .apply(&matrix_to_extract_from, &mut transposed_matrix)?;
 
         self.column_extractor.apply_with_mask(
-            &matrix_to_extract_from,
+            matrix_to_extract_from,
             &row_index_to_extract,
             indices_to_extract,
             row_vector,

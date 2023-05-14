@@ -16,23 +16,11 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<FirstArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType> Send
-    for BinaryOperatorReducer<FirstArgument, Product, EvaluationDomain>
-{
-}
-unsafe impl<FirstArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType> Sync
-    for BinaryOperatorReducer<FirstArgument, Product, EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for BinaryOperatorReducer<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for BinaryOperatorReducer<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct BinaryOperatorReducer<
-    Argument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
-> {
-    _argument: PhantomData<Argument>,
-    _product: PhantomData<Product>,
+pub struct BinaryOperatorReducer<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     binary_operator: GrB_BinaryOp,
@@ -40,49 +28,44 @@ pub struct BinaryOperatorReducer<
     options: GrB_Descriptor,
 }
 
-impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-    BinaryOperatorReducer<Argument, Product, EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> BinaryOperatorReducer<EvaluationDomain> {
     pub fn new(
         binary_operator: &impl BinaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             binary_operator: binary_operator.graphblas_type(),
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait ReduceWithBinaryOperator<Argument: ValueType, Product: ValueType> {
+pub trait ReduceWithBinaryOperator {
     fn to_vector(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-    ReduceWithBinaryOperator<Argument, Product>
-    for BinaryOperatorReducer<Argument, Product, EvaluationDomain>
+impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator
+    for BinaryOperatorReducer<EvaluationDomain>
 {
     fn to_vector(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -103,11 +86,11 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
         Ok(())
     }
 
-    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 

@@ -19,25 +19,22 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract,
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Matrix: ValueType, Column: ValueType> Sync for MatrixColumnExtractor<Matrix, Column> {}
-unsafe impl<Matrix: ValueType, Column: ValueType> Send for MatrixColumnExtractor<Matrix, Column> {}
+unsafe impl<Column: ValueType> Sync for MatrixColumnExtractor<Column> {}
+unsafe impl<Column: ValueType> Send for MatrixColumnExtractor<Column> {}
 
 #[derive(Debug, Clone)]
-pub struct MatrixColumnExtractor<Matrix, Column>
+pub struct MatrixColumnExtractor<Column>
 where
-    Matrix: ValueType,
     Column: ValueType,
 {
-    _matrix: PhantomData<Matrix>,
     _column: PhantomData<Column>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Matrix, Column> MatrixColumnExtractor<Matrix, Column>
+impl<Column> MatrixColumnExtractor<Column>
 where
-    Matrix: ValueType,
     Column: ValueType,
 {
     pub fn new(
@@ -48,37 +45,34 @@ where
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _matrix: PhantomData,
             _column: PhantomData,
         }
     }
 }
 
-pub trait ExtractMatrixColumn<Matrix: ValueType, Column: ValueType> {
+pub trait ExtractMatrixColumn<Column: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         column_vector: &mut SparseVector<Column>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         column_vector: &mut SparseVector<Column>,
-        mask: &SparseVector<MaskValueType>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Matrix: ValueType, Column: ValueType> ExtractMatrixColumn<Matrix, Column>
-    for MatrixColumnExtractor<Matrix, Column>
-{
+impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Column> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         column_vector: &mut SparseVector<Column>,
@@ -138,13 +132,13 @@ impl<Matrix: ValueType, Column: ValueType> ExtractMatrixColumn<Matrix, Column>
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         column_vector: &mut SparseVector<Column>,
-        mask: &SparseVector<MaskValueType>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 

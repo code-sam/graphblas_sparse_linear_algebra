@@ -20,31 +20,22 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Send
-    for SubMatrixExtractor<Matrix, SubMatrix>
-{
-}
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Sync
-    for SubMatrixExtractor<Matrix, SubMatrix>
-{
-}
+unsafe impl<SubMatrix: ValueType> Send for SubMatrixExtractor<SubMatrix> {}
+unsafe impl<SubMatrix: ValueType> Sync for SubMatrixExtractor<SubMatrix> {}
 
 #[derive(Debug, Clone)]
-pub struct SubMatrixExtractor<Matrix, SubMatrix>
+pub struct SubMatrixExtractor<SubMatrix>
 where
-    Matrix: ValueType,
     SubMatrix: ValueType,
 {
-    _matrix: PhantomData<Matrix>,
     _sub_matrix: PhantomData<SubMatrix>,
 
     accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Matrix, SubMatrix> SubMatrixExtractor<Matrix, SubMatrix>
+impl<SubMatrix> SubMatrixExtractor<SubMatrix>
 where
-    Matrix: ValueType,
     SubMatrix: ValueType,
 {
     pub fn new(
@@ -55,37 +46,34 @@ where
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _matrix: PhantomData,
             _sub_matrix: PhantomData,
         }
     }
 }
 
-pub trait ExtractSubMatrix<Matrix: ValueType, SubMatrix: ValueType> {
+pub trait ExtractSubMatrix<SubMatrix: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &SparseMatrix<MaskValueType>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Matrix: ValueType, SubMatrix: ValueType> ExtractSubMatrix<Matrix, SubMatrix>
-    for SubMatrixExtractor<Matrix, SubMatrix>
-{
+impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<SubMatrix> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
@@ -203,13 +191,13 @@ impl<Matrix: ValueType, SubMatrix: ValueType> ExtractSubMatrix<Matrix, SubMatrix
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &SparseMatrix<MaskValueType>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 

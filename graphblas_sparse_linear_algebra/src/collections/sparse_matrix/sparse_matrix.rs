@@ -153,7 +153,7 @@ impl<T: ValueType> GraphblasSparseMatrixTrait for SparseMatrix<T> {
     }
 }
 
-pub trait SparseMatrixTrait<T: ValueType> {
+pub trait SparseMatrixTrait {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
     fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError>;
@@ -165,7 +165,7 @@ pub trait SparseMatrixTrait<T: ValueType> {
     fn size(&self) -> Result<Size, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> SparseMatrixTrait<T> for SparseMatrix<T> {
+impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         self.context.call(

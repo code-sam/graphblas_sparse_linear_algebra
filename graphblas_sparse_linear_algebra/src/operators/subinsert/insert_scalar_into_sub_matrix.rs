@@ -37,7 +37,7 @@ pub struct InsertScalarIntoSubMatrix<MatrixToInsertInto: ValueType, ScalarToInse
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _scalar_to_insert: PhantomData<ScalarToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -49,7 +49,7 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),

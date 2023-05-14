@@ -24,33 +24,11 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Vector: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send for VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
-{
-}
-unsafe impl<
-        Vector: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync for VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for VectorSelector<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for VectorSelector<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct VectorSelector<
-    Vector: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
-> {
-    _vector: PhantomData<Vector>,
-    _second_argument: PhantomData<SelectorArgument>,
-    _product: PhantomData<Product>,
+pub struct VectorSelector<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
@@ -58,64 +36,46 @@ pub struct VectorSelector<
     options: GrB_Descriptor,
 }
 
-impl<
-        Vector: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> VectorSelector<EvaluationDomain> {
     pub fn new(
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             selector: selector.graphblas_type(),
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _vector: PhantomData,
-            _second_argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait SelectFromVector<
-    Vector: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
->
-{
+pub trait SelectFromVector<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        argument: &SparseVector<Vector>,
-        product: &mut SparseVector<Product>,
-        selector_argument: &SelectorArgument,
+        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        argument: &SparseVector<Vector>,
-        product: &mut SparseVector<Product>,
-        selector_argument: &SelectorArgument,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_select_from_vector {
-    ($selector_argument_type:ty, $_graphblas_implementatio_type:ty, $graphblas_operator:ident) => {
-        impl<Vector: ValueType, Product: ValueType>
-            SelectFromVector<Vector, $selector_argument_type, Product, $selector_argument_type>
-            for VectorSelector<Vector, $selector_argument_type, Product, $selector_argument_type>
-        {
+    ($selector_argument_type:ty, $_graphblas_implementation_type:ty, $graphblas_operator:ident) => {
+        impl SelectFromVector<$selector_argument_type> for VectorSelector<$selector_argument_type> {
             fn apply(
                 &self,
-                argument: &SparseVector<Vector>,
-                product: &mut SparseVector<Product>,
+                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
@@ -137,12 +97,12 @@ macro_rules! implement_select_from_vector {
                 Ok(())
             }
 
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
-                argument: &SparseVector<Vector>,
-                product: &mut SparseVector<Product>,
+                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
-                mask: &SparseVector<MaskValueType>,
+                mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
                 argument.context_ref().call(

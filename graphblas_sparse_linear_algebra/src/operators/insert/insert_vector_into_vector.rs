@@ -74,12 +74,12 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &SparseVector<VectorToInsert>,
-        mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
+        mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -146,12 +146,12 @@ macro_rules! implement_insert_vector_into_vector_trait {
             }
 
             /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
                 vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
-                mask_for_vector_to_insert_into: &SparseVector<MaskValueType>,
+                mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
 
