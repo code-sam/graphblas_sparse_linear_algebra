@@ -11,64 +11,60 @@ use crate::value_type::{AsBoolean, ValueType};
 use super::binary_operator::AccumulatorBinaryOperator;
 
 #[derive(Debug, Clone)]
-pub struct MatrixTranspose<Applicant, Product>
+pub struct MatrixTranspose<Product>
 where
-    Applicant: ValueType,
-    Product: ValueType,
+    Product: ValueType
 {
-    _applicant: PhantomData<Applicant>,
     _product: PhantomData<Product>,
 
-    accumulator: GrB_BinaryOp, // determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Applicant: ValueType, Product: ValueType> Send for MatrixTranspose<Applicant, Product> {}
-unsafe impl<Applicant: ValueType, Product: ValueType> Sync for MatrixTranspose<Applicant, Product> {}
+unsafe impl<Product: ValueType> Send for MatrixTranspose<Product> {}
+unsafe impl<Product: ValueType> Sync for MatrixTranspose<Product> {}
 
-impl<Applicant, Product> MatrixTranspose<Applicant, Product>
+impl<Product> MatrixTranspose<Product>
 where
-    Applicant: ValueType,
-    Product: ValueType,
+    Product: ValueType
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>, // determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Product>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _applicant: PhantomData,
-            _product: PhantomData,
+            _product: PhantomData
         }
     }
 }
 
-pub trait TransposeMatrix<Applicant: ValueType, Product: ValueType> {
+pub trait TransposeMatrix<Product: ValueType> {
     fn apply(
         &self,
-        matrix: &SparseMatrix<Applicant>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         transpose: &mut SparseMatrix<Product>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix: &SparseMatrix<Applicant>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         transpose: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Applicant: ValueType, Product: ValueType> TransposeMatrix<Applicant, Product>
-    for MatrixTranspose<Applicant, Product>
+impl<Product: ValueType> TransposeMatrix<Product>
+    for MatrixTranspose<Product>
 {
     fn apply(
         &self,
-        matrix: &SparseMatrix<Applicant>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         transpose: &mut SparseMatrix<Product>,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
@@ -89,11 +85,11 @@ impl<Applicant: ValueType, Product: ValueType> TransposeMatrix<Applicant, Produc
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix: &SparseMatrix<Applicant>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         transpose: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 

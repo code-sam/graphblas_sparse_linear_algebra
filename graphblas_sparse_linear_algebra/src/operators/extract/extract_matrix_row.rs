@@ -18,7 +18,7 @@ where
     Matrix: ValueType,
     Column: ValueType,
 {
-    transpose_operator: MatrixTranspose<Matrix, Matrix>,
+    transpose_operator: MatrixTranspose<Matrix>,
     column_extractor: MatrixColumnExtractor<Column>,
 }
 
@@ -86,7 +86,7 @@ impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
         transposed_matrix.resize(&size_of_transposed_matrix)?;
 
         self.transpose_operator
-            .apply(&matrix_to_extract_from, &mut transposed_matrix)?;
+            .apply(matrix_to_extract_from, &mut transposed_matrix)?;
 
         self.column_extractor.apply(
             &transposed_matrix,
@@ -120,7 +120,7 @@ impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
         transposed_matrix.resize(&size_of_transposed_matrix)?;
 
         self.transpose_operator
-            .apply(&matrix_to_extract_from, &mut transposed_matrix)?;
+            .apply(matrix_to_extract_from, &mut transposed_matrix)?;
 
         self.column_extractor.apply_with_mask(
             matrix_to_extract_from,

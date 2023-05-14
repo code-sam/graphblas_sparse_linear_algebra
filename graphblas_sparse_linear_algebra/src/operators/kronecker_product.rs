@@ -21,35 +21,23 @@ use super::binary_operator::AccumulatorBinaryOperator;
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
 unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
         EvaluationDomain: ValueType,
     > Send
-    for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+    for SemiringKroneckerProductOperator<EvaluationDomain>
 {
 }
 unsafe impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
         EvaluationDomain: ValueType,
     > Sync
-    for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+    for SemiringKroneckerProductOperator<EvaluationDomain>
 {
 }
 
 #[derive(Debug, Clone)]
-pub struct SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+pub struct SemiringKroneckerProductOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
-    _multiplier: PhantomData<Multiplier>,
-    _multiplicant: PhantomData<Multiplicant>,
-    _product: PhantomData<Product>,
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp,
@@ -57,67 +45,56 @@ where
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product, EvaluationDomain>
-    SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+impl<EvaluationDomain>
+    SemiringKroneckerProductOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     pub fn new(
         multiplication_operator: &impl Semiring<EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _multiplier: PhantomData,
-            _multiplicant: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
 pub trait SemiringKroneckerProduct<
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    EvaluationDomain: ValueType,
 >
 {
     fn apply(
         &self,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseMatrix<AsBool>,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<
-        Multiplier: ValueType,
-        Multiplicant: ValueType,
-        Product: ValueType,
         EvaluationDomain: ValueType,
-    > SemiringKroneckerProduct<Multiplier, Multiplicant, Product>
-    for SemiringKroneckerProductOperator<Multiplier, Multiplicant, Product, EvaluationDomain>
+    > SemiringKroneckerProduct<EvaluationDomain>
+    for SemiringKroneckerProductOperator<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -139,12 +116,12 @@ impl<
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType, AsBool: AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseMatrix<AsBool>,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -177,11 +154,11 @@ pub struct MonoidKroneckerProductOperator<T: ValueType> {
     options: GrB_Descriptor,
 }
 
-impl<T: ValueType> MonoidKroneckerProductOperator<T> {
+impl<EvaluationDomain: ValueType> MonoidKroneckerProductOperator<EvaluationDomain> {
     pub fn new(
-        multiplication_operator: &impl Monoid<T>, // defines element-wise multiplication operator Multiplier.*Multiplicant
+        multiplication_operator: &impl Monoid<EvaluationDomain>, // defines element-wise multiplication operator Multiplier.*Multiplicant
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<T>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
@@ -193,29 +170,29 @@ impl<T: ValueType> MonoidKroneckerProductOperator<T> {
     }
 }
 
-pub trait MonoidKroneckerProduct<T: ValueType> {
+pub trait MonoidKroneckerProduct<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &SparseMatrix<T>,
-        multiplicant: &SparseMatrix<T>,
-        product: &mut SparseMatrix<T>,
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseMatrix<MaskValueType>,
-        multiplier: &SparseMatrix<T>,
-        multiplicant: &SparseMatrix<T>,
-        product: &mut SparseMatrix<T>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> MonoidKroneckerProduct<T> for MonoidKroneckerProductOperator<T> {
+impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain> for MonoidKroneckerProductOperator<EvaluationDomain> {
     fn apply(
         &self,
-        multiplier: &SparseMatrix<T>,
-        multiplicant: &SparseMatrix<T>,
-        product: &mut SparseMatrix<T>,
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -237,12 +214,12 @@ impl<T: ValueType> MonoidKroneckerProduct<T> for MonoidKroneckerProductOperator<
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseMatrix<MaskValueType>,
-        multiplier: &SparseMatrix<T>,
-        multiplicant: &SparseMatrix<T>,
-        product: &mut SparseMatrix<T>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -266,71 +243,63 @@ impl<T: ValueType> MonoidKroneckerProduct<T> for MonoidKroneckerProductOperator<
 }
 
 #[derive(Debug, Clone)]
-pub struct BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product> {
-    _multiplier: PhantomData<Multiplier>,
-    _multiplicant: PhantomData<Multiplicant>,
-    _product: PhantomData<Product>,
+pub struct BinaryOperatorKroneckerProductOperator<EvaluationDomain> {
+    _evaluation_domain: PhantomData<EvaluationDomain>,
 
     accumulator: GrB_BinaryOp, //  determines how results are written into the result matrix C
     multiplication_operator: GrB_BinaryOp, // defines element-wise multiplication operator Multiplier.*Multiplicant
     options: GrB_Descriptor,
 }
 
-impl<Multiplier, Multiplicant, Product>
-    BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product>
+impl<EvaluationDomain>
+    BinaryOperatorKroneckerProductOperator<EvaluationDomain>
 where
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    EvaluationDomain: ValueType,
 {
     pub fn new(
-        multiplication_operator: &impl BinaryOperator<Product>,
+        multiplication_operator: &impl BinaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
             accumulator: accumulator.accumulator_graphblas_type(),
             multiplication_operator: multiplication_operator.graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _multiplier: PhantomData,
-            _multiplicant: PhantomData,
-            _product: PhantomData,
+            _evaluation_domain: PhantomData,
         }
     }
 }
 
 pub trait BinaryOperatorKroneckerProduct<
-    Multiplier: ValueType,
-    Multiplicant: ValueType,
-    Product: ValueType,
+    EvaluationDomain: ValueType,
 >
 {
     fn apply(
         &self,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseMatrix<MaskValueType>,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType>
-    BinaryOperatorKroneckerProduct<Multiplier, Multiplicant, Product>
-    for BinaryOperatorKroneckerProductOperator<Multiplier, Multiplicant, Product>
+impl<EvaluationDomain: ValueType>
+    BinaryOperatorKroneckerProduct<EvaluationDomain>
+    for BinaryOperatorKroneckerProductOperator<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -352,12 +321,12 @@ impl<Multiplier: ValueType, Multiplicant: ValueType, Product: ValueType>
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        mask: &SparseMatrix<MaskValueType>,
-        multiplier: &SparseMatrix<Multiplier>,
-        multiplicant: &SparseMatrix<Multiplicant>,
-        product: &mut SparseMatrix<Product>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -397,7 +366,7 @@ mod tests {
         let operator = Times::<i64>::new();
         let options = OperatorOptions::new_default();
         let _element_wise_matrix_multiplier =
-            BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
+            BinaryOperatorKroneckerProductOperator::<i64>::new(
                 &operator,
                 &options,
                 &Assignment::<i64>::new(),
@@ -411,7 +380,7 @@ mod tests {
 
         let accumulator = Times::<i64>::new();
 
-        let _matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64, i64, i64>::new(
+        let _matrix_multiplier = BinaryOperatorKroneckerProductOperator::<i64>::new(
             &operator,
             &options,
             &accumulator,
@@ -425,7 +394,7 @@ mod tests {
         let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();
         let element_wise_matrix_multiplier =
-            BinaryOperatorKroneckerProductOperator::<i32, i32, i32>::new(
+            BinaryOperatorKroneckerProductOperator::<i32>::new(
                 &operator,
                 &options,
                 &Assignment::<i32>::new(),
