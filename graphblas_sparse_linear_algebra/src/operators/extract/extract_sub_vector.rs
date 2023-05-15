@@ -9,8 +9,9 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Vector_extract,
@@ -19,77 +20,59 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Send
-    for SubVectorExtractor<Matrix, SubMatrix>
-{
-}
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Sync
-    for SubVectorExtractor<Matrix, SubMatrix>
-{
-}
+unsafe impl<SubVector: ValueType> Send for SubVectorExtractor<SubVector> {}
+unsafe impl<SubVector: ValueType> Sync for SubVectorExtractor<SubVector> {}
 
 #[derive(Debug, Clone)]
-pub struct SubVectorExtractor<Argument, Product>
+pub struct SubVectorExtractor<Product>
 where
-    Argument: ValueType,
     Product: ValueType,
 {
-    _argument: PhantomData<Argument>,
     _product: PhantomData<Product>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Vector, SubVector> SubVectorExtractor<Vector, SubVector>
+impl<SubVector> SubVectorExtractor<SubVector>
 where
-    Vector: ValueType,
     SubVector: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<SubVector, SubVector, SubVector, SubVector>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _argument: PhantomData,
             _product: PhantomData,
         }
     }
 }
 
-pub trait ExtractSubVector<Vector: ValueType, SubVector: ValueType> {
+pub trait ExtractSubVector<SubVector: ValueType> {
     fn apply(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// Length of the mask must equal length of sub_vector
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
-        mask: &SparseVector<MaskValueType>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Vector: ValueType, SubVector: ValueType> ExtractSubVector<Vector, SubVector>
-    for SubVectorExtractor<Vector, SubVector>
-{
+impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<SubVector> {
     fn apply(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -145,12 +128,12 @@ impl<Vector: ValueType, SubVector: ValueType> ExtractSubVector<Vector, SubVector
     }
 
     /// Length of the mask must equal length of sub_vector
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        vector_to_extract_from: &SparseVector<Vector>,
+        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         sub_vector: &mut SparseVector<SubVector>,
-        mask: &SparseVector<MaskValueType>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 
@@ -213,7 +196,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_vector_extraction() {
@@ -230,7 +213,7 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -239,7 +222,8 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = (0..3).collect();
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor = SubVectorExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor =
+            SubVectorExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         extractor
             .apply(&vector, &indices_to_extract, &mut sub_vector)
@@ -265,7 +249,7 @@ mod tests {
             &context.clone(),
             &10,
             &vector_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -283,7 +267,7 @@ mod tests {
             &context.clone(),
             &4,
             &mask_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -293,7 +277,8 @@ mod tests {
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
         // let indices_to_extract = ElementIndexSelector::All;
 
-        let extractor = SubVectorExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor =
+            SubVectorExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         extractor
             .apply_with_mask(&vector, &indices_to_extract, &mut sub_vector, &mask)

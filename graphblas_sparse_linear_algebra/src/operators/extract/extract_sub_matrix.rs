@@ -9,8 +9,9 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_extract,
@@ -19,78 +20,60 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Send
-    for SubMatrixExtractor<Matrix, SubMatrix>
-{
-}
-unsafe impl<Matrix: ValueType, SubMatrix: ValueType> Sync
-    for SubMatrixExtractor<Matrix, SubMatrix>
-{
-}
+unsafe impl<SubMatrix: ValueType> Send for SubMatrixExtractor<SubMatrix> {}
+unsafe impl<SubMatrix: ValueType> Sync for SubMatrixExtractor<SubMatrix> {}
 
 #[derive(Debug, Clone)]
-pub struct SubMatrixExtractor<Matrix, SubMatrix>
+pub struct SubMatrixExtractor<SubMatrix>
 where
-    Matrix: ValueType,
     SubMatrix: ValueType,
 {
-    _matrix: PhantomData<Matrix>,
     _sub_matrix: PhantomData<SubMatrix>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Matrix, SubMatrix> SubMatrixExtractor<Matrix, SubMatrix>
+impl<SubMatrix> SubMatrixExtractor<SubMatrix>
 where
-    Matrix: ValueType,
     SubMatrix: ValueType,
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<SubMatrix, SubMatrix, SubMatrix, SubMatrix>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _matrix: PhantomData,
             _sub_matrix: PhantomData,
         }
     }
 }
 
-pub trait ExtractSubMatrix<Matrix: ValueType, SubMatrix: ValueType> {
+pub trait ExtractSubMatrix<SubMatrix: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &SparseMatrix<MaskValueType>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Matrix: ValueType, SubMatrix: ValueType> ExtractSubMatrix<Matrix, SubMatrix>
-    for SubMatrixExtractor<Matrix, SubMatrix>
-{
+impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<SubMatrix> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
@@ -208,13 +191,13 @@ impl<Matrix: ValueType, SubMatrix: ValueType> ExtractSubMatrix<Matrix, SubMatrix
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &SparseMatrix<MaskValueType>,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -339,7 +322,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_matrix_extraction() {
@@ -356,7 +339,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -367,7 +350,8 @@ mod tests {
         let columns_to_extract: Vec<ElementIndex> = (0..6).collect();
         let columns_to_extract = ElementIndexSelector::Index(&columns_to_extract);
 
-        let extractor = SubMatrixExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor =
+            SubMatrixExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         extractor
             .apply(

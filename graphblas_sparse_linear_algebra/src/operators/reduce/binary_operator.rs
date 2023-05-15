@@ -1,12 +1,13 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BinaryOp,
@@ -15,79 +16,56 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<FirstArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType> Send
-    for BinaryOperatorReducer<FirstArgument, Product, EvaluationDomain>
-{
-}
-unsafe impl<FirstArgument: ValueType, Product: ValueType, EvaluationDomain: ValueType> Sync
-    for BinaryOperatorReducer<FirstArgument, Product, EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for BinaryOperatorReducer<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for BinaryOperatorReducer<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct BinaryOperatorReducer<
-    Argument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
-> {
-    _argument: PhantomData<Argument>,
-    _product: PhantomData<Product>,
+pub struct BinaryOperatorReducer<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     binary_operator: GrB_BinaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-    BinaryOperatorReducer<Argument, Product, EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> BinaryOperatorReducer<EvaluationDomain> {
     pub fn new(
-        binary_operator: &dyn BinaryOperator<Argument, Argument, Argument, EvaluationDomain>,
+        binary_operator: &impl BinaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Argument, Product, Product, EvaluationDomain>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             binary_operator: binary_operator.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait ReduceWithBinaryOperator<Argument: ValueType, Product: ValueType> {
+pub trait ReduceWithBinaryOperator {
     fn to_vector(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-    ReduceWithBinaryOperator<Argument, Product>
-    for BinaryOperatorReducer<Argument, Product, EvaluationDomain>
+impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator
+    for BinaryOperatorReducer<EvaluationDomain>
 {
     fn to_vector(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -108,11 +86,11 @@ impl<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
         Ok(())
     }
 
-    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -140,11 +118,13 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::{First, Plus};
+    use crate::operators::binary_operator::{Assignment, First, Plus};
 
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::collections::sparse_matrix::{
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    };
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
+        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
     };
 
     #[test]
@@ -164,7 +144,7 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -172,9 +152,9 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         let reducer = BinaryOperatorReducer::new(
-            &Plus::<u8, u8, u8, u8>::new(),
+            &Plus::<u8>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
         reducer.to_vector(&matrix, &mut product_vector).unwrap();
@@ -197,7 +177,7 @@ mod tests {
             &context.clone(),
             &matrix_size.row_height(),
             &mask_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

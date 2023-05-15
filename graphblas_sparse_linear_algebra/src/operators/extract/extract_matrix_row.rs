@@ -3,8 +3,8 @@ use crate::collections::sparse_vector::SparseVector;
 use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
+use crate::operators::binary_operator::{AccumulatorBinaryOperator, Assignment};
 use crate::operators::{
-    binary_operator::BinaryOperator,
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
     options::OperatorOptions,
     transpose::{MatrixTranspose, TransposeMatrix},
@@ -17,8 +17,8 @@ where
     Matrix: ValueType,
     Column: ValueType,
 {
-    transpose_operator: MatrixTranspose<Matrix, Matrix>,
-    column_extractor: MatrixColumnExtractor<Matrix, Column>,
+    transpose_operator: MatrixTranspose<Matrix>,
+    column_extractor: MatrixColumnExtractor<Column>,
 }
 
 unsafe impl<Matrix: ValueType, Column: ValueType> Send for MatrixRowExtractor<Matrix, Column> {}
@@ -31,9 +31,9 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Column, Column, Column, Column>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<Column>,
     ) -> Self {
-        let transpose_operator = MatrixTranspose::new(options, None);
+        let transpose_operator = MatrixTranspose::new(options, &Assignment::<Matrix>::new());
         let column_extractor = MatrixColumnExtractor::new(options, accumulator);
 
         Self {
@@ -85,7 +85,7 @@ impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
         transposed_matrix.resize(&size_of_transposed_matrix)?;
 
         self.transpose_operator
-            .apply(&matrix_to_extract_from, &mut transposed_matrix)?;
+            .apply(matrix_to_extract_from, &mut transposed_matrix)?;
 
         self.column_extractor.apply(
             &transposed_matrix,
@@ -119,10 +119,10 @@ impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
         transposed_matrix.resize(&size_of_transposed_matrix)?;
 
         self.transpose_operator
-            .apply(&matrix_to_extract_from, &mut transposed_matrix)?;
+            .apply(matrix_to_extract_from, &mut transposed_matrix)?;
 
         self.column_extractor.apply_with_mask(
-            &matrix_to_extract_from,
+            matrix_to_extract_from,
             &row_index_to_extract,
             indices_to_extract,
             row_vector,
@@ -160,7 +160,7 @@ mod tests {
             &context.clone(),
             &(3, 2).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -169,7 +169,8 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = vec![0, 1];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor = MatrixRowExtractor::new(&OperatorOptions::new_default(), None);
+        let extractor =
+            MatrixRowExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
 
         extractor
             .apply(&matrix, &2, &indices_to_extract, &mut column_vector)

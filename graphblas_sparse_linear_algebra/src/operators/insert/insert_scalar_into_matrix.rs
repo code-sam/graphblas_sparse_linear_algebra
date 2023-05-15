@@ -7,9 +7,10 @@ use crate::collections::sparse_matrix::{
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
-use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
+use crate::value_type::{ConvertScalar, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_assign_BOOL, GrB_Matrix_assign_FP32,
@@ -37,7 +38,7 @@ pub struct InsertScalarIntoMatrix<MatrixToInsertInto: ValueType, ScalarToInsert:
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _scalar_to_insert: PhantomData<ScalarToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -48,23 +49,10 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                ScalarToInsert,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix_to_insert_into: PhantomData,
@@ -88,13 +76,13 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
-        mask_for_matrix_to_insert_into: &SparseMatrix<MaskValueType>,
+        mask_for_matrix_to_insert_into: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -222,13 +210,13 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
             }
 
             /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
                 matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                mask_for_matrix_to_insert_into: &SparseMatrix<MaskValueType>,
+                mask_for_matrix_to_insert_into: &(impl GraphblasSparseMatrixTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_type()?;
@@ -352,7 +340,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_insert_scalar_into_matrix() {
@@ -370,7 +358,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -384,7 +372,7 @@ mod tests {
             &context,
             &matrix_size,
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -393,7 +381,8 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertScalarIntoMatrix::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertScalarIntoMatrix::new(&OperatorOptions::new_default(), &Assignment::new());
 
         let scalar_to_insert: u8 = 8;
 
@@ -425,7 +414,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -477,7 +466,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -486,7 +475,8 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertScalarIntoMatrix::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertScalarIntoMatrix::new(&OperatorOptions::new_default(), &Assignment::new());
 
         let scalar_to_insert: f32 = 8.0;
 

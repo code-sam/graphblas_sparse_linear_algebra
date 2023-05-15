@@ -162,7 +162,7 @@ mod tests {
         VectorElementList,
     };
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::element_wise_addition::{
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
     };
@@ -180,8 +180,11 @@ mod tests {
 
         let operator = Equal::<bool>::new();
         let options = OperatorOptions::new_default();
-        let equality_operator =
-            ElementWiseVectorAdditionMonoidOperator::<bool>::new(&operator, &options, None);
+        let equality_operator = ElementWiseVectorAdditionMonoidOperator::<bool>::new(
+            &operator,
+            &options,
+            &Assignment::new(),
+        );
 
         let length = 7;
 
@@ -207,7 +210,7 @@ mod tests {
             &context,
             &length,
             &multiplier_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
@@ -221,7 +224,7 @@ mod tests {
             &context,
             &length,
             &multiplicant_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 

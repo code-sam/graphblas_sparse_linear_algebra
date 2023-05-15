@@ -12,78 +12,71 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
     GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::{monoid::Monoid, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
     implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,
 };
-use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
+use crate::value_type::{ConvertScalar, ValueType};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Argument: ValueType, Product: ValueType> Send for MonoidReducer<Argument, Product> {}
-unsafe impl<Argument: ValueType, Product: ValueType> Sync for MonoidReducer<Argument, Product> {}
+unsafe impl<EvaluationDomain: ValueType> Send for MonoidReducer<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for MonoidReducer<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct MonoidReducer<Argument: ValueType, Product: ValueType> {
-    _argument: PhantomData<Argument>,
-    _product: PhantomData<Product>,
+pub struct MonoidReducer<EvaluationDomain: ValueType> {
+    _evaluationDomain: PhantomData<EvaluationDomain>,
 
     monoid: GrB_Monoid,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<Argument: ValueType, Product: ValueType> MonoidReducer<Argument, Product> {
+impl<EvaluationDomain: ValueType> MonoidReducer<EvaluationDomain> {
     pub fn new(
-        monoid: &dyn Monoid<Argument>,
+        monoid: &impl Monoid<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Argument, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             monoid: monoid.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _argument: PhantomData,
-            _product: PhantomData,
+            _evaluationDomain: PhantomData,
         }
     }
 }
 
-pub trait MonoidVectorReducer<Argument: ValueType, Product: ValueType> {
+pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
     fn to_vector(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Argument: ValueType, Product: ValueType> MonoidVectorReducer<Argument, Product>
-    for MonoidReducer<Argument, Product>
+impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain>
+    for MonoidReducer<EvaluationDomain>
 {
     fn to_vector(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -104,11 +97,11 @@ impl<Argument: ValueType, Product: ValueType> MonoidVectorReducer<Argument, Prod
         Ok(())
     }
 
-    fn to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn to_vector_with_mask(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -130,28 +123,26 @@ impl<Argument: ValueType, Product: ValueType> MonoidVectorReducer<Argument, Prod
     }
 }
 
-pub trait MonoidScalarReducer<Argument: ValueType, Product: ValueType> {
+pub trait MonoidScalarReducer<EvaluationDomain: ValueType> {
     fn matrix_to_scalar(
         &self,
-        argument: &SparseMatrix<Argument>,
-        product: &mut Product,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut EvaluationDomain,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn vector_to_scalar(
         &self,
-        argument: &SparseVector<Argument>,
-        product: &mut Product,
+        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut EvaluationDomain,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_monoid_reducer {
     ($value_type:ty, $graphblas_implementation_type:ty, $matrix_reducer_operator:ident, $vector_reducer_operator:ident, $convert_to_type:ident) => {
-        impl<Argument: ValueType> MonoidScalarReducer<Argument, $value_type>
-            for MonoidReducer<Argument, $value_type>
-        {
+        impl MonoidScalarReducer<$value_type> for MonoidReducer<$value_type> {
             fn matrix_to_scalar(
                 &self,
-                argument: &SparseMatrix<Argument>,
+                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
                 product: &mut $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
@@ -176,7 +167,7 @@ macro_rules! implement_monoid_reducer {
             // TODO: support detailed error information
             fn vector_to_scalar(
                 &self,
-                argument: &SparseVector<Argument>,
+                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
                 product: &mut $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
@@ -212,12 +203,15 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::Assignment;
     use crate::operators::binary_operator::First;
     use crate::operators::monoid::Plus as MonoidPlus;
 
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::collections::sparse_matrix::{
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    };
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
+        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
     };
     use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;
 
@@ -241,7 +235,7 @@ mod tests {
                         &context.clone(),
                         &matrix_size,
                         &element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -251,7 +245,7 @@ mod tests {
                     let reducer = MonoidReducer::new(
                         &MonoidPlus::<$value_type>::new(),
                         &OperatorOptions::new_default(),
-                        None,
+                        &Assignment::<$value_type>::new(),
                     );
 
                     reducer.to_vector(&matrix, &mut product_vector).unwrap();
@@ -274,7 +268,7 @@ mod tests {
                         &context.clone(),
                         &matrix_size.row_height(),
                         &mask_element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -312,7 +306,7 @@ mod tests {
                         &context.clone(),
                         &matrix_size,
                         &element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -321,7 +315,7 @@ mod tests {
                     let reducer = MonoidReducer::new(
                         &MonoidPlus::<$value_type>::new(),
                         &OperatorOptions::new_default(),
-                        None,
+                        &Assignment::new(),
                     );
 
                     reducer.matrix_to_scalar(&matrix, &mut product).unwrap();
@@ -347,7 +341,7 @@ mod tests {
                         &context.clone(),
                         &vector_length,
                         &element_list,
-                        &First::<$value_type, $value_type, $value_type, $value_type>::new(),
+                        &First::<$value_type>::new(),
                     )
                     .unwrap();
 
@@ -356,7 +350,7 @@ mod tests {
                     let reducer = MonoidReducer::new(
                         &MonoidPlus::<$value_type>::new(),
                         &OperatorOptions::new_default(),
-                        None,
+                        &Assignment::new(),
                     );
 
                     reducer.vector_to_scalar(&vector, &mut product).unwrap();

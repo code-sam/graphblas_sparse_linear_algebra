@@ -5,11 +5,8 @@ use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::*;
 
-pub trait Semiring<FirstArgument, SecondArgument, Product, EvaluationDomain>
+pub trait Semiring<EvaluationDomain>
 where
-    FirstArgument: ValueType,
-    SecondArgument: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     fn graphblas_type(&self) -> GrB_Semiring;
@@ -18,16 +15,10 @@ where
 macro_rules! define_semiring {
     ($semiring:ident) => {
         #[derive(Debug, Clone)]
-        pub struct $semiring<FirstArgument, SecondArgument, Product, EvaluationDomain>
+        pub struct $semiring<EvaluationDomain>
         where
-            FirstArgument: ValueType,
-            SecondArgument: ValueType,
-            Product: ValueType,
             EvaluationDomain: ValueType,
         {
-            _multiplier_type: PhantomData<FirstArgument>,
-            _multiplicant_type: PhantomData<SecondArgument>,
-            _product_type: PhantomData<Product>,
             _evaluation_domain: PhantomData<EvaluationDomain>,
         }
     };
@@ -35,23 +26,15 @@ macro_rules! define_semiring {
 
 macro_rules! implement_semiring {
     ($semiring:ident, $graphblas_operator:ident, $evaluation_domain:ty) => {
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
-            $semiring<FirstArgument, SecondArgument, Product, $evaluation_domain>
-        {
+        impl $semiring<$evaluation_domain> {
             pub fn new() -> Self {
                 Self {
-                    _multiplier_type: PhantomData,
-                    _multiplicant_type: PhantomData,
-                    _product_type: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
             }
         }
 
-        impl<FirstArgument: ValueType, SecondArgument: ValueType, Product: ValueType>
-            Semiring<FirstArgument, SecondArgument, Product, $evaluation_domain>
-            for $semiring<FirstArgument, SecondArgument, Product, $evaluation_domain>
-        {
+        impl Semiring<$evaluation_domain> for $semiring<$evaluation_domain> {
             fn graphblas_type(&self) -> GrB_Semiring {
                 unsafe { $graphblas_operator }
             }
@@ -633,7 +616,7 @@ mod tests {
 
     #[test]
     fn test_new_semiring() {
-        let semiring = PlusTimes::<i8, i8, i8, i8>::new();
+        let semiring = PlusTimes::<i8>::new();
 
         unsafe {
             assert_eq!(semiring.graphblas_type(), GrB_PLUS_TIMES_SEMIRING_INT8);

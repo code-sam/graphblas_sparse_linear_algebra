@@ -11,123 +11,71 @@ use suitesparse_graphblas_sys::{
 
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
 
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
-use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
+use crate::value_type::{ConvertScalar, ValueType};
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GxB_DIAG, GxB_EQ_THUNK, GxB_EQ_ZERO, GxB_GE_THUNK, GxB_GE_ZERO,
-    GxB_GT_THUNK, GxB_GT_ZERO, GxB_LE_THUNK, GxB_LE_ZERO, GxB_LT_THUNK, GxB_LT_ZERO,
-    GxB_Matrix_select, GxB_NE_THUNK, GxB_NONZERO, GxB_OFFDIAG, GxB_TRIL, GxB_TRIU,
-};
-
-// use super::diagonal_index::{DiagonalIndex, DiagonalIndexGraphblasType};
-use crate::index::{DiagonalIndex, DiagonalIndexConversion, GraphblasDiagionalIndex};
+use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Matrix: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send for MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
-{
-}
-unsafe impl<
-        Matrix: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync for MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for MatrixSelector<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for MatrixSelector<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct MatrixSelector<
-    Matrix: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
-> {
-    _matrix: PhantomData<Matrix>,
-    _second_argument: PhantomData<SelectorArgument>,
-    _product: PhantomData<Product>,
+pub struct MatrixSelector<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<
-        Matrix: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > MatrixSelector<Matrix, SelectorArgument, Product, EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> MatrixSelector<EvaluationDomain> {
     pub fn new(
-        selector: &dyn IndexUnaryOperator<Matrix, SelectorArgument, Product, EvaluationDomain>,
+        selector: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Matrix, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             selector: selector.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _matrix: PhantomData,
-            _second_argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait SelectFromMatrix<
-    Matrix: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
->
-{
+pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        argument: &SparseMatrix<Matrix>,
-        product: &mut SparseMatrix<Product>,
-        selector_argument: &SelectorArgument,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        argument: &SparseMatrix<Matrix>,
-        product: &mut SparseMatrix<Product>,
-        selector_argument: &SelectorArgument,
-        mask: &SparseMatrix<MaskValueType>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_select_from_matrix {
-    ($selector_argument_type:ty, $_graphblas_implementatio_type:ty, $graphblas_operator:ident) => {
-        impl<Matrix: ValueType, Product: ValueType>
-            SelectFromMatrix<Matrix, $selector_argument_type, Product, $selector_argument_type>
-            for MatrixSelector<Matrix, $selector_argument_type, Product, $selector_argument_type>
-        {
+    ($selector_argument_type:ty, $_graphblas_implementation_type:ty, $graphblas_operator:ident) => {
+        impl SelectFromMatrix<$selector_argument_type> for MatrixSelector<$selector_argument_type> {
             fn apply(
                 &self,
-                argument: &SparseMatrix<Matrix>,
-                product: &mut SparseMatrix<Product>,
+                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
@@ -149,12 +97,12 @@ macro_rules! implement_select_from_matrix {
                 Ok(())
             }
 
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
-                argument: &SparseMatrix<Matrix>,
-                product: &mut SparseMatrix<Product>,
+                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
-                mask: &SparseMatrix<MaskValueType>,
+                mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
                 argument.context_ref().call(
@@ -189,10 +137,10 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
+        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
     };
     use crate::operators::index_unary_operator::{
         IsOnDiagonal, IsOnOrAboveDiagonal, IsOnOrBelowDiagonal, IsValueGreaterThan, IsValueLessThan,
@@ -214,17 +162,17 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsOnOrBelowDiagonal::new();
-        let selector = MatrixSelector::<u8, i8, u8, i8>::new(
+        let selector = MatrixSelector::<i8>::new(
             &index_operator,
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
         let diagonal_index = 0;
@@ -304,14 +252,18 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsOnOrAboveDiagonal::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         let diagonal_index = 0;
 
@@ -396,14 +348,18 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
         let index_operator = IsOnDiagonal::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         let diagonal_index = 0;
 
@@ -536,14 +492,18 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
-        let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let index_operator = IsValueGreaterThan::<u8>::new();
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         selector.apply(&matrix, &mut product_matrix, &0).unwrap();
 
@@ -575,8 +535,12 @@ mod tests {
             4
         );
 
-        let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
-        let selector = MatrixSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let index_operator = IsValueLessThan::<u8>::new();
+        let selector = MatrixSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
         selector.apply(&matrix, &mut product_matrix, &0).unwrap();
 
         println!("{}", product_matrix);

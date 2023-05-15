@@ -153,7 +153,7 @@ impl<T: ValueType> GraphblasSparseMatrixTrait for SparseMatrix<T> {
     }
 }
 
-pub trait SparseMatrixTrait<T: ValueType> {
+pub trait SparseMatrixTrait {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
     fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError>;
@@ -165,7 +165,7 @@ pub trait SparseMatrixTrait<T: ValueType> {
     fn size(&self) -> Result<Size, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> SparseMatrixTrait<T> for SparseMatrix<T> {
+impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         self.context.call(
@@ -364,8 +364,7 @@ pub trait FromMatrixElementList<T: ValueType> {
         context: &Arc<Context>,
         size: &Size,
         elements: &MatrixElementList<T>,
-        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T, T>,
-        // reduction_operator_for_duplicates: Box<dyn BinaryOperator<T, T, T>>,
+        reduction_operator_for_duplicates: &impl BinaryOperator<T>,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
 }
 
@@ -422,12 +421,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 context: &Arc<Context>,
                 size: &Size,
                 elements: &MatrixElementList<$value_type>,
-                reduction_operator_for_duplicates: &dyn BinaryOperator<
-                    $value_type,
-                    $value_type,
-                    $value_type,
-                    $value_type,
-                >,
+                reduction_operator_for_duplicates: &impl BinaryOperator<$value_type>,
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints
@@ -825,7 +819,7 @@ mod tests {
             &context,
             &(3, 5).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -851,7 +845,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
@@ -1038,7 +1032,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -1059,7 +1053,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &empty_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
         assert_eq!(

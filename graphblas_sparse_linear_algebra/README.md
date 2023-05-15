@@ -7,7 +7,7 @@ Rust wrapper for SuiteSparse:GraphBLAS
 use graphblas_sparse_linear_algebra::collections::Collection;
 use graphblas_sparse_linear_algebra::context::{Context, Mode};
 use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, ApplyBinaryOperator};
-use graphblas_sparse_linear_algebra::operators::binary_operator::{First};
+use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
     FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
@@ -32,16 +32,16 @@ fn main() {
         &context.clone(),
         &matrix_size,
         &element_list,
-        &First::<u8, u8, u8, u8>::new(),
+        &First::<u8>::new(),
     )
     .unwrap();
 
     let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
     let operator = BinaryOperatorApplier::new(
-        &First::<u8, u8, u8, u8>::new(),
+        &First::<u8>::new(),
         &OperatorOptions::new_default(),
-        None,
+        &Assignment::new(),
     );
     let first_agrument = 10;
     operator
@@ -55,9 +55,9 @@ fn main() {
     assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
 
     let operator = BinaryOperatorApplier::new(
-        &First::<u8, u8, u8, u8>::new(),
+        &First::<u8>::new(),
         &OperatorOptions::new_default(),
-        None,
+        &Assignment::new(),
     );
     let second_agrument = 10;
     operator

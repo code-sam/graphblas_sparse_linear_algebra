@@ -65,7 +65,7 @@ impl<
         SecondArgument,
         Product,
         EvaluationDomain,
-    > for IndexUnaryOperatorApplier<FirstArgument, SecondArgument, Product, EvaluationDomain>
+    > for IndexUnaryOperatorApplier<EvaluationDomain>
 {
     fn apply_to_vector(
         &self,
@@ -183,7 +183,7 @@ mod tests {
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
     use crate::operators::options::OperatorOptions;
 
@@ -205,16 +205,16 @@ mod tests {
             &context.clone(),
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_matrix = SparseMatrix::<f32>::new(&context, &matrix_size).unwrap();
 
         let operator = IndexUnaryOperatorApplier::new(
-            &IsValueGreaterThan::<u8, i8, f32, i16>::new(),
+            &IsValueGreaterThan::<i16>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
         operator

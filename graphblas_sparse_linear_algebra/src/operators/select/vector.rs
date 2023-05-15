@@ -11,116 +11,71 @@ use suitesparse_graphblas_sys::{
 
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
 
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
-use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
+use crate::value_type::{ConvertScalar, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<
-        Vector: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Send for VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
-{
-}
-unsafe impl<
-        Vector: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > Sync for VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
-{
-}
+unsafe impl<EvaluationDomain: ValueType> Send for VectorSelector<EvaluationDomain> {}
+unsafe impl<EvaluationDomain: ValueType> Sync for VectorSelector<EvaluationDomain> {}
 
 #[derive(Debug, Clone)]
-pub struct VectorSelector<
-    Vector: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
-> {
-    _vector: PhantomData<Vector>,
-    _second_argument: PhantomData<SelectorArgument>,
-    _product: PhantomData<Product>,
+pub struct VectorSelector<EvaluationDomain: ValueType> {
     _evaluation_domain: PhantomData<EvaluationDomain>,
 
     selector: GrB_IndexUnaryOp,
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result vector C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
-impl<
-        Vector: ValueType,
-        SelectorArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    > VectorSelector<Vector, SelectorArgument, Product, EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> VectorSelector<EvaluationDomain> {
     pub fn new(
-        selector: &dyn IndexUnaryOperator<Vector, SelectorArgument, Product, EvaluationDomain>,
+        selector: &impl IndexUnaryOperator<EvaluationDomain>,
         options: &OperatorOptions,
-        accumulator: Option<&dyn BinaryOperator<Vector, Product, Product, Product>>, // optional accum for Z=accum(C,T), determines how results are written into the result vector C
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
             selector: selector.graphblas_type(),
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
-            _vector: PhantomData,
-            _second_argument: PhantomData,
-            _product: PhantomData,
             _evaluation_domain: PhantomData,
         }
     }
 }
 
-pub trait SelectFromVector<
-    Vector: ValueType,
-    SelectorArgument: ValueType,
-    Product: ValueType,
-    EvaluationDomain: ValueType,
->
-{
+pub trait SelectFromVector<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        argument: &SparseVector<Vector>,
-        product: &mut SparseVector<Product>,
-        selector_argument: &SelectorArgument,
+        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        argument: &SparseVector<Vector>,
-        product: &mut SparseVector<Product>,
-        selector_argument: &SelectorArgument,
-        mask: &SparseVector<MaskValueType>,
+        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        selector_argument: &EvaluationDomain,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_select_from_vector {
-    ($selector_argument_type:ty, $_graphblas_implementatio_type:ty, $graphblas_operator:ident) => {
-        impl<Vector: ValueType, Product: ValueType>
-            SelectFromVector<Vector, $selector_argument_type, Product, $selector_argument_type>
-            for VectorSelector<Vector, $selector_argument_type, Product, $selector_argument_type>
-        {
+    ($selector_argument_type:ty, $_graphblas_implementation_type:ty, $graphblas_operator:ident) => {
+        impl SelectFromVector<$selector_argument_type> for VectorSelector<$selector_argument_type> {
             fn apply(
                 &self,
-                argument: &SparseVector<Vector>,
-                product: &mut SparseVector<Product>,
+                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
@@ -142,12 +97,12 @@ macro_rules! implement_select_from_vector {
                 Ok(())
             }
 
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
-                argument: &SparseVector<Vector>,
-                product: &mut SparseVector<Product>,
+                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
                 selector_argument: &$selector_argument_type,
-                mask: &SparseVector<MaskValueType>,
+                mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.clone().to_type()?;
                 argument.context_ref().call(
@@ -182,10 +137,10 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
+        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
     };
     use crate::operators::index_unary_operator::{IsValueGreaterThan, IsValueLessThan};
 
@@ -205,14 +160,18 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let index_operator = IsValueGreaterThan::<u8>::new();
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         selector.apply(&vector, &mut product_vector, &0).unwrap();
 
@@ -224,8 +183,12 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
         assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
-        let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let index_operator = IsValueLessThan::<u8>::new();
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
         selector.apply(&vector, &mut product_vector, &0).unwrap();
 
         println!("{}", product_vector);
@@ -250,14 +213,18 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let index_operator = IsValueGreaterThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let index_operator = IsValueGreaterThan::<u8>::new();
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
 
         selector.apply(&vector, &mut product_vector, &1).unwrap();
 
@@ -269,8 +236,12 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
         assert_eq!(product_vector.get_element_value_or_default(&3).unwrap(), 4);
 
-        let index_operator = IsValueLessThan::<u8, u8, u8, u8>::new();
-        let selector = VectorSelector::new(&index_operator, &OperatorOptions::new_default(), None);
+        let index_operator = IsValueLessThan::<u8>::new();
+        let selector = VectorSelector::new(
+            &index_operator,
+            &OperatorOptions::new_default(),
+            &Assignment::new(),
+        );
         selector.apply(&vector, &mut product_vector, &3).unwrap();
 
         println!("{}", product_vector);

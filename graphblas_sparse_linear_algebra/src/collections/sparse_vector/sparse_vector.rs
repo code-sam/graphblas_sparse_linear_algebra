@@ -478,7 +478,7 @@ pub trait FromVectorElementList<T: ValueType> {
         context: &Arc<Context>,
         lenth: &ElementIndex,
         elements: &VectorElementList<T>,
-        reduction_operator_for_duplicates: &dyn BinaryOperator<T, T, T, T>,
+        reduction_operator_for_duplicates: &impl BinaryOperator<T>,
     ) -> Result<SparseVector<T>, SparseLinearAlgebraError>;
 }
 
@@ -489,12 +489,7 @@ macro_rules! sparse_matrix_from_element_vector {
                 context: &Arc<Context>,
                 length: &ElementIndex,
                 elements: &VectorElementList<$value_type>,
-                reduction_operator_for_duplicates: &dyn BinaryOperator<
-                    $value_type,
-                    $value_type,
-                    $value_type,
-                    $value_type,
-                >,
+                reduction_operator_for_duplicates: &impl BinaryOperator<$value_type>,
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints
@@ -988,7 +983,7 @@ mod tests {
             &context,
             &(10, 15).into(),
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -1061,7 +1056,7 @@ mod tests {
             &context,
             &10,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -1273,7 +1268,7 @@ mod tests {
             &context.clone(),
             &10,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -1294,7 +1289,7 @@ mod tests {
             &context,
             &10,
             &empty_element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
         assert_eq!(

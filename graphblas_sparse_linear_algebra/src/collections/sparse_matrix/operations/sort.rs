@@ -19,7 +19,7 @@ static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
 // REVIEW: support typecasting for indices and the evaluation domain of the binary operator
-pub trait SortSparseMatrix<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
+pub trait SortSparseMatrix<T: ValueType, B: BinaryOperator<T>> {
     fn sort_rows(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError>;
 
     fn sort_columns(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError>;
@@ -56,9 +56,7 @@ pub trait SortSparseMatrix<T: ValueType, B: BinaryOperator<T, T, bool, T>> {
     ) -> Result<SparseMatrix<ElementIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType, B: BinaryOperator<T, T, bool, T> + ReturnsBool> SortSparseMatrix<T, B>
-    for SparseMatrix<T>
-{
+impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> for SparseMatrix<T> {
     fn sort_rows(&mut self, sort_operator: &B) -> Result<(), SparseLinearAlgebraError> {
         self.context_ref().call(
             || unsafe {
@@ -239,14 +237,14 @@ mod tests {
             &context.clone(),
             &(10, 10).into(),
             &element_list,
-            &First::<isize, isize, isize, isize>::new(),
+            &First::<isize>::new(),
         )
         .unwrap();
 
         let mut sorted = SparseMatrix::new(&context, &matrix.size().unwrap()).unwrap();
         let mut indices = SparseMatrix::new(&context, &matrix.size().unwrap()).unwrap();
 
-        let larger_than_operator = IsGreaterThan::<isize, isize, bool, isize>::new();
+        let larger_than_operator = IsGreaterThan::<isize>::new();
 
         matrix
             .sorted_columns_and_indices(&mut sorted, &mut indices, &larger_than_operator)

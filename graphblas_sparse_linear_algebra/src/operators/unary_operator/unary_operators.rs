@@ -9,10 +9,8 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
 };
 use crate::value_type::ValueType;
 
-pub trait UnaryOperator<Argument, Product, EvaluationDomain>
+pub trait UnaryOperator<EvaluationDomain>
 where
-    Argument: ValueType,
-    Product: ValueType,
     EvaluationDomain: ValueType,
 {
     fn graphblas_type(&self) -> GrB_UnaryOp;
@@ -23,22 +21,15 @@ macro_rules! implement_unary_operator {
         $graphblas_operator_name:ident,
         $evaluation_domain:ty
     ) => {
-        impl<Argument: ValueType, Product: ValueType>
-            UnaryOperator<Argument, Product, $evaluation_domain>
-            for $operator_name<Argument, Product, $evaluation_domain>
-        {
+        impl UnaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
             fn graphblas_type(&self) -> GrB_UnaryOp {
                 unsafe { $graphblas_operator_name }
             }
         }
 
-        impl<Argument: ValueType, Product: ValueType>
-            $operator_name<Argument, Product, $evaluation_domain>
-        {
+        impl $operator_name<$evaluation_domain> {
             pub fn new() -> Self {
                 Self {
-                    _argument_type: PhantomData,
-                    _product_type: PhantomData,
                     _evaluation_domain: PhantomData,
                 }
             }
@@ -49,10 +40,7 @@ macro_rules! implement_unary_operator {
 macro_rules! define_unary_operator {
     ($identifier: ident) => {
         #[derive(Debug, Clone)]
-        pub struct $identifier<Argument: ValueType, Product: ValueType, EvaluationDomain: ValueType>
-        {
-            _argument_type: PhantomData<Argument>,
-            _product_type: PhantomData<Product>,
+        pub struct $identifier<EvaluationDomain: ValueType> {
             _evaluation_domain: PhantomData<EvaluationDomain>,
         }
     };
@@ -379,7 +367,7 @@ mod tests {
         context::{Context, Mode},
         operators::{
             apply::{ApplyUnaryOperator, UnaryOperatorApplier},
-            binary_operator::First,
+            binary_operator::{Assignment, First},
             options::OperatorOptions,
         },
     };
@@ -388,7 +376,7 @@ mod tests {
 
     #[test]
     fn new_binary_operator() {
-        let min_monoid = AdditiveInverse::<f32, f32, f32>::new();
+        let min_monoid = AdditiveInverse::<f32>::new();
         let _graphblas_type = min_monoid.graphblas_type();
     }
 
@@ -407,16 +395,16 @@ mod tests {
             &context.clone(),
             &vector_length,
             &element_list,
-            &First::<i64, i64, i64, i64>::new(),
+            &First::<i64>::new(),
         )
         .unwrap();
         let operator = UnaryOperatorApplier::new(
-            &IsFinite::<i64, u8, f32>::new(),
+            &IsFinite::<f32>::new(),
             &OperatorOptions::new_default(),
-            None,
+            &Assignment::new(),
         );
 
-        let mut product = SparseVector::new(&context, &vector_length).unwrap();
+        let mut product = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
         operator.apply_to_vector(&vector, &mut product).unwrap();
 

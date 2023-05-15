@@ -32,20 +32,20 @@ mod tests {
                 .unwrap()
         });
 
-        let add_operator = Plus::<i32, i32, i32, i32>::new();
+        let add_operator = Plus::<i32>::new();
         let options = OperatorOptions::new_default();
         let result_matrix = Mutex::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap());
 
         let element_wise_matrix_add_operator =
-            ElementWiseMatrixMultiplicationBinaryOperator::<i32, i32, i32, i32>::new(
+            ElementWiseMatrixMultiplicationBinaryOperator::<i32>::new(
                 &add_operator,
                 &options,
-                Some(&add_operator),
+                &add_operator,
             );
 
         matrices.par_iter().for_each(|matrix| {
             element_wise_matrix_add_operator
-                .apply(&matrix, &matrix, &mut result_matrix.lock().unwrap())
+                .apply(&*matrix, &*matrix, &mut *result_matrix.lock().unwrap())
                 .unwrap();
         });
 

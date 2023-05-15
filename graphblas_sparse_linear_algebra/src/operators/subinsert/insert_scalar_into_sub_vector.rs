@@ -13,7 +13,8 @@ use crate::collections::sparse_vector::{
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
 
@@ -36,7 +37,7 @@ pub struct InsertScalarIntoSubVector<VectorToInsertInto: ValueType, ScalarToInse
     _vector_to_insert_into: PhantomData<VectorToInsertInto>,
     _scalar_to_insert: PhantomData<ScalarToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -48,23 +49,10 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                ScalarToInsert,
-                VectorToInsertInto,
-                VectorToInsertInto,
-                VectorToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _vector_to_insert_into: PhantomData,
@@ -229,7 +217,7 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, VectorElementList,
@@ -252,7 +240,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -266,14 +254,15 @@ mod tests {
             &context,
             &3,
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
         let indices_to_insert: Vec<ElementIndex> = (0..3).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertScalarIntoSubVector::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertScalarIntoSubVector::new(&OperatorOptions::new_default(), &Assignment::new());
 
         let scalar_to_insert: u8 = 8;
 
@@ -291,7 +280,7 @@ mod tests {
             &context,
             &vector_length,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 

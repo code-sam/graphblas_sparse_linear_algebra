@@ -11,9 +11,10 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptions;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_Row_assign};
 
@@ -36,7 +37,7 @@ pub struct InsertVectorIntoRow<MatrixToInsertInto: ValueType, VectorToInsert: Va
     _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
     _vector_to_insert: PhantomData<VectorToInsert>,
 
-    accumulator: GrB_BinaryOp, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+    accumulator: GrB_BinaryOp,
     options: GrB_Descriptor,
 }
 
@@ -47,23 +48,10 @@ where
 {
     pub fn new(
         options: &OperatorOptions,
-        accumulator: Option<
-            &dyn BinaryOperator<
-                VectorToInsert,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-                MatrixToInsertInto,
-            >,
-        >, // optional accum for Z=accum(C,T), determines how results are written into the result matrix C
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
     ) -> Self {
-        let accumulator_to_use;
-        match accumulator {
-            Some(accumulator) => accumulator_to_use = accumulator.graphblas_type(),
-            None => accumulator_to_use = ptr::null_mut(),
-        }
-
         Self {
-            accumulator: accumulator_to_use,
+            accumulator: accumulator.accumulator_graphblas_type(),
             options: options.to_graphblas_descriptor(),
 
             _matrix_to_insert_into: PhantomData,
@@ -87,13 +75,13 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
         vector_to_insert: &SparseVector<VectorToInsert>,
-        mask_for_row_to_insert_into: &SparseVector<MaskValueType>,
+        mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -164,13 +152,13 @@ macro_rules! implement_insert_vector_into_row_trait {
             }
 
             /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+            fn apply_with_mask(
                 &self,
                 matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
                 row_indices_to_insert_into: &ElementIndexSelector,
                 row_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
-                mask_for_row_to_insert_into: &SparseVector<MaskValueType>,
+                mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
 
@@ -236,7 +224,7 @@ mod tests {
 
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
@@ -259,7 +247,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -275,7 +263,7 @@ mod tests {
             &context,
             &vector_to_insert_length,
             &element_list_to_insert,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
@@ -289,14 +277,15 @@ mod tests {
             &context,
             &matrix_size.column_width(),
             &mask_element_list,
-            &First::<bool, bool, bool, bool>::new(),
+            &First::<bool>::new(),
         )
         .unwrap();
 
         let indices_to_insert: Vec<ElementIndex> = (0..vector_to_insert_length).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertVectorIntoRow::new(&OperatorOptions::new_default(), None);
+        let insert_operator =
+            InsertVectorIntoRow::new(&OperatorOptions::new_default(), &Assignment::new());
 
         let row_to_insert_into: ElementIndex = 2;
 
@@ -331,7 +320,7 @@ mod tests {
             &context,
             &matrix_size,
             &element_list,
-            &First::<u8, u8, u8, u8>::new(),
+            &First::<u8>::new(),
         )
         .unwrap();
 
