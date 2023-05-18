@@ -605,15 +605,18 @@ mod tests {
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &Divide::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 0).unwrap();
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &Divide::<u8>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -623,15 +626,18 @@ mod tests {
         );
         assert_eq!(product_vector.get_element_value(&2).unwrap(), Some(0));
 
-        let operator = BinaryOperatorApplier::new(
-            &Divide::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &Divide::<u8>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -644,13 +650,16 @@ mod tests {
             0f32
         );
 
-        let operator = BinaryOperatorApplier::new(
-            &Divide::<f32>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &Divide::<f32>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
         println!("{}", product_vector);
         assert_eq!(
@@ -683,15 +692,18 @@ mod tests {
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &LDExp::<f32>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_agrument = SparseScalar::<f32>::from_value(&context, 0.5).unwrap();
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &LDExp::<f32>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -721,17 +733,20 @@ mod tests {
 
         let mut product_vector = SparseVector::<f32>::new(&context, &vector_length).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &ShiftBit::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         for i in 0..3 {
             let second_agrument =
                 SparseScalar::<f32>::from_value(&context, i as f32 + 0.5).unwrap();
             operator
-                .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+                .apply_with_vector_as_left_argument(
+                    &vector,
+                    &ShiftBit::<u8>::new(),
+                    &second_agrument,
+                    &Assignment::new(),
+                    &mut product_vector,
+                    &OperatorOptions::new_default(),
+                )
                 .unwrap();
 
             println!("{}", product_vector);
@@ -787,15 +802,18 @@ mod tests {
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &RowIndexFirstArgument::<i64>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
         operator
-            .apply_with_matrix_as_first_argument(&matrix, &second_agrument, &mut product_matrix)
+            .apply_with_matrix_as_left_argument(
+                &matrix,
+                &RowIndexFirstArgument::<i64>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_matrix,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_matrix);

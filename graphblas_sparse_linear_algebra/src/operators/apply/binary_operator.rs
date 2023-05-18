@@ -33,138 +33,275 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
-use crate::value_type::{ConvertScalar, ValueType};
+use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mutable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<EvaluationDomain: ValueType> Send for BinaryOperatorApplier<EvaluationDomain> {}
-unsafe impl<EvaluationDomain: ValueType> Sync for BinaryOperatorApplier<EvaluationDomain> {}
+unsafe impl Send for BinaryOperatorApplier {}
+unsafe impl Sync for BinaryOperatorApplier {}
 
 #[derive(Debug, Clone)]
-pub struct BinaryOperatorApplier<EvaluationDomain: ValueType> {
-    _evaluation_domain: PhantomData<EvaluationDomain>,
+pub struct BinaryOperatorApplier {
+    // _evaluation_domain: PhantomData<EvaluationDomain>,
 
-    binary_operator: GrB_BinaryOp,
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
+    // binary_operator: GrB_BinaryOp,
+    // accumulator: GrB_BinaryOp,
+    // options: GrB_Descriptor,
 }
 
-impl<EvaluationDomain: ValueType> BinaryOperatorApplier<EvaluationDomain> {
-    pub fn new(
-        binary_operator: &impl BinaryOperator<EvaluationDomain>,
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+impl BinaryOperatorApplier {
+    pub fn new(// binary_operator: &impl BinaryOperator<EvaluationDomain>,
+        // options: &OperatorOptions,
+        // accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
     ) -> Self {
         Self {
-            binary_operator: binary_operator.graphblas_type(),
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
+            // binary_operator: binary_operator.graphblas_type(),
+            // accumulator: accumulator.accumulator_graphblas_type(),
+            // options: options.to_graphblas_descriptor(),
 
-            _evaluation_domain: PhantomData,
+            // _evaluation_domain: PhantomData,
         }
     }
 
-    pub(crate) unsafe fn binary_operator(&self) -> GrB_BinaryOp {
-        self.binary_operator
-    }
-    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
-        self.accumulator
-    }
-    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
-        self.options
-    }
+    // pub(crate) unsafe fn binary_operator(&self) -> GrB_BinaryOp {
+    //     self.binary_operator
+    // }
+    // pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
+    //     self.accumulator
+    // }
+    // pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
+    //     self.options
+    // }
 }
+
+// pub trait ApplyBinaryOperatorGAT {
+//     type EvaluationDomain;
+
+//     fn apply_with_vector_as_first_argument<EvaluationDomain: ValueType>(
+//         &self,
+//         left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+//         operator: &impl BinaryOperator<EvaluationDomain>,
+//         right_argument: &EvaluationDomain,
+//         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+//         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+//         options: &OperatorOptions,
+//     ) -> Result<(), SparseLinearAlgebraError>;
+// }
+
+// impl ApplyBinaryOperatorGAT for BinaryOperatorApplier {
+//     type EvaluationDomain = bool;
+
+//     fn apply_with_vector_as_first_argument(
+//         &self,
+//         left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+//         operator: &impl BinaryOperator<bool>,
+//         right_argument: &bool,
+//         accumulator: &impl AccumulatorBinaryOperator<bool>,
+//         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+//         options: &OperatorOptions,
+//     ) -> Result<(), SparseLinearAlgebraError> {
+//         let context = product.context();
+//         let right_argument = right_argument.clone().to_type()?;
+
+//         context.call(
+//             || unsafe {
+//                 GrB_Vector_apply_BinaryOp1st_BOOL(
+//                     product.graphblas_vector(),
+//                     ptr::null_mut(),
+//                     accumulator.accumulator_graphblas_type(),
+//                     operator.graphblas_type(),
+//                     left_argument.graphblas_vector(),
+//                     right_argument,
+//                     options.to_graphblas_descriptor(),
+//                 )
+//             },
+//             unsafe { &product.graphblas_vector() },
+//         )?;
+
+//         Ok(())
+//     }
+// }
+
+// impl ApplyBinaryOperatorGAT for BinaryOperatorApplier {
+//     type EvaluationDomain = f32;
+
+//     fn apply_with_vector_as_first_argument(
+//         &self,
+//         left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+//         operator: &impl BinaryOperator<f32>,
+//         right_argument: &bool,
+//         accumulator: &impl AccumulatorBinaryOperator<bool>,
+//         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+//         options: &OperatorOptions,
+//     ) -> Result<(), SparseLinearAlgebraError> {
+//         let context = product.context();
+//         let right_argument = right_argument.clone().to_type()?;
+
+//         context.call(
+//             || unsafe {
+//                 GrB_Vector_apply_BinaryOp1st_BOOL(
+//                     product.graphblas_vector(),
+//                     ptr::null_mut(),
+//                     accumulator.accumulator_graphblas_type(),
+//                     operator.graphblas_type(),
+//                     left_argument.graphblas_vector(),
+//                     right_argument,
+//                     options.to_graphblas_descriptor(),
+//                 )
+//             },
+//             unsafe { &product.graphblas_vector() },
+//         )?;
+
+//         Ok(())
+//     }
+// }
+
+// pub fn apply_with_vector_as_first_argument<T: ValueType>(
+//     left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+//     operator: &impl BinaryOperator<T>,
+//     right_argument: &T,
+//     accumulator: &impl AccumulatorBinaryOperator<T>,
+//     product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+//     options: &OperatorOptions
+// ) -> Result<(), SparseLinearAlgebraError> {
+//         let context = product.context();
+//         let second_argument = right_argument.clone().to_type()?;
+
+//         context.call(
+//             || unsafe {
+//                 GrB_Vector_apply_BinaryOp1st_FP32(
+//                     product.graphblas_vector(),
+//                     ptr::null_mut(),
+//                     accumulator.accumulator_graphblas_type(),
+//                     operator.graphblas_type(),
+//                     left_argument.graphblas_vector(),
+//                     right_argument,
+//                     options.to_graphblas_descriptor(),
+//                 )
+//             },
+//             unsafe { &product.graphblas_vector() },
+//         )?;
+
+//         Ok(())
+// }
 
 pub trait ApplyBinaryOperator<EvaluationDomain>
 where
     EvaluationDomain: ValueType,
 {
-    fn apply_with_vector_as_first_argument(
+    fn apply_with_vector_as_left_argument(
+        &self,
+        left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl BinaryOperator<EvaluationDomain>,
+        right_argument: &EvaluationDomain,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_vector_as_right_argument(
+        &self,
+        first_argument: &EvaluationDomain,
+        operator: &impl BinaryOperator<EvaluationDomain>,
+        second_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn apply_with_vector_as_left_argument_and_mask(
         &self,
         first_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &EvaluationDomain,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_vector_as_second_argument(
-        &self,
-        first_argument: &EvaluationDomain,
-        second_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_vector_as_first_argument_and_mask(
-        &self,
-        first_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        second_argument: &EvaluationDomain,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_vector_as_second_argument_and_mask(
+    fn apply_with_vector_as_right_argument_and_mask(
         &self,
         first_argument: &EvaluationDomain,
+        operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_matrix_as_first_argument(
+    fn apply_with_matrix_as_left_argument(
         &self,
         first_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &EvaluationDomain,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_matrix_as_second_argument(
+    fn apply_with_matrix_as_right_argument(
         &self,
         first_argument: &EvaluationDomain,
+        operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_matrix_as_first_argument_and_mask(
+    fn apply_with_matrix_as_left_argument_and_mask(
         &self,
         first_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &EvaluationDomain,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_matrix_as_second_argument_and_mask(
+    fn apply_with_matrix_as_right_argument_and_mask(
         &self,
         first_argument: &EvaluationDomain,
+        operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_apply_binary_operator {
     ($value_type: ty, $_implementation_type: ty, $graphblas_function_1: ident, $graphblas_function_2: ident, $graphblas_function_3: ident, $graphblas_function_4: ident) => {
-        impl ApplyBinaryOperator<$value_type> for BinaryOperatorApplier<$value_type> {
-            fn apply_with_vector_as_first_argument(
+        impl ApplyBinaryOperator<$value_type> for BinaryOperatorApplier {
+            fn apply_with_vector_as_left_argument(
                 &self,
-                first_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-                second_argument: &$value_type,
+                left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                operator: &impl BinaryOperator<$value_type>,
+                right_argument: &$value_type,
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let second_argument = second_argument.clone().to_type()?;
+                let right_argument = right_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
                         $graphblas_function_1(
                             product.graphblas_vector(),
                             ptr::null_mut(),
-                            self.accumulator,
-                            self.binary_operator,
-                            first_argument.graphblas_vector(),
-                            second_argument,
-                            self.options,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
+                            left_argument.graphblas_vector(),
+                            right_argument,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -173,11 +310,14 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_vector_as_second_argument(
+            fn apply_with_vector_as_right_argument(
                 &self,
                 first_argument: &$value_type,
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.clone().to_type()?;
@@ -187,11 +327,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_2(
                             product.graphblas_vector(),
                             ptr::null_mut(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument,
                             second_argument.graphblas_vector(),
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -200,12 +340,15 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_vector_as_first_argument_and_mask(
+            fn apply_with_vector_as_left_argument_and_mask(
                 &self,
                 first_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &$value_type,
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
                 mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.clone().to_type()?;
@@ -215,11 +358,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_1(
                             product.graphblas_vector(),
                             mask.graphblas_vector(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument.graphblas_vector(),
                             second_argument,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -228,12 +371,15 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_vector_as_second_argument_and_mask(
+            fn apply_with_vector_as_right_argument_and_mask(
                 &self,
                 first_argument: &$value_type,
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
                 mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.clone().to_type()?;
@@ -243,11 +389,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_2(
                             product.graphblas_vector(),
                             mask.graphblas_vector(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument,
                             second_argument.graphblas_vector(),
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -256,11 +402,14 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_matrix_as_first_argument(
+            fn apply_with_matrix_as_left_argument(
                 &self,
                 first_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &$value_type,
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.clone().to_type()?;
@@ -270,11 +419,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_3(
                             product.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument.graphblas_matrix(),
                             second_argument,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },
@@ -283,11 +432,14 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_matrix_as_second_argument(
+            fn apply_with_matrix_as_right_argument(
                 &self,
                 first_argument: &$value_type,
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.clone().to_type()?;
@@ -297,11 +449,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_4(
                             product.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument,
                             second_argument.graphblas_matrix(),
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },
@@ -310,12 +462,15 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_matrix_as_first_argument_and_mask(
+            fn apply_with_matrix_as_left_argument_and_mask(
                 &self,
                 first_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &$value_type,
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
                 mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.clone().to_type()?;
@@ -325,11 +480,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_3(
                             product.graphblas_matrix(),
                             mask.graphblas_matrix(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument.graphblas_matrix(),
                             second_argument,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },
@@ -338,12 +493,15 @@ macro_rules! implement_apply_binary_operator {
                 Ok(())
             }
 
-            fn apply_with_matrix_as_second_argument_and_mask(
+            fn apply_with_matrix_as_right_argument_and_mask(
                 &self,
                 first_argument: &$value_type,
+                operator: &impl BinaryOperator<$value_type>,
                 second_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
                 mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.clone().to_type()?;
@@ -353,11 +511,11 @@ macro_rules! implement_apply_binary_operator {
                         $graphblas_function_4(
                             product.graphblas_matrix(),
                             mask.graphblas_matrix(),
-                            self.accumulator,
-                            self.binary_operator,
+                            accumulator.accumulator_graphblas_type(),
+                            operator.graphblas_type(),
                             first_argument,
                             second_argument.graphblas_matrix(),
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },
@@ -413,17 +571,20 @@ mod tests {
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &First::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_agrument = 10u8;
         // BinaryOperatorApplier::<u8>::apply_with_matrix_as_first_argument(&operator, &matrix, &second_agrument, &mut product_matrix)
         // .unwrap();
         operator
-            .apply_with_matrix_as_first_argument(&matrix, &second_agrument, &mut product_matrix)
+            .apply_with_matrix_as_left_argument(
+                &matrix,
+                &First::<u8>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_matrix,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_matrix);
@@ -438,14 +599,17 @@ mod tests {
             None
         );
 
-        let operator = BinaryOperatorApplier::new(
-            &First::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
         let first_agrument = 10;
         operator
-            .apply_with_matrix_as_second_argument(&first_agrument, &matrix, &mut product_matrix)
+            .apply_with_matrix_as_right_argument(
+                &first_agrument,
+                &First::<u8>::new(),
+                &matrix,
+                &Assignment::new(),
+                &mut product_matrix,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", matrix);
@@ -484,15 +648,18 @@ mod tests {
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &First::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_agrument = 10;
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &First::<u8>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -501,14 +668,17 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2);
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
-        let operator = BinaryOperatorApplier::new(
-            &First::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
         let first_argument = 10;
         operator
-            .apply_with_vector_as_second_argument(&first_argument, &vector, &mut product_vector)
+            .apply_with_vector_as_right_argument(
+                &first_argument,
+                &First::<u8>::new(),
+                &vector,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", vector);
@@ -541,15 +711,18 @@ mod tests {
 
         let mut product_vector = SparseVector::<usize>::new(&context, &vector_length).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &First::<usize>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_agrument = 10;
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_agrument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &First::<usize>::new(),
+                &second_agrument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -558,14 +731,17 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2);
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
-        let operator = BinaryOperatorApplier::new(
-            &First::<usize>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
         let first_agrument = 10;
         operator
-            .apply_with_vector_as_second_argument(&first_agrument, &vector, &mut product_vector)
+            .apply_with_vector_as_right_argument(
+                &first_agrument,
+                &First::<usize>::new(),
+                &vector,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", vector);
@@ -598,15 +774,18 @@ mod tests {
 
         let mut product_vector = SparseVector::<i8>::new(&context, &vector_length).unwrap();
 
-        let operator = BinaryOperatorApplier::new(
-            &Plus::<bool>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         let second_argument = true;
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_argument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &Plus::<bool>::new(),
+                &second_argument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -615,14 +794,17 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 1);
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
-        let operator = BinaryOperatorApplier::new(
-            &Plus::<bool>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = BinaryOperatorApplier::new();
 
         operator
-            .apply_with_vector_as_first_argument(&vector, &second_argument, &mut product_vector)
+            .apply_with_vector_as_left_argument(
+                &vector,
+                &Plus::<bool>::new(),
+                &second_argument,
+                &Assignment::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
