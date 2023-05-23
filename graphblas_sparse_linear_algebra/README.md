@@ -39,13 +39,15 @@ fn main() {
     let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
     let operator = BinaryOperatorApplier::new(
-        &First::<u8>::new(),
-        &OperatorOptions::new_default(),
-        &Assignment::new(),
     );
     let first_agrument = 10;
     operator
-        .apply_with_matrix_as_first_argument(&matrix, &first_agrument, &mut product_matrix)
+        .apply_with_matrix_as_left_argument(
+            &matrix, &First::<u8>::new(), 
+            &first_agrument, 
+            &Assignment::new(), 
+            &mut product_matrix, 
+            &OperatorOptions::new_default())
         .unwrap();
 
     println!("{}", product_matrix);
@@ -54,14 +56,16 @@ fn main() {
     assert_eq!(product_matrix.get_element_value(&(2, 1).into()).unwrap(), Some(2));
     assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
 
-    let operator = BinaryOperatorApplier::new(
-        &First::<u8>::new(),
-        &OperatorOptions::new_default(),
-        &Assignment::new(),
-    );
+    let operator = BinaryOperatorApplier::new();
     let second_agrument = 10;
     operator
-        .apply_with_matrix_as_second_argument(&second_agrument, &matrix, &mut product_matrix)
+        .apply_with_matrix_as_right_argument(
+            &second_agrument,
+            &First::<u8>::new(), 
+            &matrix, 
+            &Assignment::new(),
+            &mut product_matrix, 
+            &OperatorOptions::new_default())
         .unwrap();
 
     println!("{}", matrix);

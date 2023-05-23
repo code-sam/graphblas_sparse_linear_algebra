@@ -6,72 +6,73 @@ use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::IndexUnaryOperatorApplier;
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::index_unary_operator::IndexUnaryOperator;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::{AsBoolean, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_apply_IndexOp_Scalar, GrB_Vector_apply_IndexOp_Scalar,
 };
 
-pub trait ApplyIndexUnaryOperatorWithSparseScalar<
-    FirstArgument,
-    SecondArgument,
-    Product,
-    EvaluationDomain,
-> where
-    FirstArgument: ValueType,
-    SecondArgument: ValueType,
-    Product: ValueType,
+pub trait ApplyIndexUnaryOperatorWithSparseScalar<EvaluationDomain>
+where
     EvaluationDomain: ValueType,
 {
     fn apply_to_vector(
         &self,
-        vector: &SparseVector<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseVector<Product>,
+        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_to_vector_with_mask(
         &self,
-        vector: &SparseVector<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
-        matrix: &SparseMatrix<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_to_matrix_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_to_matrix_with_mask(
         &self,
-        matrix: &SparseMatrix<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<
-        FirstArgument: ValueType,
-        SecondArgument: ValueType,
-        Product: ValueType,
-        EvaluationDomain: ValueType,
-    >
-    ApplyIndexUnaryOperatorWithSparseScalar<
-        FirstArgument,
-        SecondArgument,
-        Product,
-        EvaluationDomain,
-    > for IndexUnaryOperatorApplier<EvaluationDomain>
+impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<EvaluationDomain>
+    for IndexUnaryOperatorApplier
 {
     fn apply_to_vector(
         &self,
-        vector: &SparseVector<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseVector<Product>,
+        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -80,11 +81,11 @@ impl<
                 GrB_Vector_apply_IndexOp_Scalar(
                     product.graphblas_vector(),
                     ptr::null_mut(),
-                    self.accumulator(),
-                    self.index_unary_operator(),
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     vector.graphblas_vector(),
                     argument.graphblas_scalar(),
-                    self.options(),
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -93,12 +94,15 @@ impl<
         Ok(())
     }
 
-    fn apply_to_vector_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_to_vector_with_mask(
         &self,
-        vector: &SparseVector<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseVector<Product>,
-        mask: &SparseVector<MaskValueType>,
+        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -107,11 +111,11 @@ impl<
                 GrB_Vector_apply_IndexOp_Scalar(
                     product.graphblas_vector(),
                     mask.graphblas_vector(),
-                    self.accumulator(),
-                    self.index_unary_operator(),
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     vector.graphblas_vector(),
                     argument.graphblas_scalar(),
-                    self.options(),
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -122,9 +126,12 @@ impl<
 
     fn apply_to_matrix(
         &self,
-        matrix: &SparseMatrix<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -133,11 +140,11 @@ impl<
                 GrB_Matrix_apply_IndexOp_Scalar(
                     product.graphblas_matrix(),
                     ptr::null_mut(),
-                    self.accumulator(),
-                    self.index_unary_operator(),
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     matrix.graphblas_matrix(),
                     argument.graphblas_scalar(),
-                    self.options(),
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -146,12 +153,15 @@ impl<
         Ok(())
     }
 
-    fn apply_to_matrix_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_to_matrix_with_mask(
         &self,
-        matrix: &SparseMatrix<FirstArgument>,
-        argument: &SparseScalar<SecondArgument>,
-        product: &mut SparseMatrix<Product>,
-        mask: &SparseMatrix<MaskValueType>,
+        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        operator: &impl IndexUnaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -160,11 +170,11 @@ impl<
                 GrB_Matrix_apply_IndexOp_Scalar(
                     product.graphblas_matrix(),
                     mask.graphblas_matrix(),
-                    self.accumulator(),
-                    self.index_unary_operator(),
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     matrix.graphblas_matrix(),
                     argument.graphblas_scalar(),
-                    self.options(),
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -211,14 +221,17 @@ mod tests {
 
         let mut product_matrix = SparseMatrix::<f32>::new(&context, &matrix_size).unwrap();
 
-        let operator = IndexUnaryOperatorApplier::new(
-            &IsValueGreaterThan::<i16>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = IndexUnaryOperatorApplier::new();
 
         operator
-            .apply_to_matrix(&matrix, &argument, &mut product_matrix)
+            .apply_to_matrix(
+                &matrix,
+                &IsValueGreaterThan::<i16>::new(),
+                &argument,
+                &Assignment::new(),
+                &mut product_matrix,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_matrix);

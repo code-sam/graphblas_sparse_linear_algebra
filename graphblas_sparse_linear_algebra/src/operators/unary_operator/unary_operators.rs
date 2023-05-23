@@ -398,15 +398,19 @@ mod tests {
             &First::<i64>::new(),
         )
         .unwrap();
-        let operator = UnaryOperatorApplier::new(
-            &IsFinite::<f32>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::new(),
-        );
+        let operator = UnaryOperatorApplier::new();
 
         let mut product = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        operator.apply_to_vector(&vector, &mut product).unwrap();
+        operator
+            .apply_to_vector(
+                &IsFinite::<f32>::new(),
+                &vector,
+                &Assignment::new(),
+                &mut product,
+                &OperatorOptions::new_default(),
+            )
+            .unwrap();
 
         println!("{}", product);
 

@@ -31,6 +31,7 @@ use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
@@ -44,149 +45,13 @@ unsafe impl Send for BinaryOperatorApplier {}
 unsafe impl Sync for BinaryOperatorApplier {}
 
 #[derive(Debug, Clone)]
-pub struct BinaryOperatorApplier {
-    // _evaluation_domain: PhantomData<EvaluationDomain>,
-
-    // binary_operator: GrB_BinaryOp,
-    // accumulator: GrB_BinaryOp,
-    // options: GrB_Descriptor,
-}
+pub struct BinaryOperatorApplier {}
 
 impl BinaryOperatorApplier {
-    pub fn new(// binary_operator: &impl BinaryOperator<EvaluationDomain>,
-        // options: &OperatorOptions,
-        // accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-    ) -> Self {
-        Self {
-            // binary_operator: binary_operator.graphblas_type(),
-            // accumulator: accumulator.accumulator_graphblas_type(),
-            // options: options.to_graphblas_descriptor(),
-
-            // _evaluation_domain: PhantomData,
-        }
+    pub fn new() -> Self {
+        Self {}
     }
-
-    // pub(crate) unsafe fn binary_operator(&self) -> GrB_BinaryOp {
-    //     self.binary_operator
-    // }
-    // pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
-    //     self.accumulator
-    // }
-    // pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
-    //     self.options
-    // }
 }
-
-// pub trait ApplyBinaryOperatorGAT {
-//     type EvaluationDomain;
-
-//     fn apply_with_vector_as_first_argument<EvaluationDomain: ValueType>(
-//         &self,
-//         left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-//         operator: &impl BinaryOperator<EvaluationDomain>,
-//         right_argument: &EvaluationDomain,
-//         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-//         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-//         options: &OperatorOptions,
-//     ) -> Result<(), SparseLinearAlgebraError>;
-// }
-
-// impl ApplyBinaryOperatorGAT for BinaryOperatorApplier {
-//     type EvaluationDomain = bool;
-
-//     fn apply_with_vector_as_first_argument(
-//         &self,
-//         left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-//         operator: &impl BinaryOperator<bool>,
-//         right_argument: &bool,
-//         accumulator: &impl AccumulatorBinaryOperator<bool>,
-//         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-//         options: &OperatorOptions,
-//     ) -> Result<(), SparseLinearAlgebraError> {
-//         let context = product.context();
-//         let right_argument = right_argument.clone().to_type()?;
-
-//         context.call(
-//             || unsafe {
-//                 GrB_Vector_apply_BinaryOp1st_BOOL(
-//                     product.graphblas_vector(),
-//                     ptr::null_mut(),
-//                     accumulator.accumulator_graphblas_type(),
-//                     operator.graphblas_type(),
-//                     left_argument.graphblas_vector(),
-//                     right_argument,
-//                     options.to_graphblas_descriptor(),
-//                 )
-//             },
-//             unsafe { &product.graphblas_vector() },
-//         )?;
-
-//         Ok(())
-//     }
-// }
-
-// impl ApplyBinaryOperatorGAT for BinaryOperatorApplier {
-//     type EvaluationDomain = f32;
-
-//     fn apply_with_vector_as_first_argument(
-//         &self,
-//         left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-//         operator: &impl BinaryOperator<f32>,
-//         right_argument: &bool,
-//         accumulator: &impl AccumulatorBinaryOperator<bool>,
-//         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-//         options: &OperatorOptions,
-//     ) -> Result<(), SparseLinearAlgebraError> {
-//         let context = product.context();
-//         let right_argument = right_argument.clone().to_type()?;
-
-//         context.call(
-//             || unsafe {
-//                 GrB_Vector_apply_BinaryOp1st_BOOL(
-//                     product.graphblas_vector(),
-//                     ptr::null_mut(),
-//                     accumulator.accumulator_graphblas_type(),
-//                     operator.graphblas_type(),
-//                     left_argument.graphblas_vector(),
-//                     right_argument,
-//                     options.to_graphblas_descriptor(),
-//                 )
-//             },
-//             unsafe { &product.graphblas_vector() },
-//         )?;
-
-//         Ok(())
-//     }
-// }
-
-// pub fn apply_with_vector_as_first_argument<T: ValueType>(
-//     left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-//     operator: &impl BinaryOperator<T>,
-//     right_argument: &T,
-//     accumulator: &impl AccumulatorBinaryOperator<T>,
-//     product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-//     options: &OperatorOptions
-// ) -> Result<(), SparseLinearAlgebraError> {
-//         let context = product.context();
-//         let second_argument = right_argument.clone().to_type()?;
-
-//         context.call(
-//             || unsafe {
-//                 GrB_Vector_apply_BinaryOp1st_FP32(
-//                     product.graphblas_vector(),
-//                     ptr::null_mut(),
-//                     accumulator.accumulator_graphblas_type(),
-//                     operator.graphblas_type(),
-//                     left_argument.graphblas_vector(),
-//                     right_argument,
-//                     options.to_graphblas_descriptor(),
-//                 )
-//             },
-//             unsafe { &product.graphblas_vector() },
-//         )?;
-
-//         Ok(())
-// }
 
 pub trait ApplyBinaryOperator<EvaluationDomain>
 where

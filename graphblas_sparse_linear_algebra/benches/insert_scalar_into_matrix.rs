@@ -69,8 +69,7 @@ fn bench_test(context: Arc<Context>) {
     let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
     let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-    let insert_operator =
-        InsertScalarIntoMatrix::new(&OperatorOptions::new_default(), &Assignment::new());
+    let insert_operator = InsertScalarIntoMatrix::new();
 
     for scalar_to_insert in 1..10 as u8 {
         insert_operator
@@ -79,6 +78,8 @@ fn bench_test(context: Arc<Context>) {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
+                &Assignment::new(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -96,7 +97,9 @@ fn bench_test(context: Arc<Context>) {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
+                &Assignment::new(),
                 &mask.clone(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
     }

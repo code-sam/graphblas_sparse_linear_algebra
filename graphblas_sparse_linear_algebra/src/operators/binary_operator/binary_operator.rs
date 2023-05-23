@@ -132,6 +132,8 @@ impl<T: ValueType> AccumulatorBinaryOperator<T> for Assignment<T> {
     }
 }
 
+// TODO
+/// Type will be ignored, type-casting depends on ValueType of the input and output collections
 impl<T: ValueType> Assignment<T> {
     pub fn new() -> Self {
         Self {

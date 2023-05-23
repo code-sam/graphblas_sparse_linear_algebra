@@ -11,7 +11,7 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled
@@ -19,31 +19,15 @@ use crate::value_type::ValueType;
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<MatrixToInsertInto: ValueType> Send for InsertMatrixIntoSubMatrix<MatrixToInsertInto> {}
-unsafe impl<MatrixToInsertInto: ValueType> Sync for InsertMatrixIntoSubMatrix<MatrixToInsertInto> {}
+unsafe impl Send for InsertMatrixIntoSubMatrix {}
+unsafe impl Sync for InsertMatrixIntoSubMatrix {}
 
 #[derive(Debug, Clone)]
-pub struct InsertMatrixIntoSubMatrix<MatrixToInsertInto: ValueType> {
-    _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
+pub struct InsertMatrixIntoSubMatrix {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<MatrixToInsertInto> InsertMatrixIntoSubMatrix<MatrixToInsertInto>
-where
-    MatrixToInsertInto: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _matrix_to_insert_into: PhantomData,
-        }
+impl InsertMatrixIntoSubMatrix {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -58,6 +42,8 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -67,12 +53,14 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInsertInto>
-    for InsertMatrixIntoSubMatrix<MatrixToInsertInto>
+    for InsertMatrixIntoSubMatrix
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -81,6 +69,8 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -105,13 +95,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -126,13 +116,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row,
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -147,13 +137,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column,
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -168,13 +158,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row,
                             number_of_rows_to_insert_into,
                             column,
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -192,7 +182,9 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -217,13 +209,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             mask_for_matrix_to_insert_into.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -238,13 +230,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             mask_for_matrix_to_insert_into.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row,
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -259,13 +251,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             mask_for_matrix_to_insert_into.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column,
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -280,13 +272,13 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
                         GxB_Matrix_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             mask_for_matrix_to_insert_into.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix(),
                             row,
                             number_of_rows_to_insert_into,
                             column,
                             number_of_columns_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -366,8 +358,7 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..2).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator =
-            InsertMatrixIntoSubMatrix::new(&OperatorOptions::new_default(), &Assignment::new());
+        let insert_operator = InsertMatrixIntoSubMatrix::new();
 
         insert_operator
             .apply(
@@ -375,6 +366,8 @@ mod tests {
                 &rows_to_insert,
                 &columns_to_insert,
                 &matrix_to_insert,
+                &Assignment::new(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -416,7 +409,9 @@ mod tests {
                 &rows_to_insert,
                 &columns_to_insert,
                 &matrix_to_insert,
+                &Assignment::new(),
                 &mask,
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 

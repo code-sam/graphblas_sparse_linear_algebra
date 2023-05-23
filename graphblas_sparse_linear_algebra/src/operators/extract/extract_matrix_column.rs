@@ -9,7 +9,7 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract, GrB_Descriptor};
@@ -17,34 +17,15 @@ use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Col_extract,
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Column: ValueType> Sync for MatrixColumnExtractor<Column> {}
-unsafe impl<Column: ValueType> Send for MatrixColumnExtractor<Column> {}
+unsafe impl Sync for MatrixColumnExtractor {}
+unsafe impl Send for MatrixColumnExtractor {}
 
 #[derive(Debug, Clone)]
-pub struct MatrixColumnExtractor<Column>
-where
-    Column: ValueType,
-{
-    _column: PhantomData<Column>,
+pub struct MatrixColumnExtractor {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<Column> MatrixColumnExtractor<Column>
-where
-    Column: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Column>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _column: PhantomData,
-        }
+impl MatrixColumnExtractor {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -54,7 +35,9 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut SparseVector<Column>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_mask(
@@ -62,18 +45,22 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut SparseVector<Column>,
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Column> {
+impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
     fn apply(
         &self,
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut SparseVector<Column>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -97,12 +84,12 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Co
                         GrB_Col_extract(
                             column_vector.graphblas_vector(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -114,12 +101,12 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Co
                         GrB_Col_extract(
                             column_vector.graphblas_vector(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             index,
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -135,8 +122,10 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Co
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut SparseVector<Column>,
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -160,12 +149,12 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Co
                         GrB_Col_extract(
                             column_vector.graphblas_vector(),
                             mask.graphblas_vector(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -177,12 +166,12 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor<Co
                         GrB_Col_extract(
                             column_vector.graphblas_vector(),
                             mask.graphblas_vector(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             index,
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -232,11 +221,17 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = vec![0, 2];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor =
-            MatrixColumnExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
+        let extractor = MatrixColumnExtractor::new();
 
         extractor
-            .apply(&matrix, &0, &indices_to_extract, &mut column_vector)
+            .apply(
+                &matrix,
+                &0,
+                &indices_to_extract,
+                &Assignment::new(),
+                &mut column_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         assert_eq!(column_vector.number_of_stored_elements().unwrap(), 2);

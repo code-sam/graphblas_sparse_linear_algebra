@@ -180,11 +180,7 @@ mod tests {
 
         let operator = Equal::<bool>::new();
         let options = OperatorOptions::new_default();
-        let equality_operator = ElementWiseVectorAdditionMonoidOperator::<bool>::new(
-            &operator,
-            &options,
-            &Assignment::new(),
-        );
+        let equality_operator = ElementWiseVectorAdditionMonoidOperator::new();
 
         let length = 7;
 
@@ -194,7 +190,14 @@ mod tests {
 
         // Test multiplication of empty matrices
         equality_operator
-            .apply(&multiplier, &multiplicant, &mut product)
+            .apply(
+                &multiplier,
+                &operator,
+                &multiplicant,
+                &Assignment::new(),
+                &mut product,
+                &options,
+            )
             .unwrap();
         let element_list = product.get_element_list().unwrap();
 
@@ -230,7 +233,14 @@ mod tests {
 
         // Test multiplication of full matrices
         equality_operator
-            .apply(&multiplier, &multiplicant, &mut product)
+            .apply(
+                &multiplier,
+                &operator,
+                &multiplicant,
+                &Assignment::new(),
+                &mut product,
+                &options,
+            )
             .unwrap();
 
         assert_eq!(product.get_element_value_or_default(&0).unwrap(), false); // operator does not apply on empty

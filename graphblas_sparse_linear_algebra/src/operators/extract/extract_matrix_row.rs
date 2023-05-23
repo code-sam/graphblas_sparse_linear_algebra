@@ -1,9 +1,12 @@
-use crate::collections::sparse_matrix::{Size, SparseMatrix, SparseMatrixTrait};
-use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_matrix::{
+    GraphblasSparseMatrixTrait, Size, SparseMatrix, SparseMatrixTrait,
+};
+use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::{AccumulatorBinaryOperator, Assignment};
+use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
     options::OperatorOptions,
@@ -12,121 +15,94 @@ use crate::operators::{
 use crate::value_type::{AsBoolean, ValueType};
 
 #[derive(Debug, Clone)]
-pub struct MatrixRowExtractor<Matrix, Column>
-where
-    Matrix: ValueType,
-    Column: ValueType,
-{
-    transpose_operator: MatrixTranspose<Matrix>,
-    column_extractor: MatrixColumnExtractor<Column>,
-}
+pub struct MatrixRowExtractor {}
 
-unsafe impl<Matrix: ValueType, Column: ValueType> Send for MatrixRowExtractor<Matrix, Column> {}
-unsafe impl<Matrix: ValueType, Column: ValueType> Sync for MatrixRowExtractor<Matrix, Column> {}
+unsafe impl Send for MatrixRowExtractor {}
+unsafe impl Sync for MatrixRowExtractor {}
 
-impl<Matrix, Column> MatrixRowExtractor<Matrix, Column>
-where
-    Matrix: ValueType,
-    Column: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Column>,
-    ) -> Self {
-        let transpose_operator = MatrixTranspose::new(options, &Assignment::<Matrix>::new());
-        let column_extractor = MatrixColumnExtractor::new(options, accumulator);
-
-        Self {
-            transpose_operator,
-            column_extractor,
-        }
+impl MatrixRowExtractor {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
-pub trait ExtractMatrixRow<Matrix: ValueType, Column: ValueType> {
+pub trait ExtractMatrixRow<Row: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
-        row_vector: &mut SparseVector<Column>,
+        accumulator: &impl AccumulatorBinaryOperator<Row>,
+        row_vector: &mut SparseVector<Row>,
+        options: &mut OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
-        row_vector: &mut SparseVector<Column>,
-        mask: &SparseVector<MaskValueType>,
+        accumulator: &impl AccumulatorBinaryOperator<Row>,
+        row_vector: &mut SparseVector<Row>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &mut OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Matrix: ValueType, Column: ValueType> ExtractMatrixRow<Matrix, Column>
-    for MatrixRowExtractor<Matrix, Column>
-{
+impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
     fn apply(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
-        row_vector: &mut SparseVector<Column>,
+        accumulator: &impl AccumulatorBinaryOperator<Row>,
+        row_vector: &mut SparseVector<Row>,
+        options: &mut OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let _context = matrix_to_extract_from.context();
 
-        let size_of_transposed_matrix: Size = (
-            matrix_to_extract_from.column_width()?,
-            matrix_to_extract_from.row_height()?,
-        )
-            .into();
-        // creating a new matrix, instead of cloning, requires to specify if if the value type is built-in or custom, as this is required for the SparseMatrix::new() constructor.
-        // let mut transposed_matrix = SparseMatrix::<ValueType>::new(&context, &size_of_transposed_matrix)?;
-        let mut transposed_matrix = matrix_to_extract_from.clone();
-        transposed_matrix.resize(&size_of_transposed_matrix)?;
+        // TODO: reduce cost by reusing instance
+        let column_extractor = MatrixColumnExtractor::new();
 
-        self.transpose_operator
-            .apply(matrix_to_extract_from, &mut transposed_matrix)?;
+        options.negate_transpose_input0();
 
-        self.column_extractor.apply(
-            &transposed_matrix,
+        column_extractor.apply(
+            matrix_to_extract_from,
             row_index_to_extract,
             indices_to_extract,
+            accumulator,
             row_vector,
+            options,
         )?;
 
         Ok(())
     }
 
-    fn apply_with_mask<MaskValueType: ValueType + AsBoolean>(
+    fn apply_with_mask(
         &self,
-        matrix_to_extract_from: &SparseMatrix<Matrix>,
+        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
-        row_vector: &mut SparseVector<Column>,
-        mask: &SparseVector<MaskValueType>,
+        accumulator: &impl AccumulatorBinaryOperator<Row>,
+        row_vector: &mut SparseVector<Row>,
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &mut OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let _context = matrix_to_extract_from.context();
 
-        let size_of_transposed_matrix: Size = (
-            matrix_to_extract_from.column_width()?,
-            matrix_to_extract_from.row_height()?,
-        )
-            .into();
-        let mut transposed_matrix = SparseMatrix::<Matrix>::new(
-            matrix_to_extract_from.context_ref(),
-            &size_of_transposed_matrix,
-        )?;
-        transposed_matrix.resize(&size_of_transposed_matrix)?;
+        // TODO: reduce cost by reusing instance
+        let column_extractor = MatrixColumnExtractor::new();
 
-        self.transpose_operator
-            .apply(matrix_to_extract_from, &mut transposed_matrix)?;
+        options.negate_transpose_input0();
 
-        self.column_extractor.apply_with_mask(
+        column_extractor.apply_with_mask(
             matrix_to_extract_from,
             &row_index_to_extract,
             indices_to_extract,
+            accumulator,
             row_vector,
             mask,
+            options,
         )?;
 
         Ok(())
@@ -169,11 +145,17 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = vec![0, 1];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor =
-            MatrixRowExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
+        let extractor = MatrixRowExtractor::new();
 
         extractor
-            .apply(&matrix, &2, &indices_to_extract, &mut column_vector)
+            .apply(
+                &matrix,
+                &2,
+                &indices_to_extract,
+                &Assignment::<u8>::new(),
+                &mut column_vector,
+                &mut OperatorOptions::new_default(),
+            )
             .unwrap();
 
         assert_eq!(column_vector.number_of_stored_elements().unwrap(), 2);

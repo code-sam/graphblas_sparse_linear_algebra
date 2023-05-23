@@ -10,7 +10,7 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
@@ -20,34 +20,15 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<SubVector: ValueType> Send for SubVectorExtractor<SubVector> {}
-unsafe impl<SubVector: ValueType> Sync for SubVectorExtractor<SubVector> {}
+unsafe impl Send for SubVectorExtractor {}
+unsafe impl Sync for SubVectorExtractor {}
 
 #[derive(Debug, Clone)]
-pub struct SubVectorExtractor<Product>
-where
-    Product: ValueType,
-{
-    _product: PhantomData<Product>,
+pub struct SubVectorExtractor {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<SubVector> SubVectorExtractor<SubVector>
-where
-    SubVector: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _product: PhantomData,
-        }
+impl SubVectorExtractor {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -56,7 +37,9 @@ pub trait ExtractSubVector<SubVector: ValueType> {
         &self,
         vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut SparseVector<SubVector>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// Length of the mask must equal length of sub_vector
@@ -64,17 +47,21 @@ pub trait ExtractSubVector<SubVector: ValueType> {
         &self,
         vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut SparseVector<SubVector>,
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<SubVector> {
+impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
     fn apply(
         &self,
         vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut SparseVector<SubVector>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 
@@ -96,11 +83,11 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<Su
                         GrB_Vector_extract(
                             sub_vector.graphblas_vector(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_extract_from.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_vector.graphblas_vector_ref() },
@@ -112,11 +99,11 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<Su
                         GrB_Vector_extract(
                             sub_vector.graphblas_vector(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_extract_from.graphblas_vector(),
                             index,
                             number_of_indices_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_vector.graphblas_vector_ref() },
@@ -132,8 +119,10 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<Su
         &self,
         vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
+        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut SparseVector<SubVector>,
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 
@@ -155,11 +144,11 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<Su
                         GrB_Vector_extract(
                             sub_vector.graphblas_vector(),
                             mask.graphblas_vector(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_extract_from.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_vector.graphblas_vector_ref() },
@@ -171,11 +160,11 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor<Su
                         GrB_Vector_extract(
                             sub_vector.graphblas_vector(),
                             mask.graphblas_vector(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_extract_from.graphblas_vector(),
                             index,
                             number_of_indices_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_vector.graphblas_vector_ref() },
@@ -222,11 +211,16 @@ mod tests {
         let indices_to_extract: Vec<ElementIndex> = (0..3).collect();
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
 
-        let extractor =
-            SubVectorExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
+        let extractor = SubVectorExtractor::new();
 
         extractor
-            .apply(&vector, &indices_to_extract, &mut sub_vector)
+            .apply(
+                &vector,
+                &indices_to_extract,
+                &Assignment::new(),
+                &mut sub_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         assert_eq!(sub_vector.number_of_stored_elements().unwrap(), 2);
@@ -277,11 +271,17 @@ mod tests {
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
         // let indices_to_extract = ElementIndexSelector::All;
 
-        let extractor =
-            SubVectorExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
+        let extractor = SubVectorExtractor::new();
 
         extractor
-            .apply_with_mask(&vector, &indices_to_extract, &mut sub_vector, &mask)
+            .apply_with_mask(
+                &vector,
+                &indices_to_extract,
+                &Assignment::new(),
+                &mut sub_vector,
+                &mask,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         assert_eq!(sub_vector.number_of_stored_elements().unwrap(), 3);

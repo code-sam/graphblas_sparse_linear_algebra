@@ -10,7 +10,7 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
@@ -20,34 +20,15 @@ use crate::bindings_to_graphblas_implementation::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<SubMatrix: ValueType> Send for SubMatrixExtractor<SubMatrix> {}
-unsafe impl<SubMatrix: ValueType> Sync for SubMatrixExtractor<SubMatrix> {}
+unsafe impl Send for SubMatrixExtractor {}
+unsafe impl Sync for SubMatrixExtractor {}
 
 #[derive(Debug, Clone)]
-pub struct SubMatrixExtractor<SubMatrix>
-where
-    SubMatrix: ValueType,
-{
-    _sub_matrix: PhantomData<SubMatrix>,
+pub struct SubMatrixExtractor {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<SubMatrix> SubMatrixExtractor<SubMatrix>
-where
-    SubMatrix: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _sub_matrix: PhantomData,
-        }
+impl SubMatrixExtractor {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -57,7 +38,9 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
+        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_mask(
@@ -65,18 +48,22 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
+        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<SubMatrix> {
+impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
     fn apply(
         &self,
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
+        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -111,13 +98,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_extract,
                             column.as_ptr(),
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -132,13 +119,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row,
                             number_of_rows_to_extract,
                             column.as_ptr(),
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -153,13 +140,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_extract,
                             column,
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -174,13 +161,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row,
                             number_of_rows_to_extract,
                             column,
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -196,8 +183,10 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
         matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
+        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -232,13 +221,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             mask.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_extract,
                             column.as_ptr(),
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -253,13 +242,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             mask.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row,
                             number_of_rows_to_extract,
                             column.as_ptr(),
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -274,13 +263,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             mask.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row.as_ptr(),
                             number_of_rows_to_extract,
                             column,
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -295,13 +284,13 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor<Su
                         GrB_Matrix_extract(
                             sub_matrix.graphblas_matrix(),
                             mask.graphblas_matrix(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
                             row,
                             number_of_rows_to_extract,
                             column,
                             number_of_columns_to_extract,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -350,15 +339,16 @@ mod tests {
         let columns_to_extract: Vec<ElementIndex> = (0..6).collect();
         let columns_to_extract = ElementIndexSelector::Index(&columns_to_extract);
 
-        let extractor =
-            SubMatrixExtractor::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
+        let extractor = SubMatrixExtractor::new();
 
         extractor
             .apply(
                 &matrix,
                 &rows_to_extract,
                 &columns_to_extract,
+                &Assignment::new(),
                 &mut sub_matrix,
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -384,7 +374,9 @@ mod tests {
                 &matrix,
                 &rows_to_extract,
                 &columns_to_extract,
+                &Assignment::new(),
                 &mut sub_matrix,
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
