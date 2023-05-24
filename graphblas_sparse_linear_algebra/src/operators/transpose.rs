@@ -1,12 +1,11 @@
-use std::marker::PhantomData;
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::bindings_to_graphblas_implementation::GrB_transpose;
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::options::OperatorOptionsTrait;
@@ -102,7 +101,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
 mod tests {
     use super::*;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
+        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, SparseMatrix,
     };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

@@ -5,15 +5,15 @@ use suitesparse_graphblas_sys::{
     GrB_Vector_apply_BinaryOp1st_Scalar, GrB_Vector_apply_BinaryOp2nd_Scalar,
 };
 
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
+use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::BinaryOperatorApplier;
 use crate::operators::binary_operator::{AccumulatorBinaryOperator, BinaryOperator};
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 pub trait ApplyBinaryOperatorWithSparseScalar<EvaluationDomain>
 where
@@ -350,10 +350,11 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
+        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
     };
+    use crate::collections::sparse_scalar::SparseScalar;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
+        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

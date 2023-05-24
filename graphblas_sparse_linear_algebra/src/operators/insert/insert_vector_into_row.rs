@@ -1,7 +1,5 @@
 use std::ptr;
 
-use std::marker::PhantomData;
-
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
 };
@@ -17,7 +15,7 @@ use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_Row_assign};
+use crate::bindings_to_graphblas_implementation::GrB_Row_assign;
 
 // TODO: explicitly define how dupicates are handled
 

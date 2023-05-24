@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::sparse_vector::{
@@ -13,9 +12,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Vector_extract,
-};
+use crate::bindings_to_graphblas_implementation::GrB_Vector_extract;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

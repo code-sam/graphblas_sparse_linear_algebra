@@ -1,9 +1,6 @@
-use std::marker::PhantomData;
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GxB_Col_subassign,
-};
+use crate::bindings_to_graphblas_implementation::GxB_Col_subassign;
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
 };

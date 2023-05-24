@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
@@ -10,9 +9,7 @@ use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_vxm,
-};
+use crate::bindings_to_graphblas_implementation::GrB_vxm;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

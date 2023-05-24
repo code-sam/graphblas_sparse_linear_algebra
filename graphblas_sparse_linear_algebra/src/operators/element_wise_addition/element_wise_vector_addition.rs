@@ -1,7 +1,6 @@
-use std::marker::PhantomData;
 use std::ptr;
 
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -9,11 +8,10 @@ use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Monoid, GrB_Semiring, GrB_Vector_eWiseAdd_BinaryOp,
-    GrB_Vector_eWiseAdd_Monoid, GrB_Vector_eWiseAdd_Semiring,
+    GrB_Vector_eWiseAdd_BinaryOp, GrB_Vector_eWiseAdd_Monoid, GrB_Vector_eWiseAdd_Semiring,
 };
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
@@ -324,7 +322,8 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, VectorElementList,
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

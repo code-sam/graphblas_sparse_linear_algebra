@@ -1,11 +1,10 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GxB_Matrix_subassign_BOOL, GxB_Matrix_subassign_FP32,
-    GxB_Matrix_subassign_FP64, GxB_Matrix_subassign_INT16, GxB_Matrix_subassign_INT32,
-    GxB_Matrix_subassign_INT64, GxB_Matrix_subassign_INT8, GxB_Matrix_subassign_UINT16,
-    GxB_Matrix_subassign_UINT32, GxB_Matrix_subassign_UINT64, GxB_Matrix_subassign_UINT8,
+    GxB_Matrix_subassign_BOOL, GxB_Matrix_subassign_FP32, GxB_Matrix_subassign_FP64,
+    GxB_Matrix_subassign_INT16, GxB_Matrix_subassign_INT32, GxB_Matrix_subassign_INT64,
+    GxB_Matrix_subassign_INT8, GxB_Matrix_subassign_UINT16, GxB_Matrix_subassign_UINT32,
+    GxB_Matrix_subassign_UINT64, GxB_Matrix_subassign_UINT8,
 };
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
@@ -17,7 +16,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
-use crate::value_type::{AsBoolean, ConvertScalar, ValueType};
+use crate::value_type::{ConvertScalar, ValueType};
 
 // TODO: explicitly define how dupicates are handled
 

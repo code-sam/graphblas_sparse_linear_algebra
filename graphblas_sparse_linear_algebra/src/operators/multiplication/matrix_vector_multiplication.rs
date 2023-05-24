@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
@@ -6,14 +5,11 @@ use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::kronecker_product::SemiringKroneckerProduct;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Semiring, GrB_mxv,
-};
+use crate::bindings_to_graphblas_implementation::GrB_mxv;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::sparse_vector::{
@@ -14,10 +13,10 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::implem
 use crate::value_type::{ConvertScalar, ValueType};
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Vector_assign_BOOL, GrB_Vector_assign_FP32,
-    GrB_Vector_assign_FP64, GrB_Vector_assign_INT16, GrB_Vector_assign_INT32,
-    GrB_Vector_assign_INT64, GrB_Vector_assign_INT8, GrB_Vector_assign_UINT16,
-    GrB_Vector_assign_UINT32, GrB_Vector_assign_UINT64, GrB_Vector_assign_UINT8,
+    GrB_Vector_assign_BOOL, GrB_Vector_assign_FP32, GrB_Vector_assign_FP64,
+    GrB_Vector_assign_INT16, GrB_Vector_assign_INT32, GrB_Vector_assign_INT64,
+    GrB_Vector_assign_INT8, GrB_Vector_assign_UINT16, GrB_Vector_assign_UINT32,
+    GrB_Vector_assign_UINT64, GrB_Vector_assign_UINT8,
 };
 
 // TODO: explicitly define how dupicates are handled

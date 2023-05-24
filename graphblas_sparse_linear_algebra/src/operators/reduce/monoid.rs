@@ -1,16 +1,15 @@
 use std::convert::TryInto;
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32,
-    GrB_Matrix_reduce_FP64, GrB_Matrix_reduce_INT16, GrB_Matrix_reduce_INT32,
-    GrB_Matrix_reduce_INT64, GrB_Matrix_reduce_INT8, GrB_Matrix_reduce_Monoid,
-    GrB_Matrix_reduce_UINT16, GrB_Matrix_reduce_UINT32, GrB_Matrix_reduce_UINT64,
-    GrB_Matrix_reduce_UINT8, GrB_Monoid, GrB_Vector_reduce_BOOL, GrB_Vector_reduce_FP32,
-    GrB_Vector_reduce_FP64, GrB_Vector_reduce_INT16, GrB_Vector_reduce_INT32,
-    GrB_Vector_reduce_INT64, GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16,
-    GrB_Vector_reduce_UINT32, GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
+    GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32, GrB_Matrix_reduce_FP64,
+    GrB_Matrix_reduce_INT16, GrB_Matrix_reduce_INT32, GrB_Matrix_reduce_INT64,
+    GrB_Matrix_reduce_INT8, GrB_Matrix_reduce_Monoid, GrB_Matrix_reduce_UINT16,
+    GrB_Matrix_reduce_UINT32, GrB_Matrix_reduce_UINT64, GrB_Matrix_reduce_UINT8,
+    GrB_Vector_reduce_BOOL, GrB_Vector_reduce_FP32, GrB_Vector_reduce_FP64,
+    GrB_Vector_reduce_INT16, GrB_Vector_reduce_INT32, GrB_Vector_reduce_INT64,
+    GrB_Vector_reduce_INT8, GrB_Vector_reduce_UINT16, GrB_Vector_reduce_UINT32,
+    GrB_Vector_reduce_UINT64, GrB_Vector_reduce_UINT8,
 };
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;

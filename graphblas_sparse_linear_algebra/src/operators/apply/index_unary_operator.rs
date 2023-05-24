@@ -1,10 +1,9 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use suitesparse_graphblas_sys::{
-    GrB_IndexUnaryOp, GrB_Matrix_apply_IndexOp_BOOL, GrB_Matrix_apply_IndexOp_FP32,
-    GrB_Matrix_apply_IndexOp_FP64, GrB_Matrix_apply_IndexOp_INT16, GrB_Matrix_apply_IndexOp_INT32,
-    GrB_Matrix_apply_IndexOp_INT64, GrB_Matrix_apply_IndexOp_INT8, GrB_Matrix_apply_IndexOp_UINT16,
+    GrB_Matrix_apply_IndexOp_BOOL, GrB_Matrix_apply_IndexOp_FP32, GrB_Matrix_apply_IndexOp_FP64,
+    GrB_Matrix_apply_IndexOp_INT16, GrB_Matrix_apply_IndexOp_INT32, GrB_Matrix_apply_IndexOp_INT64,
+    GrB_Matrix_apply_IndexOp_INT8, GrB_Matrix_apply_IndexOp_UINT16,
     GrB_Matrix_apply_IndexOp_UINT32, GrB_Matrix_apply_IndexOp_UINT64,
     GrB_Matrix_apply_IndexOp_UINT8, GrB_Vector_apply_IndexOp_BOOL, GrB_Vector_apply_IndexOp_FP32,
     GrB_Vector_apply_IndexOp_FP64, GrB_Vector_apply_IndexOp_INT16, GrB_Vector_apply_IndexOp_INT32,
@@ -21,11 +20,8 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::options::OperatorOptions;
 use crate::operators::options::OperatorOptionsTrait;
-use crate::operators::unary_operator::UnaryOperator;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
-
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

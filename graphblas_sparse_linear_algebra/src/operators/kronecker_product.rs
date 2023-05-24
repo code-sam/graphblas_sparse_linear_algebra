@@ -1,7 +1,5 @@
 use std::ptr;
 
-use std::marker::PhantomData;
-
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
@@ -11,8 +9,7 @@ use crate::operators::{
 use crate::value_type::ValueType;
 
 use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_kronecker_BinaryOp, GrB_Matrix_kronecker_Monoid,
-    GrB_Matrix_kronecker_Semiring, GrB_Monoid, GrB_Semiring,
+    GrB_Matrix_kronecker_BinaryOp, GrB_Matrix_kronecker_Monoid, GrB_Matrix_kronecker_Semiring,
 };
 
 use super::binary_operator::AccumulatorBinaryOperator;

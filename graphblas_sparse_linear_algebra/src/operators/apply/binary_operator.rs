@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use suitesparse_graphblas_sys::{
@@ -34,9 +33,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
-use crate::value_type::{ConvertScalar, ConvertVector, ValueType};
-
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
+use crate::value_type::{ConvertScalar, ValueType};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mutable access is provided.

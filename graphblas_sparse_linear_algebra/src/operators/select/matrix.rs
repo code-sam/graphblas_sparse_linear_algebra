@@ -1,9 +1,7 @@
 use std::ptr;
 
-use std::marker::PhantomData;
-
 use suitesparse_graphblas_sys::{
-    GrB_IndexUnaryOp, GrB_Matrix_select_BOOL, GrB_Matrix_select_FP32, GrB_Matrix_select_FP64,
+    GrB_Matrix_select_BOOL, GrB_Matrix_select_FP32, GrB_Matrix_select_FP64,
     GrB_Matrix_select_INT16, GrB_Matrix_select_INT32, GrB_Matrix_select_INT64,
     GrB_Matrix_select_INT8, GrB_Matrix_select_UINT16, GrB_Matrix_select_UINT32,
     GrB_Matrix_select_UINT64, GrB_Matrix_select_UINT8,

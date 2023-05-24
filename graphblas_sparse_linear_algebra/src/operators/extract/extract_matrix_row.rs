@@ -1,18 +1,15 @@
-use crate::collections::sparse_matrix::{
-    GraphblasSparseMatrixTrait, Size, SparseMatrix, SparseMatrixTrait,
-};
+use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrixTrait};
 use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
 use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
-use crate::operators::binary_operator::{AccumulatorBinaryOperator, Assignment};
+use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
     options::OperatorOptions,
-    transpose::{MatrixTranspose, TransposeMatrix},
 };
-use crate::value_type::{AsBoolean, ValueType};
+use crate::value_type::ValueType;
 
 #[derive(Debug, Clone)]
 pub struct MatrixRowExtractor {}
@@ -113,11 +110,13 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_matrix::{
+        FromMatrixElementList, MatrixElementList, SparseMatrix,
+    };
     use crate::collections::sparse_vector::GetVectorElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
-    use crate::operators::binary_operator::First;
+    use crate::operators::binary_operator::{Assignment, First};
 
     #[test]
     fn test_row_extraction() {

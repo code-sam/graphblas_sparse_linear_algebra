@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::sparse_matrix::{
@@ -11,9 +10,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_assign,
-};
+use crate::bindings_to_graphblas_implementation::GrB_Matrix_assign;
 
 // TODO: explicitly define how dupicates are handled
 

@@ -1,7 +1,5 @@
 use std::ptr;
 
-use std::marker::PhantomData;
-
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -15,9 +13,7 @@ use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, Inde
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Vector_assign,
-};
+use crate::bindings_to_graphblas_implementation::GrB_Vector_assign;
 
 // TODO: explicitly define how dupicates are handled
 

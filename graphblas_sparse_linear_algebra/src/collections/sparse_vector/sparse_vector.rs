@@ -5,8 +5,7 @@ use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
-    GxB_Iterator, GxB_Iterator_new, GxB_Vector_Iterator_attach, GxB_Vector_Iterator_getIndex,
-    GxB_Vector_Iterator_next, GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
+    GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
 };
 
 use super::element::{VectorElement, VectorElementList};
