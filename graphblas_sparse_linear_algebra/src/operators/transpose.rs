@@ -10,8 +10,6 @@ use crate::value_type::ValueType;
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::options::OperatorOptionsTrait;
 
-use super::binary_operator::AccumulatorBinaryOperator;
-
 #[derive(Debug, Clone)]
 pub struct MatrixTranspose {}
 

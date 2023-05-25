@@ -17,8 +17,6 @@ use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
 
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
-
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
