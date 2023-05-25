@@ -5,8 +5,7 @@ use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
-    GxB_Iterator, GxB_Iterator_new, GxB_Vector_Iterator_attach, GxB_Vector_Iterator_getIndex,
-    GxB_Vector_Iterator_next, GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
+    GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
 };
 
 use super::element::{VectorElement, VectorElementList};
@@ -44,7 +43,7 @@ use crate::error::{
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,

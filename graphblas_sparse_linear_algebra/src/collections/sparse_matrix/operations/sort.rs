@@ -7,7 +7,7 @@ use suitesparse_graphblas_sys::{GrB_DESC_T0, GxB_Matrix_sort};
 use crate::collections::sparse_matrix::SparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::index::ElementIndex;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::{
     collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix},
     error::SparseLinearAlgebraError,

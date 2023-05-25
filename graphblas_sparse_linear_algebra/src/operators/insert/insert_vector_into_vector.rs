@@ -1,11 +1,10 @@
 use std::ptr;
 
-use std::marker::PhantomData;
-
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptions;
+use crate::operators::options::OperatorOptionsTrait;
 
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
@@ -14,49 +13,22 @@ use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, Inde
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Vector_assign,
-};
+use crate::bindings_to_graphblas_implementation::GrB_Vector_assign;
 
 // TODO: explicitly define how dupicates are handled
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<VectorToInsertInto: ValueType, VectorToInsert: ValueType> Send
-    for InsertVectorIntoVector<VectorToInsertInto, VectorToInsert>
-{
-}
-unsafe impl<VectorToInsertInto: ValueType, VectorToInsert: ValueType> Sync
-    for InsertVectorIntoVector<VectorToInsertInto, VectorToInsert>
-{
-}
+unsafe impl Send for InsertVectorIntoVector {}
+unsafe impl Sync for InsertVectorIntoVector {}
 
 #[derive(Debug, Clone)]
-pub struct InsertVectorIntoVector<VectorToInsertInto: ValueType, VectorToInsert: ValueType> {
-    _vector_to_insert_into: PhantomData<VectorToInsertInto>,
-    _vector_to_insert: PhantomData<VectorToInsert>,
+pub struct InsertVectorIntoVector {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<VectorToInsertInto, VectorToInsert> InsertVectorIntoVector<VectorToInsertInto, VectorToInsert>
-where
-    VectorToInsertInto: ValueType,
-    VectorToInsert: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _vector_to_insert_into: PhantomData,
-            _vector_to_insert: PhantomData,
-        }
+impl InsertVectorIntoVector {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -71,6 +43,8 @@ where
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &SparseVector<VectorToInsert>,
+        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -79,7 +53,9 @@ where
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &SparseVector<VectorToInsert>,
+        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
         mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -89,7 +65,7 @@ macro_rules! implement_insert_vector_into_vector_trait {
     ) => {
         impl<VectorToInsertInto: ValueType>
             InsertVectorIntoVectorTrait<VectorToInsertInto, $value_type_vector_to_insert>
-            for InsertVectorIntoVector<VectorToInsertInto, $value_type_vector_to_insert>
+            for InsertVectorIntoVector
         {
             /// replace option applies to entire matrix_to_insert_to
             fn apply(
@@ -97,6 +73,8 @@ macro_rules! implement_insert_vector_into_vector_trait {
                 vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
+                accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
 
@@ -113,11 +91,11 @@ macro_rules! implement_insert_vector_into_vector_trait {
                                 $graphblas_insert_function(
                                     vector_to_insert_into.graphblas_vector(),
                                     ptr::null_mut(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     index.as_ptr(),
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -130,11 +108,11 @@ macro_rules! implement_insert_vector_into_vector_trait {
                                 $graphblas_insert_function(
                                     vector_to_insert_into.graphblas_vector(),
                                     ptr::null_mut(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     index,
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -151,7 +129,9 @@ macro_rules! implement_insert_vector_into_vector_trait {
                 vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
                 indices_to_insert_into: &ElementIndexSelector,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
+                accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
                 mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
 
@@ -168,11 +148,11 @@ macro_rules! implement_insert_vector_into_vector_trait {
                                 $graphblas_insert_function(
                                     vector_to_insert_into.graphblas_vector(),
                                     mask_for_vector_to_insert_into.graphblas_vector(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     index.as_ptr(),
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -185,11 +165,11 @@ macro_rules! implement_insert_vector_into_vector_trait {
                                 $graphblas_insert_function(
                                     vector_to_insert_into.graphblas_vector(),
                                     mask_for_vector_to_insert_into.graphblas_vector(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     index,
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -274,11 +254,16 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..5).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator =
-            InsertVectorIntoVector::new(&OperatorOptions::new_default(), &Assignment::new());
+        let insert_operator = InsertVectorIntoVector::new();
 
         insert_operator
-            .apply(&mut vector, &indices_to_insert, &vector_to_insert)
+            .apply(
+                &mut vector,
+                &indices_to_insert,
+                &vector_to_insert,
+                &Assignment::new(),
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", vector);
@@ -298,7 +283,14 @@ mod tests {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(&mut vector, &indices_to_insert, &vector_to_insert, &mask)
+            .apply_with_mask(
+                &mut vector,
+                &indices_to_insert,
+                &vector_to_insert,
+                &Assignment::new(),
+                &mask,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", vector);

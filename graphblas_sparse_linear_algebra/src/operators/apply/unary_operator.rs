@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::ptr;
 
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
@@ -6,51 +5,24 @@ use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{options::OperatorOptions, unary_operator::UnaryOperator};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GrB_Matrix_apply, GrB_UnaryOp, GrB_Vector_apply,
-};
+use crate::bindings_to_graphblas_implementation::{GrB_Matrix_apply, GrB_Vector_apply};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<EvaluationDomain: ValueType> Send for UnaryOperatorApplier<EvaluationDomain> {}
-unsafe impl<EvaluationDomain: ValueType> Sync for UnaryOperatorApplier<EvaluationDomain> {}
+unsafe impl Send for UnaryOperatorApplier {}
+unsafe impl Sync for UnaryOperatorApplier {}
 
 #[derive(Debug, Clone)]
-pub struct UnaryOperatorApplier<EvaluationDomain: ValueType> {
-    _evaluation_domain: PhantomData<EvaluationDomain>,
+pub struct UnaryOperatorApplier {}
 
-    unary_operator: GrB_UnaryOp,
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<EvaluationDomain: ValueType> UnaryOperatorApplier<EvaluationDomain> {
-    pub fn new(
-        unary_operator: &impl UnaryOperator<EvaluationDomain>,
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-    ) -> Self {
-        Self {
-            unary_operator: unary_operator.graphblas_type(),
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _evaluation_domain: PhantomData,
-        }
-    }
-
-    pub(crate) unsafe fn unary_operator(&self) -> GrB_UnaryOp {
-        self.unary_operator
-    }
-    pub(crate) unsafe fn accumulator(&self) -> GrB_BinaryOp {
-        self.accumulator
-    }
-    pub(crate) unsafe fn options(&self) -> GrB_Descriptor {
-        self.options
+impl UnaryOperatorApplier {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -60,38 +32,51 @@ where
 {
     fn apply_to_vector(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_vector_with_mask(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix_with_mask(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
-    for UnaryOperatorApplier<EvaluationDomain>
-{
+impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for UnaryOperatorApplier {
     fn apply_to_vector(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -100,10 +85,10 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
                 GrB_Vector_apply(
                     product.graphblas_vector(),
                     ptr::null_mut(),
-                    self.accumulator,
-                    self.unary_operator,
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     argument.graphblas_vector(),
-                    self.options,
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -114,9 +99,12 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
 
     fn apply_to_vector_with_mask(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -125,10 +113,10 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
                 GrB_Vector_apply(
                     product.graphblas_vector(),
                     mask.graphblas_vector(),
-                    self.accumulator,
-                    self.unary_operator,
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     argument.graphblas_vector(),
-                    self.options,
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -139,8 +127,11 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
 
     fn apply_to_matrix(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -149,10 +140,10 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
                 GrB_Matrix_apply(
                     product.graphblas_matrix(),
                     ptr::null_mut(),
-                    self.accumulator,
-                    self.unary_operator,
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     argument.graphblas_matrix(),
-                    self.options,
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -163,9 +154,12 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
 
     fn apply_to_matrix_with_mask(
         &self,
+        operator: &impl UnaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -174,10 +168,10 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain>
                 GrB_Matrix_apply(
                     product.graphblas_matrix(),
                     mask.graphblas_matrix(),
-                    self.accumulator,
-                    self.unary_operator,
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
                     argument.graphblas_matrix(),
-                    self.options,
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -224,14 +218,16 @@ mod tests {
 
         let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
-        let operator = UnaryOperatorApplier::new(
-            &One::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let operator = UnaryOperatorApplier::new();
 
         operator
-            .apply_to_matrix(&matrix, &mut product_matrix)
+            .apply_to_matrix(
+                &One::<u8>::new(),
+                &matrix,
+                &Assignment::<u8>::new(),
+                &mut product_matrix,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_matrix);
@@ -248,13 +244,15 @@ mod tests {
             None
         );
 
-        let operator = UnaryOperatorApplier::new(
-            &Identity::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let operator = UnaryOperatorApplier::new();
         operator
-            .apply_to_matrix(&matrix, &mut product_matrix)
+            .apply_to_matrix(
+                &Identity::<u8>::new(),
+                &matrix,
+                &Assignment::<u8>::new(),
+                &mut product_matrix,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", matrix);
@@ -295,14 +293,16 @@ mod tests {
 
         let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
 
-        let operator = UnaryOperatorApplier::new(
-            &One::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let operator = UnaryOperatorApplier::new();
 
         operator
-            .apply_to_vector(&vector, &mut product_vector)
+            .apply_to_vector(
+                &One::<u8>::new(),
+                &vector,
+                &Assignment::<u8>::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);
@@ -311,13 +311,15 @@ mod tests {
         assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 1);
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
-        let operator = UnaryOperatorApplier::new(
-            &Identity::<u8>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::<u8>::new(),
-        );
+        let operator = UnaryOperatorApplier::new();
         operator
-            .apply_to_vector(&vector, &mut product_vector)
+            .apply_to_vector(
+                &Identity::<u8>::new(),
+                &vector,
+                &Assignment::<u8>::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", vector);
@@ -337,14 +339,16 @@ mod tests {
 
         let mut product_vector = SparseVector::<bool>::new(&context, &vector_length).unwrap();
 
-        let operator = UnaryOperatorApplier::new(
-            &LogicalNegation::<bool>::new(),
-            &OperatorOptions::new_default(),
-            &Assignment::<bool>::new(),
-        );
+        let operator = UnaryOperatorApplier::new();
 
         operator
-            .apply_to_vector(&vector, &mut product_vector)
+            .apply_to_vector(
+                &LogicalNegation::<bool>::new(),
+                &vector,
+                &Assignment::<bool>::new(),
+                &mut product_vector,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         println!("{}", product_vector);

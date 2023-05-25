@@ -36,16 +36,18 @@ mod tests {
         let options = OperatorOptions::new_default();
         let result_matrix = Mutex::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap());
 
-        let element_wise_matrix_add_operator =
-            ElementWiseMatrixMultiplicationBinaryOperator::<i32>::new(
-                &add_operator,
-                &options,
-                &add_operator,
-            );
+        let element_wise_matrix_add_operator = ElementWiseMatrixMultiplicationBinaryOperator::new();
 
         matrices.par_iter().for_each(|matrix| {
             element_wise_matrix_add_operator
-                .apply(&*matrix, &*matrix, &mut *result_matrix.lock().unwrap())
+                .apply(
+                    &*matrix,
+                    &add_operator,
+                    &*matrix,
+                    &add_operator,
+                    &mut *result_matrix.lock().unwrap(),
+                    &options,
+                )
                 .unwrap();
         });
 

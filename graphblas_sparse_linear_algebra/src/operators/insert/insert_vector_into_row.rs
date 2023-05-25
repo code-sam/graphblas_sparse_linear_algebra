@@ -1,7 +1,5 @@
 use std::ptr;
 
-use std::marker::PhantomData;
-
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
 };
@@ -13,50 +11,26 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptions;
+use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_Row_assign};
+use crate::bindings_to_graphblas_implementation::GrB_Row_assign;
 
 // TODO: explicitly define how dupicates are handled
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Send
-    for InsertVectorIntoRow<MatrixToInsertInto, VectorToInsert>
-{
-}
-unsafe impl<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> Sync
-    for InsertVectorIntoRow<MatrixToInsertInto, VectorToInsert>
-{
-}
+unsafe impl Send for InsertVectorIntoRow {}
+unsafe impl Sync for InsertVectorIntoRow {}
 
 #[derive(Debug, Clone)]
-pub struct InsertVectorIntoRow<MatrixToInsertInto: ValueType, VectorToInsert: ValueType> {
-    _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
-    _vector_to_insert: PhantomData<VectorToInsert>,
+pub struct InsertVectorIntoRow {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<MatrixToInsertInto, VectorToInsert> InsertVectorIntoRow<MatrixToInsertInto, VectorToInsert>
-where
-    MatrixToInsertInto: ValueType,
-    VectorToInsert: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _matrix_to_insert_into: PhantomData,
-            _vector_to_insert: PhantomData,
-        }
+impl InsertVectorIntoRow {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -72,6 +46,8 @@ where
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
         vector_to_insert: &SparseVector<VectorToInsert>,
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -81,7 +57,9 @@ where
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
         vector_to_insert: &SparseVector<VectorToInsert>,
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -91,7 +69,7 @@ macro_rules! implement_insert_vector_into_row_trait {
     ) => {
         impl<MatrixToInsertInto: ValueType>
             InsertVectorIntoRowTrait<MatrixToInsertInto, $value_type_vector_to_insert>
-            for InsertVectorIntoRow<MatrixToInsertInto, $value_type_vector_to_insert>
+            for InsertVectorIntoRow
         {
             /// replace option applies to entire matrix_to_insert_to
             fn apply(
@@ -100,6 +78,8 @@ macro_rules! implement_insert_vector_into_row_trait {
                 row_indices_to_insert_into: &ElementIndexSelector,
                 row_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
+                accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
 
@@ -117,12 +97,12 @@ macro_rules! implement_insert_vector_into_row_trait {
                                 $graphblas_insert_function(
                                     matrix_to_insert_into.graphblas_matrix(),
                                     ptr::null_mut(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     row_to_insert_into,
                                     index.as_ptr(),
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -135,12 +115,12 @@ macro_rules! implement_insert_vector_into_row_trait {
                                 $graphblas_insert_function(
                                     matrix_to_insert_into.graphblas_matrix(),
                                     ptr::null_mut(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     row_to_insert_into,
                                     index,
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -158,7 +138,9 @@ macro_rules! implement_insert_vector_into_row_trait {
                 row_indices_to_insert_into: &ElementIndexSelector,
                 row_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
+                accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
                 mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
 
@@ -176,12 +158,12 @@ macro_rules! implement_insert_vector_into_row_trait {
                                 $graphblas_insert_function(
                                     matrix_to_insert_into.graphblas_matrix(),
                                     mask_for_row_to_insert_into.graphblas_vector(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     row_to_insert_into,
                                     index.as_ptr(),
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -194,12 +176,12 @@ macro_rules! implement_insert_vector_into_row_trait {
                                 $graphblas_insert_function(
                                     matrix_to_insert_into.graphblas_matrix(),
                                     mask_for_row_to_insert_into.graphblas_vector(),
-                                    self.accumulator,
+                                    accumulator.accumulator_graphblas_type(),
                                     vector_to_insert.graphblas_vector(),
                                     row_to_insert_into,
                                     index,
                                     number_of_indices_to_insert_into,
-                                    self.options,
+                                    options.to_graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -284,8 +266,7 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..vector_to_insert_length).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator =
-            InsertVectorIntoRow::new(&OperatorOptions::new_default(), &Assignment::new());
+        let insert_operator = InsertVectorIntoRow::new();
 
         let row_to_insert_into: ElementIndex = 2;
 
@@ -295,6 +276,8 @@ mod tests {
                 &indices_to_insert,
                 &row_to_insert_into,
                 &vector_to_insert,
+                &Assignment::new(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -330,7 +313,9 @@ mod tests {
                 &indices_to_insert,
                 &row_to_insert_into,
                 &vector_to_insert,
+                &Assignment::new(),
                 &mask,
+                &&OperatorOptions::new_default(),
             )
             .unwrap();
 

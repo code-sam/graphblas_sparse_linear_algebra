@@ -7,7 +7,7 @@ use suitesparse_graphblas_sys::GxB_Vector_sort;
 use crate::collections::sparse_vector::SparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::index::ElementIndex;
-use crate::operators::options::OperatorOptions;
+use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::{
     collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector},
     error::SparseLinearAlgebraError,

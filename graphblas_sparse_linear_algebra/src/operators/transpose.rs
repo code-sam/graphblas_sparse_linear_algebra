@@ -1,69 +1,58 @@
-use std::marker::PhantomData;
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor, GrB_transpose};
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix};
+use crate::bindings_to_graphblas_implementation::GrB_transpose;
+use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use crate::value_type::{AsBoolean, ValueType};
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
+
+use super::binary_operator::AccumulatorBinaryOperator;
+use super::options::OperatorOptionsTrait;
 
 use super::binary_operator::AccumulatorBinaryOperator;
 
 #[derive(Debug, Clone)]
-pub struct MatrixTranspose<Product>
-where
-    Product: ValueType,
-{
-    _product: PhantomData<Product>,
-
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
+pub struct MatrixTranspose {}
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<Product: ValueType> Send for MatrixTranspose<Product> {}
-unsafe impl<Product: ValueType> Sync for MatrixTranspose<Product> {}
+unsafe impl Send for MatrixTranspose {}
+unsafe impl Sync for MatrixTranspose {}
 
-impl<Product> MatrixTranspose<Product>
-where
-    Product: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<Product>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _product: PhantomData,
-        }
+impl MatrixTranspose {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
-pub trait TransposeMatrix<Product: ValueType> {
+pub trait TransposeMatrix<EvaluationDomain: ValueType> {
     fn apply(
         &self,
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        transpose: &mut SparseMatrix<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_mask(
         &self,
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        transpose: &mut SparseMatrix<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<Product: ValueType> TransposeMatrix<Product> for MatrixTranspose<Product> {
+impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTranspose {
     fn apply(
         &self,
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        transpose: &mut SparseMatrix<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
@@ -72,9 +61,9 @@ impl<Product: ValueType> TransposeMatrix<Product> for MatrixTranspose<Product> {
                 GrB_transpose(
                     transpose.graphblas_matrix(),
                     ptr::null_mut(),
-                    self.accumulator,
+                    accumulator.accumulator_graphblas_type(),
                     matrix.graphblas_matrix(),
-                    self.options,
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { transpose.graphblas_matrix_ref() },
@@ -86,8 +75,10 @@ impl<Product: ValueType> TransposeMatrix<Product> for MatrixTranspose<Product> {
     fn apply_with_mask(
         &self,
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        transpose: &mut SparseMatrix<Product>,
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
         mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
@@ -96,9 +87,9 @@ impl<Product: ValueType> TransposeMatrix<Product> for MatrixTranspose<Product> {
                 GrB_transpose(
                     transpose.graphblas_matrix(),
                     mask.graphblas_matrix(),
-                    self.accumulator,
+                    accumulator.accumulator_graphblas_type(),
                     matrix.graphblas_matrix(),
-                    self.options,
+                    options.to_graphblas_descriptor(),
                 )
             },
             unsafe { transpose.graphblas_matrix_ref() },
@@ -112,7 +103,7 @@ impl<Product: ValueType> TransposeMatrix<Product> for MatrixTranspose<Product> {
 mod tests {
     use super::*;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
+        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, SparseMatrix,
     };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
@@ -138,11 +129,15 @@ mod tests {
 
         let mut matrix_transpose = SparseMatrix::<u8>::new(&context, &(2, 2).into()).unwrap();
 
-        let transpose_operator =
-            MatrixTranspose::new(&OperatorOptions::new_default(), &Assignment::<u8>::new());
+        let transpose_operator = MatrixTranspose::new();
 
         transpose_operator
-            .apply(&matrix, &mut matrix_transpose)
+            .apply(
+                &matrix,
+                &Assignment::<u8>::new(),
+                &mut matrix_transpose,
+                &OperatorOptions::new_default(),
+            )
             .unwrap();
 
         assert_eq!(

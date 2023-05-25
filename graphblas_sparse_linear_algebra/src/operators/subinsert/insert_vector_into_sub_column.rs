@@ -1,9 +1,6 @@
-use std::marker::PhantomData;
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_BinaryOp, GrB_Descriptor, GxB_Col_subassign,
-};
+use crate::bindings_to_graphblas_implementation::GxB_Col_subassign;
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
 };
@@ -15,6 +12,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptions;
+use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled
@@ -22,31 +20,15 @@ use crate::value_type::ValueType;
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl<MatrixToInsertInto: ValueType> Send for InsertVectorIntoSubColumn<MatrixToInsertInto> {}
-unsafe impl<MatrixToInsertInto: ValueType> Sync for InsertVectorIntoSubColumn<MatrixToInsertInto> {}
+unsafe impl Send for InsertVectorIntoSubColumn {}
+unsafe impl Sync for InsertVectorIntoSubColumn {}
 
 #[derive(Debug, Clone)]
-pub struct InsertVectorIntoSubColumn<MatrixToInsertInto: ValueType> {
-    _matrix_to_insert_into: PhantomData<MatrixToInsertInto>,
+pub struct InsertVectorIntoSubColumn {}
 
-    accumulator: GrB_BinaryOp,
-    options: GrB_Descriptor,
-}
-
-impl<MatrixToInsertInto> InsertVectorIntoSubColumn<MatrixToInsertInto>
-where
-    MatrixToInsertInto: ValueType,
-{
-    pub fn new(
-        options: &OperatorOptions,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-    ) -> Self {
-        Self {
-            accumulator: accumulator.accumulator_graphblas_type(),
-            options: options.to_graphblas_descriptor(),
-
-            _matrix_to_insert_into: PhantomData,
-        }
+impl InsertVectorIntoSubColumn {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -61,6 +43,8 @@ where
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -71,11 +55,13 @@ where
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
         mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInsertInto>
-    for InsertVectorIntoSubColumn<MatrixToInsertInto>
+    for InsertVectorIntoSubColumn
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -84,6 +70,8 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -101,12 +89,12 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                         GxB_Col_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -119,12 +107,12 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                         GxB_Col_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             ptr::null_mut(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
                             index,
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -143,6 +131,8 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
         mask_for_column_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -160,12 +150,12 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                         GxB_Col_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             mask_for_column_to_insert_into.graphblas_vector(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -178,12 +168,12 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                         GxB_Col_subassign(
                             matrix_to_insert_into.graphblas_matrix(),
                             mask_for_column_to_insert_into.graphblas_vector(),
-                            self.accumulator,
+                            accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
                             index,
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            self.options,
+                            options.to_graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -262,8 +252,7 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..vector_to_insert_length).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator =
-            InsertVectorIntoSubColumn::new(&OperatorOptions::new_default(), &Assignment::new());
+        let insert_operator = InsertVectorIntoSubColumn::new();
 
         let column_to_insert_into: ElementIndex = 2;
 
@@ -273,6 +262,8 @@ mod tests {
                 &indices_to_insert,
                 &column_to_insert_into,
                 &vector_to_insert,
+                &Assignment::new(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -304,6 +295,8 @@ mod tests {
                 &column_to_insert_into,
                 &vector_to_insert,
                 &mask,
+                &Assignment::new(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
