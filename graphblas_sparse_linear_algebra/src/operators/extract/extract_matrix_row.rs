@@ -31,7 +31,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut SparseVector<Row>,
-        options: &mut OperatorOptions,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_mask(
@@ -42,7 +42,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut SparseVector<Row>,
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &mut OperatorOptions,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -54,14 +54,10 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut SparseVector<Row>,
-        options: &mut OperatorOptions,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let _context = matrix_to_extract_from.context();
-
         // TODO: reduce cost by reusing instance
         let column_extractor = MatrixColumnExtractor::new();
-
-        options.negate_transpose_input0();
 
         column_extractor.apply(
             matrix_to_extract_from,
@@ -69,7 +65,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
             indices_to_extract,
             accumulator,
             row_vector,
-            options,
+            &options.with_negated_transpose_input0(),
         )?;
 
         Ok(())
@@ -83,14 +79,10 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut SparseVector<Row>,
         mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &mut OperatorOptions,
+        options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let _context = matrix_to_extract_from.context();
-
         // TODO: reduce cost by reusing instance
         let column_extractor = MatrixColumnExtractor::new();
-
-        options.negate_transpose_input0();
 
         column_extractor.apply_with_mask(
             matrix_to_extract_from,
@@ -99,7 +91,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
             accumulator,
             row_vector,
             mask,
-            options,
+            &options.with_negated_transpose_input0(),
         )?;
 
         Ok(())

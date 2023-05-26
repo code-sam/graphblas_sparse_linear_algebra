@@ -179,19 +179,17 @@ impl OperatorOptions {
 // }
 
 pub(crate) trait OperatorOptionsTrait {
-    fn negate_transpose_input0(&mut self);
+    fn with_negated_transpose_input0(&self) -> Self;
     fn to_graphblas_descriptor(&self) -> GrB_Descriptor;
 }
 
 impl OperatorOptionsTrait for OperatorOptions {
-    fn negate_transpose_input0(&mut self) {
-        self.transpose_input0 = !self.transpose_input0;
-
-        self.graphblas_descriptor = to_graphblas_descriptor(
+    fn with_negated_transpose_input0(&self) -> Self {
+        OperatorOptions::new(
             self.clear_output_before_use,
             self.use_mask_structure_of_stored_values_as_mask,
             self.use_mask_complement,
-            self.transpose_input0,
+            !self.transpose_input0,
             self.transpose_input1,
         )
     }

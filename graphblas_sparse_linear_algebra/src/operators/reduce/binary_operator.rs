@@ -27,7 +27,7 @@ impl BinaryOperatorReducer {
 }
 
 pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
-    fn to_vector(
+    fn to_column_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -36,7 +36,26 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn to_vector_with_mask(
+    fn to_colunm_vector_with_mask(
+        &self,
+        operator: &impl BinaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn to_row_vector(
+        &self,
+        operator: &impl BinaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn to_row_vector_with_mask(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -50,7 +69,7 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
 impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
     for BinaryOperatorReducer
 {
-    fn to_vector(
+    fn to_column_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -77,7 +96,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         Ok(())
     }
 
-    fn to_vector_with_mask(
+    fn to_colunm_vector_with_mask(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -103,6 +122,42 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         )?;
 
         Ok(())
+    }
+
+    fn to_row_vector(
+        &self,
+        operator: &impl BinaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        self.to_column_vector(
+            operator,
+            argument,
+            accumulator,
+            product,
+            &options.with_negated_transpose_input0(),
+        )
+    }
+
+    fn to_row_vector_with_mask(
+        &self,
+        operator: &impl BinaryOperator<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        self.to_colunm_vector_with_mask(
+            operator,
+            argument,
+            accumulator,
+            product,
+            mask,
+            &options.with_negated_transpose_input0(),
+        )
     }
 }
 
@@ -148,7 +203,7 @@ mod tests {
         let reducer = BinaryOperatorReducer::new();
 
         reducer
-            .to_vector(
+            .to_column_vector(
                 &Plus::<u8>::new(),
                 &matrix,
                 &Assignment::new(),
@@ -183,7 +238,7 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         reducer
-            .to_vector_with_mask(
+            .to_colunm_vector_with_mask(
                 &Plus::<u8>::new(),
                 &matrix,
                 &Assignment::new(),
