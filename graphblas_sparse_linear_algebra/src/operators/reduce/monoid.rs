@@ -40,7 +40,7 @@ impl MonoidReducer {
 }
 
 pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
-    fn to_vector(
+    fn to_column_vector(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -49,7 +49,26 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
-    fn to_vector_with_mask(
+    fn to_column_vector_with_mask(
+        &self,
+        operator: &impl Monoid<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn to_row_vector(
+        &self,
+        operator: &impl Monoid<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    fn to_row_vector_with_mask(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -61,7 +80,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
 }
 
 impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for MonoidReducer {
-    fn to_vector(
+    fn to_column_vector(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -88,7 +107,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         Ok(())
     }
 
-    fn to_vector_with_mask(
+    fn to_column_vector_with_mask(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
@@ -114,6 +133,42 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         )?;
 
         Ok(())
+    }
+
+    fn to_row_vector(
+        &self,
+        operator: &impl Monoid<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        self.to_column_vector(
+            operator,
+            argument,
+            accumulator,
+            product,
+            &options.with_negated_transpose_input0(),
+        )
+    }
+
+    fn to_row_vector_with_mask(
+        &self,
+        operator: &impl Monoid<EvaluationDomain>,
+        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        self.to_column_vector_with_mask(
+            operator,
+            argument,
+            accumulator,
+            product,
+            mask,
+            &options.with_negated_transpose_input0(),
+        )
     }
 }
 
@@ -251,7 +306,7 @@ mod tests {
                     let reducer = MonoidReducer::new(
                     );
 
-                    reducer.to_vector(&MonoidPlus::<$value_type>::new(), &matrix, &Assignment::<$value_type>::new(), &mut product_vector, &OperatorOptions::new_default()).unwrap();
+                    reducer.to_column_vector(&MonoidPlus::<$value_type>::new(), &matrix, &Assignment::<$value_type>::new(), &mut product_vector, &OperatorOptions::new_default()).unwrap();
 
                     println!("{}", product_vector);
 
@@ -279,7 +334,7 @@ mod tests {
                         SparseVector::<$value_type>::new(&context, &matrix_size.row_height()).unwrap();
 
                     reducer
-                        .to_vector_with_mask(&MonoidPlus::<$value_type>::new(), &matrix, &Assignment::<$value_type>::new(), &mut product_vector, &mask, &OperatorOptions::new_default())
+                        .to_column_vector_with_mask(&MonoidPlus::<$value_type>::new(), &matrix, &Assignment::<$value_type>::new(), &mut product_vector, &mask, &OperatorOptions::new_default())
                         .unwrap();
 
                     println!("{}", matrix);
