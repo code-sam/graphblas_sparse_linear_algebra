@@ -9,6 +9,7 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::mask::VectorMask;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
@@ -30,95 +31,27 @@ impl SubVectorExtractor {
 }
 
 pub trait ExtractSubVector<SubVector: ValueType> {
+    /// Length of the mask must equal length of sub_vector
     fn apply(
         &self,
         vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut SparseVector<SubVector>,
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    /// Length of the mask must equal length of sub_vector
-    fn apply_with_mask(
-        &self,
-        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
-        indices_to_extract: &ElementIndexSelector,
-        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut SparseVector<SubVector>,
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
+    /// Length of the mask must equal length of sub_vector
     fn apply(
         &self,
         vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut SparseVector<SubVector>,
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = vector_to_extract_from.context();
-
-        let number_of_indices_to_extract: ElementIndex;
-        match indices_to_extract {
-            ElementIndexSelector::Index(indices) => number_of_indices_to_extract = indices.len(),
-            ElementIndexSelector::All => {
-                number_of_indices_to_extract = vector_to_extract_from.length()?
-            }
-        }
-        let number_of_indices_to_extract = number_of_indices_to_extract.to_graphblas_index()?;
-
-        let indices_to_extract = indices_to_extract.to_graphblas_type()?;
-
-        match indices_to_extract {
-            ElementIndexSelectorGraphblasType::Index(index) => {
-                context.call(
-                    || unsafe {
-                        GrB_Vector_extract(
-                            sub_vector.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            vector_to_extract_from.graphblas_vector(),
-                            index.as_ptr(),
-                            number_of_indices_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { sub_vector.graphblas_vector_ref() },
-                )?;
-            }
-            ElementIndexSelectorGraphblasType::All(index) => {
-                context.call(
-                    || unsafe {
-                        GrB_Vector_extract(
-                            sub_vector.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            vector_to_extract_from.graphblas_vector(),
-                            index,
-                            number_of_indices_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { sub_vector.graphblas_vector_ref() },
-                )?;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Length of the mask must equal length of sub_vector
-    fn apply_with_mask(
-        &self,
-        vector_to_extract_from: &(impl GraphblasSparseVectorTrait + ContextTrait + SparseVectorTrait),
-        indices_to_extract: &ElementIndexSelector,
-        accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut SparseVector<SubVector>,
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
@@ -183,6 +116,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::mask::SelectEntireVector;
 
     #[test]
     fn test_vector_extraction() {
@@ -196,7 +130,7 @@ mod tests {
         ]);
 
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &element_list,
             &First::<u8>::new(),
@@ -216,6 +150,7 @@ mod tests {
                 &indices_to_extract,
                 &Assignment::new(),
                 &mut sub_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -237,7 +172,7 @@ mod tests {
         ]);
 
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &vector_element_list,
             &First::<u8>::new(),
@@ -255,7 +190,7 @@ mod tests {
         ]);
 
         let mask = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &4,
             &mask_element_list,
             &First::<u8>::new(),
@@ -271,7 +206,7 @@ mod tests {
         let extractor = SubVectorExtractor::new();
 
         extractor
-            .apply_with_mask(
+            .apply(
                 &vector,
                 &indices_to_extract,
                 &Assignment::new(),

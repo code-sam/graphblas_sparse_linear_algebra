@@ -36,6 +36,7 @@ use crate::error::{
     GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
 };
+use crate::operators::mask::MatrixMask;
 // use crate::operators::options::OperatorOptions;
 
 use super::coordinate::Coordinate;
@@ -107,7 +108,7 @@ impl<T: ValueType> SparseMatrix<T> {
 
 impl<T: ValueType> ContextTrait for SparseMatrix<T> {
     fn context(&self) -> Arc<Context> {
-        self.context.clone()
+        self.context.to_owned()
     }
     fn context_ref(&self) -> &Arc<Context> {
         &self.context
@@ -180,7 +181,7 @@ impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
         let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
         let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
 
-        let context = self.context.clone();
+        let context = self.context.to_owned();
         context.call(
             || unsafe {
                 GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
@@ -194,7 +195,7 @@ impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
         let row_index = coordinate.row_index().to_graphblas_index()?;
         let column_index = coordinate.column_index().to_graphblas_index()?;
 
-        let context = self.context.clone();
+        let context = self.context.to_owned();
         let result = context.call(
             || unsafe { GxB_Matrix_isStoredElement(self.matrix, row_index, column_index) },
             &self.matrix,
@@ -214,7 +215,7 @@ impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
         let row_index = coordinate.row_index().to_graphblas_index()?;
         let column_index = coordinate.column_index().to_graphblas_index()?;
 
-        let context = self.context.clone();
+        let context = self.context.to_owned();
         let result = context.call(
             || unsafe { GxB_Matrix_isStoredElement(self.matrix, row_index, column_index) },
             &self.matrix,
@@ -230,7 +231,7 @@ impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
         let new_row_height = new_size.row_height().to_graphblas_index()?;
         let new_column_width = new_size.column_width().to_graphblas_index()?;
 
-        let context = self.context.clone();
+        let context = self.context.to_owned();
         context.call(
             || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
             &self.matrix,
@@ -255,7 +256,7 @@ impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
-        let context = self.context.clone();
+        let context = self.context.to_owned();
         let _ = context.call_without_detailed_error_information(|| unsafe {
             GrB_Matrix_free(&mut self.matrix)
         });
@@ -273,7 +274,7 @@ impl<T: ValueType> Clone for SparseMatrix<T> {
             .unwrap();
 
         SparseMatrix {
-            context: self.context.clone(),
+            context: self.context.to_owned(),
             matrix: unsafe { matrix_copy.assume_init() },
             value_type: PhantomData,
         }
@@ -453,7 +454,7 @@ macro_rules! sparse_matrix_from_element_vector {
                                 reduction_operator_for_duplicates.graphblas_type(),
                             )
                         },
-                        unsafe { &matrix.graphblas_matrix() },
+                        unsafe { matrix.graphblas_matrix_ref() },
                     )?;
                 }
                 Ok(matrix)
@@ -494,7 +495,7 @@ macro_rules! implement_set_element {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
                 let column_index_to_set = element.column_index().to_graphblas_index()?;
-                let context = self.context.clone();
+                let context = self.context.to_owned();
                 let element_value = element.value().to_type()?;
                 context.call(
                     || unsafe {
@@ -733,6 +734,17 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Matrix_extractTuples
 );
 
+macro_rules! implement_matrix_mask {
+    ($value_type: ty) => {
+        impl MatrixMask for SparseMatrix<$value_type> {
+            unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
+                GraphblasSparseMatrixTrait::graphblas_matrix(self)
+            }
+        }
+    };
+}
+implement_macro_for_all_value_types!(implement_matrix_mask);
+
 #[cfg(test)]
 mod tests {
 
@@ -768,7 +780,7 @@ mod tests {
 
         let sparse_matrix = SparseMatrix::<u8>::new(&context, &size).unwrap();
 
-        let clone_of_sparse_matrix = sparse_matrix.clone();
+        let clone_of_sparse_matrix = sparse_matrix.to_owned();
 
         // TODO: implement and test equality operator
         assert_eq!(target_height, clone_of_sparse_matrix.row_height().unwrap());
@@ -813,7 +825,7 @@ mod tests {
             (2, 4, 11).into(), // duplicate
                                // (10, 10, 10).into(), // out-of-bounds
         ]);
-        // println!("{:?}", element_list.clone());
+        // println!("{:?}", element_list.to_owned());
 
         let _matrix = SparseMatrix::<u8>::from_element_list(
             &context,
@@ -874,7 +886,7 @@ mod tests {
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
         );
-        println!("{}", matrix.clone());
+        println!("{}", matrix.to_owned());
         assert_eq!(
             matrix.get_element_value(&(7, 5).into()).unwrap().unwrap(),
             5

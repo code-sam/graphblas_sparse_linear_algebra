@@ -25,11 +25,11 @@ fn bench_vector_indices(c: &mut Criterion) {
     }
 
     // c.bench_function("vector indices from iterator", |b| {
-    //     b.iter(|| bench_index_iterator(vector.clone()))
+    //     b.iter(|| bench_index_iterator(vector.to_owned()))
     // });
 
     c.bench_function("vector indices from element list", |b| {
-        b.iter(|| bench_element_list(vector.clone()))
+        b.iter(|| bench_element_list(vector.to_owned()))
     });
 }
 

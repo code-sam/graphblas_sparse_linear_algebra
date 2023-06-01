@@ -12,6 +12,7 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
+use crate::operators::mask::VectorMask;
 use crate::operators::options::OperatorOptions;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
@@ -42,17 +43,7 @@ pub trait SelectFromVector<EvaluationDomain: ValueType> {
         argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        selector: &impl IndexUnaryOperator<EvaluationDomain>,
-        selector_argument: &EvaluationDomain,
-        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -67,38 +58,10 @@ macro_rules! implement_select_from_vector {
                 argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
                 product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+                mask: &(impl VectorMask + ContextTrait),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let selector_argument = selector_argument.clone().to_type()?;
-                argument.context_ref().call(
-                    || unsafe {
-                        $graphblas_operator(
-                            product.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            selector.graphblas_type(),
-                            argument.graphblas_vector(),
-                            selector_argument,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { product.graphblas_vector_ref() },
-                )?;
-
-                Ok(())
-            }
-
-            fn apply_with_mask(
-                &self,
-                selector: &impl IndexUnaryOperator<$selector_argument_type>,
-                selector_argument: &$selector_argument_type,
-                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
-                accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
-                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-                mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
-                options: &OperatorOptions,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let selector_argument = selector_argument.clone().to_type()?;
+                let selector_argument = selector_argument.to_owned().to_type()?;
                 argument.context_ref().call(
                     || unsafe {
                         $graphblas_operator(
@@ -137,6 +100,7 @@ mod tests {
         FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
     };
     use crate::operators::index_unary_operator::{IsValueGreaterThan, IsValueLessThan};
+    use crate::operators::mask::SelectEntireVector;
 
     #[test]
     fn test_zero_scalar_selector() {
@@ -151,7 +115,7 @@ mod tests {
 
         let vector_length: usize = 4;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &vector_length,
             &element_list,
             &First::<u8>::new(),
@@ -170,6 +134,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -191,6 +156,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -214,7 +180,7 @@ mod tests {
 
         let vector_length: usize = 4;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &vector_length,
             &element_list,
             &First::<u8>::new(),
@@ -233,6 +199,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -254,6 +221,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

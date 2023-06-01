@@ -9,6 +9,7 @@ use graphblas_sparse_linear_algebra::context::{Context, Mode};
 use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, ApplyBinaryOperator};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use graphblas_sparse_linear_algebra::operators::mask::{MatrixMask, SelectEntireMatrix};
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
     FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
 };
@@ -29,7 +30,7 @@ fn main() {
 
     let matrix_size: Size = (10, 15).into();
     let matrix = SparseMatrix::<u8>::from_element_list(
-        &context.clone(),
+        &context.to_owned(),
         &matrix_size,
         &element_list,
         &First::<u8>::new(),
@@ -46,7 +47,8 @@ fn main() {
             &matrix, &First::<u8>::new(), 
             &first_agrument, 
             &Assignment::new(), 
-            &mut product_matrix, 
+            &mut product_matrix,
+            &SelectEntireMatrix::new(&context),
             &OperatorOptions::new_default())
         .unwrap();
 
@@ -64,7 +66,8 @@ fn main() {
             &First::<u8>::new(), 
             &matrix, 
             &Assignment::new(),
-            &mut product_matrix, 
+            &mut product_matrix,
+            &SelectEntireMatrix::new(&context),
             &OperatorOptions::new_default())
         .unwrap();
 

@@ -166,6 +166,7 @@ mod tests {
     use crate::operators::element_wise_addition::{
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
     };
+    use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::OperatorOptions;
 
     #[test]
@@ -185,8 +186,8 @@ mod tests {
         let length = 7;
 
         let multiplier = SparseVector::<bool>::new(&context, &length).unwrap();
-        let multiplicant = multiplier.clone();
-        let mut product = multiplier.clone();
+        let multiplicant = multiplier.to_owned();
+        let mut product = multiplier.to_owned();
 
         // Test multiplication of empty matrices
         equality_operator
@@ -196,6 +197,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
+                &SelectEntireVector::new(&context),
                 &options,
             )
             .unwrap();
@@ -239,6 +241,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
+                &SelectEntireVector::new(&context),
                 &options,
             )
             .unwrap();

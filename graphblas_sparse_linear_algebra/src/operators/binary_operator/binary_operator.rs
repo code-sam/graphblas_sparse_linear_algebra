@@ -574,6 +574,7 @@ mod tests {
         context::{Context, Mode},
         operators::{
             apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
+            mask::{SelectEntireMatrix, SelectEntireVector},
             options::OperatorOptions,
         },
     };
@@ -598,7 +599,7 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &vector_length,
             &element_list,
             &First::<u8>::new(),
@@ -617,6 +618,7 @@ mod tests {
                 &second_agrument,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -638,6 +640,7 @@ mod tests {
                 &second_agrument,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -660,6 +663,7 @@ mod tests {
                 &second_agrument,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -685,7 +689,7 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &vector_length,
             &element_list,
             &First::<u8>::new(),
@@ -704,6 +708,7 @@ mod tests {
                 &second_agrument,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -726,7 +731,7 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<f64>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &vector_length,
             &element_list,
             &First::<f64>::new(),
@@ -747,6 +752,7 @@ mod tests {
                     &second_agrument,
                     &Assignment::new(),
                     &mut product_vector,
+                    &SelectEntireVector::new(&context),
                     &OperatorOptions::new_default(),
                 )
                 .unwrap();
@@ -795,7 +801,7 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -814,6 +820,7 @@ mod tests {
                 &second_agrument,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

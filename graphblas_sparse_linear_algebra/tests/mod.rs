@@ -12,6 +12,7 @@ mod tests {
         ApplyElementWiseMatrixMultiplicationBinaryOperator,
         ElementWiseMatrixMultiplicationBinaryOperator,
     };
+    use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
     use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
     #[test]
@@ -46,6 +47,7 @@ mod tests {
                     &*matrix,
                     &add_operator,
                     &mut *result_matrix.lock().unwrap(),
+                    &SelectEntireMatrix::new(&context),
                     &options,
                 )
                 .unwrap();

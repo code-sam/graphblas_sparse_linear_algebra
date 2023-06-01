@@ -43,6 +43,7 @@ use crate::error::{
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;
+use crate::operators::mask::VectorMask;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
@@ -75,7 +76,7 @@ unsafe impl<T: ValueType> Sync for SparseVector<T> {}
 //                 length: &ElementIndex,
 //             ) -> Result<Self, SparseLinearAlgebraError> {
 //                 let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
-//                 let context = context.clone();
+//                 let context = context.to_owned();
 
 //                 let length = length.to_graphblas_index()?;
 
@@ -102,7 +103,7 @@ impl<T: ValueType> SparseVector<T> {
         length: &ElementIndex,
     ) -> Result<Self, SparseLinearAlgebraError> {
         let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
-        let context = context.clone();
+        let context = context.to_owned();
 
         let length = length.to_graphblas_index()?;
 
@@ -125,7 +126,7 @@ impl<T: ValueType> SparseVector<T> {
         value: SparseScalar<T>,
     ) -> Result<Self, SparseLinearAlgebraError> {
         let mut vector = SparseVector::<T>::new(context, length)?;
-        let context = context.clone();
+        let context = context.to_owned();
 
         let graphblas_length = indices.len().to_graphblas_index()?;
 
@@ -176,7 +177,7 @@ impl<T: ValueType> SparseVector<T> {
 
         context.call_without_detailed_error_information(|| unsafe {
             GxB_Vector_diag(
-                diagonal.graphblas_vector(),
+                GraphblasSparseVectorTrait::graphblas_vector(&diagonal),
                 matrix.graphblas_matrix(),
                 graphblas_diagonal_index,
                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
@@ -246,7 +247,7 @@ implement_macro_for_all_value_types!(implement_from_value);
 
 impl<T: ValueType> ContextTrait for SparseVector<T> {
     fn context(&self) -> Arc<Context> {
-        self.context.clone()
+        self.context.to_owned()
     }
     fn context_ref(&self) -> &Arc<Context> {
         &self.context
@@ -414,7 +415,7 @@ impl<T: ValueType> Drop for SparseVector<T> {
         let _ = self
             .context
             .call_without_detailed_error_information(|| unsafe {
-                GrB_Vector_free(&mut self.vector.clone())
+                GrB_Vector_free(&mut self.vector.to_owned())
             });
     }
 }
@@ -430,7 +431,7 @@ impl<T: ValueType> Clone for SparseVector<T> {
             .unwrap();
 
         SparseVector {
-            context: self.context.clone(),
+            context: self.context.to_owned(),
             vector: unsafe { vector_copy.assume_init() },
             value_type: PhantomData,
         }
@@ -872,6 +873,17 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_extractTuples
 );
 
+macro_rules! implement_vector_mask {
+    ($value_type: ty) => {
+        impl VectorMask for SparseVector<$value_type> {
+            unsafe fn graphblas_vector(&self) -> GrB_Vector {
+                GraphblasSparseVectorTrait::graphblas_vector(self)
+            }
+        }
+    };
+}
+implement_macro_for_all_value_types!(implement_vector_mask);
+
 #[cfg(test)]
 mod tests {
 
@@ -904,14 +916,16 @@ mod tests {
         let indices = vec![2, 3, 5];
 
         let sparse_vector =
-            SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
+            SparseVector::<usize>::from_value(&context, &length, indices.to_owned(), value)
+                .unwrap();
 
         assert_eq!(indices, sparse_vector.element_indices().unwrap());
 
         let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         let sparse_vector =
-            SparseVector::<usize>::from_value(&context, &length, indices.clone(), value).unwrap();
+            SparseVector::<usize>::from_value(&context, &length, indices.to_owned(), value)
+                .unwrap();
 
         assert_eq!(indices, sparse_vector.element_indices().unwrap());
     }
@@ -925,14 +939,14 @@ mod tests {
         let indices = vec![2, 3, 5];
 
         let sparse_vector =
-            SparseVector::<u8>::from_value(&context, &length, indices.clone(), value).unwrap();
+            SparseVector::<u8>::from_value(&context, &length, indices.to_owned(), value).unwrap();
 
         assert_eq!(vec![11, 11, 11], sparse_vector.element_values().unwrap());
 
         let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         let sparse_vector =
-            SparseVector::<u8>::from_value(&context, &length, indices.clone(), value).unwrap();
+            SparseVector::<u8>::from_value(&context, &length, indices.to_owned(), value).unwrap();
 
         assert_eq!(
             vec![11, 11, 11, 11, 11, 11, 11, 11, 11, 11],
@@ -949,7 +963,8 @@ mod tests {
         let indices = vec![2, 3, 5];
 
         let sparse_vector =
-            SparseVector::<isize>::from_value(&context, &length, indices.clone(), value).unwrap();
+            SparseVector::<isize>::from_value(&context, &length, indices.to_owned(), value)
+                .unwrap();
 
         assert_eq!(length, sparse_vector.length().unwrap());
         assert_eq!(
@@ -1012,7 +1027,7 @@ mod tests {
 
         let sparse_vector = SparseVector::<f32>::new(&context, &length).unwrap();
 
-        let clone_of_sparse_vector = sparse_vector.clone();
+        let clone_of_sparse_vector = sparse_vector.to_owned();
 
         // TODO: implement and test equality operator
         assert_eq!(length, sparse_vector.length().unwrap());
@@ -1031,7 +1046,7 @@ mod tests {
         let mut sparse_vector = SparseVector::<i32>::new(&context, &length).unwrap();
 
         let new_length: ElementIndex = 5;
-        sparse_vector.resize(new_length.clone()).unwrap();
+        sparse_vector.resize(new_length.to_owned()).unwrap();
 
         assert_eq!(new_length, sparse_vector.length().unwrap());
 
@@ -1049,7 +1064,7 @@ mod tests {
             (2, 11).into(), // duplicate
                             // (10, 10, 10).into(), // out-of-bounds
         ]);
-        // println!("{:?}", element_list.clone());
+        // println!("{:?}", element_list.to_owned());
 
         let vector = SparseVector::<u8>::from_element_list(
             &context,
@@ -1137,7 +1152,7 @@ mod tests {
 
     //     let length: ElementIndex = 10;
 
-    //     let mut sparse_vector = SparseVector::<CustomType>::new(value_type_i128, length.clone()).unwrap();
+    //     let mut sparse_vector = SparseVector::<CustomType>::new(value_type_i128, length.to_owned()).unwrap();
 
     //     sparse_vector
     //         .set_element(VectorElement::from_pair(1, CustomType::new(2,2)))
@@ -1233,7 +1248,7 @@ mod tests {
 
     // let length: ElementIndex = 10;
 
-    // let mut sparse_vector = SparseVector::<u128>::new(custom_u128, length.clone()).unwrap();
+    // let mut sparse_vector = SparseVector::<u128>::new(custom_u128, length.to_owned()).unwrap();
 
     // let element_1 = VectorElement::from_pair(1, 2);
     // let element_2 = VectorElement::from_pair(2, 3);
@@ -1264,7 +1279,7 @@ mod tests {
         ]);
 
         let vector = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &element_list,
             &First::<u8>::new(),

@@ -12,6 +12,7 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
+use crate::operators::mask::MatrixMask;
 use crate::operators::options::OperatorOptions;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
@@ -40,17 +41,7 @@ pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        selector: &impl IndexUnaryOperator<EvaluationDomain>,
-        selector_argument: &EvaluationDomain,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -65,38 +56,10 @@ macro_rules! implement_select_from_matrix {
                 argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
                 product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+                mask: &(impl MatrixMask + ContextTrait),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let selector_argument = selector_argument.clone().to_type()?;
-                argument.context_ref().call(
-                    || unsafe {
-                        $graphblas_operator(
-                            product.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            selector.graphblas_type(),
-                            argument.graphblas_matrix(),
-                            selector_argument,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { product.graphblas_matrix_ref() },
-                )?;
-
-                Ok(())
-            }
-
-            fn apply_with_mask(
-                &self,
-                selector: &impl IndexUnaryOperator<$selector_argument_type>,
-                selector_argument: &$selector_argument_type,
-                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-                accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
-                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-                mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-                options: &OperatorOptions,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let selector_argument = selector_argument.clone().to_type()?;
+                let selector_argument = selector_argument.to_owned().to_type()?;
                 argument.context_ref().call(
                     || unsafe {
                         $graphblas_operator(
@@ -137,6 +100,7 @@ mod tests {
     use crate::operators::index_unary_operator::{
         IsOnDiagonal, IsOnOrAboveDiagonal, IsOnOrBelowDiagonal, IsValueGreaterThan, IsValueLessThan,
     };
+    use crate::operators::mask::SelectEntireMatrix;
 
     #[test]
     fn test_lower_triangle() {
@@ -151,7 +115,7 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -172,6 +136,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -211,6 +176,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -251,7 +217,7 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -272,6 +238,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -311,6 +278,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -357,7 +325,7 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -378,6 +346,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -416,6 +385,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -458,7 +428,7 @@ mod tests {
 
     //     let matrix_size: Size = (2, 2).into();
     //     let matrix = SparseMatrix::<u8>::from_element_list(
-    //         &context.clone(),
+    //         &context.to_owned(),
     //         &matrix_size,
     //         &element_list,
     //         &First::<u8, u8, u8, u8>::new(),
@@ -511,7 +481,7 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -530,6 +500,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -571,6 +542,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -609,7 +581,7 @@ mod tests {
 
     //     let matrix_size: Size = (2, 2).into();
     //     let matrix = SparseMatrix::<u8>::from_element_list(
-    //         &context.clone(),
+    //         &context.to_owned(),
     //         &matrix_size,
     //         &element_list,
     //         &First::<u8, u8, u8, u8>::new(),

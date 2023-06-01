@@ -18,6 +18,7 @@ use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
+use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::OperatorOptions;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
@@ -49,17 +50,7 @@ where
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_to_vector_with_mask(
-        &self,
-        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &EvaluationDomain,
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -70,17 +61,7 @@ where
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_to_matrix_with_mask(
-        &self,
-        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &EvaluationDomain,
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -95,41 +76,11 @@ macro_rules! implement_apply_index_binary_operator {
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
                 product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+                mask: &(impl VectorMask + ContextTrait),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let argument = argument.clone().to_type()?;
-
-                context.call(
-                    || unsafe {
-                        $graphblas_function_1(
-                            product.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            operator.graphblas_type(),
-                            vector.graphblas_vector(),
-                            argument,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { &product.graphblas_vector() },
-                )?;
-
-                Ok(())
-            }
-
-            fn apply_to_vector_with_mask(
-                &self,
-                vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
-                operator: &impl IndexUnaryOperator<$evaluation_domain>,
-                argument: &$evaluation_domain,
-                accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-                mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
-                options: &OperatorOptions,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
-                let argument = argument.clone().to_type()?;
+                let argument = argument.to_owned().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -156,41 +107,11 @@ macro_rules! implement_apply_index_binary_operator {
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
                 product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
+                mask: &(impl MatrixMask + ContextTrait),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let argument = argument.clone().to_type()?;
-
-                context.call(
-                    || unsafe {
-                        $graphblas_function_2(
-                            product.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            operator.graphblas_type(),
-                            matrix.graphblas_matrix(),
-                            argument,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { &product.graphblas_matrix() },
-                )?;
-
-                Ok(())
-            }
-
-            fn apply_to_matrix_with_mask(
-                &self,
-                matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-                operator: &impl IndexUnaryOperator<$evaluation_domain>,
-                argument: &$evaluation_domain,
-                accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-                mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-                options: &OperatorOptions,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
-                let argument = argument.clone().to_type()?;
+                let argument = argument.to_owned().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -230,6 +151,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
+    use crate::operators::mask::SelectEntireMatrix;
 
     #[test]
     fn test_matrix_index_unary_operator() {
@@ -246,7 +168,7 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -264,6 +186,7 @@ mod tests {
                 &argument,
                 &Assignment::<i8>::new(),
                 &mut product_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -307,7 +230,7 @@ mod tests {
 
     //     let vector_length: usize = 10;
     //     let vector = SparseVector::<u8>::from_element_list(
-    //         &context.clone(),
+    //         &context.to_owned(),
     //         &vector_length,
     //         &element_list,
     //         &First::<u8, u8, u8, u8>::new(),

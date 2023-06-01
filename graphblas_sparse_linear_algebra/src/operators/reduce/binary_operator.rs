@@ -5,6 +5,7 @@ use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::mask::VectorMask;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::ValueType;
@@ -27,22 +28,13 @@ impl BinaryOperatorReducer {
 }
 
 pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
-    fn to_column_vector(
+    fn to_colunm_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn to_colunm_vector_with_mask(
-        &self,
-        operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -52,16 +44,7 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn to_row_vector_with_mask(
-        &self,
-        operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -69,40 +52,13 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
 impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
     for BinaryOperatorReducer
 {
-    fn to_column_vector(
+    fn to_colunm_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_Matrix_reduce_BinaryOp(
-                    product.graphblas_vector(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    argument.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
-                )
-            },
-            unsafe { product.graphblas_vector_ref() },
-        )?;
-
-        Ok(())
-    }
-
-    fn to_colunm_vector_with_mask(
-        &self,
-        operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -130,27 +86,10 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        self.to_column_vector(
-            operator,
-            argument,
-            accumulator,
-            product,
-            &options.with_negated_transpose_input0(),
-        )
-    }
-
-    fn to_row_vector_with_mask(
-        &self,
-        operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        self.to_colunm_vector_with_mask(
+        self.to_colunm_vector(
             operator,
             argument,
             accumulator,
@@ -175,6 +114,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
     };
+    use crate::operators::mask::SelectEntireVector;
 
     #[test]
     fn test_binary_operator_reducer() {
@@ -190,7 +130,7 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size,
             &element_list,
             &First::<u8>::new(),
@@ -201,13 +141,14 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         let reducer = BinaryOperatorReducer::new();
-
+        
         reducer
-            .to_column_vector(
+            .to_colunm_vector(
                 &Plus::<u8>::new(),
                 &matrix,
                 &Assignment::new(),
                 &mut product_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -227,7 +168,7 @@ mod tests {
         ]);
 
         let mask = SparseVector::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &matrix_size.row_height(),
             &mask_element_list,
             &First::<u8>::new(),
@@ -238,7 +179,7 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         reducer
-            .to_colunm_vector_with_mask(
+            .to_colunm_vector(
                 &Plus::<u8>::new(),
                 &matrix,
                 &Assignment::new(),

@@ -83,7 +83,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.clone().to_type()?;
+                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
                     .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
@@ -198,7 +198,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.clone().to_type()?;
+                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
                     .number_of_selected_elements(matrix_to_insert_into.row_height()?)?

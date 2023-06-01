@@ -171,7 +171,7 @@ fn clone_and_checkout_repository(
             if !does_exist {
                 graphblas_repo = match Repository::clone(
                     "https://github.com/DrTimothyAldenDavis/GraphBLAS",
-                    path_with_suitesparse_graphblas_implementation.clone(),
+                    path_with_suitesparse_graphblas_implementation.to_owned(),
                 ) {
                     Ok(repo) => repo,
                     Err(error) => panic!("Failed to clone graphblas repository: {}", error),
@@ -179,7 +179,7 @@ fn clone_and_checkout_repository(
             } else {
                 // assume repo has been cloned before
                 graphblas_repo = match Repository::open(
-                    path_with_suitesparse_graphblas_implementation.clone(),
+                    path_with_suitesparse_graphblas_implementation.to_owned(),
                 ) {
                     Ok(repo) => repo,
                     Err(error) => {
@@ -201,14 +201,18 @@ fn clone_and_checkout_repository(
 fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
         .define("BUILD_GRB_STATIC_LIBRARY", "true")
-        .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.clone())
-        .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.clone())
-        .define("PROJECT_SOURCE_DIR", cargo_build_directory.clone()) // prevent modifying config files outside of the cargo output directory
+        .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
+        .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
+        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned()) // prevent modifying config files outside of the cargo output directory
         .build();
 
     println!(
         "cargo:rustc-link-search=native={}",
-        cargo_build_directory.clone().to_str().unwrap().to_owned()
+        cargo_build_directory
+            .to_owned()
+            .to_str()
+            .unwrap()
+            .to_owned()
     );
     println!(
         "cargo:rustc-link-search=native={}",
@@ -223,7 +227,7 @@ fn declare_build_invalidation_conditions(
     println!(
         "cargo:rerun-if-changed = {}",
         path_with_graphblas_implementation
-            .clone()
+            .to_owned()
             .join("wrapper.h")
             .to_str()
             .unwrap()
@@ -232,7 +236,7 @@ fn declare_build_invalidation_conditions(
     println!(
         "cargo:rerun-if-changed = {}",
         path_with_graphblas_header_file
-            .clone()
+            .to_owned()
             .to_str()
             .unwrap()
             .to_owned()
@@ -240,7 +244,7 @@ fn declare_build_invalidation_conditions(
     println!(
         "cargo:rerun-if-changed = {}",
         path_with_openmp()
-            .clone()
+            .to_owned()
             .join(format!("lib{}.a", name_of_openmp_library()))
             .to_str()
             .unwrap()
@@ -269,7 +273,7 @@ fn generate_bindings_to_graphblas_implementation() {
     let bindings = bindgen::Builder::default()
         .header(
             path_with_graphblas_header_file
-                .clone()
+                .to_owned()
                 .to_str()
                 .unwrap()
                 .to_owned(),
@@ -278,7 +282,7 @@ fn generate_bindings_to_graphblas_implementation() {
         .generate()
         .expect("Unable to generate bindings to GraphBLAS library.");
 
-    let mut bindings_target_path = path_with_graphblas_implementation.clone();
+    let mut bindings_target_path = path_with_graphblas_implementation.to_owned();
     bindings_target_path.push("suitesparse_graphblas_bindings.rs");
     bindings
         .write_to_file(bindings_target_path.to_str().unwrap().to_owned())
@@ -287,20 +291,24 @@ fn generate_bindings_to_graphblas_implementation() {
 
 fn clean_build_artifacts(cargo_build_directory: &OsString) {
     let cargo_build_directory = PathBuf::from(cargo_build_directory);
-    let mut path_to_delete = cargo_build_directory.clone();
+    let mut path_to_delete = cargo_build_directory.to_owned();
     path_to_delete.push("build");
     fs::remove_dir_all(path_to_delete).is_ok();
 
     let path_to_delete_files_in = cargo_build_directory;
-    let mut path_to_keep = path_to_delete_files_in.clone();
+    let mut path_to_keep = path_to_delete_files_in.to_owned();
     path_to_keep.push("libgraphblas.a");
 
     for path in fs::read_dir(path_to_delete_files_in).unwrap() {
         let path = path.unwrap();
         let path = path.path();
 
-        if path.clone().into_os_string().into_string().unwrap()
-            != path_to_keep.clone().into_os_string().into_string().unwrap()
+        if path.to_owned().into_os_string().into_string().unwrap()
+            != path_to_keep
+                .to_owned()
+                .into_os_string()
+                .into_string()
+                .unwrap()
         {
             fs::remove_file(path).is_ok();
         }

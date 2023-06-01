@@ -70,8 +70,8 @@ pub fn typed_graphblas_identifier(input: TokenStream) -> TokenStream {
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let untyped_identifier = idents[0].clone();
-    let value_type = idents[1].clone();
+    let untyped_identifier = idents[0].to_owned();
+    let value_type = idents[1].to_owned();
 
     let typed_identifier;
     match value_type.to_string().as_str() {
@@ -214,13 +214,13 @@ pub fn implement_macro(input: TokenStream) -> TokenStream {
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let value_type = idents[0].clone();
-    let matrix_reducer_operator = idents[1].clone();
-    let vector_reducer_operator = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let value_type = idents[0].to_owned();
+    let matrix_reducer_operator = idents[1].to_owned();
+    let vector_reducer_operator = idents[2].to_owned();
 
     // let matrix_reducer_operator = typed_graphblas_identifier_from_ident!(matrix_reducer_operator, value_type);
-    // let matrix_reducer_operator = typed_graphblas_identifier_from_ident(matrix_reducer_operator, value_type.clone());
+    // let matrix_reducer_operator = typed_graphblas_identifier_from_ident(matrix_reducer_operator, value_type.to_owned());
     let matrix_reducer_operator = typed_graphblas_identifier(TokenStream::from(
         quote!(#matrix_reducer_operator, #value_type),
     ));
@@ -238,12 +238,12 @@ pub fn implement_monoid_reducer(input: TokenStream) -> TokenStream {
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let value_type = idents[0].clone();
-    let matrix_reducer_operator = idents[1].clone();
-    let vector_reducer_operator = idents[2].clone();
+    let value_type = idents[0].to_owned();
+    let matrix_reducer_operator = idents[1].to_owned();
+    let vector_reducer_operator = idents[2].to_owned();
 
     // let matrix_reducer_operator = typed_graphblas_identifier_from_ident!(matrix_reducer_operator, value_type);
-    // let matrix_reducer_operator = typed_graphblas_identifier_from_ident(matrix_reducer_operator, value_type.clone());
+    // let matrix_reducer_operator = typed_graphblas_identifier_from_ident(matrix_reducer_operator, value_type.to_owned());
     let matrix_reducer_operator = typed_graphblas_identifier(TokenStream::from(
         quote!(#matrix_reducer_operator, #value_type),
     ));
@@ -262,7 +262,7 @@ pub fn implement_monoid_reducer(input: TokenStream) -> TokenStream {
                 product: &mut #value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                // let mut tmp_product = product.clone();
+                // let mut tmp_product = product.to_owned();
                 // $convert_to_type!(tmp_product, $graphblas_implementation_type);
 
                 context.call(|| unsafe {
@@ -287,7 +287,7 @@ pub fn implement_monoid_reducer(input: TokenStream) -> TokenStream {
                 product: &mut #value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                // let mut tmp_product = product.clone();
+                // let mut tmp_product = product.to_owned();
                 // $convert_to_type!(tmp_product, $graphblas_implementation_type);
 
                 context.call(|| unsafe {
@@ -320,8 +320,8 @@ pub fn implement_2_type_macro_for_isize_and_typed_graphblas_function(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -355,8 +355,8 @@ pub fn implement_2_type_macro_for_usize_and_typed_graphblas_function(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
 
     let function_identifier;
     match usize::BITS {
@@ -388,8 +388,8 @@ pub fn implement_macro_for_isize_and_graphblas_function(input: TokenStream) -> T
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -422,8 +422,8 @@ pub fn implement_macro_for_usize_and_graphblas_function(input: TokenStream) -> T
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
 
     let function_identifier;
     match usize::BITS {
@@ -457,9 +457,9 @@ pub fn implement_macro_for_isize_and_2_typed_graphblas_functions(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -498,9 +498,9 @@ pub fn implement_macro_for_usize_and_2_typed_graphblas_functions(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -539,10 +539,10 @@ pub fn implement_macro_for_isize_and_2_typed_graphblas_functions_with_type_conve
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
-    let type_conversion = idents[3].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
+    let type_conversion = idents[3].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -591,10 +591,10 @@ pub fn implement_macro_for_usize_and_2_typed_graphblas_functions_with_type_conve
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
-    let type_conversion = idents[3].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
+    let type_conversion = idents[3].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -643,9 +643,9 @@ pub fn implement_macro_for_isize_and_graphblas_function_with_type_conversion(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
-    let type_conversion = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
+    let type_conversion = idents[2].to_owned();
 
     let function_identifier;
     let expanded;
@@ -689,9 +689,9 @@ pub fn implement_macro_for_usize_and_graphblas_function_with_type_conversion(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
-    let type_conversion = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
+    let type_conversion = idents[2].to_owned();
 
     let function_identifier;
     let expanded;
@@ -735,8 +735,8 @@ pub fn implement_1_type_macro_for_isize_and_typed_graphblas_function_with_implem
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
 
     let function_identifier;
     let expanded;
@@ -780,8 +780,8 @@ pub fn implement_1_type_macro_for_usize_and_typed_graphblas_function_with_implem
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
 
     let function_identifier;
     let expanded;
@@ -825,9 +825,9 @@ pub fn implement_1_type_macro_for_isize_and_2_typed_graphblas_functions_with_imp
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -876,9 +876,9 @@ pub fn implement_1_type_macro_for_usize_and_2_typed_graphblas_functions_with_imp
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -927,11 +927,11 @@ pub fn implement_1_type_macro_for_isize_and_4_typed_graphblas_functions_with_imp
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
-    let graphblas_function_identifier_3 = idents[3].clone();
-    let graphblas_function_identifier_4 = idents[4].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
+    let graphblas_function_identifier_3 = idents[3].to_owned();
+    let graphblas_function_identifier_4 = idents[4].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -990,11 +990,11 @@ pub fn implement_1_type_macro_for_usize_and_4_typed_graphblas_functions_with_imp
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier_1 = idents[1].clone();
-    let graphblas_function_identifier_2 = idents[2].clone();
-    let graphblas_function_identifier_3 = idents[3].clone();
-    let graphblas_function_identifier_4 = idents[4].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier_1 = idents[1].to_owned();
+    let graphblas_function_identifier_2 = idents[2].to_owned();
+    let graphblas_function_identifier_3 = idents[3].to_owned();
+    let graphblas_function_identifier_4 = idents[4].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -1053,9 +1053,9 @@ pub fn implement_2_type_macro_for_isize_and_typed_graphblas_function_with_type_c
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
-    let type_conversion = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
+    let type_conversion = idents[2].to_owned();
 
     let function_identifier;
     let expanded;
@@ -1099,9 +1099,9 @@ pub fn implement_2_type_macro_for_usize_and_typed_graphblas_function_with_type_c
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_identifier = idents[1].clone();
-    let type_conversion = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_identifier = idents[1].to_owned();
+    let type_conversion = idents[2].to_owned();
 
     let function_identifier;
     let expanded;
@@ -1143,12 +1143,12 @@ pub fn implement_macro_for_3_isizes_and_4_graphblas_functions(input: TokenStream
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_1 = idents[1].clone();
-    let graphblas_function_2 = idents[2].clone();
-    let graphblas_function_3 = idents[3].clone();
-    let graphblas_function_4 = idents[4].clone();
-    let type_conversion = idents[5].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_1 = idents[1].to_owned();
+    let graphblas_function_2 = idents[2].to_owned();
+    let graphblas_function_3 = idents[3].to_owned();
+    let graphblas_function_4 = idents[4].to_owned();
+    let type_conversion = idents[5].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -1211,12 +1211,12 @@ pub fn implement_macro_for_3_usizes_and_4_graphblas_functions(input: TokenStream
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let graphblas_function_1 = idents[1].clone();
-    let graphblas_function_2 = idents[2].clone();
-    let graphblas_function_3 = idents[3].clone();
-    let graphblas_function_4 = idents[4].clone();
-    let type_conversion = idents[5].clone();
+    let macro_identifier = idents[0].to_owned();
+    let graphblas_function_1 = idents[1].to_owned();
+    let graphblas_function_2 = idents[2].to_owned();
+    let graphblas_function_3 = idents[3].to_owned();
+    let graphblas_function_4 = idents[4].to_owned();
+    let type_conversion = idents[5].to_owned();
 
     let function_identifier_1;
     let function_identifier_2;
@@ -1276,9 +1276,9 @@ pub fn implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1312,9 +1312,9 @@ pub fn implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize(
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1348,10 +1348,10 @@ pub fn implement_macro_with_1_type_trait_and_typed_graphblas_function_for_isize_
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
-    let postfix = idents[3].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
+    let postfix = idents[3].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1385,10 +1385,10 @@ pub fn implement_macro_with_1_type_trait_and_typed_graphblas_function_for_usize_
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
-    let postfix = idents[3].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
+    let postfix = idents[3].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1422,9 +1422,9 @@ pub fn implement_macro_with_3_typed_trait_and_typed_graphblas_function_for_isize
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1458,9 +1458,9 @@ pub fn implement_macro_with_2_typed_trait_and_typed_graphblas_function_for_usize
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1494,9 +1494,9 @@ pub fn implement_macro_with_2_typed_trait_and_typed_graphblas_function_for_isize
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1530,10 +1530,10 @@ pub fn implement_macro_with_2_typed_trait_and_output_type_and_typed_graphblas_fu
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
-    let output_type = idents[3].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
+    let output_type = idents[3].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1567,10 +1567,10 @@ pub fn implement_macro_with_2_typed_trait_and_output_type_and_typed_graphblas_fu
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
-    let output_type = idents[3].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
+    let output_type = idents[3].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1604,9 +1604,9 @@ pub fn implement_macro_with_3_typed_trait_and_typed_graphblas_function_for_usize
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let trait_identifier = idents[1].clone();
-    let graphblas_function = idents[2].clone();
+    let macro_identifier = idents[0].to_owned();
+    let trait_identifier = idents[1].to_owned();
+    let graphblas_function = idents[2].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1638,11 +1638,11 @@ pub fn implement_semiring_for_isize(input: TokenStream) -> TokenStream {
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let semiring = idents[1].clone();
-    let addition_operator = idents[2].clone();
-    let multiplication_operator = idents[3].clone();
-    let graphblas_function = idents[4].clone();
+    let macro_identifier = idents[0].to_owned();
+    let semiring = idents[1].to_owned();
+    let addition_operator = idents[2].to_owned();
+    let multiplication_operator = idents[3].to_owned();
+    let graphblas_function = idents[4].to_owned();
 
     let function_identifier;
     match isize::BITS {
@@ -1674,11 +1674,11 @@ pub fn implement_semiring_for_usize(input: TokenStream) -> TokenStream {
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let semiring = idents[1].clone();
-    let addition_operator = idents[2].clone();
-    let multiplication_operator = idents[3].clone();
-    let graphblas_function = idents[4].clone();
+    let macro_identifier = idents[0].to_owned();
+    let semiring = idents[1].to_owned();
+    let addition_operator = idents[2].to_owned();
+    let multiplication_operator = idents[3].to_owned();
+    let graphblas_function = idents[4].to_owned();
 
     let function_identifier;
     match usize::BITS {
@@ -1708,8 +1708,8 @@ pub fn implement_type_conversion_macro_for_isize(input: TokenStream) -> TokenStr
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let type_conversion_macro = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let type_conversion_macro = idents[1].to_owned();
 
     let expanded;
     match usize::BITS {
@@ -1748,8 +1748,8 @@ pub fn implement_type_conversion_macro_for_usize(input: TokenStream) -> TokenStr
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].clone();
-    let type_conversion_macro = idents[1].clone();
+    let macro_identifier = idents[0].to_owned();
+    let type_conversion_macro = idents[1].to_owned();
 
     let expanded;
     match usize::BITS {

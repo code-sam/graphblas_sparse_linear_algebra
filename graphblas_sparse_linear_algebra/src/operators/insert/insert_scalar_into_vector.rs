@@ -81,7 +81,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.clone().to_type()?;
+                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into
                     .number_of_selected_elements(vector_to_insert_into.length()?)?
@@ -139,7 +139,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.clone().to_type()?;
+                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into
                     .number_of_selected_elements(vector_to_insert_into.length()?)?

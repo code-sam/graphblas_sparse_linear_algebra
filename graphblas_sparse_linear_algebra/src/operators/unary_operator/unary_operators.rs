@@ -368,6 +368,7 @@ mod tests {
         operators::{
             apply::{ApplyUnaryOperator, UnaryOperatorApplier},
             binary_operator::{Assignment, First},
+            mask::SelectEntireVector,
             options::OperatorOptions,
         },
     };
@@ -392,7 +393,7 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<i64>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &vector_length,
             &element_list,
             &First::<i64>::new(),
@@ -408,6 +409,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
