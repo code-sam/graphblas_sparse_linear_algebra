@@ -9,6 +9,7 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::mask::MatrixMask;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
@@ -37,17 +38,7 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
-        rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
-        columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
-        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-        sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -60,129 +51,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_extract_from.context();
-
-        let number_of_rows_to_extract: ElementIndex;
-        match rows_to_extract {
-            ElementIndexSelector::Index(indices) => number_of_rows_to_extract = indices.len(),
-            ElementIndexSelector::All => {
-                number_of_rows_to_extract = matrix_to_extract_from.row_height()?
-            }
-        }
-        let number_of_rows_to_extract = number_of_rows_to_extract.to_graphblas_index()?;
-
-        let number_of_columns_to_extract: ElementIndex;
-        match columns_to_extract {
-            ElementIndexSelector::Index(indices) => number_of_columns_to_extract = indices.len(),
-            ElementIndexSelector::All => {
-                number_of_columns_to_extract = matrix_to_extract_from.column_width()?
-            }
-        }
-        let number_of_columns_to_extract = number_of_columns_to_extract.to_graphblas_index()?;
-
-        let rows_to_extract = rows_to_extract.to_graphblas_type()?;
-        let columns_to_extract = columns_to_extract.to_graphblas_type()?;
-
-        match (rows_to_extract, columns_to_extract) {
-            (
-                ElementIndexSelectorGraphblasType::Index(row),
-                ElementIndexSelectorGraphblasType::Index(column),
-            ) => {
-                context.call(
-                    || unsafe {
-                        GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
-                            row.as_ptr(),
-                            number_of_rows_to_extract,
-                            column.as_ptr(),
-                            number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
-                )?;
-            }
-            (
-                ElementIndexSelectorGraphblasType::All(row),
-                ElementIndexSelectorGraphblasType::Index(column),
-            ) => {
-                context.call(
-                    || unsafe {
-                        GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
-                            row,
-                            number_of_rows_to_extract,
-                            column.as_ptr(),
-                            number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
-                )?;
-            }
-            (
-                ElementIndexSelectorGraphblasType::Index(row),
-                ElementIndexSelectorGraphblasType::All(column),
-            ) => {
-                context.call(
-                    || unsafe {
-                        GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
-                            row.as_ptr(),
-                            number_of_rows_to_extract,
-                            column,
-                            number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
-                )?;
-            }
-            (
-                ElementIndexSelectorGraphblasType::All(row),
-                ElementIndexSelectorGraphblasType::All(column),
-            ) => {
-                context.call(
-                    || unsafe {
-                        GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
-                            row,
-                            number_of_rows_to_extract,
-                            column,
-                            number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
-                )?;
-            }
-        }
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
-        rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
-        columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
-        accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-        sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
@@ -309,6 +178,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::mask::SelectEntireMatrix;
 
     #[test]
     fn test_matrix_extraction() {
@@ -345,6 +215,7 @@ mod tests {
                 &columns_to_extract,
                 &Assignment::new(),
                 &mut sub_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -373,6 +244,7 @@ mod tests {
                 &columns_to_extract,
                 &Assignment::new(),
                 &mut sub_matrix,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

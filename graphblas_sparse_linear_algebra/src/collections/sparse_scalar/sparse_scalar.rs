@@ -46,7 +46,7 @@ unsafe impl<T: ValueType> Sync for SparseScalar<T> {}
 impl<T: ValueType> SparseScalar<T> {
     pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
         let mut scalar: MaybeUninit<GrB_Scalar> = MaybeUninit::uninit();
-        let context = context.clone();
+        let context = context.to_owned();
 
         context.call_without_detailed_error_information(|| unsafe {
             GrB_Scalar_new(scalar.as_mut_ptr(), <T>::to_graphblas_type())
@@ -116,7 +116,7 @@ implement_macro_for_all_value_types!(sparse_scalar_from_scalar);
 
 impl<T: ValueType> ContextTrait for SparseScalar<T> {
     fn context(&self) -> Arc<Context> {
-        self.context.clone()
+        self.context.to_owned()
     }
 
     fn context_ref(&self) -> &Arc<Context> {
@@ -145,7 +145,7 @@ impl<T: ValueType> Collection for SparseScalar<T> {
 impl<T: ValueType> Drop for SparseScalar<T> {
     fn drop(&mut self) -> () {
         let _ = self.context.call(
-            || unsafe { GrB_Scalar_free(&mut self.scalar.clone()) },
+            || unsafe { GrB_Scalar_free(&mut self.scalar.to_owned()) },
             &self.scalar,
         );
     }
@@ -162,7 +162,7 @@ impl<T: ValueType> Clone for SparseScalar<T> {
             .unwrap();
 
         SparseScalar {
-            context: self.context.clone(),
+            context: self.context.to_owned(),
             scalar: unsafe { scalar_copy.assume_init() },
             value_type: PhantomData,
         }
@@ -243,7 +243,7 @@ pub trait SetScalarValue<T: ValueType> {
 
 // impl<T: ValueType> SetScalarValue<T> for SparseScalar<T> {
 //     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError> {
-//         let value = value.clone(); // TODO: review if clone can be removed, and if this improves performance
+//         let value = value.to_owned(); // TODO: review if clone can be removed, and if this improves performance
 //         convert_to_target_type!(value, $graphblas_implementation_type);
 //         self.context.call(
 //             || unsafe { GrB_Scalar_setElement(self.scalar, value) },
@@ -374,7 +374,7 @@ mod tests {
 
         let sparse_scalar = SparseScalar::<f32>::new(&context).unwrap();
 
-        let clone_of_sparse_scalar = sparse_scalar.clone();
+        let clone_of_sparse_scalar = sparse_scalar.to_owned();
 
         // TODO: implement and test equality operator
         assert_eq!(

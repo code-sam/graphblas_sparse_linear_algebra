@@ -191,7 +191,7 @@ mod tests {
 
     //     let vector_length: usize = 10;
     //     let vector = SparseVector::<i64>::from_element_list(
-    //         &context.clone(),
+    //         &context.to_owned(),
     //         &vector_length,
     //         &element_list,
     //         &First::<i64, i64, i64, i64>::new(),

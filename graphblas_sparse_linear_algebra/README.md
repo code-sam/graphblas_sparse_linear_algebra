@@ -29,7 +29,7 @@ fn main() {
 
     let matrix_size: Size = (10, 15).into();
     let matrix = SparseMatrix::<u8>::from_element_list(
-        &context.clone(),
+        &context.to_owned(),
         &matrix_size,
         &element_list,
         &First::<u8>::new(),

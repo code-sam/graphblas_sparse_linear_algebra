@@ -8,6 +8,7 @@ use crate::operators::options::OperatorOptions;
 use crate::value_type::ValueType;
 
 use super::binary_operator::AccumulatorBinaryOperator;
+use super::mask::MatrixMask;
 use super::options::OperatorOptionsTrait;
 
 #[derive(Debug, Clone)]
@@ -31,15 +32,7 @@ pub trait TransposeMatrix<EvaluationDomain: ValueType> {
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -50,32 +43,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
         matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = transpose.context();
-
-        context.call(
-            || unsafe {
-                GrB_transpose(
-                    transpose.graphblas_matrix(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    matrix.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
-                )
-            },
-            unsafe { transpose.graphblas_matrix_ref() },
-        )?;
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        transpose: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
@@ -105,6 +73,7 @@ mod tests {
     };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::mask::SelectEntireMatrix;
 
     #[test]
     fn test_transpose() {
@@ -134,6 +103,7 @@ mod tests {
                 &matrix,
                 &Assignment::<u8>::new(),
                 &mut matrix_transpose,
+                &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

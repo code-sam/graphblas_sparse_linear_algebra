@@ -4,6 +4,7 @@ use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::mask::MatrixMask;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
@@ -37,17 +38,7 @@ pub trait ApplyElementWiseMatrixMultiplicationSemiring<EvaluationDomain: ValueTy
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -62,36 +53,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixMultiplicationSemiring<E
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_Matrix_eWiseMult_Semiring(
-                    product.graphblas_matrix(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -137,17 +99,7 @@ pub trait ApplyElementWiseMatrixMultiplicationMonoidOperator<EvaluationDomain: V
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -163,36 +115,7 @@ impl<EvaluationDomain: ValueType>
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_Matrix_eWiseMult_Monoid(
-                    product.graphblas_matrix(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -239,17 +162,7 @@ pub trait ApplyElementWiseMatrixMultiplicationBinaryOperator<EvaluationDomain: V
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -265,36 +178,7 @@ impl<EvaluationDomain: ValueType>
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_Matrix_eWiseMult_BinaryOp(
-                    product.graphblas_matrix(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
-                )
-            },
-            unsafe { &product.graphblas_matrix() },
-        )?;
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask: &(impl MatrixMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -329,6 +213,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
+    use crate::operators::mask::SelectEntireMatrix;
 
     #[test]
     fn test_element_wisemultiplication() {
@@ -343,8 +228,8 @@ mod tests {
         let size: Size = (height, width).into();
 
         let multiplier = SparseMatrix::<i32>::new(&context, &size).unwrap();
-        let multiplicant = multiplier.clone();
-        let mut product = multiplier.clone();
+        let multiplicant = multiplier.to_owned();
+        let mut product = multiplier.to_owned();
 
         // Test multiplication of empty matrices
         element_wise_matrix_multiplier
@@ -354,6 +239,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::<i32>::new(),
                 &mut product,
+                &SelectEntireMatrix::new(&context),
                 &options,
             )
             .unwrap();
@@ -399,6 +285,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::<i32>::new(),
                 &mut product,
+                &SelectEntireMatrix::new(&context),
                 &options,
             )
             .unwrap();
@@ -440,6 +327,7 @@ mod tests {
                 &multiplicant,
                 &accumulator,
                 &mut product,
+                &SelectEntireMatrix::new(&context),
                 &options,
             )
             .unwrap();
@@ -488,7 +376,7 @@ mod tests {
         let mut product = SparseMatrix::<i32>::new(&context, &size).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &operator,
                 &multiplicant,

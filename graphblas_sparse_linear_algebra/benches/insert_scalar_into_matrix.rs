@@ -26,7 +26,7 @@ fn bench_insert_scalar_into_matrix(c: &mut Criterion) {
     let context = Context::init_ready(Mode::NonBlocking).unwrap();
 
     c.bench_function("test_insert_scalar_into_matrix", |b| {
-        b.iter(|| bench_test(context.clone()))
+        b.iter(|| bench_test(context.to_owned()))
     });
 }
 
@@ -98,7 +98,7 @@ fn bench_test(context: Arc<Context>) {
                 &columns_to_insert,
                 &scalar_to_insert,
                 &Assignment::new(),
-                &mask.clone(),
+                &mask.to_owned(),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

@@ -18,10 +18,10 @@ impl<T: ValueType> VectorElement<T> {
 
 impl<T: ValueType + Clone> VectorElement<T> {
     pub fn index(&self) -> ElementIndex {
-        self.index.clone()
+        self.index.to_owned()
     }
     pub fn value(&self) -> T {
-        self.value.clone()
+        self.value.to_owned()
     }
 
     pub fn from_pair(index: ElementIndex, value: T) -> Self {

@@ -47,10 +47,10 @@ impl SystemError {
     }
 
     pub fn error_type(&self) -> SystemErrorType {
-        self.error_type.clone()
+        self.error_type.to_owned()
     }
     pub fn explanation(&self) -> String {
-        self.explanation.clone()
+        self.explanation.to_owned()
     }
 }
 

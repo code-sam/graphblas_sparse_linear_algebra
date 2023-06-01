@@ -7,6 +7,7 @@ pub mod index_unary_operator;
 pub mod insert;
 // pub mod iterator;
 pub mod kronecker_product;
+pub mod mask;
 pub mod monoid;
 pub mod multiplication;
 pub mod options;

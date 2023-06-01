@@ -128,7 +128,7 @@ impl Context {
         let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         // println!("number_of_ready_contexts before starting: {:?}",number_of_ready_contexts.load(Ordering::SeqCst));
         if number_of_ready_contexts.load(Ordering::SeqCst) == 0 {
-            let status = initialize(mode.clone(), number_of_ready_contexts)?;
+            let status = initialize(mode.to_owned(), number_of_ready_contexts)?;
             *self = Context::Ready(Ready { mode });
             Ok(status)
         } else {

@@ -8,6 +8,7 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::mask::VectorMask;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
@@ -36,17 +37,7 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut SparseVector<Column>,
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
-        column_index_to_extract: &ElementIndex,
-        indices_to_extract: &ElementIndexSelector,
-        accumulator: &impl AccumulatorBinaryOperator<Column>,
-        column_vector: &mut SparseVector<Column>,
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -59,71 +50,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut SparseVector<Column>,
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_extract_from.context();
-
-        let number_of_indices_to_extract: ElementIndex;
-        match indices_to_extract {
-            ElementIndexSelector::Index(indices) => number_of_indices_to_extract = indices.len(),
-            ElementIndexSelector::All => {
-                number_of_indices_to_extract = matrix_to_extract_from.row_height()?
-            }
-        }
-        let number_of_indices_to_extract = number_of_indices_to_extract.to_graphblas_index()?;
-
-        let indices_to_extract = indices_to_extract.to_graphblas_type()?;
-
-        let column_index_to_extract = column_index_to_extract.to_graphblas_index()?;
-
-        match indices_to_extract {
-            ElementIndexSelectorGraphblasType::Index(index) => {
-                context.call(
-                    || unsafe {
-                        GrB_Col_extract(
-                            column_vector.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
-                            index.as_ptr(),
-                            number_of_indices_to_extract,
-                            column_index_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { column_vector.graphblas_vector_ref() },
-                )?;
-            }
-            ElementIndexSelectorGraphblasType::All(index) => {
-                context.call(
-                    || unsafe {
-                        GrB_Col_extract(
-                            column_vector.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
-                            index,
-                            number_of_indices_to_extract,
-                            column_index_to_extract,
-                            options.to_graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { column_vector.graphblas_vector_ref() },
-                )?;
-            }
-        }
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
-        column_index_to_extract: &ElementIndex,
-        indices_to_extract: &ElementIndexSelector,
-        accumulator: &impl AccumulatorBinaryOperator<Column>,
-        column_vector: &mut SparseVector<Column>,
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
@@ -193,6 +120,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::mask::SelectEntireVector;
 
     #[test]
     fn test_column_extraction() {
@@ -208,7 +136,7 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &(3, 2).into(),
             &element_list,
             &First::<u8>::new(),
@@ -229,6 +157,7 @@ mod tests {
                 &indices_to_extract,
                 &Assignment::new(),
                 &mut column_vector,
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

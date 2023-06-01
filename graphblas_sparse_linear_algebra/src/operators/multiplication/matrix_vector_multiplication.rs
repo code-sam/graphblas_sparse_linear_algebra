@@ -5,6 +5,7 @@ use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::mask::VectorMask;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
@@ -35,17 +36,7 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -61,36 +52,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        options: &OperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_mxv(
-                    product.graphblas_vector(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
-                )
-            },
-            unsafe { product.graphblas_vector_ref() },
-        )?;
-
-        Ok(())
-    }
-
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -129,6 +91,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::mask::SelectEntireVector;
     use crate::operators::semiring::PlusTimes;
 
     #[test]
@@ -144,7 +107,7 @@ mod tests {
 
         let multiplier = SparseMatrix::<f32>::new(&context, &size).unwrap();
         let multiplicant = SparseVector::<f32>::new(&context, &length).unwrap();
-        let mut product = multiplicant.clone();
+        let mut product = multiplicant.to_owned();
 
         // Test multiplication of empty matrices
         matrix_multiplier
@@ -154,6 +117,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
+                &SelectEntireVector::new(&context),
                 &options,
             )
             .unwrap();
@@ -195,6 +159,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
+                &SelectEntireVector::new(&context),
                 &options,
             )
             .unwrap();
@@ -220,6 +185,7 @@ mod tests {
                 &multiplicant,
                 &accumulator,
                 &mut product,
+                &SelectEntireVector::new(&context),
                 &options,
             )
             .unwrap();
@@ -243,7 +209,7 @@ mod tests {
         let mut product = SparseVector::<f32>::new(&context, &length).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,

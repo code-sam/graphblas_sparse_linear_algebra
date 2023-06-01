@@ -234,7 +234,7 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<isize>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &(10, 10).into(),
             &element_list,
             &First::<isize>::new(),

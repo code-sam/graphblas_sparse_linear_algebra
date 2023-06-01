@@ -143,7 +143,7 @@ mod tests {
         ]);
 
         let vector = SparseVector::<isize>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &element_list,
             &First::<isize>::new(),
@@ -182,7 +182,7 @@ mod tests {
         ]);
 
         let mut vector = SparseVector::<isize>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &element_list,
             &First::<isize>::new(),
@@ -211,7 +211,7 @@ mod tests {
         ]);
 
         let vector = SparseVector::<isize>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &element_list,
             &First::<isize>::new(),
@@ -240,7 +240,7 @@ mod tests {
         ]);
 
         let vector = SparseVector::<isize>::from_element_list(
-            &context.clone(),
+            &context.to_owned(),
             &10,
             &element_list,
             &First::<isize>::new(),
