@@ -12,6 +12,8 @@ pub trait VectorMask {
     unsafe fn graphblas_vector(&self) -> GrB_Vector;
 }
 
+
+#[derive(Debug, Clone)]
 pub struct SelectEntireMatrix {
     context: Arc<Context>,
 }
@@ -40,6 +42,7 @@ impl ContextTrait for SelectEntireMatrix {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct SelectEntireVector {
     context: Arc<Context>,
 }
