@@ -141,7 +141,7 @@ mod tests {
             SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
 
         let reducer = BinaryOperatorReducer::new();
-        
+
         reducer
             .to_colunm_vector(
                 &Plus::<u8>::new(),
