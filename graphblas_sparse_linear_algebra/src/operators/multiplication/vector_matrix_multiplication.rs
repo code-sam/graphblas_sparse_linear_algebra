@@ -36,6 +36,17 @@ pub trait MultiplyVectorByMatrix<EvaluationDomain: ValueType> {
         multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError>;
+
+    // TODO: consider a version where the resulting product matrix is generated in the function body
+    fn apply_with_mask(
+        &self,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl Semiring<EvaluationDomain>,
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
         mask: &(impl VectorMask + ContextTrait),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -46,6 +57,36 @@ impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix<EvaluationDomain>
 {
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
+        &self,
+        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        operator: &impl Semiring<EvaluationDomain>,
+        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
+        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
+        options: &OperatorOptions,
+    ) -> Result<(), SparseLinearAlgebraError> {
+        let context = product.context();
+
+        context.call(
+            || unsafe {
+                GrB_vxm(
+                    product.graphblas_vector(),
+                    ptr::null_mut(),
+                    accumulator.accumulator_graphblas_type(),
+                    operator.graphblas_type(),
+                    multiplier.graphblas_vector(),
+                    multiplicant.graphblas_matrix(),
+                    options.to_graphblas_descriptor(),
+                )
+            },
+            unsafe { product.graphblas_vector_ref() },
+        )?;
+
+        Ok(())
+    }
+
+    // TODO: consider a version where the resulting product matrix is generated in the function body
+    fn apply_with_mask(
         &self,
         multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
         operator: &impl Semiring<EvaluationDomain>,
@@ -111,7 +152,7 @@ mod tests {
 
         // Test multiplication of empty matrices
         matrix_multiplier
-            .apply(
+            .apply_with_mask(
                 &multiplier,
                 &semiring,
                 &multiplicant,
@@ -153,7 +194,7 @@ mod tests {
 
         // Test multiplication of full matrices
         matrix_multiplier
-            .apply(
+            .apply_with_mask(
                 &multiplier,
                 &semiring,
                 &multiplicant,
@@ -179,7 +220,7 @@ mod tests {
         let matrix_multiplier_with_accumulator = VectorMatrixMultiplicationOperator::new();
 
         matrix_multiplier_with_accumulator
-            .apply(
+            .apply_with_mask(
                 &multiplier,
                 &semiring,
                 &multiplicant,
@@ -209,7 +250,7 @@ mod tests {
         let mut product = SparseVector::<f32>::new(&context, &length).unwrap();
 
         matrix_multiplier
-            .apply(
+            .apply_with_mask(
                 &multiplier,
                 &semiring,
                 &multiplicant,
