@@ -277,14 +277,14 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = 10u8;
-        // BinaryOperatorApplier::<u8>::apply_with_matrix_as_first_argument(&operator, &matrix, &second_agrument, &mut product_matrix)
+        let second_argument = 10u8;
+        // BinaryOperatorApplier::<u8>::apply_with_matrix_as_first_argument(&operator, &matrix, &second_argument, &mut product_matrix)
         // .unwrap();
         operator
             .apply_with_matrix_as_left_argument(
                 &matrix,
                 &First::<u8>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
@@ -305,10 +305,10 @@ mod tests {
         );
 
         let operator = BinaryOperatorApplier::new();
-        let first_agrument = 10;
+        let first_argument = 10;
         operator
             .apply_with_matrix_as_right_argument(
-                &first_agrument,
+                &first_argument,
                 &First::<u8>::new(),
                 &matrix,
                 &Assignment::new(),
@@ -356,12 +356,12 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = 10;
+        let second_argument = 10;
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
                 &First::<u8>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
@@ -421,12 +421,12 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = 10;
+        let second_argument = 10;
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
                 &First::<usize>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
@@ -441,10 +441,10 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
-        let first_agrument = 10;
+        let first_argument = 10;
         operator
             .apply_with_vector_as_right_argument(
-                &first_agrument,
+                &first_argument,
                 &First::<usize>::new(),
                 &vector,
                 &Assignment::new(),

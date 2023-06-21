@@ -47,13 +47,13 @@ criterion_main!(benches);
 fn bench_apply_binary_operator(matrix: &SparseMatrix<u8>, product_matrix: &mut SparseMatrix<u8>) {
     let operator = BinaryOperatorApplier::new();
 
-    let second_agrument = 10u8;
+    let second_argument = 10u8;
 
     operator
         .apply_with_matrix_as_left_argument(
             matrix,
             &Plus::<u8>::new(),
-            &second_agrument,
+            &second_argument,
             &Assignment::new(),
             product_matrix,
             &SelectEntireMatrix::new(&matrix.context_ref()),

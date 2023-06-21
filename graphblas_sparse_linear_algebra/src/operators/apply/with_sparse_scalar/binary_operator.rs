@@ -230,12 +230,12 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let second_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
         operator
             .apply_with_matrix_as_left_argument(
                 &matrix,
                 &First::<u8>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
@@ -256,10 +256,10 @@ mod tests {
         );
 
         let operator = BinaryOperatorApplier::new();
-        let first_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let first_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
         operator
             .apply_with_matrix_as_right_argument(
-                &first_agrument,
+                &first_argument,
                 &First::<u8>::new(),
                 &matrix,
                 &Assignment::new(),
@@ -307,12 +307,12 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let second_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
                 &First::<u8>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
@@ -372,12 +372,12 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
+        let second_argument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
                 &First::<usize>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
@@ -392,10 +392,10 @@ mod tests {
         assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
-        let first_agrument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
+        let first_argument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
         operator
             .apply_with_vector_as_right_argument(
-                &first_agrument,
+                &first_argument,
                 &First::<usize>::new(),
                 &vector,
                 &Assignment::new(),
@@ -437,12 +437,12 @@ mod tests {
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_agrument = SparseScalar::<bool>::from_value(&context, true).unwrap();
+        let second_argument = SparseScalar::<bool>::from_value(&context, true).unwrap();
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
                 &Plus::<u8>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
@@ -462,7 +462,7 @@ mod tests {
             .apply_with_vector_as_left_argument(
                 &vector,
                 &Plus::<bool>::new(),
-                &second_agrument,
+                &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
