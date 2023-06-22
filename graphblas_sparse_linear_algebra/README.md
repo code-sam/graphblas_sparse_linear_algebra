@@ -41,11 +41,11 @@ fn main() {
 
     let operator = BinaryOperatorApplier::new(
     );
-    let first_agrument = 10;
+    let first_argument = 10;
     operator
         .apply_with_matrix_as_left_argument(
             &matrix, &First::<u8>::new(), 
-            &first_agrument, 
+            &first_argument, 
             &Assignment::new(), 
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
@@ -59,10 +59,10 @@ fn main() {
     assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
 
     let operator = BinaryOperatorApplier::new();
-    let second_agrument = 10;
+    let second_argument = 10;
     operator
         .apply_with_matrix_as_right_argument(
-            &second_agrument,
+            &second_argument,
             &First::<u8>::new(), 
             &matrix, 
             &Assignment::new(),
