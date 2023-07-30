@@ -39,8 +39,7 @@ fn main() {
 
     let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
 
-    let operator = BinaryOperatorApplier::new(
-    );
+    let operator = BinaryOperatorApplier::new();
     let first_argument = 10;
     operator
         .apply_with_matrix_as_left_argument(
