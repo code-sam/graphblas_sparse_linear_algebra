@@ -1,10 +1,11 @@
 // #[cfg(test)]
 mod tests {
+    use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::SetMatrixElement;
     use rayon::prelude::*;
     use std::sync::Mutex;
 
     use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-        Coordinate, GetMatrixElement, MatrixElement, SetMatrixElement, Size, SparseMatrix,
+        Coordinate, GetMatrixElement, MatrixElement, Size, SparseMatrix,
     };
     use graphblas_sparse_linear_algebra::context::{Context, Mode};
     use graphblas_sparse_linear_algebra::operators::binary_operator::Plus;

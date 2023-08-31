@@ -10,6 +10,5 @@ pub use element::{MatrixElement, MatrixElementList};
 pub use size::Size;
 pub use sparse_matrix::{
     ColumnIndex, FromMatrixElementList, GetMatrixElement, GetMatrixElementList,
-    GetMatrixElementValue, GraphblasSparseMatrixTrait, RowIndex, SetMatrixElement, SparseMatrix,
-    SparseMatrixTrait,
+    GetMatrixElementValue, GraphblasSparseMatrixTrait, RowIndex, SparseMatrix, SparseMatrixTrait,
 };

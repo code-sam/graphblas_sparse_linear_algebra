@@ -468,57 +468,6 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Matrix_build
 );
 
-pub trait SetMatrixElement<T: ValueType> {
-    fn set_element(&mut self, element: MatrixElement<T>) -> Result<(), SparseLinearAlgebraError>;
-}
-
-// impl SetElement<u8> for SparseMatrix<u8> {
-//     fn set_element(&mut self, element: Element<u8>) -> Result<(), SparseLinearAlgebraError> {
-//         self.context.call(|| unsafe {
-//             GrB_Matrix_setElement_UINT8(
-//                 self.matrix,
-//                 element.value(),
-//                 element.row_index(),
-//                 element.column_index(),
-//             )
-//         })?;
-//         Ok(())
-//     }
-// }
-
-macro_rules! implement_set_element {
-    ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident) => {
-        impl SetMatrixElement<$value_type> for SparseMatrix<$value_type> {
-            fn set_element(
-                &mut self,
-                element: MatrixElement<$value_type>,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let row_index_to_set = element.row_index().to_graphblas_index()?;
-                let column_index_to_set = element.column_index().to_graphblas_index()?;
-                let context = self.context.to_owned();
-                let element_value = element.value().to_type()?;
-                context.call(
-                    || unsafe {
-                        $add_element_function(
-                            self.matrix,
-                            element_value,
-                            row_index_to_set,
-                            column_index_to_set,
-                        )
-                    },
-                    &self.matrix,
-                )?;
-                Ok(())
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_set_element,
-    GrB_Matrix_setElement
-);
-
 pub trait GetMatrixElementValue<T: ValueType + Default> {
     fn get_element_value(
         &self,
@@ -749,6 +698,7 @@ implement_macro_for_all_value_types!(implement_matrix_mask);
 mod tests {
 
     use super::*;
+    use crate::collections::sparse_matrix::operations::SetMatrixElement;
     use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
