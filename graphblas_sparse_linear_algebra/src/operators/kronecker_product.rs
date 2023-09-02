@@ -194,13 +194,15 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::operations::{
+        GetMatrixElementList, GetMatrixElementValue,
+    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Times};
 
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementList, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::operators::mask::SelectEntireMatrix;
 

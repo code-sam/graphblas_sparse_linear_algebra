@@ -887,13 +887,11 @@ implement_macro_for_all_value_types!(implement_vector_mask);
 #[cfg(test)]
 mod tests {
 
-    // #[macro_use(implement_value_type_for_custom_type)]
-
     use super::*;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::binary_operator::{First, IsGreaterThan, IsGreaterThanTyped};
+    use crate::operators::binary_operator::{First};
 
     #[test]
     fn new_vector() {

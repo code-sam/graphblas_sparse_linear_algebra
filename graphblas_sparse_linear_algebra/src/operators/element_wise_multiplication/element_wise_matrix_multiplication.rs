@@ -206,9 +206,11 @@ impl<EvaluationDomain: ValueType>
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::operations::{
+        GetMatrixElementList, GetMatrixElementValue,
+    };
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementList, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
