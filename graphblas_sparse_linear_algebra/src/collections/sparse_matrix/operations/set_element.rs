@@ -1,3 +1,5 @@
+use suitesparse_graphblas_sys::{GrB_Index, GrB_Info, GrB_Matrix};
+
 use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_BOOL, GrB_Matrix_setElement_FP32, GrB_Matrix_setElement_FP64,
     GrB_Matrix_setElement_INT16, GrB_Matrix_setElement_INT32, GrB_Matrix_setElement_INT64,
@@ -41,9 +43,8 @@ macro_rules! implement_set_element_typed {
             ) -> Result<(), SparseLinearAlgebraError> {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
                 let column_index_to_set = element.column_index().to_graphblas_index()?;
-                let context = matrix.context_ref().to_owned();
                 let element_value = element.value().to_type()?;
-                context.call(
+                matrix.context_ref().call(
                     || unsafe {
                         $add_element_function(
                             matrix.graphblas_matrix(),
@@ -64,38 +65,3 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     implement_set_element_typed,
     GrB_Matrix_setElement
 );
-
-// impl<T: ValueType + ConvertScalar<T, U> + Copy, U: ValueType> SetMatrixElement<T, U> for SparseMatrix<T> {
-//     fn set_element(
-//         &mut self,
-//         element: MatrixElement<T>,
-//     ) -> Result<(), SparseLinearAlgebraError> {
-//         let row_index_to_set = element.row_index().to_graphblas_index()?;
-//         let column_index_to_set = element.column_index().to_graphblas_index()?;
-//         let element_value = element.value().to_type()?;
-//         self.context().call(
-//             || unsafe {
-//                 GrB_Matrix_setElement_BOOL(
-//                     self.graphblas_matrix(),
-//                     element_value,
-//                     row_index_to_set,
-//                     column_index_to_set,
-//                 )
-//             },
-//             unsafe {
-//                 &self.graphblas_matrix()
-//             }
-//         )?;
-//         Ok(())
-//     }
-// }
-
-// struct MatrixElementSetter<T: ValueType> {
-//     value_type: PhantomData<T>,
-// }
-
-// // impl MatrixElementSetter<>
-
-// trait GraphBlasSetMatrixElementFunction<T: ValueType> {
-//     fn graphblas_type() -> impl Fn(GrB_Matrix, T, GrB_Index, GrB_Index) -> GrB_Info;
-// }

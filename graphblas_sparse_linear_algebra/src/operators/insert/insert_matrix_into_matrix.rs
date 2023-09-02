@@ -292,9 +292,8 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoMatrixTrait<MatrixToInsertIn
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
-    };
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;

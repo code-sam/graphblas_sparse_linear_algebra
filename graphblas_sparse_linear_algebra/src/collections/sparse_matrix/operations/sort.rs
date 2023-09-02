@@ -215,9 +215,8 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList,
-    };
+    use crate::collections::sparse_matrix::operations::get_element_value::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, IsGreaterThan};
 

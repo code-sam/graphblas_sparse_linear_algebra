@@ -11,22 +11,13 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
     GrB_Matrix_build_INT16, GrB_Matrix_build_INT32, GrB_Matrix_build_INT64, GrB_Matrix_build_INT8,
     GrB_Matrix_build_UINT16, GrB_Matrix_build_UINT32, GrB_Matrix_build_UINT64,
-    GrB_Matrix_build_UINT8, GrB_Matrix_clear, GrB_Matrix_dup, GrB_Matrix_extractElement_BOOL,
-    GrB_Matrix_extractElement_FP32, GrB_Matrix_extractElement_FP64,
-    GrB_Matrix_extractElement_INT16, GrB_Matrix_extractElement_INT32,
-    GrB_Matrix_extractElement_INT64, GrB_Matrix_extractElement_INT8,
-    GrB_Matrix_extractElement_UINT16, GrB_Matrix_extractElement_UINT32,
-    GrB_Matrix_extractElement_UINT64, GrB_Matrix_extractElement_UINT8,
-    GrB_Matrix_extractTuples_BOOL, GrB_Matrix_extractTuples_FP32, GrB_Matrix_extractTuples_FP64,
-    GrB_Matrix_extractTuples_INT16, GrB_Matrix_extractTuples_INT32, GrB_Matrix_extractTuples_INT64,
-    GrB_Matrix_extractTuples_INT8, GrB_Matrix_extractTuples_UINT16,
-    GrB_Matrix_extractTuples_UINT32, GrB_Matrix_extractTuples_UINT64,
-    GrB_Matrix_extractTuples_UINT8, GrB_Matrix_free, GrB_Matrix_ncols, GrB_Matrix_new,
-    GrB_Matrix_nrows, GrB_Matrix_nvals, GrB_Matrix_removeElement, GrB_Matrix_resize,
-    GrB_Matrix_setElement_BOOL, GrB_Matrix_setElement_FP32, GrB_Matrix_setElement_FP64,
-    GrB_Matrix_setElement_INT16, GrB_Matrix_setElement_INT32, GrB_Matrix_setElement_INT64,
-    GrB_Matrix_setElement_INT8, GrB_Matrix_setElement_UINT16, GrB_Matrix_setElement_UINT32,
-    GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
+    GrB_Matrix_build_UINT8, GrB_Matrix_clear, GrB_Matrix_dup, GrB_Matrix_extractTuples_BOOL,
+    GrB_Matrix_extractTuples_FP32, GrB_Matrix_extractTuples_FP64, GrB_Matrix_extractTuples_INT16,
+    GrB_Matrix_extractTuples_INT32, GrB_Matrix_extractTuples_INT64, GrB_Matrix_extractTuples_INT8,
+    GrB_Matrix_extractTuples_UINT16, GrB_Matrix_extractTuples_UINT32,
+    GrB_Matrix_extractTuples_UINT64, GrB_Matrix_extractTuples_UINT8, GrB_Matrix_free,
+    GrB_Matrix_ncols, GrB_Matrix_new, GrB_Matrix_nrows, GrB_Matrix_nvals, GrB_Matrix_removeElement,
+    GrB_Matrix_resize,
 };
 use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::{
@@ -37,7 +28,7 @@ use crate::error::{
     SparseLinearAlgebraErrorType,
 };
 use crate::operators::mask::MatrixMask;
-// use crate::operators::options::OperatorOptions;
+use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
 
 use super::coordinate::Coordinate;
 use super::element::{MatrixElement, MatrixElementList};
@@ -366,7 +357,9 @@ pub trait FromMatrixElementList<T: ValueType> {
         size: &Size,
         elements: &MatrixElementList<T>,
         reduction_operator_for_duplicates: &impl BinaryOperator<T>,
-    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
+    ) -> Result<Self, SparseLinearAlgebraError>
+    where
+        Self: Sized;
 }
 
 // impl FromElementVector<u32> for SparseMatrix<u32> {
@@ -466,74 +459,6 @@ macro_rules! sparse_matrix_from_element_vector {
 implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
     sparse_matrix_from_element_vector,
     GrB_Matrix_build
-);
-
-pub trait GetMatrixElementValue<T: ValueType + Default> {
-    fn get_element_value(
-        &self,
-        coordinate: &Coordinate,
-    ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
-        &self,
-        coordinate: &Coordinate,
-    ) -> Result<T, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_value {
-    ($value_type:ty, $get_element_function:ident) => {
-        impl GetMatrixElementValue<$value_type> for SparseMatrix<$value_type> {
-            fn get_element_value(
-                &self,
-                coordinate: &Coordinate,
-            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
-                // let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
-                let mut value = MaybeUninit::uninit();
-                let row_index_to_get = coordinate.row_index().to_graphblas_index()?;
-                let column_index_to_get = coordinate.column_index().to_graphblas_index()?;
-
-                let result = self.context.call(
-                    || unsafe {
-                        $get_element_function(
-                            value.as_mut_ptr(),
-                            self.matrix,
-                            row_index_to_get,
-                            column_index_to_get,
-                        )
-                    },
-                    &self.matrix,
-                );
-
-                match result {
-                    Ok(_) => {
-                        let value = unsafe { value.assume_init() };
-                        // Casting to support isize and usize, redundant for other types. TODO: review performance improvements
-                        Ok(Some(value.try_into().unwrap()))
-                    }
-                    Err(error) => match error.error_type() {
-                        SparseLinearAlgebraErrorType::LogicErrorType(
-                            LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
-                        ) => Ok(None),
-                        _ => Err(error),
-                    },
-                }
-            }
-
-            fn get_element_value_or_default(
-                &self,
-                coordinate: &Coordinate,
-            ) -> Result<$value_type, SparseLinearAlgebraError> {
-                match self.get_element_value(coordinate)? {
-                    Some(value) => Ok(value),
-                    None => Ok(<$value_type>::default()),
-                }
-            }
-        }
-    };
-}
-
-implement_macro_for_all_value_types_and_graphblas_function!(
-    implement_get_element_value,
-    GrB_Matrix_extractElement
 );
 
 pub trait GetMatrixElement<T: ValueType> {
@@ -698,7 +623,7 @@ implement_macro_for_all_value_types!(implement_matrix_mask);
 mod tests {
 
     use super::*;
-    use crate::collections::sparse_matrix::operations::SetMatrixElement;
+    use crate::collections::sparse_matrix::operations::{GetMatrixElementValue, SetMatrixElement};
     use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
     use crate::context::Mode;
     use crate::error::LogicErrorType;
