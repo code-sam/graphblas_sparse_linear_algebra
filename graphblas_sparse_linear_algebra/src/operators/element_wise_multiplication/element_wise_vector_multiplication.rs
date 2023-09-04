@@ -208,8 +208,9 @@ impl<EvaluationDomain: ValueType>
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_vector::operations::GetVectorElementList;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        FromVectorElementList, GetVectorElementValue, SparseVector,
         VectorElementList,
     };
     use crate::collections::Collection;

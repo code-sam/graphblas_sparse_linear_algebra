@@ -4,7 +4,7 @@ use crate::collections::sparse_matrix::sparse_matrix::GraphblasSparseMatrixTrait
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
 use crate::context::ContextTrait;
-use crate::error::GraphBlasErrorType;
+use crate::error::GraphblasErrorType;
 use crate::error::LogicErrorType;
 use crate::error::SparseLinearAlgebraErrorType;
 use crate::index::IndexConversion;
@@ -25,7 +25,7 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_extractElement_UINT64, GrB_Matrix_extractElement_UINT8,
 };
 
-pub trait GetMatrixElementValue<T: ValueType + Default> {
+pub trait GetMatrixElementValue<T: ValueType> {
     fn get_element_value(
         &self,
         coordinate: &Coordinate,
@@ -97,7 +97,7 @@ macro_rules! implement_get_element_value {
                     }
                     Err(error) => match error.error_type() {
                         SparseLinearAlgebraErrorType::LogicErrorType(
-                            LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
+                            LogicErrorType::GraphBlas(GraphblasErrorType::NoValue),
                         ) => Ok(None),
                         _ => Err(error),
                     },

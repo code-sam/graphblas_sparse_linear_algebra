@@ -5,14 +5,14 @@ use std::fmt;
 use std::error::Error;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct GraphBlasError {
-    error_type: GraphBlasErrorType,
+pub struct GraphblasError {
+    error_type: GraphblasErrorType,
     explanation: String,
     // source: Option<Box<(dyn error::Error)>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum GraphBlasErrorType {
+pub enum GraphblasErrorType {
     NoValue,
     UnitializedObject,
     InvalidObject,
@@ -31,15 +31,15 @@ pub enum GraphBlasErrorType {
     Panic,
 }
 
-impl GraphBlasError {
-    pub fn new(error_type: GraphBlasErrorType, explanation: String) -> Self {
+impl GraphblasError {
+    pub fn new(error_type: GraphblasErrorType, explanation: String) -> Self {
         Self {
             error_type: error_type,
             explanation: explanation,
         }
     }
 
-    pub fn error_type(&self) -> GraphBlasErrorType {
+    pub fn error_type(&self) -> GraphblasErrorType {
         self.error_type.to_owned()
     }
     pub fn explanation(&self) -> String {
@@ -47,7 +47,7 @@ impl GraphBlasError {
     }
 }
 
-impl error::Error for GraphBlasError {
+impl error::Error for GraphblasError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match &self.error_type {
             // ErrorType::IO(error) => Some(error),
@@ -56,7 +56,7 @@ impl error::Error for GraphBlasError {
     }
 }
 
-impl fmt::Display for GraphBlasError {
+impl fmt::Display for GraphblasError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // REVIEW: is this match useful?
         match &self.error_type {

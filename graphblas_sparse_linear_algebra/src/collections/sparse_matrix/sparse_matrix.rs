@@ -20,7 +20,7 @@ use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
 use crate::error::{
-    GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
+    GraphblasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
     SparseLinearAlgebraErrorType,
 };
 use crate::operators::mask::MatrixMask;
@@ -190,7 +190,7 @@ impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
             Ok(_) => Ok(true),
             Err(error) => match error.error_type() {
                 SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
-                    GraphBlasErrorType::NoValue,
+                    GraphblasErrorType::NoValue,
                 )) => Ok(false),
                 _ => Err(error),
             },
@@ -601,7 +601,7 @@ mod tests {
                     SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
                         error_type,
                     )) => {
-                        assert_eq!(error_type, GraphBlasErrorType::InvalidIndex)
+                        assert_eq!(error_type, GraphblasErrorType::InvalidIndex)
                     }
                     _ => assert!(false),
                 }

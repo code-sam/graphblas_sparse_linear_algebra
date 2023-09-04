@@ -7,7 +7,7 @@ use crate::{
 
 use super::{GetGraphblasMatrixElementValue, GetMatrixElementValue};
 
-pub trait GetMatrixElement<T: ValueType + Default + GetGraphblasMatrixElementValue<T>> {
+pub trait GetMatrixElement<T: ValueType> {
     fn get_element(
         &self,
         coordinate: Coordinate,

@@ -124,8 +124,9 @@ mod tests {
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
+    use crate::collections::sparse_vector::operations::GetVectorElementList;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        FromVectorElementList, GetVectorElementValue, SparseVector,
         VectorElementList,
     };
     use crate::collections::Collection;

@@ -1,5 +1,5 @@
 // Look here for an example on how to implement error types: https://doc.rust-lang.org/src/std/io/error.rs.html#42
-use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
+use super::graphblas_error::{GraphblasError, GraphblasErrorType};
 use super::logic_error::{LogicError, LogicErrorType};
 use super::other_error::OtherErrorType;
 use super::system_error::{SystemError, SystemErrorType};
@@ -82,25 +82,25 @@ impl From<SparseLinearAlgebraError> for std::fmt::Error {
     }
 }
 
-impl From<GraphBlasError> for SparseLinearAlgebraError {
-    fn from(error: GraphBlasError) -> Self {
+impl From<GraphblasError> for SparseLinearAlgebraError {
+    fn from(error: GraphblasError) -> Self {
         match error.error_type() {
-            GraphBlasErrorType::NoValue
-            | GraphBlasErrorType::UnitializedObject
-            | GraphBlasErrorType::InvalidObject
-            | GraphBlasErrorType::NullPointer
-            | GraphBlasErrorType::InvalidValue
-            | GraphBlasErrorType::InvalidIndex
-            | GraphBlasErrorType::DomainMismatch
-            | GraphBlasErrorType::DimensionMismatch
-            | GraphBlasErrorType::EmptyObject
-            | GraphBlasErrorType::OutputNotEmpty
-            | GraphBlasErrorType::InsufficientSpace
-            | GraphBlasErrorType::IndexOutOfBounds
-            | GraphBlasErrorType::IteratorExhausted => Self::LogicError(error.into()),
-            GraphBlasErrorType::OutOfMemory
-            | GraphBlasErrorType::Panic
-            | GraphBlasErrorType::NotImplemented => Self::SystemError(error.into()),
+            GraphblasErrorType::NoValue
+            | GraphblasErrorType::UnitializedObject
+            | GraphblasErrorType::InvalidObject
+            | GraphblasErrorType::NullPointer
+            | GraphblasErrorType::InvalidValue
+            | GraphblasErrorType::InvalidIndex
+            | GraphblasErrorType::DomainMismatch
+            | GraphblasErrorType::DimensionMismatch
+            | GraphblasErrorType::EmptyObject
+            | GraphblasErrorType::OutputNotEmpty
+            | GraphblasErrorType::InsufficientSpace
+            | GraphblasErrorType::IndexOutOfBounds
+            | GraphblasErrorType::IteratorExhausted => Self::LogicError(error.into()),
+            GraphblasErrorType::OutOfMemory
+            | GraphblasErrorType::Panic
+            | GraphblasErrorType::NotImplemented => Self::SystemError(error.into()),
         }
     }
 }

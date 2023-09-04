@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-pub trait SetMatrixElement<T: ValueType + SetGraphblasMatrixElement<T>> {
+pub trait SetMatrixElement<T: ValueType> {
     fn set_element(&mut self, element: MatrixElement<T>) -> Result<(), SparseLinearAlgebraError>;
 }
 

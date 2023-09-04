@@ -43,7 +43,7 @@ use crate::bindings_to_graphblas_implementation::{
 };
 
 use crate::error::SparseLinearAlgebraError;
-use crate::error::{GraphBlasError, GraphBlasErrorType};
+use crate::error::{GraphblasError, GraphblasErrorType};
 use crate::error::{SystemError, SystemErrorType};
 
 /*
@@ -378,75 +378,75 @@ impl Status {
             )
             .into(),
             Status::NoValue => {
-                GraphBlasError::new(GraphBlasErrorType::NoValue, detailed_error_information).into()
+                GraphblasError::new(GraphblasErrorType::NoValue, detailed_error_information).into()
             }
-            Status::UnitializedObject => GraphBlasError::new(
-                GraphBlasErrorType::UnitializedObject,
+            Status::UnitializedObject => GraphblasError::new(
+                GraphblasErrorType::UnitializedObject,
                 detailed_error_information,
             )
             .into(),
-            Status::InvalidObject => GraphBlasError::new(
-                GraphBlasErrorType::InvalidObject,
+            Status::InvalidObject => GraphblasError::new(
+                GraphblasErrorType::InvalidObject,
                 detailed_error_information,
             )
             .into(),
-            Status::NotImplemented => GraphBlasError::new(
-                GraphBlasErrorType::NotImplemented,
+            Status::NotImplemented => GraphblasError::new(
+                GraphblasErrorType::NotImplemented,
                 detailed_error_information,
             )
             .into(),
             Status::NullPointer => {
-                GraphBlasError::new(GraphBlasErrorType::NullPointer, detailed_error_information)
+                GraphblasError::new(GraphblasErrorType::NullPointer, detailed_error_information)
                     .into()
             }
             Status::InvalidValue => {
-                GraphBlasError::new(GraphBlasErrorType::InvalidValue, detailed_error_information)
+                GraphblasError::new(GraphblasErrorType::InvalidValue, detailed_error_information)
                     .into()
             }
             Status::InvalidIndex => {
-                GraphBlasError::new(GraphBlasErrorType::InvalidIndex, detailed_error_information)
+                GraphblasError::new(GraphblasErrorType::InvalidIndex, detailed_error_information)
                     .into()
             }
-            Status::DomainMismatch => GraphBlasError::new(
-                GraphBlasErrorType::DomainMismatch,
+            Status::DomainMismatch => GraphblasError::new(
+                GraphblasErrorType::DomainMismatch,
                 detailed_error_information,
             )
             .into(),
-            Status::DimensionMismatch => GraphBlasError::new(
-                GraphBlasErrorType::DimensionMismatch,
+            Status::DimensionMismatch => GraphblasError::new(
+                GraphblasErrorType::DimensionMismatch,
                 detailed_error_information,
             )
             .into(),
             Status::EmptyObject => {
-                GraphBlasError::new(GraphBlasErrorType::EmptyObject, detailed_error_information)
+                GraphblasError::new(GraphblasErrorType::EmptyObject, detailed_error_information)
                     .into()
             }
-            Status::OutputNotEmpty => GraphBlasError::new(
-                GraphBlasErrorType::OutputNotEmpty,
+            Status::OutputNotEmpty => GraphblasError::new(
+                GraphblasErrorType::OutputNotEmpty,
                 detailed_error_information,
             )
             .into(),
             Status::OutOfMemory => {
-                GraphBlasError::new(GraphBlasErrorType::OutOfMemory, detailed_error_information)
+                GraphblasError::new(GraphblasErrorType::OutOfMemory, detailed_error_information)
                     .into()
             }
-            Status::InsufficientSpace => GraphBlasError::new(
-                GraphBlasErrorType::InsufficientSpace,
+            Status::InsufficientSpace => GraphblasError::new(
+                GraphblasErrorType::InsufficientSpace,
                 detailed_error_information,
             )
             .into(),
-            Status::IndexOutOfBounds => GraphBlasError::new(
-                GraphBlasErrorType::IndexOutOfBounds,
+            Status::IndexOutOfBounds => GraphblasError::new(
+                GraphblasErrorType::IndexOutOfBounds,
                 detailed_error_information,
             )
             .into(),
-            Status::IteratorExhausted => GraphBlasError::new(
-                GraphBlasErrorType::IteratorExhausted,
+            Status::IteratorExhausted => GraphblasError::new(
+                GraphblasErrorType::IteratorExhausted,
                 detailed_error_information,
             )
             .into(),
             Status::Panic => {
-                GraphBlasError::new(GraphBlasErrorType::Panic, detailed_error_information).into()
+                GraphblasError::new(GraphblasErrorType::Panic, detailed_error_information).into()
             }
             Status::UnknownStatusType => SystemError::new(
                 SystemErrorType::UnsupportedGraphBlasErrorValue,

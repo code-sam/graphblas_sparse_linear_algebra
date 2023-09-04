@@ -14,8 +14,8 @@ use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
 use crate::context::ContextTrait;
-use crate::error::GraphBlasError;
-use crate::error::GraphBlasErrorType;
+use crate::error::GraphblasError;
+use crate::error::GraphblasErrorType;
 use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::value_type::ConvertVector;
@@ -29,7 +29,7 @@ use crate::{
 };
 use rayon::iter::IntoParallelIterator;
 
-pub trait GetMatrixElementList<T: ValueType + GetGgraphblasMatrixElementList<T>> {
+pub trait GetMatrixElementList<T: ValueType> {
     fn get_element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError>;
 }
 
@@ -77,7 +77,7 @@ macro_rules! implement_get_element_list {
                         column_indices.set_len(number_of_returned_elements);
                         values.set_len(number_of_returned_elements);
                     } else {
-                        let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
+                        let err: SparseLinearAlgebraError = GraphblasError::new(GraphblasErrorType::IndexOutOfBounds,
                             format!("matrix.number_of_stored_elements {} unequal to length of returned values{}",number_of_stored_elements, number_of_returned_elements)).into();
                         return Err(err)
                     }

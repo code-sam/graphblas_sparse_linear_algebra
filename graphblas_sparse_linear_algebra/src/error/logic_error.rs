@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fmt;
 use std::{error, num::TryFromIntError};
 
-use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
+use super::graphblas_error::{GraphblasError, GraphblasErrorType};
 
 #[derive(Debug)]
 pub struct LogicError {
@@ -14,13 +14,13 @@ pub struct LogicError {
 
 #[derive(Debug)]
 pub enum LogicErrorSource {
-    GraphBlas(GraphBlasError),
+    GraphBlas(GraphblasError),
     TryFromIntError(TryFromIntError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LogicErrorType {
-    GraphBlas(GraphBlasErrorType),
+    GraphBlas(GraphblasErrorType),
     // CreateGraphBlasErrorOnSuccessValue,
     // UnsupportedGraphBlasErrorValue,
     // UninitialisedContext,
@@ -78,8 +78,8 @@ impl fmt::Display for LogicError {
     }
 }
 
-impl From<GraphBlasError> for LogicError {
-    fn from(error: GraphBlasError) -> Self {
+impl From<GraphblasError> for LogicError {
+    fn from(error: GraphblasError) -> Self {
         Self {
             error_type: LogicErrorType::GraphBlas(error.error_type()),
             explanation: String::new(),

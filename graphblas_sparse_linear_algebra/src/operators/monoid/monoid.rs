@@ -157,8 +157,9 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_inte
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_vector::operations::GetVectorElementList;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
+        FromVectorElementList, GetVectorElementValue, SparseVector,
         VectorElementList,
     };
     use crate::context::{Context, Mode};

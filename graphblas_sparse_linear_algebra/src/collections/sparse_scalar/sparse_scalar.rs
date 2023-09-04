@@ -19,7 +19,7 @@ use crate::bindings_to_graphblas_implementation::{
 use crate::collections::collection::Collection;
 use crate::context::{CallGraphBlasContext, Context, ContextTrait};
 use crate::error::{
-    GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
+    GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
 use crate::index::{ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
@@ -327,7 +327,7 @@ macro_rules! implement_get_value_for_built_in_type {
                     }
                     Err(error) => match error.error_type() {
                         SparseLinearAlgebraErrorType::LogicErrorType(
-                            LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
+                            LogicErrorType::GraphBlas(GraphblasErrorType::NoValue),
                         ) => Ok(None),
                         _ => Err(error),
                     },
