@@ -8,7 +8,7 @@ use suitesparse_graphblas_sys::{
     GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
 };
 
-use super::element::{VectorElement, VectorElementList};
+use super::element::VectorElementList;
 use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Vector, GrB_Vector_build_BOOL, GrB_Vector_build_FP32, GrB_Vector_build_FP64,
     GrB_Vector_build_INT16, GrB_Vector_build_INT32, GrB_Vector_build_INT64, GrB_Vector_build_INT8,
@@ -569,6 +569,7 @@ mod tests {
         GetVectorElement, GetVectorElementIndices, GetVectorElementValue, GetVectorElementValues,
         SetVectorElement,
     };
+    use crate::collections::sparse_vector::VectorElement;
     use crate::context::Mode;
     use crate::error::LogicErrorType;
     use crate::operators::binary_operator::First;

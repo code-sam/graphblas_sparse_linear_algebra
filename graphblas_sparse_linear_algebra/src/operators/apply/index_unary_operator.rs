@@ -1,5 +1,3 @@
-use std::ptr;
-
 use suitesparse_graphblas_sys::{
     GrB_Matrix_apply_IndexOp_BOOL, GrB_Matrix_apply_IndexOp_FP32, GrB_Matrix_apply_IndexOp_FP64,
     GrB_Matrix_apply_IndexOp_INT16, GrB_Matrix_apply_IndexOp_INT32, GrB_Matrix_apply_IndexOp_INT64,

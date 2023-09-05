@@ -1,5 +1,3 @@
-use std::ptr;
-
 use suitesparse_graphblas_sys::{
     GrB_Matrix_select_BOOL, GrB_Matrix_select_FP32, GrB_Matrix_select_FP64,
     GrB_Matrix_select_INT16, GrB_Matrix_select_INT32, GrB_Matrix_select_INT64,

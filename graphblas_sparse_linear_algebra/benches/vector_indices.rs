@@ -43,6 +43,6 @@ criterion_main!(benches);
 // }
 
 fn bench_element_list(vector: SparseVector<ElementIndex>) {
-    let indices = vector.element_indices().unwrap();
+    let _indices = vector.element_indices().unwrap();
     // println!("{:?}", indices)
 }

@@ -151,7 +151,7 @@ impl Context {
     // TODO: check context is Ready
     pub fn call_without_detailed_error_information<F>(
         &self,
-        mut function_to_call: F,
+        function_to_call: F,
     ) -> Result<Status, SparseLinearAlgebraError>
     where
         F: FnMut() -> GrB_Info,
@@ -199,7 +199,7 @@ pub struct Ready {
 impl Ready {
     fn call_without_detailed_error_information<F>(
         &self,
-        mut function_to_call: F,
+        function_to_call: F,
     ) -> Result<Status, SparseLinearAlgebraError>
     where
         F: FnMut() -> GrB_Info,

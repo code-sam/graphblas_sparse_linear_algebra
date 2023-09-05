@@ -1,5 +1,4 @@
 use std::convert::TryInto;
-use std::ptr;
 
 use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32, GrB_Matrix_reduce_FP64,

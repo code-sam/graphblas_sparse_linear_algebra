@@ -1,5 +1,5 @@
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrixTrait};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_vector::SparseVector;
 use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};

@@ -1,5 +1,3 @@
-use std::ptr;
-
 use suitesparse_graphblas_sys::{
     GrB_Matrix_apply_BinaryOp1st_Scalar, GrB_Matrix_apply_BinaryOp2nd_Scalar,
     GrB_Vector_apply_BinaryOp1st_Scalar, GrB_Vector_apply_BinaryOp2nd_Scalar,

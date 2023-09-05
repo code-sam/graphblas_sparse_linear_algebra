@@ -1,5 +1,3 @@
-use suitesparse_graphblas_sys::{GrB_Index, GrB_Info, GrB_Matrix};
-
 use crate::bindings_to_graphblas_implementation::{
     GrB_Matrix_setElement_BOOL, GrB_Matrix_setElement_FP32, GrB_Matrix_setElement_FP64,
     GrB_Matrix_setElement_INT16, GrB_Matrix_setElement_INT32, GrB_Matrix_setElement_INT64,

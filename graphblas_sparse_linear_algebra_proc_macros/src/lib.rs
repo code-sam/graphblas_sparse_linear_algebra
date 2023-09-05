@@ -1,6 +1,6 @@
 extern crate proc_macro;
-use proc_macro::{Ident, Span, TokenStream};
-use quote::{format_ident, quote, TokenStreamExt};
+use proc_macro::TokenStream;
+use quote::{format_ident, quote};
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Token};
 
@@ -214,19 +214,19 @@ pub fn implement_macro(input: TokenStream) -> TokenStream {
         input with Punctuated::<syn::Ident, Token![,]>::parse_terminated)
     .into_iter()
     .collect();
-    let macro_identifier = idents[0].to_owned();
+    let _macro_identifier = idents[0].to_owned();
     let value_type = idents[0].to_owned();
     let matrix_reducer_operator = idents[1].to_owned();
-    let vector_reducer_operator = idents[2].to_owned();
+    let _vector_reducer_operator = idents[2].to_owned();
 
     // let matrix_reducer_operator = typed_graphblas_identifier_from_ident!(matrix_reducer_operator, value_type);
     // let matrix_reducer_operator = typed_graphblas_identifier_from_ident(matrix_reducer_operator, value_type.to_owned());
     let matrix_reducer_operator = typed_graphblas_identifier(TokenStream::from(
         quote!(#matrix_reducer_operator, #value_type),
     ));
-    let matrix_reducer_operator = syn::parse_macro_input!(matrix_reducer_operator as syn::Ident);
+    let _matrix_reducer_operator = syn::parse_macro_input!(matrix_reducer_operator as syn::Ident);
 
-    let mut expanded = quote! {};
+    let expanded = quote! {};
     TokenStream::from(expanded)
 }
 
@@ -254,7 +254,7 @@ pub fn implement_monoid_reducer(input: TokenStream) -> TokenStream {
     ));
     let vector_reducer_operator = syn::parse_macro_input!(vector_reducer_operator as syn::Ident);
 
-    let mut expanded = quote! {
+    let expanded = quote! {
         impl MonoidScalarReducer<#value_type> for MonoidReducer<#value_type> {
             fn matrix_to_scalar(
                 &self,

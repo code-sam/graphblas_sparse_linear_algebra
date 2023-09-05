@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;

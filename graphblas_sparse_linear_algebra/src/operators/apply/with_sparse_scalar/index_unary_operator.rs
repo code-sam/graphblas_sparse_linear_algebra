@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;

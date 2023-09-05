@@ -1,5 +1,3 @@
-use std::ptr;
-
 use suitesparse_graphblas_sys::{
     GrB_Vector_select_BOOL, GrB_Vector_select_FP32, GrB_Vector_select_FP64,
     GrB_Vector_select_INT16, GrB_Vector_select_INT32, GrB_Vector_select_INT64,
@@ -17,8 +15,6 @@ use crate::operators::options::OperatorOptions;
 use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
-
-use crate::bindings_to_graphblas_implementation::{GrB_BinaryOp, GrB_Descriptor};
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
