@@ -6,6 +6,5 @@ pub mod operations;
 
 pub use element::{VectorElement, VectorElementList};
 pub use sparse_vector::{
-    FromVectorElementList, GetVectorElement, GetVectorElementValue,
-    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
+    FromVectorElementList, GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };

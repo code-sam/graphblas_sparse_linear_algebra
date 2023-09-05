@@ -13,14 +13,8 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Vector, GrB_Vector_build_BOOL, GrB_Vector_build_FP32, GrB_Vector_build_FP64,
     GrB_Vector_build_INT16, GrB_Vector_build_INT32, GrB_Vector_build_INT64, GrB_Vector_build_INT8,
     GrB_Vector_build_UINT16, GrB_Vector_build_UINT32, GrB_Vector_build_UINT64,
-    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_extractElement_BOOL,
-    GrB_Vector_extractElement_FP32, GrB_Vector_extractElement_FP64,
-    GrB_Vector_extractElement_INT16, GrB_Vector_extractElement_INT32,
-    GrB_Vector_extractElement_INT64, GrB_Vector_extractElement_INT8,
-    GrB_Vector_extractElement_UINT16, GrB_Vector_extractElement_UINT32,
-    GrB_Vector_extractElement_UINT64, GrB_Vector_extractElement_UINT8,
-    GrB_Vector_free, GrB_Vector_new, GrB_Vector_nvals,
-    GrB_Vector_removeElement, GrB_Vector_resize, GrB_Vector_size,
+    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_free, GrB_Vector_new,
+    GrB_Vector_nvals, GrB_Vector_removeElement, GrB_Vector_resize, GrB_Vector_size,
 };
 use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{
@@ -30,8 +24,8 @@ use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar
 use crate::collections::sparse_vector::operations::GetVectorElementList;
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, ContextTrait};
-use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType,
+use crate::error::{
+    GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;
@@ -526,102 +520,6 @@ macro_rules! implement_set_element_for_custom_type {
 // implement_set_element_for_custom_type!(i128);
 // implement_set_element_for_custom_type!(u128);
 
-pub trait GetVectorElementValue<T: ValueType + Default> {
-    fn get_element_value(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<T, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_value_for_built_in_type {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetVectorElementValue<$value_type> for SparseVector<$value_type> {
-            fn get_element_value(
-                &self,
-                index: &ElementIndex,
-            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
-                let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
-                let index_to_get = index.to_graphblas_index()?;
-
-                let result = self.context.call(
-                    || unsafe {
-                        $get_element_function(value.as_mut_ptr(), self.vector, index_to_get)
-                    },
-                    &self.vector,
-                );
-
-                match result {
-                    Ok(_) => {
-                        let value = unsafe { value.assume_init() };
-                        Ok(Some(value.to_type()?))
-                    }
-                    Err(error) => match error.error_type() {
-                        SparseLinearAlgebraErrorType::LogicErrorType(
-                            LogicErrorType::GraphBlas(GraphblasErrorType::NoValue),
-                        ) => Ok(None),
-                        _ => Err(error),
-                    },
-                }
-            }
-
-            fn get_element_value_or_default(
-                &self,
-                index: &ElementIndex,
-            ) -> Result<$value_type, SparseLinearAlgebraError> {
-                Ok(self.get_element_value(index)?.unwrap_or_default())
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_element_value_for_built_in_type,
-    GrB_Vector_extractElement
-);
-
-pub trait GetVectorElement<T: ValueType> {
-    fn get_element(
-        &self,
-        index: ElementIndex,
-    ) -> Result<Option<VectorElement<T>>, SparseLinearAlgebraError>;
-    fn get_element_or_default(
-        &self,
-        index: ElementIndex,
-    ) -> Result<VectorElement<T>, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_for_built_in_type {
-    ($value_type:ty) => {
-        impl GetVectorElement<$value_type> for SparseVector<$value_type> {
-            fn get_element(
-                &self,
-                index: ElementIndex,
-            ) -> Result<Option<VectorElement<$value_type>>, SparseLinearAlgebraError> {
-                match self.get_element_value(&index)? {
-                    Some(value) => Ok(Some(VectorElement::new(index, value))),
-                    None => Ok(None),
-                }
-            }
-
-            fn get_element_or_default(
-                &self,
-                index: ElementIndex,
-            ) -> Result<VectorElement<$value_type>, SparseLinearAlgebraError> {
-                Ok(VectorElement::new(
-                    index,
-                    self.get_element_value_or_default(&index)?,
-                ))
-            }
-        }
-    };
-}
-
-implement_macro_for_all_value_types!(implement_get_element_for_built_in_type);
-
 // macro_rules! implement_get_element_for_custom_type {
 //     ($value_type:ty) => {
 //         impl GetVectorElement<$value_type> for SparseVector<$value_type> {
@@ -667,7 +565,10 @@ mod tests {
 
     use super::*;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
-    use crate::collections::sparse_vector::operations::{GetVectorElementValues, SetVectorElement, GetVectorElementIndices};
+    use crate::collections::sparse_vector::operations::{
+        GetVectorElement, GetVectorElementIndices, GetVectorElementValue, GetVectorElementValues,
+        SetVectorElement,
+    };
     use crate::context::Mode;
     use crate::error::LogicErrorType;
     use crate::operators::binary_operator::First;

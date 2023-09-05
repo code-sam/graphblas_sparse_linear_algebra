@@ -359,7 +359,7 @@ mod tests {
     use crate::{
         collections::{
             sparse_vector::{
-                FromVectorElementList, GetVectorElement, GetVectorElementValue, SparseVector,
+                operations::GetVectorElementValue, FromVectorElementList, SparseVector,
                 VectorElementList,
             },
             Collection,

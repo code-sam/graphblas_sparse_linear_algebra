@@ -157,10 +157,11 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_inte
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_vector::operations::GetVectorElementList;
+    use crate::collections::sparse_vector::operations::{
+        GetVectorElementList, GetVectorElementValue,
+    };
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVector,
-        VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

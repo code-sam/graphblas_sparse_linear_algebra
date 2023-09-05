@@ -1,5 +1,6 @@
-use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::SetVectorElement;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::GetElementIndices;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::{
+    GetVectorElementIndices, SetVectorElement,
+};
 use graphblas_sparse_linear_algebra::collections::sparse_vector::SparseVectorTrait;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{SparseVector, VectorElement};
 use graphblas_sparse_linear_algebra::context::{Context, Mode};

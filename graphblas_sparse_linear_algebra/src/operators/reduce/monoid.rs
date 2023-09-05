@@ -211,8 +211,9 @@ mod tests {
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;
 
