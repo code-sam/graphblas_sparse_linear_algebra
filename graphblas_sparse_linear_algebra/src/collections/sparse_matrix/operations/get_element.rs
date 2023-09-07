@@ -5,7 +5,7 @@ use crate::{
     value_type::ValueType,
 };
 
-use super::{GetMatrixElementValueTyped, GetMatrixElementValue};
+use super::{GetMatrixElementValue, GetMatrixElementValueTyped};
 
 pub trait GetMatrixElement<T: ValueType> {
     fn get_element(
