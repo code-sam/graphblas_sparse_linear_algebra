@@ -1,5 +1,3 @@
-use std::ptr;
-
 use suitesparse_graphblas_sys::{
     GrB_Matrix_apply_BinaryOp1st_BOOL, GrB_Matrix_apply_BinaryOp1st_FP32,
     GrB_Matrix_apply_BinaryOp1st_FP64, GrB_Matrix_apply_BinaryOp1st_INT16,
@@ -242,11 +240,13 @@ implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

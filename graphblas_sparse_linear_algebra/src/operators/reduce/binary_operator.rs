@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
@@ -104,6 +102,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus};
@@ -112,7 +111,7 @@ mod tests {
         FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::operators::mask::SelectEntireVector;
 

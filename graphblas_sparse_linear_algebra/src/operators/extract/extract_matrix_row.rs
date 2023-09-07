@@ -1,5 +1,5 @@
 use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrixTrait};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_vector::SparseVector;
 use crate::context::ContextTrait;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
@@ -72,7 +72,7 @@ mod tests {
     use crate::collections::sparse_matrix::{
         FromMatrixElementList, MatrixElementList, SparseMatrix,
     };
-    use crate::collections::sparse_vector::GetVectorElementValue;
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

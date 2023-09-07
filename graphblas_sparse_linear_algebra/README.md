@@ -11,12 +11,14 @@ use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, Fi
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use graphblas_sparse_linear_algebra::operators::mask::{MatrixMask, SelectEntireMatrix};
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-    FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix
+    FromMatrixElementList, MatrixElementList, Size, SparseMatrix
 };
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetMatrixElementValue;
 use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{
-    FromVectorElementList, GetVectorElementValue, VectorElementList,
+    FromVectorElementList, VectorElementList,
 };
+use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::GetVectorElementValue;
 
 fn main() {
     let context = Context::init_ready(Mode::NonBlocking).unwrap();

@@ -1,5 +1,5 @@
 use crate::error::{
-    GraphBlasError, GraphBlasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
+    GraphblasError, GraphblasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
 };
 use crate::index::ElementIndex;
 use crate::value_type::ValueType;
@@ -68,8 +68,8 @@ impl<T: ValueType + Clone + Copy> VectorElementList<T> {
     ) -> Result<Self, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index.len() != value.len() {
-            return Err(GraphBlasError::new(
-                GraphBlasErrorType::DimensionMismatch,
+            return Err(GraphblasError::new(
+                GraphblasErrorType::DimensionMismatch,
                 format!(
                     "Length of vectors must be equal: index.len() = {}, value.len() = {}",
                     index.len(),

@@ -1,6 +1,6 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.26.0"
+version = "0.28.0"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2021"
@@ -15,7 +15,7 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 [dependencies]
 suitesparse_graphblas_sys = {version = "0.1"}
 graphblas_sparse_linear_algebra_proc_macros = {path = "../graphblas_sparse_linear_algebra_proc_macros", version = "0.3"}
-once_cell = {version = "1.17"}
+once_cell = {version = "1.18"}
 paste = {version = "1.0"}
 rayon = {version = "1.7"}
 

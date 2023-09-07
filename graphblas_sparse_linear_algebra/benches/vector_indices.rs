@@ -1,5 +1,6 @@
-use graphblas_sparse_linear_algebra::collections::sparse_vector::GetElementIndices;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::SetVectorElement;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::{
+    GetVectorElementIndices, SetVectorElement,
+};
 use graphblas_sparse_linear_algebra::collections::sparse_vector::SparseVectorTrait;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{SparseVector, VectorElement};
 use graphblas_sparse_linear_algebra::context::{Context, Mode};
@@ -42,6 +43,6 @@ criterion_main!(benches);
 // }
 
 fn bench_element_list(vector: SparseVector<ElementIndex>) {
-    let indices = vector.element_indices().unwrap();
+    let _indices = vector.element_indices().unwrap();
     // println!("{:?}", indices)
 }

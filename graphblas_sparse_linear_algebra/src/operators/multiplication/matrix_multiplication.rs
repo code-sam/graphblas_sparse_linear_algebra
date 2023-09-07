@@ -120,14 +120,16 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::{
+        GetMatrixElementList, GetMatrixElementValue,
+    };
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue, MatrixElementList,
-        Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
+    use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
-    use crate::operators::binary_operator::{Plus, Times};
     use crate::operators::mask::SelectEntireMatrix;
     use crate::operators::semiring::PlusTimes;
 

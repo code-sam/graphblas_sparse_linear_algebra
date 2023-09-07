@@ -8,38 +8,24 @@ use suitesparse_graphblas_sys::{
     GxB_Vector_build_Scalar, GxB_Vector_diag, GxB_Vector_isStoredElement,
 };
 
-use super::element::{VectorElement, VectorElementList};
+use super::element::VectorElementList;
 use crate::bindings_to_graphblas_implementation::{
     GrB_Index, GrB_Vector, GrB_Vector_build_BOOL, GrB_Vector_build_FP32, GrB_Vector_build_FP64,
     GrB_Vector_build_INT16, GrB_Vector_build_INT32, GrB_Vector_build_INT64, GrB_Vector_build_INT8,
     GrB_Vector_build_UINT16, GrB_Vector_build_UINT32, GrB_Vector_build_UINT64,
-    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_extractElement_BOOL,
-    GrB_Vector_extractElement_FP32, GrB_Vector_extractElement_FP64,
-    GrB_Vector_extractElement_INT16, GrB_Vector_extractElement_INT32,
-    GrB_Vector_extractElement_INT64, GrB_Vector_extractElement_INT8,
-    GrB_Vector_extractElement_UINT16, GrB_Vector_extractElement_UINT32,
-    GrB_Vector_extractElement_UINT64, GrB_Vector_extractElement_UINT8,
-    GrB_Vector_extractTuples_BOOL, GrB_Vector_extractTuples_FP32, GrB_Vector_extractTuples_FP64,
-    GrB_Vector_extractTuples_INT16, GrB_Vector_extractTuples_INT32, GrB_Vector_extractTuples_INT64,
-    GrB_Vector_extractTuples_INT8, GrB_Vector_extractTuples_UINT16,
-    GrB_Vector_extractTuples_UINT32, GrB_Vector_extractTuples_UINT64,
-    GrB_Vector_extractTuples_UINT8, GrB_Vector_free, GrB_Vector_new, GrB_Vector_nvals,
-    GrB_Vector_removeElement, GrB_Vector_resize, GrB_Vector_setElement_BOOL,
-    GrB_Vector_setElement_FP32, GrB_Vector_setElement_FP64, GrB_Vector_setElement_INT16,
-    GrB_Vector_setElement_INT32, GrB_Vector_setElement_INT64, GrB_Vector_setElement_INT8,
-    GrB_Vector_setElement_UINT16, GrB_Vector_setElement_UINT32, GrB_Vector_setElement_UINT64,
-    GrB_Vector_setElement_UINT8, GrB_Vector_size,
+    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_free, GrB_Vector_new,
+    GrB_Vector_nvals, GrB_Vector_removeElement, GrB_Vector_resize, GrB_Vector_size,
 };
 use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
 };
 use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
+use crate::collections::sparse_vector::operations::GetVectorElementList;
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, ContextTrait};
 use crate::error::{
-    GraphBlasError, GraphBlasErrorType, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType,
+    GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;
@@ -68,35 +54,6 @@ pub struct SparseVector<T: ValueType> {
 unsafe impl<T: ValueType> Send for SparseVector<T> {}
 unsafe impl<T: ValueType> Sync for SparseVector<T> {}
 
-// macro_rules! new_sparse_vector {
-//     ($value_type: ty, $graphblas_type: ident) => {
-//         impl<T: ValueType> SparseVector<T + $value_type> {
-//             pub fn new(
-//                 context: &Arc<Context>,
-//                 length: &ElementIndex,
-//             ) -> Result<Self, SparseLinearAlgebraError> {
-//                 let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
-//                 let context = context.to_owned();
-
-//                 let length = length.to_graphblas_index()?;
-
-//                 context.call_without_detailed_error_information(|| unsafe {
-//                     GrB_Vector_new(vector.as_mut_ptr(), $graphblas_type, length)
-//                 })?;
-
-//                 let vector = unsafe { vector.assume_init() };
-//                 return Ok(SparseVector {
-//                     context,
-//                     vector,
-//                     value_type: PhantomData,
-//                 });
-//             }
-//         }
-//     };
-// }
-// implement_macro_for_all_value_types_and_graphblas_function!(new_sparse_vector, GrB);
-
-// TODO: implement for usize and isize
 impl<T: ValueType> SparseVector<T> {
     pub fn new(
         context: &Arc<Context>,
@@ -327,7 +284,7 @@ impl<T: ValueType> SparseVectorTrait for SparseVector<T> {
             Ok(_) => Ok(true),
             Err(error) => match error.error_type() {
                 SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
-                    GraphBlasErrorType::NoValue,
+                    GraphblasErrorType::NoValue,
                 )) => Ok(false),
                 _ => Err(error),
             },
@@ -525,34 +482,6 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     GrB_Vector_build
 );
 
-pub trait SetVectorElement<T: ValueType> {
-    fn set_element(&mut self, element: VectorElement<T>) -> Result<(), SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_set_element_for_built_in_type {
-    ($value_type:ty, $graphblas_implementation_type:ident, $add_element_function:ident) => {
-        impl SetVectorElement<$value_type> for SparseVector<$value_type> {
-            fn set_element(
-                &mut self,
-                element: VectorElement<$value_type>,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let index_to_set = element.index().to_graphblas_index()?;
-                let element_value = element.value().to_type()?;
-                self.context.call(
-                    || unsafe { $add_element_function(self.vector, element_value, index_to_set) },
-                    &self.vector,
-                )?;
-                Ok(())
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_set_element_for_built_in_type,
-    GrB_Vector_setElement
-);
-
 macro_rules! implement_set_element_for_custom_type {
     ($value_type:ty) => {
         impl SetVectorElement<$value_type> for SparseVector<$value_type> {
@@ -591,102 +520,6 @@ macro_rules! implement_set_element_for_custom_type {
 // implement_set_element_for_custom_type!(i128);
 // implement_set_element_for_custom_type!(u128);
 
-pub trait GetVectorElementValue<T: ValueType + Default> {
-    fn get_element_value(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<T, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_value_for_built_in_type {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetVectorElementValue<$value_type> for SparseVector<$value_type> {
-            fn get_element_value(
-                &self,
-                index: &ElementIndex,
-            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
-                let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
-                let index_to_get = index.to_graphblas_index()?;
-
-                let result = self.context.call(
-                    || unsafe {
-                        $get_element_function(value.as_mut_ptr(), self.vector, index_to_get)
-                    },
-                    &self.vector,
-                );
-
-                match result {
-                    Ok(_) => {
-                        let value = unsafe { value.assume_init() };
-                        Ok(Some(value.to_type()?))
-                    }
-                    Err(error) => match error.error_type() {
-                        SparseLinearAlgebraErrorType::LogicErrorType(
-                            LogicErrorType::GraphBlas(GraphBlasErrorType::NoValue),
-                        ) => Ok(None),
-                        _ => Err(error),
-                    },
-                }
-            }
-
-            fn get_element_value_or_default(
-                &self,
-                index: &ElementIndex,
-            ) -> Result<$value_type, SparseLinearAlgebraError> {
-                Ok(self.get_element_value(index)?.unwrap_or_default())
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_element_value_for_built_in_type,
-    GrB_Vector_extractElement
-);
-
-pub trait GetVectorElement<T: ValueType> {
-    fn get_element(
-        &self,
-        index: ElementIndex,
-    ) -> Result<Option<VectorElement<T>>, SparseLinearAlgebraError>;
-    fn get_element_or_default(
-        &self,
-        index: ElementIndex,
-    ) -> Result<VectorElement<T>, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_for_built_in_type {
-    ($value_type:ty) => {
-        impl GetVectorElement<$value_type> for SparseVector<$value_type> {
-            fn get_element(
-                &self,
-                index: ElementIndex,
-            ) -> Result<Option<VectorElement<$value_type>>, SparseLinearAlgebraError> {
-                match self.get_element_value(&index)? {
-                    Some(value) => Ok(Some(VectorElement::new(index, value))),
-                    None => Ok(None),
-                }
-            }
-
-            fn get_element_or_default(
-                &self,
-                index: ElementIndex,
-            ) -> Result<VectorElement<$value_type>, SparseLinearAlgebraError> {
-                Ok(VectorElement::new(
-                    index,
-                    self.get_element_value_or_default(&index)?,
-                ))
-            }
-        }
-    };
-}
-
-implement_macro_for_all_value_types!(implement_get_element_for_built_in_type);
-
 // macro_rules! implement_get_element_for_custom_type {
 //     ($value_type:ty) => {
 //         impl GetVectorElement<$value_type> for SparseVector<$value_type> {
@@ -716,163 +549,6 @@ implement_macro_for_all_value_types!(implement_get_element_for_built_in_type);
 // implement_get_element_for_custom_type!(i128);
 // implement_get_element_for_custom_type!(u128);
 
-pub trait GetVectorElementList<T: ValueType> {
-    fn get_element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_list {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetVectorElementList<$value_type> for SparseVector<$value_type> {
-            fn get_element_list(
-                &self,
-            ) -> Result<VectorElementList<$value_type>, SparseLinearAlgebraError> {
-                let number_of_stored_elements = self.number_of_stored_elements()?;
-
-                let mut graphblas_indices: Vec<GrB_Index> = Vec::with_capacity(number_of_stored_elements);
-                let mut values: Vec<$graphblas_implementation_type> = Vec::with_capacity(number_of_stored_elements);
-
-                let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
-
-                self.context.call(|| unsafe {
-                    $get_element_function(
-                        graphblas_indices.as_mut_ptr(),
-                        values.as_mut_ptr(),
-                        &mut number_of_stored_and_returned_elements,
-                        self.vector)
-                }, &self.vector)?;
-
-                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
-
-                unsafe {
-                    if length_of_element_list == number_of_stored_elements {
-                        graphblas_indices.set_len(length_of_element_list);
-                        values.set_len(length_of_element_list);
-                    } else {
-                        let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
-                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
-                        return Err(err)
-                    }
-                };
-
-                let mut indices: Vec<ElementIndex> = Vec::with_capacity(length_of_element_list);
-
-                for index in graphblas_indices.into_iter() {
-                    indices.push(ElementIndex::from_graphblas_index(index)?);
-                }
-
-                let values = ConvertVector::<$graphblas_implementation_type, $value_type>::to_type(values)?;
-                let element_list = VectorElementList::from_vectors(indices, values)?;
-                Ok(element_list)
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_element_list,
-    GrB_Vector_extractTuples
-);
-
-pub trait GetElementIndices<T: ValueType> {
-    fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_indices {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetElementIndices<$value_type> for SparseVector<$value_type> {
-            fn element_indices(
-                &self,
-            ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
-                let number_of_stored_elements = self.number_of_stored_elements()?;
-
-                let mut graphblas_indices: Vec<GrB_Index> = Vec::with_capacity(number_of_stored_elements);
-
-                let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
-
-                self.context.call(|| unsafe {
-                    $get_element_function(
-                        graphblas_indices.as_mut_ptr(),
-                        std::ptr::null_mut(),
-                        &mut number_of_stored_and_returned_elements,
-                        self.vector)
-                }, &self.vector)?;
-
-                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
-
-                unsafe {
-                    if length_of_element_list == number_of_stored_elements {
-                        graphblas_indices.set_len(length_of_element_list);
-                    } else {
-                        let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
-                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
-                        return Err(err)
-                    }
-                };
-
-                let mut indices: Vec<ElementIndex> = Vec::with_capacity(length_of_element_list);
-
-                for index in graphblas_indices.into_iter() {
-                    indices.push(ElementIndex::from_graphblas_index(index)?);
-                }
-                Ok(indices)
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_element_indices,
-    GrB_Vector_extractTuples
-);
-
-pub trait GetElementValues<T: ValueType> {
-    fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_element_values {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetElementValues<$value_type> for SparseVector<$value_type> {
-            fn element_values(
-                &self,
-            ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {
-                let number_of_stored_elements = self.number_of_stored_elements()?;
-
-                let mut values: Vec<$graphblas_implementation_type> = Vec::with_capacity(number_of_stored_elements);
-
-                let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
-
-                self.context.call(|| unsafe {
-                    $get_element_function(
-                        std::ptr::null_mut(),
-                        values.as_mut_ptr(),
-                        &mut number_of_stored_and_returned_elements,
-                        self.vector)
-                }, &self.vector)?;
-
-                let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
-
-                unsafe {
-                    if length_of_element_list == number_of_stored_elements {
-                        values.set_len(length_of_element_list);
-                    } else {
-                        let err: SparseLinearAlgebraError = GraphBlasError::new(GraphBlasErrorType::IndexOutOfBounds,
-                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
-                        return Err(err)
-                    }
-                };
-
-                let values = ConvertVector::<$graphblas_implementation_type, $value_type>::to_type(values)?;
-                Ok(values)
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_element_values,
-    GrB_Vector_extractTuples
-);
-
 macro_rules! implement_vector_mask {
     ($value_type: ty) => {
         impl VectorMask for SparseVector<$value_type> {
@@ -887,13 +563,16 @@ implement_macro_for_all_value_types!(implement_vector_mask);
 #[cfg(test)]
 mod tests {
 
-    // #[macro_use(implement_value_type_for_custom_type)]
-
     use super::*;
     use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_vector::operations::{
+        GetVectorElement, GetVectorElementIndices, GetVectorElementValue, GetVectorElementValues,
+        SetVectorElement,
+    };
+    use crate::collections::sparse_vector::VectorElement;
     use crate::context::Mode;
     use crate::error::LogicErrorType;
-    use crate::operators::binary_operator::{First, IsGreaterThan, IsGreaterThanTyped};
+    use crate::operators::binary_operator::First;
 
     #[test]
     fn new_vector() {
@@ -1107,7 +786,7 @@ mod tests {
                     SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
                         error_type,
                     )) => {
-                        assert_eq!(error_type, GraphBlasErrorType::InvalidIndex)
+                        assert_eq!(error_type, GraphblasErrorType::InvalidIndex)
                     }
                     _ => assert!(false),
                 }

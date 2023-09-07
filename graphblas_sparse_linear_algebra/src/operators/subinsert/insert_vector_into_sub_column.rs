@@ -189,8 +189,9 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::sparse_vector::FromVectorElementList;
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};

@@ -5,11 +5,6 @@ use crate::bindings_to_graphblas_implementation::{
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_and_graphblas_function;
 
-use super::utilities_to_implement_traits_for_all_value_types::{
-    implement_macro_for_all_floating_point_value_types,
-    implement_macro_for_all_graphblas_index_integers, implement_macro_for_all_integers,
-};
-
 pub trait ValueType {
     fn to_graphblas_type() -> GrB_Type;
 }
@@ -28,33 +23,3 @@ implement_macro_for_all_value_types_and_graphblas_function!(
     implement_value_type_for_graphblas_built_in_type,
     GrB
 );
-
-// pub trait FloatingPoint: ValueType {}
-
-// macro_rules! implement_floating_point_for_value_type {
-//     ($value_type: ty) => {
-//         impl FloatingPoint for $value_type {}
-//     };
-// }
-
-// implement_macro_for_all_floating_point_value_types!(implement_floating_point_for_value_type);
-
-// pub trait Integer: ValueType {}
-
-// macro_rules! implement_integer_for_value_type {
-//     ($value_type: ty) => {
-//         impl Integer for $value_type {}
-//     };
-// }
-
-// implement_macro_for_all_integers!(implement_integer_for_value_type);
-
-// pub trait GraphBlasIndexInteger: ValueType {}
-
-// macro_rules! implement_graphblas_index_integer_for_value_type {
-//     ($value_type: ty) => {
-//         impl GraphBlasIndexInteger for $value_type {}
-//     };
-// }
-
-// implement_macro_for_all_graphblas_index_integers!(implement_graphblas_index_integer_for_value_type);

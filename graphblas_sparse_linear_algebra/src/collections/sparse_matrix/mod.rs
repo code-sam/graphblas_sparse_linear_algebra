@@ -9,7 +9,6 @@ pub use coordinate::Coordinate;
 pub use element::{MatrixElement, MatrixElementList};
 pub use size::Size;
 pub use sparse_matrix::{
-    ColumnIndex, FromMatrixElementList, GetMatrixElement, GetMatrixElementList,
-    GetMatrixElementValue, GraphblasSparseMatrixTrait, RowIndex, SetMatrixElement, SparseMatrix,
+    ColumnIndex, FromMatrixElementList, GraphblasSparseMatrixTrait, RowIndex, SparseMatrix,
     SparseMatrixTrait,
 };

@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
@@ -111,8 +109,9 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::sparse_scalar::SparseScalar;
     use crate::collections::Collection;

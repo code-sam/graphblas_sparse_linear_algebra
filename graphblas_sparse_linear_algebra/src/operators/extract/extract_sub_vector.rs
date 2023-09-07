@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
@@ -110,9 +108,8 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, VectorElementList,
-    };
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

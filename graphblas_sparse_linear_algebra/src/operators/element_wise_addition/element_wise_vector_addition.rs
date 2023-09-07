@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
@@ -205,9 +203,11 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<E
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_vector::operations::{
+        GetVectorElementList, GetVectorElementValue,
+    };
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementList, GetVectorElementValue, SparseVector,
-        VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

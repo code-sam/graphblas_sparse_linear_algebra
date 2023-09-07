@@ -204,13 +204,12 @@ implement_2_type_macro_for_all_value_types_and_untyped_graphblas_function!(
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size,
-    };
+    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
     use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
 
     #[test]

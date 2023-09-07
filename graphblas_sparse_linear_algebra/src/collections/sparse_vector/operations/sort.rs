@@ -122,9 +122,8 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVectorTrait,
-    };
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::{FromVectorElementList, SparseVectorTrait};
     use crate::operators::binary_operator::{First, IsGreaterThan};
     use crate::{
         collections::sparse_vector::{SparseVector, VectorElementList},

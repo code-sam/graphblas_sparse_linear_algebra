@@ -1,5 +1,3 @@
-use std::ptr;
-
 use suitesparse_graphblas_sys::{
     GrB_Matrix_apply_BinaryOp1st_Scalar, GrB_Matrix_apply_BinaryOp2nd_Scalar,
     GrB_Vector_apply_BinaryOp1st_Scalar, GrB_Vector_apply_BinaryOp2nd_Scalar,
@@ -193,12 +191,14 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::sparse_scalar::SparseScalar;
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

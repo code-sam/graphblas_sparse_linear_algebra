@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
@@ -114,11 +112,13 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
 mod tests {
     use super::*;
 
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, Size, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
     };
+    use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::{
-        FromVectorElementList, GetVectorElementValue, SparseVector, VectorElementList,
+        FromVectorElementList, SparseVector, VectorElementList,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

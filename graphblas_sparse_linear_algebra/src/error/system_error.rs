@@ -3,7 +3,7 @@ use std::fmt;
 use std::num::TryFromIntError;
 use std::{error, sync::PoisonError};
 
-use super::graphblas_error::{GraphBlasError, GraphBlasErrorType};
+use super::graphblas_error::{GraphblasError, GraphblasErrorType};
 
 #[derive(Debug)]
 pub struct SystemError {
@@ -14,14 +14,14 @@ pub struct SystemError {
 
 #[derive(Debug)]
 pub enum SystemErrorSource {
-    GraphBLAS(GraphBlasError),
+    GraphBLAS(GraphblasError),
     IntegerConversionError(TryFromIntError),
     PoisonedData,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemErrorType {
-    GraphBLAS(GraphBlasErrorType),
+    GraphBLAS(GraphblasErrorType),
     CreateGraphBlasErrorOnSuccessValue,
     ContextAlreadyInitialized,
     IndexOutOfBounds,
@@ -81,8 +81,8 @@ impl fmt::Display for SystemError {
     }
 }
 
-impl From<GraphBlasError> for SystemError {
-    fn from(error: GraphBlasError) -> Self {
+impl From<GraphblasError> for SystemError {
+    fn from(error: GraphblasError) -> Self {
         Self {
             error_type: SystemErrorType::GraphBLAS(error.error_type()),
             explanation: String::new(),

@@ -1,7 +1,5 @@
 use std::ptr;
 
-use suitesparse_graphblas_sys::GrB_Info_GrB_NULL_POINTER;
-
 use crate::bindings_to_graphblas_implementation::GrB_transpose;
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
@@ -103,8 +101,9 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
     use crate::collections::sparse_matrix::{
-        FromMatrixElementList, GetMatrixElementValue, MatrixElementList, SparseMatrix,
+        FromMatrixElementList, MatrixElementList, SparseMatrix,
     };
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
