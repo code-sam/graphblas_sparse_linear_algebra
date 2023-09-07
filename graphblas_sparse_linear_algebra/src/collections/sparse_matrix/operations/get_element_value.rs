@@ -36,7 +36,7 @@ pub trait GetMatrixElementValue<T: ValueType> {
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + Default + GetGraphblasMatrixElementValue<T>> GetMatrixElementValue<T>
+impl<T: ValueType + Default + GetMatrixElementValueTyped<T>> GetMatrixElementValue<T>
     for SparseMatrix<T>
 {
     fn get_element_value(
@@ -54,7 +54,7 @@ impl<T: ValueType + Default + GetGraphblasMatrixElementValue<T>> GetMatrixElemen
     }
 }
 
-pub trait GetGraphblasMatrixElementValue<T: ValueType + Default> {
+pub trait GetMatrixElementValueTyped<T: ValueType + Default> {
     fn get_element_value(
         matrix: &SparseMatrix<T>,
         coordinate: &Coordinate,
@@ -67,7 +67,7 @@ pub trait GetGraphblasMatrixElementValue<T: ValueType + Default> {
 
 macro_rules! implement_get_element_value {
     ($value_type:ty, $get_element_function:ident) => {
-        impl GetGraphblasMatrixElementValue<$value_type> for $value_type {
+        impl GetMatrixElementValueTyped<$value_type> for $value_type {
             fn get_element_value(
                 matrix: &SparseMatrix<$value_type>,
                 coordinate: &Coordinate,

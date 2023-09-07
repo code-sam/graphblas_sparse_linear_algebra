@@ -36,7 +36,7 @@ pub trait GetVectorElementValue<T: ValueType + Default> {
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + Default + GetGraphblasVectorElementValue<T>> GetVectorElementValue<T>
+impl<T: ValueType + Default + GetVectorElementValueTyped<T>> GetVectorElementValue<T>
     for SparseVector<T>
 {
     fn get_element_value(
@@ -54,7 +54,7 @@ impl<T: ValueType + Default + GetGraphblasVectorElementValue<T>> GetVectorElemen
     }
 }
 
-pub trait GetGraphblasVectorElementValue<T: ValueType + Default> {
+pub trait GetVectorElementValueTyped<T: ValueType + Default> {
     fn get_element_value(
         vector: &SparseVector<T>,
         index: &ElementIndex,
@@ -67,7 +67,7 @@ pub trait GetGraphblasVectorElementValue<T: ValueType + Default> {
 
 macro_rules! implement_get_element_value_for_built_in_type {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetGraphblasVectorElementValue<$value_type> for $value_type {
+        impl GetVectorElementValueTyped<$value_type> for $value_type {
             fn get_element_value(
                 vector: &SparseVector<$value_type>,
                 index: &ElementIndex,

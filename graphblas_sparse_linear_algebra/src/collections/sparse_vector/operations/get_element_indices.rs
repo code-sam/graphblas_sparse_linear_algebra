@@ -27,7 +27,7 @@ pub trait GetVectorElementIndices<T: ValueType> {
     fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetGraphblasVectorElementIndices<T>> GetVectorElementIndices<T>
+impl<T: ValueType + GetVectorElementIndicesTyped<T>> GetVectorElementIndices<T>
     for SparseVector<T>
 {
     fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
@@ -35,7 +35,7 @@ impl<T: ValueType + GetGraphblasVectorElementIndices<T>> GetVectorElementIndices
     }
 }
 
-pub trait GetGraphblasVectorElementIndices<T: ValueType> {
+pub trait GetVectorElementIndicesTyped<T: ValueType> {
     fn element_indices(
         vector: &SparseVector<T>,
     ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
@@ -43,7 +43,7 @@ pub trait GetGraphblasVectorElementIndices<T: ValueType> {
 
 macro_rules! implement_get_element_indices {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetGraphblasVectorElementIndices<$value_type> for $value_type {
+        impl GetVectorElementIndicesTyped<$value_type> for $value_type {
             fn element_indices(
                 vector: &SparseVector<$value_type>,
             ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {

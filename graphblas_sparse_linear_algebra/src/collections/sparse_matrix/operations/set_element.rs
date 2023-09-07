@@ -19,13 +19,13 @@ pub trait SetMatrixElement<T: ValueType> {
     fn set_element(&mut self, element: MatrixElement<T>) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + SetGraphblasMatrixElement<T>> SetMatrixElement<T> for SparseMatrix<T> {
+impl<T: ValueType + SetMatrixElementTyped<T>> SetMatrixElement<T> for SparseMatrix<T> {
     fn set_element(&mut self, element: MatrixElement<T>) -> Result<(), SparseLinearAlgebraError> {
         T::set_graphblas_matrix_element(self, element)
     }
 }
 
-pub trait SetGraphblasMatrixElement<T: ValueType> {
+pub trait SetMatrixElementTyped<T: ValueType> {
     fn set_graphblas_matrix_element(
         matrix: &mut SparseMatrix<T>,
         element: MatrixElement<T>,
@@ -34,7 +34,7 @@ pub trait SetGraphblasMatrixElement<T: ValueType> {
 
 macro_rules! implement_set_element_typed {
     ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident) => {
-        impl SetGraphblasMatrixElement<$value_type> for $value_type {
+        impl SetMatrixElementTyped<$value_type> for $value_type {
             fn set_graphblas_matrix_element(
                 matrix: &mut SparseMatrix<$value_type>,
                 element: MatrixElement<$value_type>,

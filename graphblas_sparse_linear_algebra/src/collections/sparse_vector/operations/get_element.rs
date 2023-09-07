@@ -1,7 +1,7 @@
 use crate::collections::sparse_vector::operations::get_element_value::GetVectorElementValue;
 use crate::{
     collections::{
-        sparse_matrix::operations::GetGraphblasMatrixElementValue,
+        sparse_matrix::operations::GetMatrixElementValueTyped,
         sparse_vector::{SparseVector, VectorElement},
     },
     error::SparseLinearAlgebraError,
@@ -9,7 +9,7 @@ use crate::{
     value_type::ValueType,
 };
 
-use super::GetGraphblasVectorElementValue;
+use super::GetVectorElementValueTyped;
 
 pub trait GetVectorElement<T: ValueType> {
     fn get_element(
@@ -22,7 +22,7 @@ pub trait GetVectorElement<T: ValueType> {
     ) -> Result<VectorElement<T>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + Default + GetGraphblasVectorElementValue<T>> GetVectorElement<T>
+impl<T: ValueType + Default + GetVectorElementValueTyped<T>> GetVectorElement<T>
     for SparseVector<T>
 {
     fn get_element(

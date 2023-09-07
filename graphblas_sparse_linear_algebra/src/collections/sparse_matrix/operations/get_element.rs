@@ -5,7 +5,7 @@ use crate::{
     value_type::ValueType,
 };
 
-use super::{GetGraphblasMatrixElementValue, GetMatrixElementValue};
+use super::{GetMatrixElementValueTyped, GetMatrixElementValue};
 
 pub trait GetMatrixElement<T: ValueType> {
     fn get_element(
@@ -19,7 +19,7 @@ pub trait GetMatrixElement<T: ValueType> {
     ) -> Result<MatrixElement<T>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + Default + GetGraphblasMatrixElementValue<T>> GetMatrixElement<T>
+impl<T: ValueType + Default + GetMatrixElementValueTyped<T>> GetMatrixElement<T>
     for SparseMatrix<T>
 {
     fn get_element(
