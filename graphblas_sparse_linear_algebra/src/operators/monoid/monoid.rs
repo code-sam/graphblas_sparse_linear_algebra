@@ -16,21 +16,37 @@ where
 }
 
 macro_rules! implement_monoid_operator {
-    ($operator_name:ident,
-        $graphblas_operator_name:ident,
-        $value_type:ty
-    ) => {
-        impl Monoid<$value_type> for $operator_name<$value_type> {
+    ($monoid_operator_name:ident, $graphblas_operator_trait_name:ident) => {
+        pub trait $graphblas_operator_trait_name<T: ValueType> {
+            fn graphblas_type() -> GrB_Monoid;
+        }
+
+        impl<T: ValueType + $graphblas_operator_trait_name<T>> Monoid<T>
+            for $monoid_operator_name<T>
+        {
             fn graphblas_type(&self) -> GrB_Monoid {
-                unsafe { $graphblas_operator_name }
+                T::graphblas_type()
             }
         }
 
-        impl $operator_name<$value_type> {
+        impl<T: ValueType> $monoid_operator_name<T> {
             pub fn new() -> Self {
-                $operator_name {
+                Self {
                     _value_type: PhantomData,
                 }
+            }
+        }
+    };
+}
+
+macro_rules! implement_typed_monoid_operator {
+    ($operator_trait_name:ident,
+        $graphblas_operator_name:ident,
+        $value_type:ty
+    ) => {
+        impl $operator_trait_name<$value_type> for $value_type {
+            fn graphblas_type() -> GrB_Monoid {
+                unsafe { $graphblas_operator_name }
             }
         }
     };
@@ -41,9 +57,11 @@ pub struct Min<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
+implement_monoid_operator!(Min, MinMonoidTyped);
+
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
-    implement_monoid_operator,
-    Min,
+    implement_typed_monoid_operator,
+    MinMonoidTyped,
     GrB_MIN_MONOID
 );
 
@@ -52,9 +70,11 @@ pub struct Max<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
+implement_monoid_operator!(Max, MaxMonoidTyped);
+
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
-    implement_monoid_operator,
-    Max,
+    implement_typed_monoid_operator,
+    MaxMonoidTyped,
     GrB_MAX_MONOID
 );
 
@@ -63,9 +83,11 @@ pub struct Plus<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
+implement_monoid_operator!(Plus, PlusMonoidTyped);
+
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
-    implement_monoid_operator,
-    Plus,
+    implement_typed_monoid_operator,
+    PlusMonoidTyped,
     GrB_PLUS_MONOID
 );
 
@@ -74,9 +96,11 @@ pub struct Times<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
+implement_monoid_operator!(Times, TimesMonoidTyped);
+
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_except_bool!(
-    implement_monoid_operator,
-    Times,
+    implement_typed_monoid_operator,
+    TimesMonoidTyped,
     GrB_TIMES_MONOID
 );
 
@@ -85,9 +109,11 @@ pub struct Any<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
+implement_monoid_operator!(Any, AnyMonoidTyped);
+
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_with_postfix!(
-    implement_monoid_operator,
-    Any,
+    implement_typed_monoid_operator,
+    AnyMonoidTyped,
     GxB_ANY,
     MONOID
 );
@@ -112,10 +138,15 @@ pub struct Equal<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
-implement_monoid_operator!(LogicalOr, GrB_LOR_MONOID_BOOL, bool);
-implement_monoid_operator!(LogicalAnd, GrB_LAND_MONOID_BOOL, bool);
-implement_monoid_operator!(LogicalExclusiveOr, GrB_LXOR_MONOID_BOOL, bool);
-implement_monoid_operator!(Equal, GrB_LXNOR_MONOID_BOOL, bool);
+implement_monoid_operator!(LogicalOr, LogicalOrMonoidTyped);
+implement_monoid_operator!(LogicalAnd, LogicalAndMonoidTyped);
+implement_monoid_operator!(LogicalExclusiveOr, LogicalExclusiveOrMonoidTyped);
+implement_monoid_operator!(Equal, EqualMonoidTyped);
+
+implement_typed_monoid_operator!(LogicalOrMonoidTyped, GrB_LOR_MONOID_BOOL, bool);
+implement_typed_monoid_operator!(LogicalAndMonoidTyped, GrB_LAND_MONOID_BOOL, bool);
+implement_typed_monoid_operator!(LogicalExclusiveOrMonoidTyped, GrB_LXOR_MONOID_BOOL, bool);
+implement_typed_monoid_operator!(EqualMonoidTyped, GrB_LXNOR_MONOID_BOOL, bool);
 
 #[derive(Debug, Clone)]
 pub struct BitwiseLogicalOr<T: ValueType> {
@@ -132,23 +163,30 @@ pub struct BitwiseLogicalExclusiveOr<T: ValueType> {
     _value_type: PhantomData<T>,
 }
 
+implement_monoid_operator!(BitwiseLogicalOr, BitwiseLogicalOrMonoidTyped);
+implement_monoid_operator!(BitwiseLogicalAnd, BitwiseLogicalAndMonoidTyped);
+implement_monoid_operator!(
+    BitwiseLogicalExclusiveOr,
+    BitwiseLogicalExclusiveOrMonoidTyped
+);
+
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix!(
-    implement_monoid_operator,
-    BitwiseLogicalOr,
+    implement_typed_monoid_operator,
+    BitwiseLogicalOrMonoidTyped,
     GxB_BOR,
     MONOID
 );
 
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix!(
-    implement_monoid_operator,
-    BitwiseLogicalAnd,
+    implement_typed_monoid_operator,
+    BitwiseLogicalAndMonoidTyped,
     GxB_BAND,
     MONOID
 );
 
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_unsigned_integers_with_postfix!(
-    implement_monoid_operator,
-    BitwiseLogicalExclusiveOr,
+    implement_typed_monoid_operator,
+    BitwiseLogicalExclusiveOrMonoidTyped,
     GxB_BXOR,
     MONOID
 );
