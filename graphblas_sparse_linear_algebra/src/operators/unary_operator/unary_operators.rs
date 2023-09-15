@@ -112,7 +112,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 
 //z = 1/x
 define_unary_operator!(MultiplicativeInverse);
-implement_unary_operator!(MultiplicativeInverse, MultiplicativeInverseUnaryOperatorTyped);
+implement_unary_operator!(
+    MultiplicativeInverse,
+    MultiplicativeInverseUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
     implement_typed_unary_operator,
     MultiplicativeInverseUnaryOperatorTyped,
@@ -202,7 +205,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 
 // z = exp(x)-1
 define_unary_operator!(NaturalExponentMinus1);
-implement_unary_operator!(NaturalExponentMinus1, NaturalExponentMinus1UnaryOperatorTyped);
+implement_unary_operator!(
+    NaturalExponentMinus1,
+    NaturalExponentMinus1UnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     NaturalExponentMinus1UnaryOperatorTyped,
@@ -211,7 +217,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 
 // z = log_e (x+1)
 define_unary_operator!(NaturalLogarithmOfArgumentPlusOne);
-implement_unary_operator!(NaturalLogarithmOfArgumentPlusOne, NaturalLogarithmOfArgumentPlusOneUnaryOperatorTyped);
+implement_unary_operator!(
+    NaturalLogarithmOfArgumentPlusOne,
+    NaturalLogarithmOfArgumentPlusOneUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     NaturalLogarithmOfArgumentPlusOneUnaryOperatorTyped,
@@ -291,7 +300,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 );
 
 define_unary_operator!(InverseHyberbolicSine);
-implement_unary_operator!(InverseHyberbolicSine, InverseHyberbolicSineUnaryOperatorTyped);
+implement_unary_operator!(
+    InverseHyberbolicSine,
+    InverseHyberbolicSineUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     InverseHyberbolicSineUnaryOperatorTyped,
@@ -299,7 +311,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 );
 
 define_unary_operator!(InverseHyberbolicCosine);
-implement_unary_operator!(InverseHyberbolicCosine, InverseHyberbolicCosineUnaryOperatorTyped);
+implement_unary_operator!(
+    InverseHyberbolicCosine,
+    InverseHyberbolicCosineUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     InverseHyberbolicCosineUnaryOperatorTyped,
@@ -307,7 +322,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 );
 
 define_unary_operator!(InverseHyberbolicTangent);
-implement_unary_operator!(InverseHyberbolicTangent, InverseHyberbolicTangentUnaryOperatorTyped);
+implement_unary_operator!(
+    InverseHyberbolicTangent,
+    InverseHyberbolicTangentUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     InverseHyberbolicTangentUnaryOperatorTyped,
@@ -379,7 +397,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 );
 
 define_unary_operator!(NaturalLogarithmOfGammaFunction);
-implement_unary_operator!(NaturalLogarithmOfGammaFunction, NaturalLogarithmOfGammaFunctionUnaryOperatorTyped);
+implement_unary_operator!(
+    NaturalLogarithmOfGammaFunction,
+    NaturalLogarithmOfGammaFunctionUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     NaturalLogarithmOfGammaFunctionUnaryOperatorTyped,
@@ -403,7 +424,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 );
 
 define_unary_operator!(ComplimentoryErrorFunction);
-implement_unary_operator!(ComplimentoryErrorFunction, ComplimentoryErrorFunctionUnaryOperatorTyped);
+implement_unary_operator!(
+    ComplimentoryErrorFunction,
+    ComplimentoryErrorFunctionUnaryOperatorTyped
+);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types!(
     implement_typed_unary_operator,
     ComplimentoryErrorFunctionUnaryOperatorTyped,
