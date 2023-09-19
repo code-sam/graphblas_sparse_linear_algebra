@@ -16,21 +16,37 @@ where
 }
 
 macro_rules! implement_index_unary_operator {
-    ($operator_name:ident,
-        $graphblas_operator_name:ident,
-        $evaluation_domain:ty
-    ) => {
-        impl IndexUnaryOperator<$evaluation_domain> for $operator_name<$evaluation_domain> {
+    ($operator_name:ident, $graphblas_operator_trait_name:ident) => {
+        pub trait $graphblas_operator_trait_name<T: ValueType> {
+            fn graphblas_type() -> GrB_IndexUnaryOp;
+        }
+
+        impl<T: ValueType + $graphblas_operator_trait_name<T>> IndexUnaryOperator<T>
+            for $operator_name<T>
+        {
             fn graphblas_type(&self) -> GrB_IndexUnaryOp {
-                unsafe { $graphblas_operator_name }
+                T::graphblas_type()
             }
         }
 
-        impl $operator_name<$evaluation_domain> {
+        impl<T: ValueType> $operator_name<T> {
             pub fn new() -> Self {
                 Self {
                     _evaluation_domain: PhantomData,
                 }
+            }
+        }
+    };
+}
+
+macro_rules! implement_typed_index_unary_operator {
+    ($operator_trait_name:ident,
+        $graphblas_operator_name:ident,
+        $value_type:ty
+    ) => {
+        impl $operator_trait_name<$value_type> for $value_type {
+            fn graphblas_type() -> GrB_IndexUnaryOp {
+                unsafe { $graphblas_operator_name }
             }
         }
     };
@@ -69,17 +85,19 @@ macro_rules! define_index_unary_operator {
 
 // z = i + y
 define_index_unary_operator!(PlusRowIndex);
+implement_index_unary_operator!(PlusRowIndex, PlusRowIndexTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
-    implement_index_unary_operator,
-    PlusRowIndex,
+    implement_typed_index_unary_operator,
+    PlusRowIndexTyped,
     GrB_ROWINDEX
 );
 
 // z = j - i + y
 define_index_unary_operator!(PlusDiagonalIndex);
+implement_index_unary_operator!(PlusDiagonalIndex, PlusDiagonalIndexTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types!(
-    implement_index_unary_operator,
-    PlusDiagonalIndex,
+    implement_typed_index_unary_operator,
+    PlusDiagonalIndexTyped,
     GrB_DIAGINDEX
 );
 
@@ -119,37 +137,42 @@ define_index_unary_operator!(IsAfterRow);
 implement_generic_index_unary_operator!(IsAfterRow, GrB_ROWGT);
 
 define_index_unary_operator!(IsValueNotEqualTo);
+implement_index_unary_operator!(IsValueNotEqualTo, IsValueNotEqualToTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_index_unary_operator,
-    IsValueNotEqualTo,
+    implement_typed_index_unary_operator,
+    IsValueNotEqualToTyped,
     GrB_VALUENE
 );
 
 define_index_unary_operator!(IsValueEqualTo);
+implement_index_unary_operator!(IsValueEqualTo, IsValueEqualToTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_index_unary_operator,
-    IsValueEqualTo,
+    implement_typed_index_unary_operator,
+    IsValueEqualToTyped,
     GrB_VALUEEQ
 );
 
 define_index_unary_operator!(IsValueGreaterThan);
+implement_index_unary_operator!(IsValueGreaterThan, IsValueGreaterThanTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_index_unary_operator,
-    IsValueGreaterThan,
+    implement_typed_index_unary_operator,
+    IsValueGreaterThanTyped,
     GrB_VALUEGT
 );
 
 define_index_unary_operator!(IsValueLessThan);
+implement_index_unary_operator!(IsValueLessThan, IsValueLessThanTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_index_unary_operator,
-    IsValueLessThan,
+    implement_typed_index_unary_operator,
+    IsValueLessThanTyped,
     GrB_VALUELT
 );
 
 define_index_unary_operator!(IsValueLessThanOrEqualTo);
+implement_index_unary_operator!(IsValueLessThanOrEqualTo, IsValueLessThanOrEqualToTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types!(
-    implement_index_unary_operator,
-    IsValueLessThanOrEqualTo,
+    implement_typed_index_unary_operator,
+    IsValueLessThanOrEqualToTyped,
     GrB_VALUELE
 );
 

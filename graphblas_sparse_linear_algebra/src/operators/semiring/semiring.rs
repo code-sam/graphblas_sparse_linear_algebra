@@ -24,19 +24,54 @@ macro_rules! define_semiring {
     };
 }
 
+// macro_rules! implement_semiring {
+//     ($semiring:ident, $graphblas_operator:ident, $evaluation_domain:ty) => {
+//         impl $semiring<$evaluation_domain> {
+//             pub fn new() -> Self {
+//                 Self {
+//                     _evaluation_domain: PhantomData,
+//                 }
+//             }
+//         }
+
+//         impl Semiring<$evaluation_domain> for $semiring<$evaluation_domain> {
+//             fn graphblas_type(&self) -> GrB_Semiring {
+//                 unsafe { $graphblas_operator }
+//             }
+//         }
+//     };
+// }
+
 macro_rules! implement_semiring {
-    ($semiring:ident, $graphblas_operator:ident, $evaluation_domain:ty) => {
-        impl $semiring<$evaluation_domain> {
+    ($operator_name:ident, $graphblas_operator_trait_name:ident) => {
+        pub trait $graphblas_operator_trait_name<T: ValueType> {
+            fn graphblas_type() -> GrB_Semiring;
+        }
+
+        impl<T: ValueType + $graphblas_operator_trait_name<T>> Semiring<T> for $operator_name<T> {
+            fn graphblas_type(&self) -> GrB_Semiring {
+                T::graphblas_type()
+            }
+        }
+
+        impl<T: ValueType> $operator_name<T> {
             pub fn new() -> Self {
                 Self {
                     _evaluation_domain: PhantomData,
                 }
             }
         }
+    };
+}
 
-        impl Semiring<$evaluation_domain> for $semiring<$evaluation_domain> {
-            fn graphblas_type(&self) -> GrB_Semiring {
-                unsafe { $graphblas_operator }
+macro_rules! implement_typed_semiring {
+    ($operator_trait_name:ident,
+        $graphblas_operator_name:ident,
+        $value_type:ty
+    ) => {
+        impl $operator_trait_name<$value_type> for $value_type {
+            fn graphblas_type() -> GrB_Semiring {
+                unsafe { $graphblas_operator_name }
             }
         }
     };
@@ -45,16 +80,18 @@ macro_rules! implement_semiring {
 // MAX
 
 define_semiring!(MaxFirst);
+implement_semiring!(MaxFirst, MaxFirstTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MaxFirst,
+    implement_typed_semiring,
+    MaxFirstTyped,
     GrB_MAX_FIRST_SEMIRING
 );
 
 define_semiring!(MaxSecond);
+implement_semiring!(MaxSecond, MaxSecondTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MaxSecond,
+    implement_typed_semiring,
+    MaxSecondTyped,
     GrB_MAX_SECOND_SEMIRING
 );
 
@@ -66,9 +103,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // );
 
 define_semiring!(MaxMin);
+implement_semiring!(MaxMin, MaxMinTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MaxMin,
+    implement_typed_semiring,
+    MaxMinTyped,
     GrB_MAX_MIN_SEMIRING
 );
 
@@ -80,9 +118,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // );
 
 define_semiring!(MaxPlus);
+implement_semiring!(MaxPlus, MaxPlusTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MaxPlus,
+    implement_typed_semiring,
+    MaxPlusTyped,
     GrB_MAX_PLUS_SEMIRING
 );
 
@@ -101,9 +140,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // );
 
 define_semiring!(MaxTimes);
+implement_semiring!(MaxTimes, MaxTimesTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MaxTimes,
+    implement_typed_semiring,
+    MaxTimesTyped,
     GrB_MAX_TIMES_SEMIRING
 );
 
@@ -187,16 +227,18 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // MIN
 
 define_semiring!(MinFirst);
+implement_semiring!(MinFirst, MinFirstTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MinFirst,
+    implement_typed_semiring,
+    MinFirstTyped,
     GrB_MIN_FIRST_SEMIRING
 );
 
 define_semiring!(MinSecond);
+implement_semiring!(MinSecond, MinSecondTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MinSecond,
+    implement_typed_semiring,
+    MinSecondTyped,
     GrB_MIN_SECOND_SEMIRING
 );
 
@@ -215,16 +257,18 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // );
 
 define_semiring!(MinMax);
+implement_semiring!(MinMax, MinMaxTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MinMax,
+    implement_typed_semiring,
+    MinMaxTyped,
     GrB_MIN_MAX_SEMIRING
 );
 
 define_semiring!(MinPlus);
+implement_semiring!(MinPlus, MinPlusTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MinPlus,
+    implement_typed_semiring,
+    MinPlusTyped,
     GrB_MIN_PLUS_SEMIRING
 );
 
@@ -243,9 +287,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // );
 
 define_semiring!(MinTimes);
+implement_semiring!(MinTimes, MinTimesTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    MinTimes,
+    implement_typed_semiring,
+    MinTimesTyped,
     GrB_MIN_TIMES_SEMIRING
 );
 
@@ -385,9 +430,10 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_typ
 // );
 
 define_semiring!(PlusTimes);
+implement_semiring!(PlusTimes, PlusTimesTyped);
 implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean!(
-    implement_semiring,
-    PlusTimes,
+    implement_typed_semiring,
+    PlusTimesTyped,
     GrB_PLUS_TIMES_SEMIRING
 );
 
