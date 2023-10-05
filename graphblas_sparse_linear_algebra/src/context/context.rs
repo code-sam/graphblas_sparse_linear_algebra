@@ -16,7 +16,7 @@ use suitesparse_graphblas_sys::{
     GxB_SelectOp_error,
 };
 
-use crate::bindings_to_graphblas_implementation::{
+use crate::graphblas_bindings::{
     GrB_Info,
     GrB_Info_GrB_DIMENSION_MISMATCH,
     GrB_Info_GrB_DOMAIN_MISMATCH,

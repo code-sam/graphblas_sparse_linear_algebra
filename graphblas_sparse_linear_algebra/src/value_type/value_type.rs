@@ -1,4 +1,4 @@
-use crate::bindings_to_graphblas_implementation::{
+use crate::graphblas_bindings::{
     GrB_BOOL, GrB_FP32, GrB_FP64, GrB_INT16, GrB_INT32, GrB_INT64, GrB_INT8, GrB_Type, GrB_UINT16,
     GrB_UINT32, GrB_UINT64, GrB_UINT8,
 };

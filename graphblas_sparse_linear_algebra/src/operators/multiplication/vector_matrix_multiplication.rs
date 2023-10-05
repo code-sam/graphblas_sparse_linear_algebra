@@ -10,7 +10,7 @@ use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::GrB_vxm;
+use crate::graphblas_bindings::GrB_vxm;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

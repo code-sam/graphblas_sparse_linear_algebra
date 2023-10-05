@@ -10,7 +10,7 @@ use crate::operators::mask::VectorMask;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::GrB_Col_extract;
+use crate::graphblas_bindings::GrB_Col_extract;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

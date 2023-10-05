@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 
-use crate::bindings_to_graphblas_implementation::GrB_Index;
 use crate::error::{SparseLinearAlgebraError, SystemError};
+use crate::graphblas_bindings::GrB_Index;
 
 pub type ElementIndex = usize;
 

@@ -1,10 +1,3 @@
-use crate::bindings_to_graphblas_implementation::{
-    GrB_Vector_extractTuples_BOOL, GrB_Vector_extractTuples_FP32, GrB_Vector_extractTuples_FP64,
-    GrB_Vector_extractTuples_INT16, GrB_Vector_extractTuples_INT32, GrB_Vector_extractTuples_INT64,
-    GrB_Vector_extractTuples_INT8, GrB_Vector_extractTuples_UINT16,
-    GrB_Vector_extractTuples_UINT32, GrB_Vector_extractTuples_UINT64,
-    GrB_Vector_extractTuples_UINT8,
-};
 use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::sparse_vector::GraphblasSparseVectorTrait;
 use crate::collections::sparse_vector::SparseVector;
@@ -13,6 +6,13 @@ use crate::context::ContextTrait;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
 use crate::error::SparseLinearAlgebraError;
+use crate::graphblas_bindings::{
+    GrB_Vector_extractTuples_BOOL, GrB_Vector_extractTuples_FP32, GrB_Vector_extractTuples_FP64,
+    GrB_Vector_extractTuples_INT16, GrB_Vector_extractTuples_INT32, GrB_Vector_extractTuples_INT64,
+    GrB_Vector_extractTuples_INT8, GrB_Vector_extractTuples_UINT16,
+    GrB_Vector_extractTuples_UINT32, GrB_Vector_extractTuples_UINT64,
+    GrB_Vector_extractTuples_UINT8,
+};
 use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;

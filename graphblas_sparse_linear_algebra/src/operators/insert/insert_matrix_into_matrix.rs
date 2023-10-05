@@ -10,7 +10,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::GrB_Matrix_assign;
+use crate::graphblas_bindings::GrB_Matrix_assign;
 
 // TODO: explicitly define how dupicates are handled
 

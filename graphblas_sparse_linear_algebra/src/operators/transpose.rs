@@ -1,9 +1,9 @@
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::GrB_transpose;
 use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::graphblas_bindings::GrB_transpose;
 use crate::operators::options::OperatorOptions;
 use crate::value_type::ValueType;
 

@@ -1,11 +1,11 @@
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::GxB_Matrix_subassign;
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
 };
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::graphblas_bindings::GxB_Matrix_subassign;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};

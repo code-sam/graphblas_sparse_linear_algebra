@@ -6,7 +6,7 @@ use crate::operators::{
 };
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
+use crate::graphblas_bindings::{
     GrB_Matrix_kronecker_BinaryOp, GrB_Matrix_kronecker_Monoid, GrB_Matrix_kronecker_Semiring,
 };
 
