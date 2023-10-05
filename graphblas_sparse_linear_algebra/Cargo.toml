@@ -17,7 +17,7 @@ suitesparse_graphblas_sys = {version = "0.1"}
 graphblas_sparse_linear_algebra_proc_macros = {path = "../graphblas_sparse_linear_algebra_proc_macros", version = "0.3"}
 once_cell = {version = "1.18"}
 paste = {version = "1.0"}
-rayon = {version = "1.7"}
+rayon = {version = "1.8"}
 
 [dev-dependencies]
 criterion = "0.4"
