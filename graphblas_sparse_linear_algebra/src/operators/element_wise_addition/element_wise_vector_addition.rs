@@ -9,7 +9,7 @@ use crate::operators::{
 };
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
+use crate::graphblas_bindings::{
     GrB_Vector_eWiseAdd_BinaryOp, GrB_Vector_eWiseAdd_Monoid, GrB_Vector_eWiseAdd_Semiring,
 };
 

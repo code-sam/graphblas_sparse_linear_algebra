@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_value_types_without_boolean;
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::*;
+use crate::graphblas_bindings::*;
 
 pub trait Semiring<EvaluationDomain>
 where

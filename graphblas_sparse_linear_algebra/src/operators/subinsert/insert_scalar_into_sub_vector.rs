@@ -1,16 +1,16 @@
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::{
-    GxB_Vector_subassign_BOOL, GxB_Vector_subassign_FP32, GxB_Vector_subassign_FP64,
-    GxB_Vector_subassign_INT16, GxB_Vector_subassign_INT32, GxB_Vector_subassign_INT64,
-    GxB_Vector_subassign_INT8, GxB_Vector_subassign_UINT16, GxB_Vector_subassign_UINT32,
-    GxB_Vector_subassign_UINT64, GxB_Vector_subassign_UINT8,
-};
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
 use crate::context::{CallGraphBlasContext, ContextTrait};
 use crate::error::SparseLinearAlgebraError;
+use crate::graphblas_bindings::{
+    GxB_Vector_subassign_BOOL, GxB_Vector_subassign_FP32, GxB_Vector_subassign_FP64,
+    GxB_Vector_subassign_INT16, GxB_Vector_subassign_INT32, GxB_Vector_subassign_INT64,
+    GxB_Vector_subassign_INT8, GxB_Vector_subassign_UINT16, GxB_Vector_subassign_UINT32,
+    GxB_Vector_subassign_UINT64, GxB_Vector_subassign_UINT8,
+};
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::OperatorOptions;

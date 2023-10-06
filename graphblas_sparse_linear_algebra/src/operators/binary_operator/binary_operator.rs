@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::ptr;
 
-use crate::bindings_to_graphblas_implementation::*;
+use crate::graphblas_bindings::*;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_point_types,
     implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_graphblas_index_integer_value_types,

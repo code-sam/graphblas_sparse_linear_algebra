@@ -4,7 +4,12 @@ use std::sync::Arc;
 
 use suitesparse_graphblas_sys::GrB_Info;
 
-use crate::bindings_to_graphblas_implementation::{
+use crate::collections::collection::Collection;
+use crate::context::{CallGraphBlasContext, Context, ContextTrait};
+use crate::error::{
+    GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
+};
+use crate::graphblas_bindings::{
     GrB_Index, GrB_Scalar, GrB_Scalar_clear, GrB_Scalar_dup, GrB_Scalar_extractElement_BOOL,
     GrB_Scalar_extractElement_FP32, GrB_Scalar_extractElement_FP64,
     GrB_Scalar_extractElement_INT16, GrB_Scalar_extractElement_INT32,
@@ -15,11 +20,6 @@ use crate::bindings_to_graphblas_implementation::{
     GrB_Scalar_setElement_FP64, GrB_Scalar_setElement_INT16, GrB_Scalar_setElement_INT32,
     GrB_Scalar_setElement_INT64, GrB_Scalar_setElement_INT8, GrB_Scalar_setElement_UINT16,
     GrB_Scalar_setElement_UINT32, GrB_Scalar_setElement_UINT64, GrB_Scalar_setElement_UINT8,
-};
-use crate::collections::collection::Collection;
-use crate::context::{CallGraphBlasContext, Context, ContextTrait};
-use crate::error::{
-    GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
 use crate::index::{ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{

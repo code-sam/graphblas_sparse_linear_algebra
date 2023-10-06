@@ -8,7 +8,7 @@ use crate::operators::options::OperatorOptionsTrait;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::GrB_Matrix_reduce_BinaryOp;
+use crate::graphblas_bindings::GrB_Matrix_reduce_BinaryOp;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.

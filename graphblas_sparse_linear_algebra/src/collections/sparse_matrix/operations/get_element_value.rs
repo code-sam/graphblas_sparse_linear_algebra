@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-use crate::bindings_to_graphblas_implementation::{
+use crate::graphblas_bindings::{
     GrB_Matrix_extractElement_BOOL, GrB_Matrix_extractElement_FP32, GrB_Matrix_extractElement_FP64,
     GrB_Matrix_extractElement_INT16, GrB_Matrix_extractElement_INT32,
     GrB_Matrix_extractElement_INT64, GrB_Matrix_extractElement_INT8,

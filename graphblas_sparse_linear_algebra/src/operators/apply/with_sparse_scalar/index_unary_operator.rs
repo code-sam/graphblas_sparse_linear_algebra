@@ -10,9 +10,7 @@ use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::value_type::ValueType;
 
-use crate::bindings_to_graphblas_implementation::{
-    GrB_Matrix_apply_IndexOp_Scalar, GrB_Vector_apply_IndexOp_Scalar,
-};
+use crate::graphblas_bindings::{GrB_Matrix_apply_IndexOp_Scalar, GrB_Vector_apply_IndexOp_Scalar};
 
 pub trait ApplyIndexUnaryOperatorWithSparseScalar<EvaluationDomain>
 where

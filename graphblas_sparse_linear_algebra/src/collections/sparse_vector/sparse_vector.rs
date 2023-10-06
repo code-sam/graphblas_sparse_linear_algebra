@@ -9,13 +9,6 @@ use suitesparse_graphblas_sys::{
 };
 
 use super::element::VectorElementList;
-use crate::bindings_to_graphblas_implementation::{
-    GrB_Index, GrB_Vector, GrB_Vector_build_BOOL, GrB_Vector_build_FP32, GrB_Vector_build_FP64,
-    GrB_Vector_build_INT16, GrB_Vector_build_INT32, GrB_Vector_build_INT64, GrB_Vector_build_INT8,
-    GrB_Vector_build_UINT16, GrB_Vector_build_UINT32, GrB_Vector_build_UINT64,
-    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_free, GrB_Vector_new,
-    GrB_Vector_nvals, GrB_Vector_removeElement, GrB_Vector_resize, GrB_Vector_size,
-};
 use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::{
     GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
@@ -26,6 +19,13 @@ use crate::context::CallGraphBlasContext;
 use crate::context::{Context, ContextTrait};
 use crate::error::{
     GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
+};
+use crate::graphblas_bindings::{
+    GrB_Index, GrB_Vector, GrB_Vector_build_BOOL, GrB_Vector_build_FP32, GrB_Vector_build_FP64,
+    GrB_Vector_build_INT16, GrB_Vector_build_INT32, GrB_Vector_build_INT64, GrB_Vector_build_INT8,
+    GrB_Vector_build_UINT16, GrB_Vector_build_UINT32, GrB_Vector_build_UINT64,
+    GrB_Vector_build_UINT8, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_free, GrB_Vector_new,
+    GrB_Vector_nvals, GrB_Vector_removeElement, GrB_Vector_resize, GrB_Vector_size,
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::binary_operator::BinaryOperator;

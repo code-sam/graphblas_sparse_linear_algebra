@@ -12,7 +12,7 @@ use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{ConvertScalar, ValueType};
 
-use crate::bindings_to_graphblas_implementation::{
+use crate::graphblas_bindings::{
     GrB_Matrix_assign_BOOL, GrB_Matrix_assign_FP32, GrB_Matrix_assign_FP64,
     GrB_Matrix_assign_INT16, GrB_Matrix_assign_INT32, GrB_Matrix_assign_INT64,
     GrB_Matrix_assign_INT8, GrB_Matrix_assign_UINT16, GrB_Matrix_assign_UINT32,
