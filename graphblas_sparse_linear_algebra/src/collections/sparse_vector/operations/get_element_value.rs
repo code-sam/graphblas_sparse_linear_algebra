@@ -9,7 +9,7 @@ use suitesparse_graphblas_sys::{
 use crate::collections::sparse_vector::sparse_vector::GraphblasSparseVectorTrait;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
-use crate::context::ContextTrait;
+use crate::context::GetContext;
 use crate::error::GraphblasErrorType;
 use crate::error::LogicErrorType;
 use crate::error::SparseLinearAlgebraErrorType;

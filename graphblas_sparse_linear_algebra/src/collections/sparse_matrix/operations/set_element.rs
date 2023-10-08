@@ -5,8 +5,8 @@ use crate::graphblas_bindings::{
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
 use crate::{
-    collections::sparse_matrix::{GraphblasSparseMatrixTrait, MatrixElement, SparseMatrix},
-    context::{CallGraphBlasContext, ContextTrait},
+    collections::sparse_matrix::{GetGraphblasSparseMatrix, MatrixElement, SparseMatrix},
+    context::{CallGraphBlasContext, GetContext},
     error::SparseLinearAlgebraError,
     index::IndexConversion,
     value_type::{

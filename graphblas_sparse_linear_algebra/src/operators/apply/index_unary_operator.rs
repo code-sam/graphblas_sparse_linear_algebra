@@ -10,9 +10,9 @@ use suitesparse_graphblas_sys::{
     GrB_Vector_apply_IndexOp_UINT8,
 };
 
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
@@ -43,23 +43,23 @@ where
 {
     fn apply_to_vector(
         &self,
-        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector: &(impl GraphblasSparseVectorTrait + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
-        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -69,12 +69,12 @@ macro_rules! implement_apply_index_binary_operator {
         impl ApplyIndexUnaryOperator<$evaluation_domain> for IndexUnaryOperatorApplier {
             fn apply_to_vector(
                 &self,
-                vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                vector: &(impl GraphblasSparseVectorTrait + GetContext),
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-                mask: &(impl VectorMask + ContextTrait),
+                product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+                mask: &(impl VectorMask + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -100,12 +100,12 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_matrix(
                 &self,
-                matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-                mask: &(impl MatrixMask + ContextTrait),
+                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+                mask: &(impl MatrixMask + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -142,10 +142,10 @@ implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
     };
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

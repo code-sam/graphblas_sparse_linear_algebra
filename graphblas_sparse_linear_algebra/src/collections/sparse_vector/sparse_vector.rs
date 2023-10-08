@@ -10,13 +10,12 @@ use suitesparse_graphblas_sys::{
 
 use super::element::VectorElementList;
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::{
-    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
-};
+use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::collections::sparse_vector::operations::GetVectorElementList;
 use crate::context::CallGraphBlasContext;
-use crate::context::{Context, ContextTrait};
+use crate::context::{Context, GetContext};
 use crate::error::{
     GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
@@ -95,7 +94,7 @@ impl<T: ValueType> SparseVector<T> {
         context.call_without_detailed_error_information(|| unsafe {
             GxB_Vector_build_Scalar(
                 // vector.as_ptr(),
-                vector.graphblas_vector(),
+                GraphblasSparseVectorTrait::graphblas_vector(&vector),
                 graphblas_indices.as_ptr(),
                 value.graphblas_scalar(),
                 graphblas_length,
@@ -202,7 +201,7 @@ implement_macro_for_all_value_types!(implement_from_value);
 //     }
 // }
 
-impl<T: ValueType> ContextTrait for SparseVector<T> {
+impl<T: ValueType> GetContext for SparseVector<T> {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }
@@ -549,22 +548,18 @@ macro_rules! implement_set_element_for_custom_type {
 // implement_get_element_for_custom_type!(i128);
 // implement_get_element_for_custom_type!(u128);
 
-macro_rules! implement_vector_mask {
-    ($value_type: ty) => {
-        impl VectorMask for SparseVector<$value_type> {
-            unsafe fn graphblas_vector(&self) -> GrB_Vector {
-                GraphblasSparseVectorTrait::graphblas_vector(self)
-            }
-        }
-    };
+impl<T: ValueType> VectorMask for SparseVector<T> {
+    unsafe fn graphblas_vector(&self) -> GrB_Vector {
+        GraphblasSparseVectorTrait::graphblas_vector(self)
+    }
 }
-implement_macro_for_all_value_types!(implement_vector_mask);
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_matrix::operations::FromMatrixElementList;
+    use crate::collections::sparse_matrix::MatrixElementList;
     use crate::collections::sparse_vector::operations::{
         GetVectorElement, GetVectorElementIndices, GetVectorElementValue, GetVectorElementValues,
         SetVectorElement,

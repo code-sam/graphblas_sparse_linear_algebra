@@ -1,8 +1,8 @@
 use std::convert::TryInto;
 
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
     GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32, GrB_Matrix_reduce_FP64,
@@ -43,20 +43,20 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
     fn to_column_vector(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn to_row_vector(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -65,10 +65,10 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
     fn to_column_vector(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -93,10 +93,10 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
     fn to_row_vector(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         self.to_column_vector(
@@ -114,7 +114,7 @@ pub trait MonoidScalarReducer<EvaluationDomain: ValueType> {
     fn matrix_to_scalar(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut EvaluationDomain,
         options: &OperatorOptions,
@@ -123,7 +123,7 @@ pub trait MonoidScalarReducer<EvaluationDomain: ValueType> {
     fn vector_to_scalar(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        argument: &(impl GraphblasSparseVectorTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut EvaluationDomain,
         options: &OperatorOptions,
@@ -136,7 +136,7 @@ macro_rules! implement_monoid_reducer {
             fn matrix_to_scalar(
                 &self,
                 operator: &impl Monoid<$value_type>,
-                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                argument: &(impl GetGraphblasSparseMatrix + GetContext),
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut $value_type,
                 options: &OperatorOptions,
@@ -164,7 +164,7 @@ macro_rules! implement_monoid_reducer {
             fn vector_to_scalar(
                 &self,
                 operator: &impl Monoid<$value_type>,
-                argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                argument: &(impl GraphblasSparseVectorTrait + GetContext),
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut $value_type,
                 options: &OperatorOptions,
@@ -207,9 +207,8 @@ mod tests {
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::monoid::Plus as MonoidPlus;
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
-    };
+    use crate::collections::sparse_matrix::operations::FromMatrixElementList;
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::{
         FromVectorElementList, SparseVector, VectorElementList,

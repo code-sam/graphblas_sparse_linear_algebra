@@ -4,16 +4,17 @@ use once_cell::sync::Lazy;
 
 use suitesparse_graphblas_sys::{GrB_DESC_T0, GxB_Matrix_sort};
 
-use crate::collections::sparse_matrix::SparseMatrixTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::{
-    collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrix},
+    collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
     error::SparseLinearAlgebraError,
     operators::binary_operator::{BinaryOperator, ReturnsBool},
     value_type::ValueType,
 };
+
+use super::GetMatrixSize;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
@@ -216,7 +217,8 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_matrix::operations::get_element_value::GetMatrixElementValue;
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_matrix::operations::FromMatrixElementList;
+    use crate::collections::sparse_matrix::MatrixElementList;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{First, IsGreaterThan};
 

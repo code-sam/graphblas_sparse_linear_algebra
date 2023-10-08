@@ -1,9 +1,8 @@
 use std::ptr;
 
-use crate::collections::sparse_matrix::{
-    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
-};
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
     GxB_Matrix_subassign_BOOL, GxB_Matrix_subassign_FP32, GxB_Matrix_subassign_FP64,
@@ -59,7 +58,7 @@ where
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_matrix_to_insert_into: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -194,7 +193,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-                mask_for_matrix_to_insert_into: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
@@ -313,12 +312,14 @@ implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_sca
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
+    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList, Size};
+    use crate::collections::sparse_matrix::{MatrixElementList, Size};
     use crate::index::ElementIndex;
 
     #[test]

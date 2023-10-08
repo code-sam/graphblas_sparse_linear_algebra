@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::GxB_Vector_sort;
 
 use crate::collections::sparse_vector::SparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::{

@@ -1,10 +1,9 @@
 use std::ptr;
 
-use crate::collections::sparse_matrix::{
-    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
-};
+use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::GxB_Row_subassign;
 use crate::index::{
@@ -42,7 +41,7 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -53,9 +52,9 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -69,7 +68,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubRowTrait<MatrixToInsertIn
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -129,9 +128,9 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubRowTrait<MatrixToInsertIn
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector_to_insert: &(impl GraphblasSparseVectorTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask_for_row_to_insert_into: &(impl GraphblasSparseVectorTrait + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
@@ -189,14 +188,14 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubRowTrait<MatrixToInsertIn
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
+    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
-    };
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_vector::{
         FromVectorElementList, SparseVector, VectorElementList,
     };

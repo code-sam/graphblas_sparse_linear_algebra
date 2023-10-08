@@ -3,7 +3,7 @@ use std::ptr;
 use crate::collections::sparse_vector::{
     GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
 };
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -58,7 +58,7 @@ where
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -135,7 +135,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-                mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();

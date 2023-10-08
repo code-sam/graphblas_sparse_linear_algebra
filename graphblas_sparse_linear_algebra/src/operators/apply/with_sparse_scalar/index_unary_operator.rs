@@ -1,7 +1,7 @@
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
 use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::IndexUnaryOperatorApplier;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -18,23 +18,23 @@ where
 {
     fn apply_to_vector(
         &self,
-        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector: &(impl GraphblasSparseVectorTrait + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
-        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -44,12 +44,12 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
 {
     fn apply_to_vector(
         &self,
-        vector: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        vector: &(impl GraphblasSparseVectorTrait + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
@@ -74,12 +74,12 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
 
     fn apply_to_matrix(
         &self,
-        matrix: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
@@ -107,10 +107,10 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
     };
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_scalar::SparseScalar;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

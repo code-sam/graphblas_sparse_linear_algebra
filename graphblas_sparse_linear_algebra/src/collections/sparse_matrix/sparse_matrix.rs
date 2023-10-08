@@ -1,45 +1,26 @@
-use std::convert::TryInto;
 use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use rayon::prelude::*;
-
-use suitesparse_graphblas_sys::{GrB_Matrix_diag, GxB_Matrix_isStoredElement};
-
 use crate::collections::collection::Collection;
-use crate::collections::sparse_vector::{
-    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
-};
-use crate::error::{
-    GraphblasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
-    SparseLinearAlgebraErrorType,
-};
+use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
-    GrB_Index, GrB_Matrix, GrB_Matrix_build_BOOL, GrB_Matrix_build_FP32, GrB_Matrix_build_FP64,
-    GrB_Matrix_build_INT16, GrB_Matrix_build_INT32, GrB_Matrix_build_INT64, GrB_Matrix_build_INT8,
-    GrB_Matrix_build_UINT16, GrB_Matrix_build_UINT32, GrB_Matrix_build_UINT64,
-    GrB_Matrix_build_UINT8, GrB_Matrix_clear, GrB_Matrix_dup, GrB_Matrix_free, GrB_Matrix_ncols,
-    GrB_Matrix_new, GrB_Matrix_nrows, GrB_Matrix_nvals, GrB_Matrix_removeElement,
-    GrB_Matrix_resize,
+    GrB_Index, GrB_Matrix, GrB_Matrix_clear, GrB_Matrix_dup, GrB_Matrix_free, GrB_Matrix_new,
+    GrB_Matrix_nvals,
 };
 use crate::operators::mask::MatrixMask;
 
-use super::coordinate::Coordinate;
 use super::element::MatrixElementList;
 use super::size::Size;
 
-use crate::context::ContextTrait;
+use crate::context::GetContext;
 use crate::context::{CallGraphBlasContext, Context};
-use crate::operators::binary_operator::BinaryOperator;
 
 use crate::collections::sparse_matrix::operations::GetMatrixElementList;
-use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-    implement_macro_for_all_value_types,
-};
-use crate::value_type::{ConvertVector, ValueType};
+use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::index::{ElementIndex, IndexConversion};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
+use crate::value_type::ValueType;
 
 // static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
 //     Lazy::new(|| OperatorOptions::new_default());
@@ -86,13 +67,24 @@ impl<T: ValueType> SparseMatrix<T> {
         });
     }
 
+    unsafe fn from_graphblas_matrix(
+        context: &Arc<Context>,
+        matrix: GrB_Matrix,
+    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
+        Ok(SparseMatrix {
+            context: context.to_owned(),
+            matrix,
+            value_type: PhantomData,
+        })
+    }
+
     // TODO
     // fn from_matrices(matrices: Vec<SparseMatrix<T>, >) -> Result<Self, SparseLinearAlgebraError> {
 
     // }
 }
 
-impl<T: ValueType> ContextTrait for SparseMatrix<T> {
+impl<T: ValueType> GetContext for SparseMatrix<T> {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }
@@ -120,13 +112,13 @@ impl<T: ValueType> Collection for SparseMatrix<T> {
     }
 }
 
-pub trait GraphblasSparseMatrixTrait {
+pub trait GetGraphblasSparseMatrix {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
     unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix;
     unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix;
 }
 
-impl<T: ValueType> GraphblasSparseMatrixTrait for SparseMatrix<T> {
+impl<T: ValueType> GetGraphblasSparseMatrix for SparseMatrix<T> {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
         self.matrix
     }
@@ -137,106 +129,6 @@ impl<T: ValueType> GraphblasSparseMatrixTrait for SparseMatrix<T> {
 
     unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
         &mut self.matrix
-    }
-}
-
-pub trait SparseMatrixTrait {
-    fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
-    fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
-    fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError>;
-    fn try_is_element(&self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
-
-    /// All elements of self with an index coordinate outside of the new size are dropped.
-    fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError>;
-    fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
-    fn size(&self) -> Result<Size, SparseLinearAlgebraError>;
-}
-
-impl<T: ValueType> SparseMatrixTrait for SparseMatrix<T> {
-    fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-        let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), self.matrix) },
-            &self.matrix,
-        )?;
-        let column_width = unsafe { column_width.assume_init() };
-        Ok(ElementIndex::from_graphblas_index(column_width)?)
-    }
-
-    fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
-        let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
-        let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;
-
-        let context = self.context.to_owned();
-        context.call(
-            || unsafe {
-                GrB_Matrix_removeElement(self.matrix, row_index_to_delete, column_index_to_delete)
-            },
-            &self.matrix,
-        )?;
-        Ok(())
-    }
-
-    fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError> {
-        let row_index = coordinate.row_index().to_graphblas_index()?;
-        let column_index = coordinate.column_index().to_graphblas_index()?;
-
-        let context = self.context.to_owned();
-        let result = context.call(
-            || unsafe { GxB_Matrix_isStoredElement(self.matrix, row_index, column_index) },
-            &self.matrix,
-        );
-        match result {
-            Ok(_) => Ok(true),
-            Err(error) => match error.error_type() {
-                SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
-                    GraphblasErrorType::NoValue,
-                )) => Ok(false),
-                _ => Err(error),
-            },
-        }
-    }
-
-    fn try_is_element(&self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
-        let row_index = coordinate.row_index().to_graphblas_index()?;
-        let column_index = coordinate.column_index().to_graphblas_index()?;
-
-        let context = self.context.to_owned();
-        let result = context.call(
-            || unsafe { GxB_Matrix_isStoredElement(self.matrix, row_index, column_index) },
-            &self.matrix,
-        );
-        match result {
-            Ok(_) => Ok(()),
-            Err(error) => Err(error),
-        }
-    }
-
-    /// All elements of self with an index coordinate outside of the new size are dropped.
-    fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
-        let new_row_height = new_size.row_height().to_graphblas_index()?;
-        let new_column_width = new_size.column_width().to_graphblas_index()?;
-
-        let context = self.context.to_owned();
-        context.call(
-            || unsafe { GrB_Matrix_resize(self.matrix, new_row_height, new_column_width) },
-            &self.matrix,
-        )?;
-        Ok(())
-    }
-
-    fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-        let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), self.matrix) },
-            &self.matrix,
-        )?;
-        let row_height = unsafe { row_height.assume_init() };
-        Ok(ElementIndex::from_graphblas_index(row_height)?)
-    }
-
-    fn size(&self) -> Result<Size, SparseLinearAlgebraError> {
-        Ok(Size::new(self.row_height()?, self.column_width()?))
     }
 }
 
@@ -305,133 +197,26 @@ macro_rules! implement_display {
 
 implement_macro_for_all_value_types!(implement_display);
 
-pub trait FromDiagonalVector<T: ValueType> {
-    fn from_diagonal_vector(
-        context: &Arc<Context>,
-        diagonal: &SparseVector<T>,
-        diagonal_index: &DiagonalIndex,
-    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
-}
-
-impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
-    /// Returns a square matrix
-    fn from_diagonal_vector(
-        context: &Arc<Context>,
-        diagonal: &SparseVector<T>,
-        diagonal_index: &DiagonalIndex,
-    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
-        let diagonal_length = diagonal.length()?;
-
-        let absolute_diagonal_index;
-        match TryInto::<usize>::try_into(diagonal_index.abs()) {
-            Ok(value) => absolute_diagonal_index = value,
-            Err(error) => return Err(LogicError::from(error).into()),
-        };
-
-        let row_height = diagonal_length + absolute_diagonal_index;
-        let column_width = diagonal_length + absolute_diagonal_index;
-
-        let mut matrix: SparseMatrix<T> =
-            SparseMatrix::<T>::new(context, &(row_height, column_width).into())?;
-        let graphblas_diagonal_index = diagonal_index.as_graphblas_index()?;
-
-        context.call_without_detailed_error_information(|| unsafe {
-            GrB_Matrix_diag(
-                matrix.graphblas_matrix_mut_ref(),
-                diagonal.graphblas_vector(),
-                graphblas_diagonal_index,
-            )
-        })?;
-        return Ok(matrix);
+impl<T: ValueType> MatrixMask for SparseMatrix<T> {
+    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
+        GetGraphblasSparseMatrix::graphblas_matrix(self)
     }
 }
-
-pub trait FromMatrixElementList<T: ValueType> {
-    fn from_element_list(
-        context: &Arc<Context>,
-        size: &Size,
-        elements: &MatrixElementList<T>,
-        reduction_operator_for_duplicates: &impl BinaryOperator<T>,
-    ) -> Result<Self, SparseLinearAlgebraError>
-    where
-        Self: Sized;
-}
-
-macro_rules! sparse_matrix_from_element_vector {
-    ($value_type:ty, $conversion_target_type: ty, $build_function:ident) => {
-        impl FromMatrixElementList<$value_type> for SparseMatrix<$value_type> {
-            fn from_element_list(
-                context: &Arc<Context>,
-                size: &Size,
-                elements: &MatrixElementList<$value_type>,
-                reduction_operator_for_duplicates: &impl BinaryOperator<$value_type>,
-            ) -> Result<Self, SparseLinearAlgebraError> {
-                // TODO: check for duplicates
-                // TODO: check size constraints
-                let matrix = Self::new(context, size)?;
-
-                let graphblas_row_indices: Vec<GrB_Index> = elements
-                    .row_indices_ref()
-                    .into_par_iter()
-                    .map(|index| index.to_graphblas_index().unwrap())
-                    .collect();
-                let graphblas_column_indices: Vec<GrB_Index> = elements
-                    .column_indices_ref()
-                    .into_par_iter()
-                    .map(|index| index.to_graphblas_index().unwrap())
-                    .collect();
-
-                let element_values = elements.values_ref().to_owned().to_type()?;
-
-                {
-                    let number_of_elements = elements.length().to_graphblas_index()?;
-                    context.call(
-                        || unsafe {
-                            $build_function(
-                                matrix.matrix,
-                                graphblas_row_indices.as_ptr(),
-                                graphblas_column_indices.as_ptr(),
-                                element_values.as_ptr(),
-                                number_of_elements,
-                                reduction_operator_for_duplicates.graphblas_type(),
-                            )
-                        },
-                        unsafe { matrix.graphblas_matrix_ref() },
-                    )?;
-                }
-                Ok(matrix)
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    sparse_matrix_from_element_vector,
-    GrB_Matrix_build
-);
-
-macro_rules! implement_matrix_mask {
-    ($value_type: ty) => {
-        impl MatrixMask for SparseMatrix<$value_type> {
-            unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
-                GraphblasSparseMatrixTrait::graphblas_matrix(self)
-            }
-        }
-    };
-}
-implement_macro_for_all_value_types!(implement_matrix_mask);
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
     use crate::collections::sparse_matrix::operations::{
-        GetMatrixElement, GetMatrixElementValue, SetMatrixElement,
+        DropMatrixElement, FromDiagonalVector, FromMatrixElementList, GetMatrixElement,
+        GetMatrixElementValue, GetMatrixSize, ResizeMatrix, SetMatrixElement,
     };
-    use crate::collections::sparse_matrix::MatrixElement;
-    use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
+    use crate::collections::sparse_matrix::{Coordinate, MatrixElement};
+    use crate::collections::sparse_vector::{
+        FromVectorElementList, SparseVector, VectorElementList,
+    };
     use crate::context::Mode;
-    use crate::error::LogicErrorType;
+    use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
     use crate::operators::binary_operator::First;
 
     #[test]
@@ -541,7 +326,7 @@ mod tests {
         )
         .unwrap();
 
-        let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &0).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&context, &vector, &0).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length, vector_length)
@@ -551,7 +336,7 @@ mod tests {
             5
         );
 
-        let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &2).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&context, &vector, &2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
@@ -561,7 +346,7 @@ mod tests {
             5
         );
 
-        let matrix = SparseMatrix::from_diagonal_vector(&context, &vector, &-2).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&context, &vector, &-2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)

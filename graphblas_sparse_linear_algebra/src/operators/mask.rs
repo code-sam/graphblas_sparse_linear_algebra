@@ -2,7 +2,7 @@ use std::{ptr, sync::Arc};
 
 use suitesparse_graphblas_sys::{GrB_Matrix, GrB_Vector};
 
-use crate::context::{Context, ContextTrait};
+use crate::context::{Context, GetContext};
 
 pub trait MatrixMask {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
@@ -31,7 +31,7 @@ impl MatrixMask for SelectEntireMatrix {
     }
 }
 
-impl ContextTrait for SelectEntireMatrix {
+impl GetContext for SelectEntireMatrix {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }
@@ -60,7 +60,7 @@ impl VectorMask for SelectEntireVector {
     }
 }
 
-impl ContextTrait for SelectEntireVector {
+impl GetContext for SelectEntireVector {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }

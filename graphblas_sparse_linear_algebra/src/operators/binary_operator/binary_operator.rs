@@ -688,8 +688,8 @@ mod tests {
     use crate::{
         collections::{
             sparse_matrix::{
-                operations::GetMatrixElementValue, FromMatrixElementList, MatrixElementList, Size,
-                SparseMatrix,
+                operations::{FromMatrixElementList, GetMatrixElementValue},
+                MatrixElementList, Size, SparseMatrix,
             },
             sparse_scalar::SparseScalar,
             sparse_vector::{

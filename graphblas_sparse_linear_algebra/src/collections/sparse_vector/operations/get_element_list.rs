@@ -2,7 +2,7 @@ use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::sparse_vector::GraphblasSparseVectorTrait;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
-use crate::context::ContextTrait;
+use crate::context::GetContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
 use crate::graphblas_bindings::{

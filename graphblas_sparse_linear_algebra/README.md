@@ -11,8 +11,9 @@ use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, Fi
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use graphblas_sparse_linear_algebra::operators::mask::{MatrixMask, SelectEntireMatrix};
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-    FromMatrixElementList, MatrixElementList, Size, SparseMatrix
+    MatrixElementList, Size, SparseMatrix
 };
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetMatrixElementValue;
 use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{
