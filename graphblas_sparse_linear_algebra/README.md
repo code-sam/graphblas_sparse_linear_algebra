@@ -16,9 +16,8 @@ use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetMatrixElementValue;
 use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::{
-    FromVectorElementList, VectorElementList,
-};
+use graphblas_sparse_linear_algebra::collections::sparse_vector::VectorElementList;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::FromVectorElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::GetVectorElementValue;
 
 fn main() {
