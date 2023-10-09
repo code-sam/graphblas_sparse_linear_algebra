@@ -1,7 +1,7 @@
 use std::ptr;
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -31,22 +31,22 @@ pub trait MultiplyVectorByMatrix<EvaluationDomain: ValueType> {
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + GetContext),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply_with_mask(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + GetContext),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -58,11 +58,11 @@ impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix<EvaluationDomain>
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + GetContext),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -88,11 +88,11 @@ impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix<EvaluationDomain>
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply_with_mask(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + GetContext),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -124,11 +124,9 @@ mod tests {
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_vector::operations::{
-        GetVectorElementList, GetVectorElementValue,
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue,
     };
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
-    };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::Plus;

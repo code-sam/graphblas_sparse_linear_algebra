@@ -1,5 +1,5 @@
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetMatrixElementValue;
-use graphblas_sparse_linear_algebra::collections::sparse_matrix::FromMatrixElementList;
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::MatrixElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::Size;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::SparseMatrix;

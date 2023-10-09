@@ -2,7 +2,7 @@ use std::ptr;
 
 use crate::collections::sparse_matrix::operations::GetMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
@@ -57,7 +57,7 @@ where
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &SparseVector<VectorToInsert>,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + GetContext),
+        mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -138,7 +138,7 @@ macro_rules! implement_insert_vector_into_column_trait {
                 column_to_insert_into: &ElementIndex,
                 vector_to_insert: &SparseVector<$value_type_vector_to_insert>,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-                mask_for_column_to_insert_into: &(impl GraphblasSparseVectorTrait + GetContext),
+                mask_for_column_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
@@ -206,12 +206,13 @@ mod tests {
     use crate::collections::sparse_matrix::operations::{
         FromMatrixElementList, GetMatrixElementValue,
     };
+    use crate::collections::sparse_vector::operations::FromVectorElementList;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size};
-    use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
+    use crate::collections::sparse_vector::VectorElementList;
 
     #[test]
     fn test_insert_vector_into_column() {

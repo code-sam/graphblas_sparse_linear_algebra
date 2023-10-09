@@ -4,16 +4,17 @@ use once_cell::sync::Lazy;
 
 use suitesparse_graphblas_sys::GxB_Vector_sort;
 
-use crate::collections::sparse_vector::SparseVectorTrait;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
 use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
 use crate::{
-    collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector},
+    collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
     error::SparseLinearAlgebraError,
     operators::binary_operator::{BinaryOperator, ReturnsBool},
     value_type::ValueType,
 };
+
+use super::GetSparseVectorLength;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
@@ -122,8 +123,9 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
-    use crate::collections::sparse_vector::{FromVectorElementList, SparseVectorTrait};
+    use crate::collections::sparse_vector::operations::{
+        FromVectorElementList, GetVectorElementValue,
+    };
     use crate::operators::binary_operator::{First, IsGreaterThan};
     use crate::{
         collections::sparse_vector::{SparseVector, VectorElementList},

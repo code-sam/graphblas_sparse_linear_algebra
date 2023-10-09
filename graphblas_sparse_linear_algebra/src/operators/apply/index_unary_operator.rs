@@ -11,7 +11,7 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -43,11 +43,11 @@ where
 {
     fn apply_to_vector(
         &self,
-        vector: &(impl GraphblasSparseVectorTrait + GetContext),
+        vector: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -69,11 +69,11 @@ macro_rules! implement_apply_index_binary_operator {
         impl ApplyIndexUnaryOperator<$evaluation_domain> for IndexUnaryOperatorApplier {
             fn apply_to_vector(
                 &self,
-                vector: &(impl GraphblasSparseVectorTrait + GetContext),
+                vector: &(impl GetGraphblasSparseVector + GetContext),
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+                product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {

@@ -1,4 +1,4 @@
-use crate::collections::sparse_vector::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::sparse_vector::GetGraphblasSparseVector;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
 use crate::context::GetContext;

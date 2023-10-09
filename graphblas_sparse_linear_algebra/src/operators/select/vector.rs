@@ -5,7 +5,7 @@ use suitesparse_graphblas_sys::{
     GrB_Vector_select_UINT64, GrB_Vector_select_UINT8,
 };
 
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -36,9 +36,9 @@ pub trait SelectFromVector<EvaluationDomain: ValueType> {
         &self,
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
         selector_argument: &EvaluationDomain,
-        argument: &(impl GraphblasSparseVectorTrait + GetContext),
+        argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -51,9 +51,9 @@ macro_rules! implement_select_from_vector {
                 &self,
                 selector: &impl IndexUnaryOperator<$selector_argument_type>,
                 selector_argument: &$selector_argument_type,
-                argument: &(impl GraphblasSparseVectorTrait + GetContext),
+                argument: &(impl GetGraphblasSparseVector + GetContext),
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
-                product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+                product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
@@ -88,14 +88,14 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::operations::{
+        FromVectorElementList, GetVectorElementValue,
+    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
-    };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::index_unary_operator::{IsValueGreaterThan, IsValueLessThan};
     use crate::operators::mask::SelectEntireVector;
 

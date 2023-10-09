@@ -1,6 +1,6 @@
 use crate::collections::sparse_matrix::operations::GetMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::{GraphblasSparseVectorTrait, SparseVector};
+use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
@@ -72,7 +72,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                 context.call(
                     || unsafe {
                         GrB_Col_extract(
-                            GraphblasSparseVectorTrait::graphblas_vector(column_vector),
+                            GetGraphblasSparseVector::graphblas_vector(column_vector),
                             mask.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
@@ -89,7 +89,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                 context.call(
                     || unsafe {
                         GrB_Col_extract(
-                            GraphblasSparseVectorTrait::graphblas_vector(column_vector),
+                            GetGraphblasSparseVector::graphblas_vector(column_vector),
                             mask.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),

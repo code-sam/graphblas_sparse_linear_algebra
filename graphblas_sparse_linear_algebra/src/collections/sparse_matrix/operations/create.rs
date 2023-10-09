@@ -4,11 +4,9 @@ use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
 use suitesparse_graphblas_sys::GrB_Matrix_diag;
 
-use crate::collections::sparse_vector::operations::GetVectorElementValue;
-use crate::collections::sparse_vector::operations::SetVectorElement;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::operations::GetSparseVectorLength;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::collections::sparse_vector::SparseVector;
-use crate::collections::sparse_vector::SparseVectorTrait;
 use crate::context::GetContext;
 use crate::error::LogicError;
 use crate::graphblas_bindings::{
@@ -43,9 +41,10 @@ pub trait FromDiagonalVector<T: ValueType> {
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
 
-    unsafe fn from_diagonal_vector_unsafe(
+    /// The type of the diagonal must match the type of the returned SparseMarix
+    fn from_diagonal_vector_untyped(
         context: &Arc<Context>,
-        diagonal: &(impl GraphblasSparseVectorTrait + GetContext + SparseVectorTrait),
+        diagonal: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
 }
@@ -57,12 +56,13 @@ impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
         diagonal: &SparseVector<T>,
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
-        unsafe { Self::from_diagonal_vector_unsafe(context, diagonal, diagonal_index) }
+        Self::from_diagonal_vector_untyped(context, diagonal, diagonal_index)
     }
 
-    unsafe fn from_diagonal_vector_unsafe(
+    /// The type of the diagonal must match the type of the returned SparseMarix
+    fn from_diagonal_vector_untyped(
         context: &Arc<Context>,
-        diagonal: &(impl GraphblasSparseVectorTrait + GetContext + SparseVectorTrait),
+        diagonal: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
         let diagonal_length = diagonal.length()?;

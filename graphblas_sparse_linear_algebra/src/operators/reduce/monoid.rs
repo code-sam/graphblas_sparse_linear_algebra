@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
@@ -45,7 +45,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -55,7 +55,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -67,7 +67,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -95,7 +95,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         operator: &impl Monoid<EvaluationDomain>,
         argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -123,7 +123,7 @@ pub trait MonoidScalarReducer<EvaluationDomain: ValueType> {
     fn vector_to_scalar(
         &self,
         operator: &impl Monoid<EvaluationDomain>,
-        argument: &(impl GraphblasSparseVectorTrait + GetContext),
+        argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut EvaluationDomain,
         options: &OperatorOptions,
@@ -164,7 +164,7 @@ macro_rules! implement_monoid_reducer {
             fn vector_to_scalar(
                 &self,
                 operator: &impl Monoid<$value_type>,
-                argument: &(impl GraphblasSparseVectorTrait + GetContext),
+                argument: &(impl GetGraphblasSparseVector + GetContext),
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut $value_type,
                 options: &OperatorOptions,
@@ -209,10 +209,9 @@ mod tests {
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
+    use crate::collections::sparse_vector::operations::FromVectorElementList;
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
-    };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_except_bool;
 
     macro_rules! test_monoid {

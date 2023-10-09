@@ -5,7 +5,7 @@ use suitesparse_graphblas_sys::{
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::BinaryOperatorApplier;
@@ -20,11 +20,11 @@ where
 {
     fn apply_with_vector_as_left_argument(
         &self,
-        left_argument: &(impl GraphblasSparseVectorTrait + GetContext),
+        left_argument: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
         right_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -33,9 +33,9 @@ where
         &self,
         left_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        right_argument: &(impl GraphblasSparseVectorTrait + GetContext),
+        right_argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -68,11 +68,11 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 {
     fn apply_with_vector_as_left_argument(
         &self,
-        first_argument: &(impl GraphblasSparseVectorTrait + GetContext),
+        first_argument: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -100,9 +100,9 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         &self,
         first_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GraphblasSparseVectorTrait + GetContext),
+        second_argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + GetContext),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -196,10 +196,10 @@ mod tests {
     };
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_scalar::SparseScalar;
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
+    use crate::collections::sparse_vector::operations::{
+        FromVectorElementList, GetVectorElementValue,
     };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus};

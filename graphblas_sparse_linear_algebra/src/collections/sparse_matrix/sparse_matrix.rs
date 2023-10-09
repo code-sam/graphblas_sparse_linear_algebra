@@ -67,7 +67,7 @@ impl<T: ValueType> SparseMatrix<T> {
         });
     }
 
-    unsafe fn from_graphblas_matrix(
+    pub unsafe fn from_graphblas_matrix(
         context: &Arc<Context>,
         matrix: GrB_Matrix,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
@@ -94,7 +94,6 @@ impl<T: ValueType> GetContext for SparseMatrix<T> {
 }
 
 impl<T: ValueType> Collection for SparseMatrix<T> {
-    /// remove all elements in th matrix
     fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
         self.context
             .call(|| unsafe { GrB_Matrix_clear(self.matrix) }, &self.matrix)?;
@@ -212,9 +211,8 @@ mod tests {
         GetMatrixElementValue, GetMatrixSize, ResizeMatrix, SetMatrixElement,
     };
     use crate::collections::sparse_matrix::{Coordinate, MatrixElement};
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
-    };
+    use crate::collections::sparse_vector::operations::FromVectorElementList;
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::context::Mode;
     use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
     use crate::operators::binary_operator::First;

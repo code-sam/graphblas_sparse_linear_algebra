@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 // extern crate graphblas_sparse_linear_algebra;
 
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
 use graphblas_sparse_linear_algebra::context::Context;
 
 // use graphblas_sparse_linear_algebra::operators::BinaryOperatorType;
@@ -13,7 +14,7 @@ use graphblas_sparse_linear_algebra::index::{ElementIndex, ElementIndexSelector}
 use graphblas_sparse_linear_algebra::context::Mode;
 
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-    FromMatrixElementList, MatrixElementList, Size,
+    MatrixElementList, Size,
 };
 use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::insert::{

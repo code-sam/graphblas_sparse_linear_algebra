@@ -196,17 +196,15 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_vector::operations::{
-        GetVectorElementList, GetVectorElementValue,
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue,
     };
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
-    };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::element_wise_addition::{
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
     };
-    use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
+    use crate::operators::mask::SelectEntireVector;
     use crate::operators::options::OperatorOptions;
 
     #[test]
