@@ -4,10 +4,13 @@ use std::ffi::OsString;
 use std::fs;
 use std::path::PathBuf;
 
-use git2::{Object, Oid, Repository};
+use git2::{Object, Oid, Repository, Revwalk};
 
 extern crate bindgen;
 extern crate cmake;
+
+// NOTE: when updating the version, make sure to delete any existing clones
+const GIT_COMMIT: &str = "5a3c6a81683de12c33eb3225ccb861f0531c1376";
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -181,7 +184,10 @@ fn clone_and_checkout_repository(
                 graphblas_repo = match Repository::open(
                     path_with_suitesparse_graphblas_implementation.to_owned(),
                 ) {
-                    Ok(repo) => repo,
+                    Ok(repo) => {
+                        fast_forward(&repo);
+                        repo
+                    }
                     Err(error) => {
                         panic!("failed to open SuiteSparse GraphBLAS repository: {}", error)
                     }
@@ -190,21 +196,80 @@ fn clone_and_checkout_repository(
         }
     };
 
+    // Use for debugging purposes, i.e. find available commit number
+    // print_commits(&graphblas_repo);
+
     let obj: Object = graphblas_repo
-        .find_commit(Oid::from_str("97510b55fba589e6ea315fe433237633057e7048").unwrap())
+        .find_commit(Oid::from_str(GIT_COMMIT).unwrap())
         .unwrap()
         .into_object();
     graphblas_repo.checkout_tree(&obj, None).unwrap();
     graphblas_repo.set_head_detached(obj.id()).unwrap();
 }
 
+// Use for debugging purposes, i.e. find available commit number
+fn print_commits(repo: &Repository) {
+        // Create a Revwalk object
+        let mut revwalk = repo.revwalk().unwrap();
+
+        // Push the range of commits you want to walk through
+        // Here, we're pushing all commits reachable from HEAD
+        revwalk.push_head().unwrap();
+    
+        // Iterate over the commits
+        for commit_id in revwalk {
+            match commit_id {
+                Ok(id) => {
+                    let commit = repo.find_commit(id).unwrap();
+                    println!("Commit: {}", commit.id());
+                    println!(
+                        "Message: {}",
+                        commit.message().unwrap_or("No commit message")
+                    );
+                }
+                Err(e) => println!("Error: {}", e),
+            }
+        }
+}
+
+fn fast_forward(repo: &Repository) {
+    repo.find_remote("origin").unwrap()
+        .fetch(&["stable"], None, None).unwrap();
+
+    let fetch_head = repo.find_reference("FETCH_HEAD").unwrap();
+    let fetch_commit = repo.reference_to_annotated_commit(&fetch_head).unwrap();
+    let analysis = repo.merge_analysis(&[&fetch_commit]).unwrap();
+    if analysis.0.is_up_to_date() {
+        return;
+    } else if analysis.0.is_fast_forward() {
+        let refname = format!("refs/heads/{}", "stable");
+        let mut reference = repo.find_reference(&refname).unwrap();
+        reference.set_target(fetch_commit.id(), "Fast-Forward").unwrap();
+        repo.set_head(&refname).unwrap();
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force())).unwrap()
+    } else {
+        panic!("Fast-forward only!")
+    }
+}
+
 fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
-    let _dst = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS")
-        .define("BUILD_GRB_STATIC_LIBRARY", "true")
+    let mut build_configuration = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
+
+    build_configuration
+        .define("NSTATIC ", "false")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
-        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned()) // prevent modifying config files outside of the cargo output directory
-        .build();
+        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned());
+
+    if !cfg!(feature = "build-standard-kernels") {
+        build_configuration.define("COMPACT", "true");
+    }
+
+    if cfg!(feature = "disable-just-in-time-compiler") {
+        build_configuration.define("NJIT", "true");
+    }
+    
+    let _dst = build_configuration.build();
 
     println!(
         "cargo:rustc-link-search=native={}",
