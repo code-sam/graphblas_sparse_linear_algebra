@@ -209,32 +209,34 @@ fn clone_and_checkout_repository(
 
 // Use for debugging purposes, i.e. find available commit number
 fn print_commits(repo: &Repository) {
-        // Create a Revwalk object
-        let mut revwalk = repo.revwalk().unwrap();
+    // Create a Revwalk object
+    let mut revwalk = repo.revwalk().unwrap();
 
-        // Push the range of commits you want to walk through
-        // Here, we're pushing all commits reachable from HEAD
-        revwalk.push_head().unwrap();
-    
-        // Iterate over the commits
-        for commit_id in revwalk {
-            match commit_id {
-                Ok(id) => {
-                    let commit = repo.find_commit(id).unwrap();
-                    println!("Commit: {}", commit.id());
-                    println!(
-                        "Message: {}",
-                        commit.message().unwrap_or("No commit message")
-                    );
-                }
-                Err(e) => println!("Error: {}", e),
+    // Push the range of commits you want to walk through
+    // Here, we're pushing all commits reachable from HEAD
+    revwalk.push_head().unwrap();
+
+    // Iterate over the commits
+    for commit_id in revwalk {
+        match commit_id {
+            Ok(id) => {
+                let commit = repo.find_commit(id).unwrap();
+                println!("Commit: {}", commit.id());
+                println!(
+                    "Message: {}",
+                    commit.message().unwrap_or("No commit message")
+                );
             }
+            Err(e) => println!("Error: {}", e),
         }
+    }
 }
 
 fn fast_forward(repo: &Repository) {
-    repo.find_remote("origin").unwrap()
-        .fetch(&["stable"], None, None).unwrap();
+    repo.find_remote("origin")
+        .unwrap()
+        .fetch(&["stable"], None, None)
+        .unwrap();
 
     let fetch_head = repo.find_reference("FETCH_HEAD").unwrap();
     let fetch_commit = repo.reference_to_annotated_commit(&fetch_head).unwrap();
@@ -244,16 +246,20 @@ fn fast_forward(repo: &Repository) {
     } else if analysis.0.is_fast_forward() {
         let refname = format!("refs/heads/{}", "stable");
         let mut reference = repo.find_reference(&refname).unwrap();
-        reference.set_target(fetch_commit.id(), "Fast-Forward").unwrap();
+        reference
+            .set_target(fetch_commit.id(), "Fast-Forward")
+            .unwrap();
         repo.set_head(&refname).unwrap();
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force())).unwrap()
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))
+            .unwrap()
     } else {
         panic!("Fast-forward only!")
     }
 }
 
 fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
-    let mut build_configuration = cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
+    let mut build_configuration =
+        cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
     build_configuration
         .define("NSTATIC ", "false")
@@ -268,7 +274,7 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     if cfg!(feature = "disable-just-in-time-compiler") {
         build_configuration.define("NJIT", "true");
     }
-    
+
     let _dst = build_configuration.build();
 
     println!(
