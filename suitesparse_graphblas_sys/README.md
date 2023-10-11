@@ -2,7 +2,7 @@
 Rust bindings to SuiteSparse:GraphBLAS. Crates should not directly use these bindings. Instead, the crate [graphblas_sparse_linear_algebra](https://crates.io/crates/graphblas_sparse_linear_algebra) provides a safe and idiomatic wrapper.
 
 ## GraphBLAS implementation
-suitesparse_graphblas_sys wraps the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) v7.3.0. GraphBLAS implementation from Timothy A. Davis. This implementation is mostly compatible with the GraphBLAS specification version 2.0.
+suitesparse_graphblas_sys wraps the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) v8.2.0. GraphBLAS implementation from Timothy A. Davis. This implementation is mostly compatible with the GraphBLAS specification version 2.0.
 
 ## Requirements
 suitesparse_graphblas_sys uses the SuiteSparse:GraphBLAS GraphBLAS implementation developed by Timothy A. Davis.
