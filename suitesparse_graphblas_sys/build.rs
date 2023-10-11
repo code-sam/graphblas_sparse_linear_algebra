@@ -262,7 +262,7 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
     build_configuration
-        .define("NSTATIC ", "false")
+        .define("NSTATIC ", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
         .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned());
