@@ -1,4 +1,5 @@
-use std::collections::HashSet;
+use std::io::Read;
+use std::{collections::HashSet, fs::File};
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -58,6 +59,17 @@ fn path_with_graphblas_library() -> PathBuf {
     let mut path_with_graphblas_library = path_with_graphblas_implementation();
     path_with_graphblas_library.push("lib");
     return path_with_graphblas_library;
+}
+
+// fn path_with_graphblas_jit_cache() -> PathBuf {
+//     let mut path_with_graphblas_jit_cache = path_with_suitesparse_graphblas_implementation();
+//     return path_with_graphblas_jit_cache;
+// }
+
+fn path_with_graphblas_cmakelists_file() -> PathBuf {
+    let mut path_with_graphblas_cmakelists_file = path_with_suitesparse_graphblas_implementation();
+    path_with_graphblas_cmakelists_file.push("CMakeLists.txt");
+    return path_with_graphblas_cmakelists_file;
 }
 
 // DOC: to set a persistent environment variable in Ubuntu:
@@ -123,12 +135,16 @@ fn build_and_link_dependencies() {
     let path_with_graphblas_implementation = path_with_graphblas_implementation();
     let path_with_suitesparse_graphblas_implementation =
         path_with_suitesparse_graphblas_implementation();
+    let path_with_graphblas_cmakelists_file = path_with_graphblas_cmakelists_file();
 
     // SuiteSparse::GraphBLAS repository is too large to fit a crate on crates.io (repo exceeds maximum allowed size of 10MB)
     clone_and_checkout_repository(
         &path_with_graphblas_header_file,
         &path_with_suitesparse_graphblas_implementation,
     );
+
+    // Modify the CMakeLists.txt file to force NSTATIC=0. This is a hack, somehow, the NSTATIC flag is not passed by cmake.
+    customize_build_instructions(&path_with_graphblas_cmakelists_file);
 
     build_static_graphblas_implementation(&cargo_build_directory);
 
@@ -207,6 +223,15 @@ fn clone_and_checkout_repository(
     graphblas_repo.set_head_detached(obj.id()).unwrap();
 }
 
+fn customize_build_instructions(path_with_graphblas_cmakelists_file: &PathBuf) {
+    let mut file = File::open(path_with_graphblas_cmakelists_file).unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+
+    let customized_contents = contents.replace("set ( NSTATIC_DEFAULT_ON true )", "set ( NSTATIC_DEFAULT_ON false )");
+    fs::write(path_with_graphblas_cmakelists_file, customized_contents);
+}
+
 // Use for debugging purposes, i.e. find available commit number
 fn print_commits(repo: &Repository) {
     // Create a Revwalk object
@@ -262,7 +287,7 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
     build_configuration
-        .define("NSTATIC ", "true")
+        .define("NSTATIC", "false")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
         .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned());
