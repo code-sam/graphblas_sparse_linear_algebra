@@ -229,33 +229,33 @@ fn customize_build_instructions(path_with_graphblas_cmakelists_file: &PathBuf) {
     file.read_to_string(&mut contents).unwrap();
 
     let customized_contents = contents.replace("set ( NSTATIC_DEFAULT_ON true )", "set ( NSTATIC_DEFAULT_ON false )");
-    fs::write(path_with_graphblas_cmakelists_file, customized_contents);
+    let _ = fs::write(path_with_graphblas_cmakelists_file, customized_contents);
 }
 
-// Use for debugging purposes, i.e. find available commit number
-fn print_commits(repo: &Repository) {
-    // Create a Revwalk object
-    let mut revwalk = repo.revwalk().unwrap();
+// // Use for debugging purposes, i.e. find available commit number
+// fn print_commits(repo: &Repository) {
+//     // Create a Revwalk object
+//     let mut revwalk = repo.revwalk().unwrap();
 
-    // Push the range of commits you want to walk through
-    // Here, we're pushing all commits reachable from HEAD
-    revwalk.push_head().unwrap();
+//     // Push the range of commits you want to walk through
+//     // Here, we're pushing all commits reachable from HEAD
+//     revwalk.push_head().unwrap();
 
-    // Iterate over the commits
-    for commit_id in revwalk {
-        match commit_id {
-            Ok(id) => {
-                let commit = repo.find_commit(id).unwrap();
-                println!("Commit: {}", commit.id());
-                println!(
-                    "Message: {}",
-                    commit.message().unwrap_or("No commit message")
-                );
-            }
-            Err(e) => println!("Error: {}", e),
-        }
-    }
-}
+//     // Iterate over the commits
+//     for commit_id in revwalk {
+//         match commit_id {
+//             Ok(id) => {
+//                 let commit = repo.find_commit(id).unwrap();
+//                 println!("Commit: {}", commit.id());
+//                 println!(
+//                     "Message: {}",
+//                     commit.message().unwrap_or("No commit message")
+//                 );
+//             }
+//             Err(e) => println!("Error: {}", e),
+//         }
+//     }
+// }
 
 fn fast_forward(repo: &Repository) {
     repo.find_remote("origin")
@@ -389,7 +389,7 @@ fn clean_build_artifacts(cargo_build_directory: &OsString) {
     let cargo_build_directory = PathBuf::from(cargo_build_directory);
     let mut path_to_delete = cargo_build_directory.to_owned();
     path_to_delete.push("build");
-    fs::remove_dir_all(path_to_delete).is_ok();
+    let _ = fs::remove_dir_all(path_to_delete).is_ok();
 
     let path_to_delete_files_in = cargo_build_directory;
     let mut path_to_keep = path_to_delete_files_in.to_owned();
@@ -406,7 +406,7 @@ fn clean_build_artifacts(cargo_build_directory: &OsString) {
                 .into_string()
                 .unwrap()
         {
-            fs::remove_file(path).is_ok();
+            let _ = fs::remove_file(path).is_ok();
         }
     }
 }
