@@ -1,5 +1,4 @@
-use std::io::Read;
-use std::{collections::HashSet, fs::File};
+use std::{collections::HashSet};
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -11,7 +10,7 @@ extern crate bindgen;
 extern crate cmake;
 
 // NOTE: when updating the version, make sure to delete any existing clones
-const GIT_COMMIT: &str = "5a3c6a81683de12c33eb3225ccb861f0531c1376";
+const GIT_COMMIT: &str = "736cc8c4c166d4a3f3f69aaabc0002ff1025a3c4";
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -65,12 +64,6 @@ fn path_with_graphblas_library() -> PathBuf {
 //     let mut path_with_graphblas_jit_cache = path_with_suitesparse_graphblas_implementation();
 //     return path_with_graphblas_jit_cache;
 // }
-
-fn path_with_graphblas_cmakelists_file() -> PathBuf {
-    let mut path_with_graphblas_cmakelists_file = path_with_suitesparse_graphblas_implementation();
-    path_with_graphblas_cmakelists_file.push("CMakeLists.txt");
-    return path_with_graphblas_cmakelists_file;
-}
 
 // DOC: to set a persistent environment variable in Ubuntu:
 // sudoedit /etc/profile
@@ -135,16 +128,12 @@ fn build_and_link_dependencies() {
     let path_with_graphblas_implementation = path_with_graphblas_implementation();
     let path_with_suitesparse_graphblas_implementation =
         path_with_suitesparse_graphblas_implementation();
-    let path_with_graphblas_cmakelists_file = path_with_graphblas_cmakelists_file();
 
     // SuiteSparse::GraphBLAS repository is too large to fit a crate on crates.io (repo exceeds maximum allowed size of 10MB)
     clone_and_checkout_repository(
         &path_with_graphblas_header_file,
         &path_with_suitesparse_graphblas_implementation,
     );
-
-    // Modify the CMakeLists.txt file to force NSTATIC=0. This is a hack, somehow, the NSTATIC flag is not passed by cmake.
-    customize_build_instructions(&path_with_graphblas_cmakelists_file);
 
     build_static_graphblas_implementation(&cargo_build_directory);
 
@@ -201,7 +190,13 @@ fn clone_and_checkout_repository(
                     path_with_suitesparse_graphblas_implementation.to_owned(),
                 ) {
                     Ok(repo) => {
-                        fast_forward(&repo);
+                        // During packaging, the source code must be immutable. 
+                        // Update the source code only during testing, this may be necessary if the SuiteSparse GraphBLAS
+                        //  was already cloned before, but became outdated after updating to a new version. 
+                        // The update of the source code will now be performed automatically if the tests are run.
+                        if cfg!(debug_assertions) {
+                            fast_forward(&repo); 
+                        }
                         repo
                     }
                     Err(error) => {
@@ -223,39 +218,30 @@ fn clone_and_checkout_repository(
     graphblas_repo.set_head_detached(obj.id()).unwrap();
 }
 
-fn customize_build_instructions(path_with_graphblas_cmakelists_file: &PathBuf) {
-    let mut file = File::open(path_with_graphblas_cmakelists_file).unwrap();
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
+// Use for debugging purposes, i.e. find available commit number
+fn print_commits(repo: &Repository) {
+    // Create a Revwalk object
+    let mut revwalk = repo.revwalk().unwrap();
 
-    let customized_contents = contents.replace("set ( NSTATIC_DEFAULT_ON true )", "set ( NSTATIC_DEFAULT_ON false )");
-    let _ = fs::write(path_with_graphblas_cmakelists_file, customized_contents);
+    // Push the range of commits you want to walk through
+    // Here, we're pushing all commits reachable from HEAD
+    revwalk.push_head().unwrap();
+
+    // Iterate over the commits
+    for commit_id in revwalk {
+        match commit_id {
+            Ok(id) => {
+                let commit = repo.find_commit(id).unwrap();
+                println!("Commit: {}", commit.id());
+                println!(
+                    "Message: {}",
+                    commit.message().unwrap_or("No commit message")
+                );
+            }
+            Err(e) => println!("Error: {}", e),
+        }
+    }
 }
-
-// // Use for debugging purposes, i.e. find available commit number
-// fn print_commits(repo: &Repository) {
-//     // Create a Revwalk object
-//     let mut revwalk = repo.revwalk().unwrap();
-
-//     // Push the range of commits you want to walk through
-//     // Here, we're pushing all commits reachable from HEAD
-//     revwalk.push_head().unwrap();
-
-//     // Iterate over the commits
-//     for commit_id in revwalk {
-//         match commit_id {
-//             Ok(id) => {
-//                 let commit = repo.find_commit(id).unwrap();
-//                 println!("Commit: {}", commit.id());
-//                 println!(
-//                     "Message: {}",
-//                     commit.message().unwrap_or("No commit message")
-//                 );
-//             }
-//             Err(e) => println!("Error: {}", e),
-//         }
-//     }
-// }
 
 fn fast_forward(repo: &Repository) {
     repo.find_remote("origin")
