@@ -5,8 +5,8 @@ use suitesparse_graphblas_sys::{
     GrB_Matrix_select_UINT64, GrB_Matrix_select_UINT8,
 };
 
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
@@ -36,10 +36,10 @@ pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
         &self,
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
         selector_argument: &EvaluationDomain,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -51,10 +51,10 @@ macro_rules! implement_select_from_matrix {
                 &self,
                 selector: &impl IndexUnaryOperator<$selector_argument_type>,
                 selector_argument: &$selector_argument_type,
-                argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+                argument: &(impl GetGraphblasSparseMatrix + GetContext),
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
-                product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-                mask: &(impl MatrixMask + ContextTrait),
+                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+                mask: &(impl MatrixMask + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.to_owned().to_type()?;
@@ -88,14 +88,14 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
+    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
-    };
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::operators::index_unary_operator::{
         IsOnDiagonal, IsOnOrAboveDiagonal, IsOnOrBelowDiagonal, IsValueGreaterThan, IsValueLessThan,
     };

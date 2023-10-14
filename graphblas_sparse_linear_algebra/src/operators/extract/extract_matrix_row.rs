@@ -1,6 +1,7 @@
-use crate::collections::sparse_matrix::{GraphblasSparseMatrixTrait, SparseMatrixTrait};
+use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::SparseVector;
-use crate::context::ContextTrait;
+use crate::context::GetContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -27,12 +28,12 @@ impl MatrixRowExtractor {
 pub trait ExtractMatrixRow<Row: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetMatrixSize + GetContext),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut SparseVector<Row>,
-        mask: &(impl VectorMask + ContextTrait),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -40,12 +41,12 @@ pub trait ExtractMatrixRow<Row: ValueType> {
 impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetMatrixSize + GetContext),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut SparseVector<Row>,
-        mask: &(impl VectorMask + ContextTrait),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         // TODO: reduce cost by reusing instance
@@ -69,9 +70,8 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, SparseMatrix,
-    };
+    use crate::collections::sparse_matrix::operations::FromMatrixElementList;
+    use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

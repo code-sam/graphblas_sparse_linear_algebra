@@ -1,7 +1,6 @@
-use crate::collections::sparse_matrix::{
-    GraphblasSparseMatrixTrait, SparseMatrix, SparseMatrixTrait,
-};
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
@@ -31,12 +30,12 @@ impl SubMatrixExtractor {
 pub trait ExtractSubMatrix<SubMatrix: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetMatrixSize + GetContext),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &(impl MatrixMask + ContextTrait),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -44,12 +43,12 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
 impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GraphblasSparseMatrixTrait + ContextTrait + SparseMatrixTrait),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetMatrixSize + GetContext),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut SparseMatrix<SubMatrix>,
-        mask: &(impl MatrixMask + ContextTrait),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
@@ -83,7 +82,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
                             mask.graphblas_matrix(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
@@ -104,7 +103,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
                             mask.graphblas_matrix(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
@@ -125,7 +124,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
                             mask.graphblas_matrix(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
@@ -146,7 +145,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            sub_matrix.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
                             mask.graphblas_matrix(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix(),
@@ -170,8 +169,10 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
-    use crate::collections::sparse_matrix::{FromMatrixElementList, MatrixElementList};
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
+    };
+    use crate::collections::sparse_matrix::MatrixElementList;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

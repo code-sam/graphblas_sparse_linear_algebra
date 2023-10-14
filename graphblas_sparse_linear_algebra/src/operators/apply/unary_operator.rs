@@ -1,6 +1,6 @@
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
@@ -32,20 +32,20 @@ where
     fn apply_to_vector(
         &self,
         operator: &impl UnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
         operator: &impl UnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -54,10 +54,10 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
     fn apply_to_vector(
         &self,
         operator: &impl UnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
@@ -82,10 +82,10 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
     fn apply_to_matrix(
         &self,
         operator: &impl UnaryOperator<EvaluationDomain>,
-        argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
@@ -112,14 +112,14 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
     };
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
+    use crate::collections::sparse_vector::operations::{
+        FromVectorElementList, GetVectorElementValue,
     };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};

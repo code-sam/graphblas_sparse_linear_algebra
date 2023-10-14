@@ -1,5 +1,5 @@
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
@@ -31,12 +31,12 @@ impl ElementWiseVectorAdditionSemiringOperator {
 pub trait ApplyElementWiseVectorAdditionSemiringOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -46,12 +46,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionSemiringOperator
 {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -93,12 +93,12 @@ impl ElementWiseVectorAdditionMonoidOperator {
 pub trait ApplyElementWiseVectorAdditionMonoidOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -108,12 +108,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<E
 {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -155,12 +155,12 @@ impl ElementWiseVectorAdditionBinaryOperator {
 pub trait ApplyElementWiseVectorAdditionBinaryOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -170,12 +170,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<E
 {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -204,11 +204,9 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_vector::operations::{
-        GetVectorElementList, GetVectorElementValue,
+        FromVectorElementList, GetVectorElementList, GetVectorElementValue,
     };
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
-    };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};

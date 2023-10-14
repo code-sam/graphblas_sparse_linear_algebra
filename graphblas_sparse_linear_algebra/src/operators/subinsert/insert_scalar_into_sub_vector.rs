@@ -1,9 +1,8 @@
 use std::ptr;
 
-use crate::collections::sparse_vector::{
-    GraphblasSparseVectorTrait, SparseVector, SparseVectorTrait,
-};
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_vector::operations::GetSparseVectorLength;
+use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
     GxB_Vector_subassign_BOOL, GxB_Vector_subassign_FP32, GxB_Vector_subassign_FP64,
@@ -57,7 +56,7 @@ where
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -134,7 +133,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-                mask_for_vector_to_insert_into: &(impl GraphblasSparseVectorTrait + ContextTrait),
+                mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
@@ -197,12 +196,14 @@ implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_sca
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::operations::{
+        FromVectorElementList, GetVectorElementValue,
+    };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
 
-    use crate::collections::sparse_vector::{FromVectorElementList, VectorElementList};
+    use crate::collections::sparse_vector::VectorElementList;
     use crate::index::ElementIndex;
 
     #[test]

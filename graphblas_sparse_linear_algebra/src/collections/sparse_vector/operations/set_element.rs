@@ -1,7 +1,7 @@
-use crate::collections::sparse_vector::sparse_vector::GraphblasSparseVectorTrait;
+use crate::collections::sparse_vector::sparse_vector::GetGraphblasSparseVector;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
-use crate::context::ContextTrait;
+use crate::context::GetContext;
 use crate::index::IndexConversion;
 use crate::value_type::ConvertScalar;
 use crate::{

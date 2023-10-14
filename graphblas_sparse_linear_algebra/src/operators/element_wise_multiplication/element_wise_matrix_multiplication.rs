@@ -1,5 +1,5 @@
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
@@ -31,12 +31,12 @@ impl ElementWiseMatrixMultiplicationSemiringOperator {
 pub trait ApplyElementWiseMatrixMultiplicationSemiring<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -46,12 +46,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixMultiplicationSemiring<E
 {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -92,12 +92,12 @@ impl ElementWiseMatrixMultiplicationMonoidOperator {
 pub trait ApplyElementWiseMatrixMultiplicationMonoidOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -108,12 +108,12 @@ impl<EvaluationDomain: ValueType>
 {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -155,12 +155,12 @@ impl ElementWiseMatrixMultiplicationBinaryOperator {
 pub trait ApplyElementWiseMatrixMultiplicationBinaryOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -171,12 +171,12 @@ impl<EvaluationDomain: ValueType>
 {
     fn apply(
         &self,
-        multiplier: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -205,11 +205,9 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_matrix::operations::{
-        GetMatrixElementList, GetMatrixElementValue,
+        FromMatrixElementList, GetMatrixElementList, GetMatrixElementValue,
     };
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
-    };
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};

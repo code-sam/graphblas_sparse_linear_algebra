@@ -3,10 +3,10 @@ use suitesparse_graphblas_sys::{
     GrB_Vector_apply_BinaryOp1st_Scalar, GrB_Vector_apply_BinaryOp2nd_Scalar,
 };
 
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
-use crate::collections::sparse_vector::GraphblasSparseVectorTrait;
-use crate::context::{CallGraphBlasContext, ContextTrait};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
+use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::BinaryOperatorApplier;
 use crate::operators::binary_operator::{AccumulatorBinaryOperator, BinaryOperator};
@@ -20,45 +20,45 @@ where
 {
     fn apply_with_vector_as_left_argument(
         &self,
-        left_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        left_argument: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        right_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        right_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_right_argument(
         &self,
-        left_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        left_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        right_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        right_argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_left_argument(
         &self,
-        left_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        left_argument: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        right_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        right_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_right_argument(
         &self,
-        left_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        left_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        rigth_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        rigth_argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -68,12 +68,12 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 {
     fn apply_with_vector_as_left_argument(
         &self,
-        first_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        first_argument: &(impl GetGraphblasSparseVector + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        second_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -98,12 +98,12 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 
     fn apply_with_vector_as_right_argument(
         &self,
-        first_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        first_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GraphblasSparseVectorTrait + ContextTrait),
+        second_argument: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseVectorTrait + ContextTrait),
-        mask: &(impl VectorMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseVector + GetContext),
+        mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -128,12 +128,12 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 
     fn apply_with_matrix_as_left_argument(
         &self,
-        first_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        first_argument: &(impl GetGraphblasSparseMatrix + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        second_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -158,12 +158,12 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 
     fn apply_with_matrix_as_right_argument(
         &self,
-        first_argument: &(impl GraphblasSparseScalarTrait + ContextTrait),
+        first_argument: &(impl GraphblasSparseScalarTrait + GetContext),
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GraphblasSparseMatrixTrait + ContextTrait),
+        second_argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GraphblasSparseMatrixTrait + ContextTrait),
-        mask: &(impl MatrixMask + ContextTrait),
+        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -191,15 +191,15 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::GetMatrixElementValue;
-    use crate::collections::sparse_matrix::{
-        FromMatrixElementList, MatrixElementList, Size, SparseMatrix,
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetMatrixElementValue,
     };
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_scalar::SparseScalar;
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
-    use crate::collections::sparse_vector::{
-        FromVectorElementList, SparseVector, VectorElementList,
+    use crate::collections::sparse_vector::operations::{
+        FromVectorElementList, GetVectorElementValue,
     };
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus};

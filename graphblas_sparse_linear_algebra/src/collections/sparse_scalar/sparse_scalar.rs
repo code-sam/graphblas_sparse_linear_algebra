@@ -5,7 +5,7 @@ use std::sync::Arc;
 use suitesparse_graphblas_sys::GrB_Info;
 
 use crate::collections::collection::Collection;
-use crate::context::{CallGraphBlasContext, Context, ContextTrait};
+use crate::context::{CallGraphBlasContext, Context, GetContext};
 use crate::error::{
     GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
@@ -114,7 +114,7 @@ implement_macro_for_all_value_types!(sparse_scalar_from_scalar);
 //     }
 // }
 
-impl<T: ValueType> ContextTrait for SparseScalar<T> {
+impl<T: ValueType> GetContext for SparseScalar<T> {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }

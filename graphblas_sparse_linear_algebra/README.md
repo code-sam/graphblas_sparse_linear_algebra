@@ -11,13 +11,13 @@ use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, Fi
 use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use graphblas_sparse_linear_algebra::operators::mask::{MatrixMask, SelectEntireMatrix};
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-    FromMatrixElementList, MatrixElementList, Size, SparseMatrix
+    MatrixElementList, Size, SparseMatrix
 };
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetMatrixElementValue;
 use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::{
-    FromVectorElementList, VectorElementList,
-};
+use graphblas_sparse_linear_algebra::collections::sparse_vector::VectorElementList;
+use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::FromVectorElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::GetVectorElementValue;
 
 fn main() {
@@ -91,7 +91,7 @@ graphblas_sparse_linear_algebra uses the [SuiteSparse:GraphBLAS](https://github.
 Please make sure to meet the requirements for building [suitesparse_graphblas_sys](https://crates.io/crates/suitesparse_graphblas_sys).
 
 ## Compatibility
-graphblas_sparse_linear_algebra is mostly compatible with the GraphBLAS specification version 2.0 and uses SuiteSparse:GraphBLAS v7.3.0.
+graphblas_sparse_linear_algebra is mostly compatible with the GraphBLAS specification version 2.0 and uses SuiteSparse:GraphBLAS v8.2.0.
 
 ## Contributing
 Awesome, contributions are welcome. Graphblas_sparse_linear_algebra and your contribution may be relicensed and integrated into commercial software in the future. Therefore, you will be asked to agree to the [Contributor License Agreement](https://github.com/code-sam/graphblas_sparse_linear_algebra/blob/main/Contributor_License_Agreement.md) when you make a pull request.

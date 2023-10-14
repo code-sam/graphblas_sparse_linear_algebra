@@ -10,10 +10,10 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::GraphblasSparseMatrixTrait;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
-use crate::context::ContextTrait;
+use crate::context::GetContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
 use crate::index::ElementIndex;
