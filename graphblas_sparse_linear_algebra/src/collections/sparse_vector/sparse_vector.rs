@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag};
 
 use crate::collections::collection::Collection;
-use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;

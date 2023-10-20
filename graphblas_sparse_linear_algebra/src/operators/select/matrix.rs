@@ -89,7 +89,7 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetMatrixElementValue,
+        FromMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::Collection;
     use crate::context::{Context, Mode};

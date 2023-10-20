@@ -1,6 +1,6 @@
 use std::ptr;
 
-use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
@@ -189,7 +189,7 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetMatrixElementValue,
+        FromMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::sparse_vector::operations::FromVectorElementList;
     use crate::collections::Collection;

@@ -1,7 +1,7 @@
 use crate::collections::sparse_vector::operations::get_element_value::GetVectorElementValue;
 use crate::{
     collections::{
-        sparse_matrix::operations::GetMatrixElementValueTyped,
+        sparse_matrix::operations::GetSparseMatrixElementValueTyped,
         sparse_vector::{SparseVector, VectorElement},
     },
     error::SparseLinearAlgebraError,

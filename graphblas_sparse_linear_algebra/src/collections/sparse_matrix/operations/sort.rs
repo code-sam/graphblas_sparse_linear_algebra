@@ -14,7 +14,7 @@ use crate::{
     value_type::ValueType,
 };
 
-use super::GetMatrixSize;
+use super::GetSparseMatrixSize;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
@@ -379,7 +379,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
 mod tests {
     use super::*;
 
-    use crate::collections::sparse_matrix::operations::get_element_value::GetMatrixElementValue;
+    use crate::collections::sparse_matrix::operations::get_element_value::GetSparseMatrixElementValue;
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::MatrixElementList;
     use crate::context::{Context, Mode};

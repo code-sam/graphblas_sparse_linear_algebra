@@ -29,17 +29,17 @@ use crate::{
 };
 use rayon::iter::IntoParallelIterator;
 
-pub trait GetMatrixElementList<T: ValueType> {
+pub trait GetSparseMatrixElementList<T: ValueType> {
     fn get_element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetMatrixElementListTyped<T>> GetMatrixElementList<T> for SparseMatrix<T> {
+impl<T: ValueType + GetSparseMatrixElementListTyped<T>> GetSparseMatrixElementList<T> for SparseMatrix<T> {
     fn get_element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError> {
         T::get_element_list(self)
     }
 }
 
-pub trait GetMatrixElementListTyped<T: ValueType> {
+pub trait GetSparseMatrixElementListTyped<T: ValueType> {
     fn get_element_list(
         matrix: &SparseMatrix<T>,
     ) -> Result<MatrixElementList<T>, SparseLinearAlgebraError>;
@@ -47,7 +47,7 @@ pub trait GetMatrixElementListTyped<T: ValueType> {
 
 macro_rules! implement_get_element_list {
     ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetMatrixElementListTyped<$value_type> for $value_type {
+        impl GetSparseMatrixElementListTyped<$value_type> for $value_type {
             fn get_element_list(
                 matrix: &SparseMatrix<$value_type>,
             ) -> Result<MatrixElementList<$value_type>, SparseLinearAlgebraError> {

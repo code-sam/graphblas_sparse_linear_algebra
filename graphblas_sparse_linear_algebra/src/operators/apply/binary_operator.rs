@@ -241,7 +241,7 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetMatrixElementValue,
+        FromMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_vector::operations::{

@@ -10,12 +10,12 @@ use crate::{
     value_type::ValueType,
 };
 
-pub trait IsMatrixElement {
+pub trait IsSparseMatrixElement {
     fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError>;
     fn try_is_element(&self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> IsMatrixElement for SparseMatrix<T> {
+impl<T: ValueType> IsSparseMatrixElement for SparseMatrix<T> {
     fn is_element(&self, coordinate: Coordinate) -> Result<bool, SparseLinearAlgebraError> {
         is_sparse_matrix_element(self, coordinate)
     }
