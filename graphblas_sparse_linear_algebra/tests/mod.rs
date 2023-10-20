@@ -1,7 +1,7 @@
 // #[cfg(test)]
 mod tests {
     use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::{
-        GetMatrixElement, SetMatrixElement,
+        GetSparseMatrixElement, SetSparseMatrixElement,
     };
     use rayon::prelude::*;
     use std::sync::Mutex;

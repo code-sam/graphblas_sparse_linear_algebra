@@ -15,17 +15,17 @@ use crate::{
     },
 };
 
-pub trait SetMatrixElement<T: ValueType> {
+pub trait SetSparseMatrixElement<T: ValueType> {
     fn set_element(&mut self, element: MatrixElement<T>) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + SetMatrixElementTyped<T>> SetMatrixElement<T> for SparseMatrix<T> {
+impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> for SparseMatrix<T> {
     fn set_element(&mut self, element: MatrixElement<T>) -> Result<(), SparseLinearAlgebraError> {
         T::set_graphblas_matrix_element(self, element)
     }
 }
 
-pub trait SetMatrixElementTyped<T: ValueType> {
+pub trait SetSparseMatrixElementTyped<T: ValueType> {
     fn set_graphblas_matrix_element(
         matrix: &mut SparseMatrix<T>,
         element: MatrixElement<T>,
@@ -34,7 +34,7 @@ pub trait SetMatrixElementTyped<T: ValueType> {
 
 macro_rules! implement_set_element_typed {
     ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident) => {
-        impl SetMatrixElementTyped<$value_type> for $value_type {
+        impl SetSparseMatrixElementTyped<$value_type> for $value_type {
             fn set_graphblas_matrix_element(
                 matrix: &mut SparseMatrix<$value_type>,
                 element: MatrixElement<$value_type>,

@@ -8,12 +8,12 @@ use crate::{
     value_type::ValueType,
 };
 
-pub trait ResizeMatrix {
+pub trait ResizeSparseMatrix {
     /// All elements of self with an index coordinate outside of the new size are dropped.
     fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> ResizeMatrix for SparseMatrix<T> {
+impl<T: ValueType> ResizeSparseMatrix for SparseMatrix<T> {
     /// All elements of self with an index coordinate outside of the new size are dropped.
     fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
         resize_sparse_matrix(self, new_size)

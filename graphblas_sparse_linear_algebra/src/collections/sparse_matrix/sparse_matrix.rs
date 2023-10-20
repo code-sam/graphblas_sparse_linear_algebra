@@ -16,8 +16,8 @@ use super::size::Size;
 use crate::context::GetContext;
 use crate::context::{CallGraphBlasContext, Context};
 
-use crate::collections::sparse_matrix::operations::GetMatrixElementList;
-use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::operations::GetSparseMatrixElementList;
+use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::index::{ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
 use crate::value_type::ValueType;
@@ -207,8 +207,8 @@ mod tests {
 
     use super::*;
     use crate::collections::sparse_matrix::operations::{
-        DropMatrixElement, FromDiagonalVector, FromMatrixElementList, GetMatrixElement,
-        GetMatrixElementValue, GetMatrixSize, ResizeMatrix, SetMatrixElement,
+        DropSparseMatrixElement, FromDiagonalVector, FromMatrixElementList, GetSparseMatrixElement,
+        GetSparseMatrixElementValue, GetSparseMatrixSize, ResizeSparseMatrix, SetSparseMatrixElement,
     };
     use crate::collections::sparse_matrix::{Coordinate, MatrixElement};
     use crate::collections::sparse_vector::operations::FromVectorElementList;

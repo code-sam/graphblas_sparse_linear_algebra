@@ -14,7 +14,7 @@ use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
     MatrixElementList, Size, SparseMatrix
 };
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
-use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetMatrixElementValue;
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetSparseMatrixElementValue;
 use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::VectorElementList;
 use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::FromVectorElementList;

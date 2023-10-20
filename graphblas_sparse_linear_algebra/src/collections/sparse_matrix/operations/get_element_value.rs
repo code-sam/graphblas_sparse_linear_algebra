@@ -25,7 +25,7 @@ use crate::graphblas_bindings::{
     GrB_Matrix_extractElement_UINT64, GrB_Matrix_extractElement_UINT8,
 };
 
-pub trait GetMatrixElementValue<T: ValueType> {
+pub trait GetSparseMatrixElementValue<T: ValueType> {
     fn get_element_value(
         &self,
         coordinate: &Coordinate,
@@ -36,7 +36,7 @@ pub trait GetMatrixElementValue<T: ValueType> {
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + Default + GetMatrixElementValueTyped<T>> GetMatrixElementValue<T>
+impl<T: ValueType + Default + GetSparseMatrixElementValueTyped<T>> GetSparseMatrixElementValue<T>
     for SparseMatrix<T>
 {
     fn get_element_value(
@@ -54,7 +54,7 @@ impl<T: ValueType + Default + GetMatrixElementValueTyped<T>> GetMatrixElementVal
     }
 }
 
-pub trait GetMatrixElementValueTyped<T: ValueType + Default> {
+pub trait GetSparseMatrixElementValueTyped<T: ValueType + Default> {
     fn get_element_value(
         matrix: &SparseMatrix<T>,
         coordinate: &Coordinate,
@@ -67,7 +67,7 @@ pub trait GetMatrixElementValueTyped<T: ValueType + Default> {
 
 macro_rules! implement_get_element_value {
     ($value_type:ty, $get_element_function:ident) => {
-        impl GetMatrixElementValueTyped<$value_type> for $value_type {
+        impl GetSparseMatrixElementValueTyped<$value_type> for $value_type {
             fn get_element_value(
                 matrix: &SparseMatrix<$value_type>,
                 coordinate: &Coordinate,

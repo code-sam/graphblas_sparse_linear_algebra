@@ -1,4 +1,4 @@
-use crate::collections::sparse_matrix::operations::GetMatrixSize;
+use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::GetContext;
@@ -28,7 +28,7 @@ impl MatrixRowExtractor {
 pub trait ExtractMatrixRow<Row: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetMatrixSize + GetContext),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize + GetContext),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
@@ -41,7 +41,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
 impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetMatrixSize + GetContext),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize + GetContext),
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,

@@ -102,7 +102,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
 mod tests {
     use super::*;
     use crate::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetMatrixElementValue,
+        FromMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
     use crate::context::{Context, Mode};

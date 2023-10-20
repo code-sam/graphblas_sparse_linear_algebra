@@ -8,11 +8,11 @@ use crate::{
     value_type::ValueType,
 };
 
-pub trait DropMatrixElement {
+pub trait DropSparseMatrixElement {
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> DropMatrixElement for SparseMatrix<T> {
+impl<T: ValueType> DropSparseMatrixElement for SparseMatrix<T> {
     fn drop_element(&mut self, coordinate: Coordinate) -> Result<(), SparseLinearAlgebraError> {
         drop_sparse_matrix_element(self, coordinate)
     }

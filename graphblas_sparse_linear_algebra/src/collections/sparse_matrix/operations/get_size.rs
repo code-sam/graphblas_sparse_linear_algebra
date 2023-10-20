@@ -11,13 +11,13 @@ use crate::{
     value_type::ValueType,
 };
 
-pub trait GetMatrixSize {
+pub trait GetSparseMatrixSize {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn row_height(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn size(&self) -> Result<Size, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType> GetMatrixSize for SparseMatrix<T> {
+impl<T: ValueType> GetSparseMatrixSize for SparseMatrix<T> {
     fn column_width(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
         sparse_matrix_column_width(self)
     }
