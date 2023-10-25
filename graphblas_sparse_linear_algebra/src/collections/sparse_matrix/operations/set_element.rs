@@ -27,7 +27,7 @@ impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> fo
 
 pub trait SetSparseMatrixElementTyped<T: ValueType> {
     fn set_graphblas_matrix_element(
-        matrix: &mut SparseMatrix<T>,
+        matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         element: MatrixElement<T>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -36,7 +36,7 @@ macro_rules! implement_set_element_typed {
     ($value_type:ty, $conversion_target_type:ty, $add_element_function:ident) => {
         impl SetSparseMatrixElementTyped<$value_type> for $value_type {
             fn set_graphblas_matrix_element(
-                matrix: &mut SparseMatrix<$value_type>,
+                matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 element: MatrixElement<$value_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let row_index_to_set = element.row_index().to_graphblas_index()?;
