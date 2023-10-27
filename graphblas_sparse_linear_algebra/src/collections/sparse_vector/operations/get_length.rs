@@ -21,7 +21,7 @@ impl<T: ValueType> GetSparseVectorLength for SparseVector<T> {
     }
 }
 
-fn sparse_vector_length(
+pub fn sparse_vector_length(
     vector: &(impl GetGraphblasSparseVector + GetContext),
 ) -> Result<ElementIndex, SparseLinearAlgebraError> {
     let mut length: MaybeUninit<GrB_Index> = MaybeUninit::uninit();

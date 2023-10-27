@@ -208,7 +208,8 @@ mod tests {
     use super::*;
     use crate::collections::sparse_matrix::operations::{
         DropSparseMatrixElement, FromDiagonalVector, FromMatrixElementList, GetSparseMatrixElement,
-        GetSparseMatrixElementValue, GetSparseMatrixSize, ResizeSparseMatrix, SetSparseMatrixElement,
+        GetSparseMatrixElementValue, GetSparseMatrixSize, ResizeSparseMatrix,
+        SetSparseMatrixElement,
     };
     use crate::collections::sparse_matrix::{Coordinate, MatrixElement};
     use crate::collections::sparse_vector::operations::FromVectorElementList;

@@ -1,7 +1,7 @@
 use std::ptr;
 
-use crate::collections::sparse_vector::operations::GetSparseVectorLength;
-use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
+use crate::collections::sparse_vector::operations::sparse_vector_length;
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
@@ -43,7 +43,7 @@ where
     /// replace option applies to entire vector_to_insert_to
     fn apply(
         &self,
-        vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
+        vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
@@ -53,7 +53,7 @@ where
     /// mask and replace option apply to entire vector_to_insert_to
     fn apply_with_mask(
         &self,
-        vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
+        vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
@@ -73,7 +73,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
             /// replace option applies to entire vector_to_insert_to
             fn apply(
                 &self,
-                vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
+                vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
@@ -83,7 +83,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into
-                    .number_of_selected_elements(vector_to_insert_into.length()?)?
+                    .number_of_selected_elements(sparse_vector_length(vector_to_insert_into)?)?
                     .to_graphblas_index()?;
 
                 let indices_to_insert_into = indices_to_insert_into.to_graphblas_type()?;
@@ -130,7 +130,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
             /// mask and replace option apply to entire vector_to_insert_to
             fn apply_with_mask(
                 &self,
-                vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
+                vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
@@ -141,7 +141,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into
-                    .number_of_selected_elements(vector_to_insert_into.length()?)?
+                    .number_of_selected_elements(sparse_vector_length(vector_to_insert_into)?)?
                     .to_graphblas_index()?;
 
                 let indices_to_insert_into = indices_to_insert_into.to_graphblas_type()?;
@@ -200,7 +200,7 @@ mod tests {
     use crate::collections::sparse_vector::operations::{
         FromVectorElementList, GetVectorElementValue,
     };
-    use crate::collections::sparse_vector::VectorElementList;
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
@@ -252,7 +252,7 @@ mod tests {
                 &mut vector,
                 &indices_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -276,7 +276,7 @@ mod tests {
                 &mut vector,
                 &indices_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mask,
                 &OperatorOptions::new_default(),
             )
