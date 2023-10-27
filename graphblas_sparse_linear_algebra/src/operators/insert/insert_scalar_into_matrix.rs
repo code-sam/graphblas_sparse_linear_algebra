@@ -1,7 +1,8 @@
 use std::ptr;
 
-use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
-use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
+use crate::collections::sparse_matrix::operations::sparse_matrix_column_width;
+use crate::collections::sparse_matrix::operations::sparse_matrix_row_height;
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
@@ -43,7 +44,7 @@ where
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
         &self,
-        matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
+        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
@@ -54,7 +55,7 @@ where
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply_with_mask(
         &self,
-        matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
+        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
@@ -75,7 +76,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
             /// replace option applies to entire matrix_to_insert_to
             fn apply(
                 &self,
-                matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
+                matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
@@ -86,11 +87,13 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 let scalar_to_insert = scalar_to_insert.to_type()?;
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
+                    .number_of_selected_elements(sparse_matrix_row_height(matrix_to_insert_into)?)?
                     .to_graphblas_index()?;
 
                 let number_of_columns_to_insert_into = columns_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.column_width()?)?
+                    .number_of_selected_elements(sparse_matrix_column_width(
+                        matrix_to_insert_into,
+                    )?)?
                     .to_graphblas_index()?;
 
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
@@ -189,7 +192,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
             /// mask and replace option apply to entire matrix_to_insert_to
             fn apply_with_mask(
                 &self,
-                matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
+                matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
@@ -201,11 +204,13 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 let scalar_to_insert = scalar_to_insert.to_type()?;
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
+                    .number_of_selected_elements(sparse_matrix_row_height(matrix_to_insert_into)?)?
                     .to_graphblas_index()?;
 
                 let number_of_columns_to_insert_into = columns_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.column_width()?)?
+                    .number_of_selected_elements(sparse_matrix_column_width(
+                        matrix_to_insert_into,
+                    )?)?
                     .to_graphblas_index()?;
 
                 let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
@@ -316,7 +321,7 @@ mod tests {
     use crate::collections::sparse_matrix::operations::{
         FromMatrixElementList, GetSparseMatrixElementValue,
     };
-    use crate::collections::sparse_matrix::{MatrixElementList, Size};
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
@@ -371,7 +376,7 @@ mod tests {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -405,7 +410,7 @@ mod tests {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mask,
                 &OperatorOptions::new_default(),
             )
@@ -468,7 +473,7 @@ mod tests {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
