@@ -29,9 +29,9 @@ impl InsertMatrixIntoMatrix {
     }
 }
 
-pub trait InsertMatrixIntoMatrixTrait<MatrixToInsertInto>
+pub trait InsertMatrixIntoMatrixTrait<AccumulatorEvaluationDomain>
 where
-    MatrixToInsertInto: ValueType,
+    AccumulatorEvaluationDomain: ValueType,
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -40,7 +40,7 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -51,14 +51,14 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<MatrixToInsertInto: ValueType> InsertMatrixIntoMatrixTrait<MatrixToInsertInto>
-    for InsertMatrixIntoMatrix
+impl<AccumulatorEvaluationDomain: ValueType>
+    InsertMatrixIntoMatrixTrait<AccumulatorEvaluationDomain> for InsertMatrixIntoMatrix
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -67,7 +67,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoMatrixTrait<MatrixToInsertIn
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
@@ -180,7 +180,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoMatrixTrait<MatrixToInsertIn
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -299,7 +299,7 @@ mod tests {
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
-    use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::binary_operator::{Assignment, First, Plus};
 
     #[test]
     fn test_insert_matrix_into_matrix() {
@@ -429,6 +429,55 @@ mod tests {
         assert_eq!(
             matrix.get_element_value_or_default(&(1, 1).into()).unwrap(),
             1
+        );
+    }
+
+    #[test]
+    fn test_insert_matrix_into_matrix_with_other_typed_accumulator() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = MatrixElementList::<u8>::from_element_vector(vec![
+            (1, 1, 1).into(),
+            (2, 2, 2).into(),
+            (2, 4, 10).into(),
+            (9, 5, 11).into(),
+        ]);
+
+        let matrix_size: Size = (10, 15).into();
+        let mut matrix = SparseMatrix::<u8>::from_element_list(
+            &context,
+            &matrix_size,
+            &element_list,
+            &First::<u8>::new(),
+        )
+        .unwrap();
+
+        let insert_operator = InsertMatrixIntoMatrix::new();
+
+        let matrix_to_insert = matrix.clone();
+
+        insert_operator
+            .apply(
+                &mut matrix,
+                &ElementIndexSelector::All,
+                &ElementIndexSelector::All,
+                &matrix_to_insert,
+                &Plus::<f32>::new(),
+                &OperatorOptions::new_default(),
+            )
+            .unwrap();
+
+        println!("{}", matrix);
+
+        assert_eq!(matrix.number_of_stored_elements().unwrap(), 4);
+        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), None);
+        assert_eq!(
+            matrix.get_element_value_or_default(&(1, 1).into()).unwrap(),
+            2
+        );
+        assert_eq!(
+            matrix.get_element_value_or_default(&(2, 2).into()).unwrap(),
+            4
         );
     }
 }

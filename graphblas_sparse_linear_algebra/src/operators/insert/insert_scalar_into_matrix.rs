@@ -36,9 +36,9 @@ impl InsertScalarIntoMatrix {
     }
 }
 
-pub trait InsertScalarIntoMatrixTrait<MatrixToInsertInto, ScalarToInsert>
+pub trait InsertScalarIntoMatrixTrait<AccumulatorEvaluationDomain, ScalarToInsert>
 where
-    MatrixToInsertInto: ValueType,
+    AccumulatorEvaluationDomain: ValueType,
     ScalarToInsert: ValueType,
 {
     /// replace option applies to entire matrix_to_insert_to
@@ -48,7 +48,7 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -59,7 +59,7 @@ where
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -69,8 +69,8 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
     (
         $value_type_matrix_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
-        impl<MatrixToInsertInto: ValueType>
-            InsertScalarIntoMatrixTrait<MatrixToInsertInto, $value_type_scalar_to_insert>
+        impl<AccumulatorEvaluationDomain: ValueType>
+            InsertScalarIntoMatrixTrait<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
             for InsertScalarIntoMatrix
         {
             /// replace option applies to entire matrix_to_insert_to
@@ -80,7 +80,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+                accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
@@ -196,7 +196,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+                accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {

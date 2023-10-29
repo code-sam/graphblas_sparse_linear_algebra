@@ -35,9 +35,9 @@ impl InsertScalarIntoVector {
     }
 }
 
-pub trait InsertScalarIntoVectorTrait<VectorToInsertInto, ScalarToInsert>
+pub trait InsertScalarIntoVectorTrait<AccumulatorEvaluationDomain, ScalarToInsert>
 where
-    VectorToInsertInto: ValueType,
+    AccumulatorEvaluationDomain: ValueType,
     ScalarToInsert: ValueType,
 {
     /// replace option applies to entire vector_to_insert_to
@@ -46,7 +46,7 @@ where
         vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
-        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -56,7 +56,7 @@ where
         vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
-        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -66,8 +66,8 @@ macro_rules! implement_insert_scalar_into_vector_trait {
     (
         $_value_type_vector_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
-        impl<VectorToInsertInto: ValueType>
-            InsertScalarIntoVectorTrait<VectorToInsertInto, $value_type_scalar_to_insert>
+        impl<AccumulatorEvaluationDomain: ValueType>
+            InsertScalarIntoVectorTrait<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
             for InsertScalarIntoVector
         {
             /// replace option applies to entire vector_to_insert_to
@@ -76,7 +76,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+                accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
@@ -133,7 +133,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
-                accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+                accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
                 options: &OperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {

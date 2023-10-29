@@ -77,7 +77,7 @@ fn bench_test(context: Arc<Context>) {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -96,7 +96,7 @@ fn bench_test(context: Arc<Context>) {
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mask.to_owned(),
                 &OperatorOptions::new_default(),
             )

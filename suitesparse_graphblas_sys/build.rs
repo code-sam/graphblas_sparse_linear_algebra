@@ -1,4 +1,4 @@
-use std::{collections::HashSet};
+use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -190,12 +190,12 @@ fn clone_and_checkout_repository(
                     path_with_suitesparse_graphblas_implementation.to_owned(),
                 ) {
                     Ok(repo) => {
-                        // During packaging, the source code must be immutable. 
+                        // During packaging, the source code must be immutable.
                         // Update the source code only during testing, this may be necessary if the SuiteSparse GraphBLAS
-                        //  was already cloned before, but became outdated after updating to a new version. 
+                        //  was already cloned before, but became outdated after updating to a new version.
                         // The update of the source code will now be performed automatically if the tests are run.
                         if cfg!(debug_assertions) {
-                            fast_forward(&repo); 
+                            fast_forward(&repo);
                         }
                         repo
                     }
