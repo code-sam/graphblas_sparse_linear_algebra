@@ -32,9 +32,9 @@ impl InsertVectorIntoColumn {
     }
 }
 
-pub trait InsertVectorIntoColumnTrait<MatrixToInsertInto>
+pub trait InsertVectorIntoColumnTrait<AccumulatorEvaluationDomain>
 where
-    MatrixToInsertInto: ValueType,
+    AccumulatorEvaluationDomain: ValueType,
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -43,7 +43,7 @@ where
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -54,14 +54,14 @@ where
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<MatrixToInsertInto: ValueType> InsertVectorIntoColumnTrait<MatrixToInsertInto>
-    for InsertVectorIntoColumn
+impl<AccumulatorEvaluationDomain: ValueType>
+    InsertVectorIntoColumnTrait<AccumulatorEvaluationDomain> for InsertVectorIntoColumn
 {
     /// replace option applies to entire matrix_to_insert_to
     fn apply(
@@ -70,7 +70,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoColumnTrait<MatrixToInsertIn
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
@@ -130,7 +130,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoColumnTrait<MatrixToInsertIn
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_column_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
