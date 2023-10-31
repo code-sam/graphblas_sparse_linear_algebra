@@ -144,10 +144,11 @@ impl<T: ValueType> Collection for SparseScalar<T> {
 
 impl<T: ValueType> Drop for SparseScalar<T> {
     fn drop(&mut self) -> () {
-        let _ = self.context.call(
-            || unsafe { GrB_Scalar_free(&mut self.scalar.to_owned()) },
-            &self.scalar,
-        );
+        let _ = self
+            .context
+            .call_without_detailed_error_information(|| unsafe {
+                GrB_Scalar_free(&mut self.scalar)
+            });
     }
 }
 
