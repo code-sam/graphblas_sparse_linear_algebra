@@ -2,6 +2,8 @@ use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
+use suitesparse_graphblas_sys::GrB_Type;
+
 use crate::collections::collection::Collection;
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
@@ -42,24 +44,35 @@ pub struct SparseMatrix<T: ValueType> {
 unsafe impl<T: ValueType> Send for SparseMatrix<T> {}
 unsafe impl<T: ValueType> Sync for SparseMatrix<T> {}
 
+pub unsafe fn new_graphblas_matrix(
+    context: &Arc<Context>,
+    size: &Size,
+    graphblas_value_type: GrB_Type,
+) -> Result<GrB_Matrix, SparseLinearAlgebraError> {
+    let row_height = size.row_height().to_graphblas_index()?;
+    let column_width = size.column_width().to_graphblas_index()?;
+
+    let mut matrix: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
+
+    context.call_without_detailed_error_information(|| unsafe {
+        GrB_Matrix_new(
+            matrix.as_mut_ptr(),
+            graphblas_value_type,
+            row_height,
+            column_width,
+        )
+    })?;
+
+    let matrix = unsafe { matrix.assume_init() };
+    return Ok(matrix);
+}
+
 impl<T: ValueType> SparseMatrix<T> {
     pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {
-        let mut matrix: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
         let context = context.to_owned();
 
-        let row_height = size.row_height().to_graphblas_index()?;
-        let column_width = size.column_width().to_graphblas_index()?;
+        let matrix = unsafe { new_graphblas_matrix(&context, size, T::to_graphblas_type()) }?;
 
-        context.call_without_detailed_error_information(|| unsafe {
-            GrB_Matrix_new(
-                matrix.as_mut_ptr(),
-                <T>::to_graphblas_type(),
-                row_height,
-                column_width,
-            )
-        })?;
-
-        let matrix = unsafe { matrix.assume_init() };
         return Ok(SparseMatrix {
             context,
             matrix: matrix,

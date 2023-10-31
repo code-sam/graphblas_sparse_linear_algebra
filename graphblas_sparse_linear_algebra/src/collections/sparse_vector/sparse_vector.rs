@@ -4,7 +4,7 @@ use std::mem::MaybeUninit;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use suitesparse_graphblas_sys::{GxB_Vector_build_Scalar, GxB_Vector_diag};
+use suitesparse_graphblas_sys::{GrB_Type, GxB_Vector_build_Scalar, GxB_Vector_diag};
 
 use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
@@ -43,21 +43,31 @@ pub struct SparseVector<T: ValueType> {
 unsafe impl<T: ValueType> Send for SparseVector<T> {}
 unsafe impl<T: ValueType> Sync for SparseVector<T> {}
 
+pub unsafe fn new_graphblas_vector(
+    context: &Arc<Context>,
+    length: &ElementIndex,
+    graphblas_value_type: GrB_Type,
+) -> Result<GrB_Vector, SparseLinearAlgebraError> {
+    let length = length.to_graphblas_index()?;
+
+    let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
+
+    context.call_without_detailed_error_information(|| unsafe {
+        GrB_Vector_new(vector.as_mut_ptr(), graphblas_value_type, length)
+    })?;
+
+    let vector = unsafe { vector.assume_init() };
+    return Ok(vector);
+}
+
 impl<T: ValueType> SparseVector<T> {
     pub fn new(
         context: &Arc<Context>,
         length: &ElementIndex,
     ) -> Result<Self, SparseLinearAlgebraError> {
-        let mut vector: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
         let context = context.to_owned();
 
-        let length = length.to_graphblas_index()?;
-
-        context.call_without_detailed_error_information(|| unsafe {
-            GrB_Vector_new(vector.as_mut_ptr(), <T>::to_graphblas_type(), length)
-        })?;
-
-        let vector = unsafe { vector.assume_init() };
+        let vector = unsafe { new_graphblas_vector(&context, length, T::to_graphblas_type())? };
         return Ok(SparseVector {
             context,
             vector,
