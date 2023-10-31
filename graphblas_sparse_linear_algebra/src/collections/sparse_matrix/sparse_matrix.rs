@@ -132,7 +132,7 @@ pub trait GetGraphblasSparseMatrix {
 
 impl<T: ValueType> GetGraphblasSparseMatrix for SparseMatrix<T> {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
-        self.matrix
+        self.matrix.to_owned()
     }
 
     unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix {

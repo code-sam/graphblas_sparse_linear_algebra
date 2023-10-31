@@ -247,7 +247,7 @@ pub trait GetGraphblasSparseVector {
 
 impl<T: ValueType> GetGraphblasSparseVector for SparseVector<T> {
     unsafe fn graphblas_vector(&self) -> GrB_Vector {
-        self.vector
+        self.vector.to_owned()
     }
     unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector {
         &self.vector
@@ -262,7 +262,7 @@ impl<T: ValueType> Drop for SparseVector<T> {
         let _ = self
             .context
             .call_without_detailed_error_information(|| unsafe {
-                GrB_Vector_free(&mut self.vector.to_owned())
+                GrB_Vector_free(&mut self.vector)
             });
     }
 }
