@@ -269,20 +269,25 @@ impl<T: ValueType> Drop for SparseVector<T> {
 
 impl<T: ValueType> Clone for SparseVector<T> {
     fn clone(&self) -> Self {
-        let mut vector_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
-        self.context
-            .call(
-                || unsafe { GrB_Vector_dup(vector_copy.as_mut_ptr(), self.vector) },
-                &self.vector,
-            )
-            .unwrap();
-
         SparseVector {
             context: self.context.to_owned(),
-            vector: unsafe { vector_copy.assume_init() },
+            vector: unsafe {
+                clone_graphblas_vector(self.context_ref(), self.graphblas_vector_ref()).unwrap()
+            },
             value_type: PhantomData,
         }
     }
+}
+
+pub unsafe fn clone_graphblas_vector(
+    context: &Arc<Context>,
+    matrix: &GrB_Vector,
+) -> Result<GrB_Vector, SparseLinearAlgebraError> {
+    let mut matrix_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
+    context
+        .call(|| GrB_Vector_dup(matrix_copy.as_mut_ptr(), *matrix), matrix)
+        .unwrap();
+    return Ok(matrix_copy.assume_init());
 }
 
 // TODO: use standard GrB method
@@ -319,26 +324,6 @@ macro_rules! implement_dispay {
     };
 }
 implement_macro_for_all_value_types!(implement_dispay);
-
-macro_rules! implement_set_element_for_custom_type {
-    ($value_type:ty) => {
-        impl SetVectorElement<$value_type> for SparseVector<$value_type> {
-            fn set_element(
-                &mut self,
-                element: VectorElement<$value_type>,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let index_to_set = element.index().to_graphblas_index()?;
-                let value: *mut c_void = &mut element.value() as *mut $value_type as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
-                                                                                                  // let value: *mut c_void = &mut element.value() as *mut _ as *mut c_void; // https://stackoverflow.com/questions/24191249/working-with-c-void-in-an-ffi
-                self.context.call(
-                    || unsafe { GrB_Vector_setElement_UDT(self.vector, value, index_to_set) },
-                    &self.vector,
-                )?;
-                Ok(())
-            }
-        }
-    };
-}
 
 // impl SetElement<i128> for SparseVector<i128> {
 //     fn set_element(

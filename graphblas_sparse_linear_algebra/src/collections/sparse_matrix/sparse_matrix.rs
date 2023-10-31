@@ -155,20 +155,25 @@ impl<T: ValueType> Drop for SparseMatrix<T> {
 
 impl<T: ValueType> Clone for SparseMatrix<T> {
     fn clone(&self) -> Self {
-        let mut matrix_copy: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
-        self.context
-            .call(
-                || unsafe { GrB_Matrix_dup(matrix_copy.as_mut_ptr(), self.matrix) },
-                &self.matrix,
-            )
-            .unwrap();
-
         SparseMatrix {
             context: self.context.to_owned(),
-            matrix: unsafe { matrix_copy.assume_init() },
+            matrix: unsafe {
+                clone_graphblas_matrix(self.context_ref(), self.graphblas_matrix_ref()).unwrap()
+            },
             value_type: PhantomData,
         }
     }
+}
+
+pub unsafe fn clone_graphblas_matrix(
+    context: &Arc<Context>,
+    matrix: &GrB_Matrix,
+) -> Result<GrB_Matrix, SparseLinearAlgebraError> {
+    let mut matrix_copy: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
+    context
+        .call(|| GrB_Matrix_dup(matrix_copy.as_mut_ptr(), *matrix), matrix)
+        .unwrap();
+    return Ok(matrix_copy.assume_init());
 }
 
 // TODO improve printing format
