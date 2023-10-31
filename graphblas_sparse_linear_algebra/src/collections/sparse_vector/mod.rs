@@ -4,5 +4,5 @@ mod sparse_vector;
 
 pub mod operations;
 
-pub use element::{VectorElement, VectorElementList};
-pub use sparse_vector::{GetGraphblasSparseVector, SparseVector};
+pub use element::*;
+pub use sparse_vector::*;

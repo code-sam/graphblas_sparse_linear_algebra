@@ -5,7 +5,7 @@ mod sparse_matrix;
 
 pub mod operations;
 
-pub use coordinate::Coordinate;
-pub use element::{MatrixElement, MatrixElementList};
+pub use coordinate::*;
+pub use element::*;
 pub use size::Size;
-pub use sparse_matrix::{ColumnIndex, GetGraphblasSparseMatrix, RowIndex, SparseMatrix};
+pub use sparse_matrix::*;
