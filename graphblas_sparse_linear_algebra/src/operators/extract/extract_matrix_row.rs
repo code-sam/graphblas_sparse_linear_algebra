@@ -1,6 +1,6 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::{SparseVector, GetGraphblasSparseVector};
+use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
 use crate::context::GetContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
