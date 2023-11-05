@@ -35,7 +35,7 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
-        column_vector: &mut SparseVector<Column>,
+        column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -48,7 +48,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
-        column_vector: &mut SparseVector<Column>,
+        column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -153,7 +153,53 @@ mod tests {
                 &matrix,
                 &0,
                 &indices_to_extract,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
+                &mut column_vector,
+                &SelectEntireVector::new(&context),
+                &OperatorOptions::new_default(),
+            )
+            .unwrap();
+
+        assert_eq!(column_vector.number_of_stored_elements().unwrap(), 2);
+        assert_eq!(column_vector.get_element_value_or_default(&0).unwrap(), 1);
+        // assert_eq!(column_vector.get_element_value(&1).unwrap(), 0);
+        assert_eq!(column_vector.get_element_value_or_default(&1).unwrap(), 3);
+    }
+
+    #[test]
+    fn test_column_extraction_with_type_casting() {
+        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+
+        let element_list = MatrixElementList::<u16>::from_element_vector(vec![
+            (0, 0, 1).into(),
+            (1, 0, 2).into(),
+            (2, 0, 3).into(),
+            (0, 1, 4).into(),
+            (1, 1, 5).into(),
+            (2, 1, 6).into(),
+        ]);
+
+        let matrix = SparseMatrix::<u16>::from_element_list(
+            &context.to_owned(),
+            &(3, 2).into(),
+            &element_list,
+            &First::<u16>::new(),
+        )
+        .unwrap();
+
+        let mut column_vector = SparseVector::<u8>::new(&context, &2).unwrap();
+
+        let indices_to_extract: Vec<ElementIndex> = vec![0, 2];
+        let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
+
+        let extractor = MatrixColumnExtractor::new();
+
+        extractor
+            .apply(
+                &matrix,
+                &0,
+                &indices_to_extract,
+                &Assignment::<f32>::new(),
                 &mut column_vector,
                 &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),

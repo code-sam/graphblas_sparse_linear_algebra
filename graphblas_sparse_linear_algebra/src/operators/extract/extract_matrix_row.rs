@@ -1,6 +1,6 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_vector::{SparseVector, GetGraphblasSparseVector};
 use crate::context::GetContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
@@ -32,7 +32,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
-        row_vector: &mut SparseVector<Row>,
+        row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -45,7 +45,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         row_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
-        row_vector: &mut SparseVector<Row>,
+        row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
