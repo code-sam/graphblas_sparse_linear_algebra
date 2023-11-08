@@ -34,7 +34,7 @@ pub trait ExtractSubVector<SubVector: ValueType> {
         vector_to_extract_from: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut SparseVector<SubVector>,
+        sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -47,7 +47,7 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
         vector_to_extract_from: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut SparseVector<SubVector>,
+        sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -146,7 +146,7 @@ mod tests {
             .apply(
                 &vector,
                 &indices_to_extract,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mut sub_vector,
                 &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
@@ -207,7 +207,7 @@ mod tests {
             .apply(
                 &vector,
                 &indices_to_extract,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mut sub_vector,
                 &mask,
                 &OperatorOptions::new_default(),
