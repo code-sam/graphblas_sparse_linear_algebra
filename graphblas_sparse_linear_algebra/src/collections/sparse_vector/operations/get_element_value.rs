@@ -26,23 +26,15 @@ use crate::{
 use core::mem::MaybeUninit;
 
 pub trait GetVectorElementValue<T: ValueType + Default> {
-    fn element_value(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn element_value_or_default(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<T, SparseLinearAlgebraError>;
+    fn element_value(&self, index: &ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn element_value_or_default(&self, index: &ElementIndex)
+        -> Result<T, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + Default + GetVectorElementValueTyped<T>> GetVectorElementValue<T>
     for SparseVector<T>
 {
-    fn element_value(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<Option<T>, SparseLinearAlgebraError> {
+    fn element_value(&self, index: &ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError> {
         T::element_value(self, index)
     }
 

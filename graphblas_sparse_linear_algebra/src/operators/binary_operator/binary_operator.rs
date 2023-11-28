@@ -777,10 +777,7 @@ mod tests {
             product_vector.element_value_or_default(&1).unwrap(),
             u8::MAX as f32
         );
-        assert_eq!(
-            product_vector.element_value_or_default(&2).unwrap(),
-            0f32
-        );
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 0f32);
 
         let operator = BinaryOperatorApplier::new();
         operator
@@ -887,28 +884,16 @@ mod tests {
             println!("{}", product_vector);
             match i {
                 0 => {
-                    assert_eq!(
-                        product_vector.element_value_or_default(&2).unwrap(),
-                        255f32
-                    );
+                    assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 255f32);
                 }
                 1 => {
-                    assert_eq!(
-                        product_vector.element_value_or_default(&2).unwrap(),
-                        254f32
-                    );
+                    assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 254f32);
                 }
                 2 => {
-                    assert_eq!(
-                        product_vector.element_value_or_default(&2).unwrap(),
-                        252f32
-                    );
+                    assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 252f32);
                 }
                 3 => {
-                    assert_eq!(
-                        product_vector.element_value_or_default(&2).unwrap(),
-                        248f32
-                    );
+                    assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 248f32);
                 }
                 _ => {}
             }
