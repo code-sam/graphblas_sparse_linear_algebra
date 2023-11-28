@@ -34,7 +34,7 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-        sub_matrix: &mut SparseMatrix<SubMatrix>,
+        sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -47,7 +47,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-        sub_matrix: &mut SparseMatrix<SubMatrix>,
+        sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
         options: &OperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
@@ -211,7 +211,7 @@ mod tests {
                 &matrix,
                 &rows_to_extract,
                 &columns_to_extract,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mut sub_matrix,
                 &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
@@ -235,7 +235,7 @@ mod tests {
                 &matrix,
                 &rows_to_extract,
                 &columns_to_extract,
-                &Assignment::new(),
+                &Assignment::<u8>::new(),
                 &mut sub_matrix,
                 &SelectEntireMatrix::new(&context),
                 &OperatorOptions::new_default(),
