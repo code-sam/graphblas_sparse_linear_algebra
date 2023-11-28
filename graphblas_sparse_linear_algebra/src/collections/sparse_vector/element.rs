@@ -10,18 +10,43 @@ pub struct VectorElement<T: ValueType> {
     value: T,
 }
 
+pub trait GetVectorElementValue<T: ValueType> {
+    fn value(&self) -> T;
+    fn value_ref(&self) -> &T;
+}
+
+impl<T: ValueType + Copy> GetVectorElementValue<T> for VectorElement<T> {
+    fn value(&self) -> T {
+        self.value
+    }
+    fn value_ref(&self) -> &T {
+        &self.value
+    }
+}
+
 impl<T: ValueType> VectorElement<T> {
     pub fn new(index: ElementIndex, value: T) -> Self {
         Self { index, value }
     }
 }
 
+pub trait GetVectorElementIndex {
+    fn index(&self) -> ElementIndex;
+    fn index_ref(&self) -> &ElementIndex;
+}
+
+impl<T: ValueType> GetVectorElementIndex for VectorElement<T> {
+    fn index(&self) -> ElementIndex {
+        self.index
+    }
+    fn index_ref(&self) -> &ElementIndex {
+        &self.index
+    }
+}
+
 impl<T: ValueType + Clone> VectorElement<T> {
     pub fn index(&self) -> ElementIndex {
         self.index.to_owned()
-    }
-    pub fn value(&self) -> T {
-        self.value.to_owned()
     }
 
     pub fn from_pair(index: ElementIndex, value: T) -> Self {

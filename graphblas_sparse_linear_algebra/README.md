@@ -4,21 +4,20 @@ Rust wrapper for SuiteSparse:GraphBLAS
 
 ## Minimum example
 ```rust
-use graphblas_sparse_linear_algebra::collections::Collection;
-use graphblas_sparse_linear_algebra::context::{Context, Mode};
-use graphblas_sparse_linear_algebra::operators::apply::{BinaryOperatorApplier, ApplyBinaryOperator};
-use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
-use graphblas_sparse_linear_algebra::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
-use graphblas_sparse_linear_algebra::operators::mask::{MatrixMask, SelectEntireMatrix};
-use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-    MatrixElementList, Size, SparseMatrix
-};
-use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::FromMatrixElementList;
-use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::GetSparseMatrixElementValue;
-use graphblas_sparse_linear_algebra::collections::sparse_scalar::SparseScalar;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::VectorElementList;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::FromVectorElementList;
-use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::GetVectorElementValue;
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetSparseMatrixElementValue,
+    };
+    use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
+        MatrixElementList, Size, SparseMatrix,
+    };
+    use graphblas_sparse_linear_algebra::collections::Collection;
+    use graphblas_sparse_linear_algebra::context::{Context, Mode};
+    use graphblas_sparse_linear_algebra::operators::apply::{
+        ApplyBinaryOperator, BinaryOperatorApplier,
+    };
+    use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
+    use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
+    use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
 fn main() {
     let context = Context::init_ready(Mode::NonBlocking).unwrap();
@@ -45,42 +44,42 @@ fn main() {
     let first_argument = 10;
     operator
         .apply_with_matrix_as_left_argument(
-            &matrix, &First::<u8>::new(), 
-            &first_argument, 
-            &Assignment::new(), 
+            &matrix,
+            &First::<u8>::new(),
+            &first_argument,
+            &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
-            &OperatorOptions::new_default())
+            &OperatorOptions::new_default(),
+        )
         .unwrap();
 
     println!("{}", product_matrix);
 
     assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-    assert_eq!(product_matrix.get_element_value(&(2, 1).into()).unwrap(), Some(2));
-    assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
+    assert_eq!(product_matrix.element_value(&2, &1).unwrap(), Some(2));
+    assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
 
     let operator = BinaryOperatorApplier::new();
     let second_argument = 10;
     operator
         .apply_with_matrix_as_right_argument(
             &second_argument,
-            &First::<u8>::new(), 
-            &matrix, 
+            &First::<u8>::new(),
+            &matrix,
             &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
-            &OperatorOptions::new_default())
+            &OperatorOptions::new_default(),
+        )
         .unwrap();
 
     println!("{}", matrix);
     println!("{}", product_matrix);
 
     assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-    assert_eq!(
-        product_matrix.get_element_value(&(2, 1).into()).unwrap(),
-        Some(10)
-    );
-    assert_eq!(product_matrix.get_element_value(&(9, 1).into()).unwrap(), None);
+    assert_eq!(product_matrix.element_value(&2, &1).unwrap(), Some(10));
+    assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
  }
  ```
 

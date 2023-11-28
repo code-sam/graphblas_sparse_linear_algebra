@@ -30,13 +30,13 @@ use crate::{
 use rayon::iter::IntoParallelIterator;
 
 pub trait GetSparseMatrixElementList<T: ValueType> {
-    fn get_element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError>;
+    fn element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + GetSparseMatrixElementListTyped<T>> GetSparseMatrixElementList<T>
     for SparseMatrix<T>
 {
-    fn get_element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError> {
+    fn element_list(&self) -> Result<MatrixElementList<T>, SparseLinearAlgebraError> {
         T::get_element_list(self)
     }
 }

@@ -8,12 +8,12 @@ use crate::{
 use super::{GetSparseMatrixElementValue, GetSparseMatrixElementValueTyped};
 
 pub trait GetSparseMatrixElement<T: ValueType> {
-    fn get_element(
+    fn element(
         &self,
         coordinate: Coordinate,
     ) -> Result<Option<MatrixElement<T>>, SparseLinearAlgebraError>;
 
-    fn get_element_or_default(
+    fn element_or_default(
         &self,
         coordinate: Coordinate,
     ) -> Result<MatrixElement<T>, SparseLinearAlgebraError>;
@@ -22,21 +22,21 @@ pub trait GetSparseMatrixElement<T: ValueType> {
 impl<T: ValueType + Default + GetSparseMatrixElementValueTyped<T>> GetSparseMatrixElement<T>
     for SparseMatrix<T>
 {
-    fn get_element(
+    fn element(
         &self,
         coordinate: Coordinate,
     ) -> Result<Option<MatrixElement<T>>, SparseLinearAlgebraError> {
-        match self.get_element_value(&coordinate)? {
+        match self.element_value_at_coordinate(&coordinate)? {
             Some(value) => Ok(Some(MatrixElement::new(coordinate, value))),
             None => Ok(None),
         }
     }
 
-    fn get_element_or_default(
+    fn element_or_default(
         &self,
         coordinate: Coordinate,
     ) -> Result<MatrixElement<T>, SparseLinearAlgebraError> {
-        let value = self.get_element_value_or_default(&coordinate)?;
+        let value = self.element_value_or_default_at_coordinate(&coordinate)?;
         Ok(MatrixElement::new(coordinate, value))
     }
 }

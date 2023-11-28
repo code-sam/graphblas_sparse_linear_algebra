@@ -241,11 +241,11 @@ mod tests {
                 &options,
             )
             .unwrap();
-        let element_list = product.get_element_list().unwrap();
+        let element_list = product.element_list().unwrap();
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);
-        assert_eq!(product.get_element_value(&(1, 1).into()).unwrap(), None); // NoValue
+        assert_eq!(product.element_value(&1, &1).unwrap(), None); // NoValue
 
         let multiplier_element_list = MatrixElementList::<i32>::from_element_vector(vec![
             (0, 0, 1).into(),
@@ -288,30 +288,10 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(0, 0).into())
-                .unwrap(),
-            5
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(1, 0).into())
-                .unwrap(),
-            12
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(0, 1).into())
-                .unwrap(),
-            21
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(1, 1).into())
-                .unwrap(),
-            32
-        );
+        assert_eq!(product.element_value_or_default(&0, &0).unwrap(), 5);
+        assert_eq!(product.element_value_or_default(&1, &0).unwrap(), 12);
+        assert_eq!(product.element_value_or_default(&0, &1).unwrap(), 21);
+        assert_eq!(product.element_value_or_default(&1, &1).unwrap(), 32);
 
         // test the use of an accumulator
         let accumulator = Plus::<i32>::new();
@@ -330,30 +310,10 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(0, 0).into())
-                .unwrap(),
-            5 * 2
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(1, 0).into())
-                .unwrap(),
-            12 * 2
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(0, 1).into())
-                .unwrap(),
-            21 * 2
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(1, 1).into())
-                .unwrap(),
-            32 * 2
-        );
+        assert_eq!(product.element_value_or_default(&0, &0).unwrap(), 5 * 2);
+        assert_eq!(product.element_value_or_default(&1, &0).unwrap(), 12 * 2);
+        assert_eq!(product.element_value_or_default(&0, &1).unwrap(), 21 * 2);
+        assert_eq!(product.element_value_or_default(&1, &1).unwrap(), 32 * 2);
 
         // test the use of a mask
         let mask_element_list = MatrixElementList::<u8>::from_element_vector(vec![
@@ -385,29 +345,9 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(0, 0).into())
-                .unwrap(),
-            5
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(1, 0).into())
-                .unwrap(),
-            0
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(0, 1).into())
-                .unwrap(),
-            0
-        );
-        assert_eq!(
-            product
-                .get_element_value_or_default(&(1, 1).into())
-                .unwrap(),
-            32
-        );
+        assert_eq!(product.element_value_or_default(&0, &0).unwrap(), 5);
+        assert_eq!(product.element_value_or_default(&1, &0).unwrap(), 0);
+        assert_eq!(product.element_value_or_default(&0, &1).unwrap(), 0);
+        assert_eq!(product.element_value_or_default(&1, &1).unwrap(), 32);
     }
 }

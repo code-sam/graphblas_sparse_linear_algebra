@@ -270,15 +270,9 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), None);
-        assert_eq!(
-            matrix.get_element_value_or_default(&(1, 2).into()).unwrap(),
-            2
-        );
-        assert_eq!(
-            matrix.get_element_value_or_default(&(5, 2).into()).unwrap(),
-            12
-        );
+        assert_eq!(matrix.element_value(&0, &0).unwrap(), None);
+        assert_eq!(matrix.element_value_or_default(&1, &2).unwrap(), 2);
+        assert_eq!(matrix.element_value_or_default(&5, &2).unwrap(), 12);
 
         let mut matrix = SparseMatrix::<u8>::from_element_list(
             &context,
@@ -303,18 +297,9 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(matrix.get_element_value(&(0, 0).into()).unwrap(), None);
-        assert_eq!(
-            matrix.get_element_value_or_default(&(2, 2).into()).unwrap(),
-            3
-        );
-        assert_eq!(
-            matrix.get_element_value_or_default(&(1, 2).into()).unwrap(),
-            1
-        );
-        assert_eq!(
-            matrix.get_element_value_or_default(&(5, 2).into()).unwrap(),
-            12
-        );
+        assert_eq!(matrix.element_value(&0, &0).unwrap(), None);
+        assert_eq!(matrix.element_value_or_default(&2, &2).unwrap(), 3);
+        assert_eq!(matrix.element_value_or_default(&1, &2).unwrap(), 1);
+        assert_eq!(matrix.element_value_or_default(&5, &2).unwrap(), 12);
     }
 }

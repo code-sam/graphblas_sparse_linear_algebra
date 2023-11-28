@@ -1,4 +1,5 @@
 use super::coordinate::Coordinate;
+use super::GetCoordinateIndices;
 use crate::error::{
     GraphblasError, GraphblasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
 };
@@ -17,23 +18,53 @@ impl<T: ValueType> MatrixElement<T> {
     }
 }
 
-impl<T: ValueType + Copy> MatrixElement<T> {
-    pub fn coordinate(&self) -> Coordinate {
-        self.coordinate.to_owned()
+pub trait GetMatrixElementCoordinate {
+    fn coordinate(&self) -> Coordinate;
+    fn coordinate_ref(&self) -> &Coordinate;
+
+    fn row_index(&self) -> ElementIndex;
+    fn row_index_ref(&self) -> &ElementIndex;
+
+    fn column_index(&self) -> ElementIndex;
+    fn column_index_ref(&self) -> &ElementIndex;
+}
+
+impl<T: ValueType> GetMatrixElementCoordinate for MatrixElement<T> {
+    fn coordinate(&self) -> Coordinate {
+        self.coordinate
     }
-    pub fn row_index(&self) -> ElementIndex {
+    fn coordinate_ref(&self) -> &Coordinate {
+        &self.coordinate
+    }
+    fn row_index(&self) -> ElementIndex {
         self.coordinate.row_index()
     }
-    pub fn column_index(&self) -> ElementIndex {
+    fn row_index_ref(&self) -> &ElementIndex {
+        self.coordinate.row_index_ref()
+    }
+    fn column_index(&self) -> ElementIndex {
         self.coordinate.column_index()
     }
-    pub fn value(&self) -> T {
-        self.value.to_owned()
+    fn column_index_ref(&self) -> &ElementIndex {
+        self.coordinate.column_index_ref()
     }
-    pub fn value_ref<'a>(&'a self) -> &'a T {
+}
+
+pub trait GetMatrixElementValue<T> {
+    fn value(&self) -> T;
+    fn value_ref(&self) -> &T;
+}
+
+impl<T: ValueType + Copy> GetMatrixElementValue<T> for MatrixElement<T> {
+    fn value(&self) -> T {
+        self.value
+    }
+    fn value_ref(&self) -> &T {
         &self.value
     }
+}
 
+impl<T: ValueType + Copy> MatrixElement<T> {
     pub fn from_triple(row_index: ElementIndex, column_index: ElementIndex, value: T) -> Self {
         Self::new(Coordinate::new(row_index, column_index), value)
     }

@@ -164,16 +164,8 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(
-            product_matrix
-                .get_element_value_or_default(&(2, 1).into())
-                .unwrap(),
-            1
-        );
-        assert_eq!(
-            product_matrix.get_element_value(&(9, 1).into()).unwrap(),
-            None
-        );
+        assert_eq!(product_matrix.element_value_or_default(&2, &1).unwrap(), 1);
+        assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
 
         let operator = UnaryOperatorApplier::new();
         operator
@@ -191,16 +183,8 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(
-            product_matrix
-                .get_element_value_or_default(&(2, 1).into())
-                .unwrap(),
-            2
-        );
-        assert_eq!(
-            product_matrix.get_element_value(&(9, 1).into()).unwrap(),
-            None
-        );
+        assert_eq!(product_matrix.element_value_or_default(&2, &1).unwrap(), 2);
+        assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
     }
 
     #[test]

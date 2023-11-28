@@ -955,29 +955,9 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(
-            product_matrix
-                .get_element_value_or_default(&(1, 1).into())
-                .unwrap(),
-            1
-        );
-        assert_eq!(
-            product_matrix
-                .get_element_value_or_default(&(2, 1).into())
-                .unwrap(),
-            2
-        );
-        assert_eq!(
-            product_matrix
-                .get_element_value_or_default(&(4, 2).into())
-                .unwrap(),
-            4
-        );
-        assert_eq!(
-            product_matrix
-                .get_element_value_or_default(&(5, 2).into())
-                .unwrap(),
-            5
-        );
+        assert_eq!(product_matrix.element_value_or_default(&1, &1).unwrap(), 1);
+        assert_eq!(product_matrix.element_value_or_default(&2, &1).unwrap(), 2);
+        assert_eq!(product_matrix.element_value_or_default(&4, &2).unwrap(), 4);
+        assert_eq!(product_matrix.element_value_or_default(&5, &2).unwrap(), 5);
     }
 }
