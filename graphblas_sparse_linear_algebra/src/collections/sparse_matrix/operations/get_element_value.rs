@@ -1,15 +1,16 @@
 use std::mem::MaybeUninit;
 
 use crate::collections::sparse_matrix::sparse_matrix::GetGraphblasSparseMatrix;
+use crate::collections::sparse_matrix::GetCoordinateIndices;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
 use crate::context::GetContext;
 use crate::error::GraphblasErrorType;
 use crate::error::LogicErrorType;
 use crate::error::SparseLinearAlgebraErrorType;
+use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::{
-    collections::sparse_matrix::Coordinate,
     error::SparseLinearAlgebraError,
     value_type::{
         utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_and_graphblas_function,
@@ -26,56 +27,93 @@ use crate::graphblas_bindings::{
 };
 
 pub trait GetSparseMatrixElementValue<T: ValueType> {
-    fn get_element_value(
+    fn element_value(
         &self,
-        coordinate: &Coordinate,
+        row_index: &ElementIndex,
+        column_index: &ElementIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
+    fn element_value_or_default(
         &self,
-        coordinate: &Coordinate,
+        row_index: &ElementIndex,
+        column_index: &ElementIndex,
+    ) -> Result<T, SparseLinearAlgebraError>;
+
+    fn element_value_at_coordinate(
+        &self,
+        coordinate: &impl GetCoordinateIndices,
+    ) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn element_value_or_default_at_coordinate(
+        &self,
+        coordinate: &impl GetCoordinateIndices,
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + Default + GetSparseMatrixElementValueTyped<T>> GetSparseMatrixElementValue<T>
     for SparseMatrix<T>
 {
-    fn get_element_value(
+    fn element_value(
         &self,
-        coordinate: &Coordinate,
+        row_index: &ElementIndex,
+        column_index: &ElementIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError> {
-        T::get_element_value(self, coordinate)
+        T::element_value(self, row_index, column_index)
+    }
+    fn element_value_or_default(
+        &self,
+        row_index: &ElementIndex,
+        column_index: &ElementIndex,
+    ) -> Result<T, SparseLinearAlgebraError> {
+        T::element_value_or_default(self, row_index, column_index)
     }
 
-    fn get_element_value_or_default(
+    fn element_value_at_coordinate(
         &self,
-        coordinate: &Coordinate,
+        coordinate: &impl GetCoordinateIndices,
+    ) -> Result<Option<T>, SparseLinearAlgebraError> {
+        T::element_value_at_coordinate(self, coordinate)
+    }
+
+    fn element_value_or_default_at_coordinate(
+        &self,
+        coordinate: &impl GetCoordinateIndices,
     ) -> Result<T, SparseLinearAlgebraError> {
-        T::get_element_value_or_default(self, coordinate)
+        T::element_value_or_default_at_coordinate(self, coordinate)
     }
 }
 
 pub trait GetSparseMatrixElementValueTyped<T: ValueType + Default> {
-    fn get_element_value(
+    fn element_value(
         matrix: &SparseMatrix<T>,
-        coordinate: &Coordinate,
+        row_index: &ElementIndex,
+        column_index: &ElementIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
+    fn element_value_or_default(
         matrix: &SparseMatrix<T>,
-        coordinate: &Coordinate,
+        row_index: &ElementIndex,
+        column_index: &ElementIndex,
+    ) -> Result<T, SparseLinearAlgebraError>;
+
+    fn element_value_at_coordinate(
+        matrix: &SparseMatrix<T>,
+        coordinate: &impl GetCoordinateIndices,
+    ) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn element_value_or_default_at_coordinate(
+        matrix: &SparseMatrix<T>,
+        coordinate: &impl GetCoordinateIndices,
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_element_value {
     ($value_type:ty, $get_element_function:ident) => {
         impl GetSparseMatrixElementValueTyped<$value_type> for $value_type {
-            fn get_element_value(
+            fn element_value(
                 matrix: &SparseMatrix<$value_type>,
-                coordinate: &Coordinate,
+                row_index: &ElementIndex,
+                column_index: &ElementIndex,
             ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
-                // let mut value: MaybeUninit<$value_type> = MaybeUninit::uninit();
                 let mut value = MaybeUninit::uninit();
-                let row_index_to_get = coordinate.row_index().to_graphblas_index()?;
-                let column_index_to_get = coordinate.column_index().to_graphblas_index()?;
+                let row_index_to_get = row_index.as_graphblas_index()?;
+                let column_index_to_get = column_index.as_graphblas_index()?;
 
                 let result = matrix.context_ref().call(
                     || unsafe {
@@ -104,14 +142,37 @@ macro_rules! implement_get_element_value {
                 }
             }
 
-            fn get_element_value_or_default(
+            fn element_value_or_default(
                 matrix: &SparseMatrix<$value_type>,
-                coordinate: &Coordinate,
+                row_index: &ElementIndex,
+                column_index: &ElementIndex,
             ) -> Result<$value_type, SparseLinearAlgebraError> {
-                match <$value_type>::get_element_value(matrix, coordinate)? {
+                match <$value_type>::element_value(matrix, row_index, column_index)? {
                     Some(value) => Ok(value),
                     None => Ok(<$value_type>::default()),
                 }
+            }
+
+            fn element_value_at_coordinate(
+                matrix: &SparseMatrix<$value_type>,
+                coordinate: &impl GetCoordinateIndices,
+            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
+                <$value_type>::element_value(
+                    matrix,
+                    coordinate.row_index_ref(),
+                    coordinate.column_index_ref(),
+                )
+            }
+
+            fn element_value_or_default_at_coordinate(
+                matrix: &SparseMatrix<$value_type>,
+                coordinate: &impl GetCoordinateIndices,
+            ) -> Result<$value_type, SparseLinearAlgebraError> {
+                <$value_type>::element_value_or_default(
+                    matrix,
+                    coordinate.row_index_ref(),
+                    coordinate.column_index_ref(),
+                )
             }
         }
     };

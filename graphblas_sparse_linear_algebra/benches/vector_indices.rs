@@ -19,7 +19,7 @@ fn bench_vector_indices(c: &mut Criterion) {
         let s: f64 = rng.gen();
         if s <= fill_factor {
             vector
-                .set_element(VectorElement::new(i as ElementIndex, i))
+                .set_element(&VectorElement::new(i as ElementIndex, i))
                 .unwrap();
         }
     }

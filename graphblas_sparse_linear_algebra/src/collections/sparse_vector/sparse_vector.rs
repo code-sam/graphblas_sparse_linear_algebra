@@ -589,18 +589,18 @@ mod tests {
         let mut sparse_vector = SparseVector::<i32>::new(&context, &length).unwrap();
 
         sparse_vector
-            .set_element(VectorElement::from_pair(1, 2))
+            .set_element(&VectorElement::from_pair(1, 2))
             .unwrap();
 
         assert_eq!(1, sparse_vector.number_of_stored_elements().unwrap());
 
         sparse_vector
-            .set_element(VectorElement::from_pair(3, 3))
+            .set_element(&VectorElement::from_pair(3, 3))
             .unwrap();
 
         assert_eq!(2, sparse_vector.number_of_stored_elements().unwrap());
 
-        match sparse_vector.set_element(VectorElement::from_pair(15, 3)) {
+        match sparse_vector.set_element(&VectorElement::from_pair(15, 3)) {
             Err(error) => {
                 match error.error_type() {
                     SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
@@ -701,10 +701,10 @@ mod tests {
         let mut sparse_vector = SparseVector::<i64>::new(&context, &length).unwrap();
 
         sparse_vector
-            .set_element(VectorElement::from_pair(2, 3))
+            .set_element(&VectorElement::from_pair(2, 3))
             .unwrap();
         sparse_vector
-            .set_element(VectorElement::from_pair(4, 4))
+            .set_element(&VectorElement::from_pair(4, 4))
             .unwrap();
 
         sparse_vector.drop_element(2).unwrap();
@@ -723,8 +723,8 @@ mod tests {
         let element_1 = VectorElement::from_pair(1, 2);
         let element_2 = VectorElement::from_pair(2, 3);
 
-        sparse_vector.set_element(element_1).unwrap();
-        sparse_vector.set_element(element_2).unwrap();
+        sparse_vector.set_element(&element_1).unwrap();
+        sparse_vector.set_element(&element_2).unwrap();
 
         assert_eq!(
             element_1,

@@ -1,3 +1,5 @@
+mod doc_test;
+
 // #[cfg(test)]
 mod tests {
     use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::{
@@ -7,7 +9,7 @@ mod tests {
     use std::sync::Mutex;
 
     use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-        Coordinate, MatrixElement, Size, SparseMatrix,
+        Coordinate, GetMatrixElementValue, MatrixElement, Size, SparseMatrix,
     };
     use graphblas_sparse_linear_algebra::context::{Context, Mode};
     use graphblas_sparse_linear_algebra::operators::binary_operator::Plus;
@@ -32,7 +34,7 @@ mod tests {
 
         matrices.par_iter_mut().for_each(|matrix| {
             matrix
-                .set_element(MatrixElement::from_triple(1, 2, 3))
+                .set_matrix_element(&MatrixElement::from_triple(1, 2, 3))
                 .unwrap()
         });
 
@@ -61,7 +63,7 @@ mod tests {
         assert_eq!(
             600,
             result_matrix
-                .get_element(Coordinate::new(1, 2))
+                .element(Coordinate::new(1, 2))
                 .unwrap()
                 .unwrap()
                 .value()
