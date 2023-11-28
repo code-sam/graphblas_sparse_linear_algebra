@@ -26,40 +26,32 @@ use crate::{
 use core::mem::MaybeUninit;
 
 pub trait GetVectorElementValue<T: ValueType + Default> {
-    fn get_element_value(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<T, SparseLinearAlgebraError>;
+    fn element_value(&self, index: &ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn element_value_or_default(&self, index: &ElementIndex)
+        -> Result<T, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + Default + GetVectorElementValueTyped<T>> GetVectorElementValue<T>
     for SparseVector<T>
 {
-    fn get_element_value(
-        &self,
-        index: &ElementIndex,
-    ) -> Result<Option<T>, SparseLinearAlgebraError> {
-        T::get_element_value(self, index)
+    fn element_value(&self, index: &ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError> {
+        T::element_value(self, index)
     }
 
-    fn get_element_value_or_default(
+    fn element_value_or_default(
         &self,
         index: &ElementIndex,
     ) -> Result<T, SparseLinearAlgebraError> {
-        T::get_element_value_or_default(self, index)
+        T::element_value_or_default(self, index)
     }
 }
 
 pub trait GetVectorElementValueTyped<T: ValueType + Default> {
-    fn get_element_value(
+    fn element_value(
         vector: &SparseVector<T>,
         index: &ElementIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_element_value_or_default(
+    fn element_value_or_default(
         vector: &SparseVector<T>,
         index: &ElementIndex,
     ) -> Result<T, SparseLinearAlgebraError>;
@@ -68,7 +60,7 @@ pub trait GetVectorElementValueTyped<T: ValueType + Default> {
 macro_rules! implement_get_element_value_for_built_in_type {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetVectorElementValueTyped<$value_type> for $value_type {
-            fn get_element_value(
+            fn element_value(
                 vector: &SparseVector<$value_type>,
                 index: &ElementIndex,
             ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
@@ -100,11 +92,11 @@ macro_rules! implement_get_element_value_for_built_in_type {
                 }
             }
 
-            fn get_element_value_or_default(
+            fn element_value_or_default(
                 vector: &SparseVector<$value_type>,
                 index: &ElementIndex,
             ) -> Result<$value_type, SparseLinearAlgebraError> {
-                Ok(<$value_type>::get_element_value(vector, index)?.unwrap_or_default())
+                Ok(<$value_type>::element_value(vector, index)?.unwrap_or_default())
             }
         }
     };
