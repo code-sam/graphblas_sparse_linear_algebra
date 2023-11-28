@@ -29,7 +29,7 @@ impl<T: ValueType + Default + GetVectorElementValueTyped<T>> GetVectorElement<T>
         &self,
         index: ElementIndex,
     ) -> Result<Option<VectorElement<T>>, SparseLinearAlgebraError> {
-        match self.get_element_value(&index)? {
+        match self.element_value(&index)? {
             Some(value) => Ok(Some(VectorElement::new(index, value))),
             None => Ok(None),
         }
@@ -41,7 +41,7 @@ impl<T: ValueType + Default + GetVectorElementValueTyped<T>> GetVectorElement<T>
     ) -> Result<VectorElement<T>, SparseLinearAlgebraError> {
         Ok(VectorElement::new(
             index,
-            self.get_element_value_or_default(&index)?,
+            self.element_value_or_default(&index)?,
         ))
     }
 }

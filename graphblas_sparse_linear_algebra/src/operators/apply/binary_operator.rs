@@ -360,8 +360,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(product_vector.element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
         let first_argument = 10;
@@ -381,8 +381,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 10);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 10);
+        assert_eq!(product_vector.element_value(&9).unwrap(), None);
     }
 
     #[test]
@@ -425,8 +425,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(product_vector.element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
         let first_argument = 10;
@@ -446,8 +446,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 10);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 10);
+        assert_eq!(product_vector.element_value(&9).unwrap(), None);
     }
 
     #[test]
@@ -490,8 +490,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 1);
+        assert_eq!(product_vector.element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
 
@@ -510,8 +510,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 1);
+        assert_eq!(product_vector.element_value(&9).unwrap(), None);
 
         // let operator = BinaryOperatorApplier::new(
         //     &First::<u8, u8, u8, u8>::new(),

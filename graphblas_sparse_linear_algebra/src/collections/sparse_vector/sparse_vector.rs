@@ -472,7 +472,7 @@ mod tests {
         );
         for index in indices {
             assert_eq!(
-                sparse_vector.get_element_value_or_default(&index).unwrap(),
+                sparse_vector.element_value_or_default(&index).unwrap(),
                 value
             );
         }
@@ -503,19 +503,19 @@ mod tests {
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &0).unwrap();
         assert_eq!(diagonal.length().unwrap(), 10);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(diagonal.get_element_value_or_default(&0).unwrap(), 0);
-        assert_eq!(diagonal.get_element_value_or_default(&2).unwrap(), 4);
+        assert_eq!(diagonal.element_value_or_default(&0).unwrap(), 0);
+        assert_eq!(diagonal.element_value_or_default(&2).unwrap(), 4);
 
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &2).unwrap();
         assert_eq!(diagonal.length().unwrap(), 10);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(diagonal.get_element_value_or_default(&0).unwrap(), 2);
-        assert_eq!(diagonal.get_element_value_or_default(&2).unwrap(), 6);
+        assert_eq!(diagonal.element_value_or_default(&0).unwrap(), 2);
+        assert_eq!(diagonal.element_value_or_default(&2).unwrap(), 6);
 
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &-2).unwrap();
         assert_eq!(diagonal.length().unwrap(), 8);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 1);
-        assert_eq!(diagonal.get_element_value_or_default(&1).unwrap(), 4);
+        assert_eq!(diagonal.element_value_or_default(&1).unwrap(), 4);
     }
 
     #[test]

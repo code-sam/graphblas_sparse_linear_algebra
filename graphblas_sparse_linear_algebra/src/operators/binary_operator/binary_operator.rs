@@ -752,10 +752,10 @@ mod tests {
 
         println!("{}", product_vector);
         assert_eq!(
-            product_vector.get_element_value_or_default(&1).unwrap(),
+            product_vector.element_value_or_default(&1).unwrap(),
             u8::MAX
         );
-        assert_eq!(product_vector.get_element_value(&2).unwrap(), Some(0));
+        assert_eq!(product_vector.element_value(&2).unwrap(), Some(0));
 
         let operator = BinaryOperatorApplier::new();
 
@@ -774,11 +774,11 @@ mod tests {
 
         println!("{}", product_vector);
         assert_eq!(
-            product_vector.get_element_value_or_default(&1).unwrap(),
+            product_vector.element_value_or_default(&1).unwrap(),
             u8::MAX as f32
         );
         assert_eq!(
-            product_vector.get_element_value_or_default(&2).unwrap(),
+            product_vector.element_value_or_default(&2).unwrap(),
             0f32
         );
 
@@ -796,11 +796,11 @@ mod tests {
             .unwrap();
         println!("{}", product_vector);
         assert_eq!(
-            product_vector.get_element_value_or_default(&1).unwrap(),
+            product_vector.element_value_or_default(&1).unwrap(),
             f32::INFINITY
         );
         assert!(f32::is_nan(
-            product_vector.get_element_value_or_default(&2).unwrap()
+            product_vector.element_value_or_default(&2).unwrap()
         ));
     }
 
@@ -841,9 +841,9 @@ mod tests {
             .unwrap();
 
         println!("{}", product_vector);
-        assert_eq!(product_vector.get_element_value_or_default(&0).unwrap(), 1);
-        assert_eq!(product_vector.get_element_value_or_default(&1).unwrap(), 2);
-        assert_eq!(product_vector.get_element_value_or_default(&2).unwrap(), 3);
+        assert_eq!(product_vector.element_value_or_default(&0).unwrap(), 1);
+        assert_eq!(product_vector.element_value_or_default(&1).unwrap(), 2);
+        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 3);
     }
 
     #[test]
@@ -888,25 +888,25 @@ mod tests {
             match i {
                 0 => {
                     assert_eq!(
-                        product_vector.get_element_value_or_default(&2).unwrap(),
+                        product_vector.element_value_or_default(&2).unwrap(),
                         255f32
                     );
                 }
                 1 => {
                     assert_eq!(
-                        product_vector.get_element_value_or_default(&2).unwrap(),
+                        product_vector.element_value_or_default(&2).unwrap(),
                         254f32
                     );
                 }
                 2 => {
                     assert_eq!(
-                        product_vector.get_element_value_or_default(&2).unwrap(),
+                        product_vector.element_value_or_default(&2).unwrap(),
                         252f32
                     );
                 }
                 3 => {
                     assert_eq!(
-                        product_vector.get_element_value_or_default(&2).unwrap(),
+                        product_vector.element_value_or_default(&2).unwrap(),
                         248f32
                     );
                 }

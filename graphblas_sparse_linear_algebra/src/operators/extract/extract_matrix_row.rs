@@ -119,7 +119,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(column_vector.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(column_vector.get_element_value_or_default(&0).unwrap(), 3);
-        assert_eq!(column_vector.get_element_value_or_default(&1).unwrap(), 6);
+        assert_eq!(column_vector.element_value_or_default(&0).unwrap(), 3);
+        assert_eq!(column_vector.element_value_or_default(&1).unwrap(), 6);
     }
 }
