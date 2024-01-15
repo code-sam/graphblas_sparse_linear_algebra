@@ -13,7 +13,7 @@ use crate::graphblas_bindings::{
 use crate::operators::mask::MatrixMask;
 
 use super::element::MatrixElementList;
-use super::size::Size;
+use super::size::{Size, GetMatrixDimensions};
 
 use crate::context::GetContext;
 use crate::context::{CallGraphBlasContext, Context};
@@ -49,8 +49,8 @@ pub unsafe fn new_graphblas_matrix(
     size: &Size,
     graphblas_value_type: GrB_Type,
 ) -> Result<GrB_Matrix, SparseLinearAlgebraError> {
-    let row_height = size.row_height().to_graphblas_index()?;
-    let column_width = size.column_width().to_graphblas_index()?;
+    let row_height = size.row_height_ref().to_graphblas_index()?;
+    let column_width = size.column_width_ref().to_graphblas_index()?;
 
     let mut matrix: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
 
@@ -289,9 +289,9 @@ mod tests {
         let new_size: Size = (1, 2).into();
         sparse_matrix.resize(&new_size).unwrap();
 
-        assert_eq!(new_size.row_height(), sparse_matrix.row_height().unwrap());
+        assert_eq!(new_size.row_height_ref().to_owned(), sparse_matrix.row_height().unwrap());
         assert_eq!(
-            new_size.column_width(),
+            new_size.column_width_ref().to_owned(),
             sparse_matrix.column_width().unwrap()
         );
         assert_eq!(new_size, sparse_matrix.size().unwrap());

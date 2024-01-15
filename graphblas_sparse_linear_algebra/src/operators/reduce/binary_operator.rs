@@ -110,7 +110,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus};
 
-    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
+    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix, GetMatrixDimensions};
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::mask::SelectEntireVector;
 
@@ -136,7 +136,7 @@ mod tests {
         .unwrap();
 
         let mut product_vector =
-            SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
+            SparseVector::<u8>::new(&context, matrix_size.row_height_ref()).unwrap();
 
         let reducer = BinaryOperatorReducer::new();
 
@@ -167,14 +167,14 @@ mod tests {
 
         let mask = SparseVector::<u8>::from_element_list(
             &context.to_owned(),
-            &matrix_size.row_height(),
+            matrix_size.row_height_ref(),
             &mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector =
-            SparseVector::<u8>::new(&context, &matrix_size.row_height()).unwrap();
+            SparseVector::<u8>::new(&context, matrix_size.row_height_ref()).unwrap();
 
         reducer
             .to_colunm_vector(
