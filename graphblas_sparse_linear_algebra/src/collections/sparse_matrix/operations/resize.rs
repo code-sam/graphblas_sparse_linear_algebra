@@ -1,7 +1,7 @@
 use suitesparse_graphblas_sys::GrB_Matrix_resize;
 
 use crate::{
-    collections::sparse_matrix::{GetGraphblasSparseMatrix, Size, SparseMatrix},
+    collections::sparse_matrix::{GetGraphblasSparseMatrix, Size, SparseMatrix, size::GetMatrixDimensions},
     context::{CallGraphBlasContext, GetContext},
     error::SparseLinearAlgebraError,
     index::IndexConversion,
@@ -25,8 +25,8 @@ pub fn resize_sparse_matrix(
     matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
     new_size: &Size,
 ) -> Result<(), SparseLinearAlgebraError> {
-    let new_row_height = new_size.row_height().to_graphblas_index()?;
-    let new_column_width = new_size.column_width().to_graphblas_index()?;
+    let new_row_height = new_size.row_height_ref().to_graphblas_index()?;
+    let new_column_width = new_size.column_width_ref().to_graphblas_index()?;
 
     matrix.context_ref().call(
         || unsafe {

@@ -17,13 +17,6 @@ impl Size {
     pub fn from_tuple(size: (ElementIndex, ElementIndex)) -> Self {
         Self::new(size.0, size.1)
     }
-
-    pub fn row_height(&self) -> ElementIndex {
-        self.row_height
-    }
-    pub fn column_width(&self) -> ElementIndex {
-        self.column_width
-    }
 }
 
 impl From<(ElementIndex, ElementIndex)> for Size {
@@ -32,5 +25,19 @@ impl From<(ElementIndex, ElementIndex)> for Size {
             row_height: size.0,
             column_width: size.1,
         }
+    }
+}
+
+pub trait GetMatrixDimensions {
+    fn row_height_ref(&self) -> &ElementIndex;
+    fn column_width_ref(&self) -> &ElementIndex;
+}
+
+impl GetMatrixDimensions for Size {
+    fn row_height_ref(&self) -> &ElementIndex {
+        &self.row_height
+    }
+    fn column_width_ref(&self) -> &ElementIndex {
+        &self.column_width
     }
 }

@@ -7,5 +7,5 @@ pub mod operations;
 
 pub use coordinate::*;
 pub use element::*;
-pub use size::Size;
+pub use size::*;
 pub use sparse_matrix::*;

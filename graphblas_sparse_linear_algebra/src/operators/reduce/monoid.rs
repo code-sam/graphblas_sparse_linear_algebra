@@ -209,6 +209,7 @@ mod tests {
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
+    use crate::collections::sparse_matrix::GetMatrixDimensions;
     use crate::collections::sparse_vector::operations::FromVectorElementList;
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
@@ -239,7 +240,7 @@ mod tests {
                     .unwrap();
 
                     let mut product_vector =
-                        SparseVector::<$value_type>::new(&context, &matrix_size.row_height()).unwrap();
+                        SparseVector::<$value_type>::new(&context, matrix_size.row_height_ref()).unwrap();
 
                     let reducer = MonoidReducer::new(
                     );
@@ -262,14 +263,14 @@ mod tests {
 
                     let mask = SparseVector::<$value_type>::from_element_list(
                         &context.to_owned(),
-                        &matrix_size.row_height(),
+                        matrix_size.row_height_ref(),
                         &mask_element_list,
                         &First::<$value_type>::new(),
                     )
                     .unwrap();
 
                     let mut product_vector =
-                        SparseVector::<$value_type>::new(&context, &matrix_size.row_height()).unwrap();
+                        SparseVector::<$value_type>::new(&context, matrix_size.row_height_ref()).unwrap();
 
                     reducer
                         .to_column_vector(&MonoidPlus::<$value_type>::new(), &matrix, &Assignment::<$value_type>::new(), &mut product_vector, &mask, &OperatorOptions::new_default())

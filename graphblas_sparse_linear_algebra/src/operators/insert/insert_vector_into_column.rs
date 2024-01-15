@@ -198,6 +198,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
+    use crate::collections::sparse_matrix::GetMatrixDimensions;
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
 
     #[test]
@@ -244,7 +245,7 @@ mod tests {
         ]);
         let mask = SparseVector::<bool>::from_element_list(
             &context,
-            &matrix_size.row_height(),
+            matrix_size.row_height_ref(),
             &mask_element_list,
             &First::<bool>::new(),
         )
