@@ -3,8 +3,7 @@ use std::ptr;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::GetGraphblasDescriptor;
 
 use crate::collections::sparse_vector::operations::sparse_vector_length;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
@@ -41,7 +40,7 @@ where
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -52,7 +51,7 @@ where
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -66,7 +65,7 @@ impl<AccumulatorEvaluationDomain: ValueType>
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_insert_into.context();
 
@@ -87,7 +86,7 @@ impl<AccumulatorEvaluationDomain: ValueType>
                             vector_to_insert.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -104,7 +103,7 @@ impl<AccumulatorEvaluationDomain: ValueType>
                             vector_to_insert.graphblas_vector(),
                             index,
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -123,7 +122,7 @@ impl<AccumulatorEvaluationDomain: ValueType>
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_insert_into.context();
 
@@ -144,7 +143,7 @@ impl<AccumulatorEvaluationDomain: ValueType>
                             vector_to_insert.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -161,7 +160,7 @@ impl<AccumulatorEvaluationDomain: ValueType>
                             vector_to_insert.graphblas_vector(),
                             index,
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -186,6 +185,7 @@ mod tests {
 
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::index::ElementIndex;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_vector_into_vector() {

@@ -1,6 +1,6 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
@@ -8,7 +8,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::GetGraphblasDescriptor;
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Col_extract;
@@ -37,7 +37,7 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -50,7 +50,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -79,7 +79,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                             index.as_ptr(),
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -96,7 +96,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                             index,
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -115,10 +115,12 @@ mod tests {
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::SparseVector;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_column_extraction() {

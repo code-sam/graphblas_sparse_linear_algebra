@@ -6,7 +6,7 @@ use suitesparse_graphblas_sys::GxB_Vector_sort;
 
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::{GetGraphblasDescriptor, OperatorOptions};
 use crate::{
     collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
     error::SparseLinearAlgebraError,
@@ -48,7 +48,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },
@@ -69,7 +69,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     indices_to_sort_self.graphblas_vector(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },
@@ -89,7 +89,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },
@@ -101,7 +101,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         &self,
         sort_operator: &B,
     ) -> Result<SparseVector<ElementIndex>, SparseLinearAlgebraError> {
-        let mut indices_to_sort_self =
+        let indices_to_sort_self =
             SparseVector::<ElementIndex>::new(self.context_ref(), &self.length()?)?;
         self.context_ref().call(
             || unsafe {
@@ -110,7 +110,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     indices_to_sort_self.graphblas_vector(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },

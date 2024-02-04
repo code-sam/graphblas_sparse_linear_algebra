@@ -3,10 +3,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::OperatorOptionsTrait;
-use crate::operators::{
-    binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
-};
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::{
@@ -37,7 +35,7 @@ pub trait ApplyElementWiseMatrixAdditionSemiring<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -52,7 +50,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionSemiring<Evaluat
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -65,7 +63,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionSemiring<Evaluat
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -98,7 +96,7 @@ pub trait ApplyElementWiseMatrixAdditionMonoidOperator<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -113,7 +111,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionMonoidOperator<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -126,7 +124,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionMonoidOperator<E
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -160,7 +158,7 @@ pub trait ApplyElementWiseMatrixAdditionBinaryOperator<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -175,7 +173,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionBinaryOperator<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -188,7 +186,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionBinaryOperator<E
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },
@@ -210,6 +208,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireMatrix;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_element_wise_multiplication() {

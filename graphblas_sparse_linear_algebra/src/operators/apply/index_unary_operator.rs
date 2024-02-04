@@ -17,8 +17,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::OperatorOptions;
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::GetGraphblasDescriptor;
+
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
 
@@ -49,7 +49,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
@@ -60,7 +60,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -75,7 +75,7 @@ macro_rules! implement_apply_index_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
                 product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.to_owned().to_type()?;
@@ -89,7 +89,7 @@ macro_rules! implement_apply_index_binary_operator {
                             operator.graphblas_type(),
                             vector.graphblas_vector(),
                             argument,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -106,7 +106,7 @@ macro_rules! implement_apply_index_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.to_owned().to_type()?;
@@ -120,7 +120,7 @@ macro_rules! implement_apply_index_binary_operator {
                             operator.graphblas_type(),
                             matrix.graphblas_matrix(),
                             argument,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },
@@ -151,6 +151,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
     use crate::operators::mask::SelectEntireMatrix;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_matrix_index_unary_operator() {

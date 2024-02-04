@@ -1,16 +1,13 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::GetContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::extract::{ExtractMatrixColumn, MatrixColumnExtractor};
 use crate::operators::mask::VectorMask;
-use crate::operators::options::OperatorOptionsTrait;
-use crate::operators::{
-    extract::{ExtractMatrixColumn, MatrixColumnExtractor},
-    options::OperatorOptions,
-};
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
 use crate::value_type::ValueType;
 
 #[derive(Debug, Clone)]
@@ -34,7 +31,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -47,7 +44,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError> {
         // TODO: reduce cost by reusing instance
         let column_extractor = MatrixColumnExtractor::new();
@@ -73,10 +70,12 @@ mod tests {
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::SparseVector;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_row_extraction() {

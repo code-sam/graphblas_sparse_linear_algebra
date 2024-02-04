@@ -3,9 +3,10 @@ use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::OperatorOptionsTrait;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::MutateOperatorOptions;
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Matrix_reduce_BinaryOp;
@@ -33,7 +34,7 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn to_row_vector(
@@ -43,7 +44,7 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -57,7 +58,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -69,7 +70,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     argument.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_vector_ref() },
@@ -85,7 +86,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError> {
         self.to_colunm_vector(
             operator,
@@ -110,9 +111,12 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus};
 
-    use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix, GetMatrixDimensions};
+    use crate::collections::sparse_matrix::{
+        GetMatrixDimensions, MatrixElementList, Size, SparseMatrix,
+    };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_binary_operator_reducer() {

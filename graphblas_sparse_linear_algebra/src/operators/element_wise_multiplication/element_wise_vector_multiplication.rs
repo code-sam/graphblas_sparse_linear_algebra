@@ -3,10 +3,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::OperatorOptionsTrait;
-use crate::operators::{
-    binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
-};
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::{
@@ -37,7 +35,7 @@ pub trait ApplyElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain:
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -53,7 +51,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -66,7 +64,7 @@ impl<EvaluationDomain: ValueType>
                     operator.graphblas_type(),
                     multiplier.graphblas_vector(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -100,7 +98,7 @@ pub trait ApplyElementWiseVectorMultiplicationMonoidOperator<EvaluationDomain: V
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -116,7 +114,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -129,7 +127,7 @@ impl<EvaluationDomain: ValueType>
                     operator.graphblas_type(),
                     multiplier.graphblas_vector(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -163,7 +161,7 @@ pub trait ApplyElementWiseVectorMultiplicationBinaryOperator<EvaluationDomain: V
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -179,7 +177,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -192,7 +190,7 @@ impl<EvaluationDomain: ValueType>
                     operator.graphblas_type(),
                     multiplier.graphblas_vector(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -214,6 +212,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_element_wisemultiplication() {

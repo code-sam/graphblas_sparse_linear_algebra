@@ -10,8 +10,8 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::GetGraphblasDescriptor;
+
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled
@@ -43,7 +43,7 @@ where
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -55,7 +55,7 @@ where
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -70,7 +70,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -93,7 +93,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -111,7 +111,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                             index,
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -131,7 +131,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         mask_for_column_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -154,7 +154,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -172,7 +172,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
                             index,
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -198,6 +198,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_vector_into_column() {

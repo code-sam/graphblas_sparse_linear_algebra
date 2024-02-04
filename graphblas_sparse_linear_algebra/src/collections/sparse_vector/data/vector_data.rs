@@ -38,7 +38,7 @@ impl<T: ValueType + BuiltInValueType> VectorData<T> for SparseVector<T> {
                     // values.as_mut_ptr(),
                     length,
                     false,
-                    OperatorOptions::new_default().to_graphblas_descriptor(),
+                    OperatorOptions::new_default().graphblas_descriptor(),
                 )
             },
             self.graphblas_vector_ref(),

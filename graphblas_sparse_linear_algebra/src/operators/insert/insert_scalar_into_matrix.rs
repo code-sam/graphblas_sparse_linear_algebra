@@ -7,8 +7,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::OperatorOptions;
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::GetGraphblasDescriptor;
+
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{ConvertScalar, ValueType};
 
@@ -49,7 +49,7 @@ where
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -61,7 +61,7 @@ where
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -81,7 +81,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_type()?;
@@ -115,7 +115,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column.as_ptr(),
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -136,7 +136,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column.as_ptr(),
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -157,7 +157,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column,
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -178,7 +178,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column,
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -198,7 +198,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_type()?;
@@ -232,7 +232,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column.as_ptr(),
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -253,7 +253,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column.as_ptr(),
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -274,7 +274,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column,
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -295,7 +295,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     number_of_rows_to_insert_into,
                                     column,
                                     number_of_columns_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
@@ -326,6 +326,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_scalar_into_matrix() {
