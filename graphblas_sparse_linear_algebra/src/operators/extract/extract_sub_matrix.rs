@@ -172,11 +172,12 @@ mod tests {
     use crate::collections::sparse_matrix::operations::{
         FromMatrixElementList, GetSparseMatrixElementValue,
     };
-    use crate::collections::sparse_matrix::MatrixElementList;
+    use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_matrix_extraction() {

@@ -301,6 +301,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First, Plus};
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_matrix_into_matrix() {

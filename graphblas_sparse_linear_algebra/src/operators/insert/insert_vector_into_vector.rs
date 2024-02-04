@@ -185,6 +185,7 @@ mod tests {
 
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::index::ElementIndex;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_vector_into_vector() {

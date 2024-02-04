@@ -116,6 +116,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_binary_operator_reducer() {

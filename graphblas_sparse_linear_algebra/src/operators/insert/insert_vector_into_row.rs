@@ -201,6 +201,7 @@ mod tests {
         GetMatrixDimensions, MatrixElementList, Size, SparseMatrix,
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_vector_into_column() {

@@ -115,10 +115,12 @@ mod tests {
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::SparseVector;
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_column_extraction() {

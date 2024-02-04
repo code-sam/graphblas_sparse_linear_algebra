@@ -151,6 +151,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
     use crate::operators::mask::SelectEntireMatrix;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_matrix_index_unary_operator() {

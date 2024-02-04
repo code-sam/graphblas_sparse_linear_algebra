@@ -124,6 +124,7 @@ mod tests {
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
+    use crate::operators::options::OperatorOptions;
     use crate::operators::unary_operator::{Identity, LogicalNegation, One};
 
     #[test]

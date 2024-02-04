@@ -207,6 +207,7 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::monoid::Plus as MonoidPlus;
+    use crate::operators::options::OperatorOptions;
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::GetMatrixDimensions;

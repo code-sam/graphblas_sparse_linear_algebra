@@ -110,11 +110,12 @@ mod tests {
     use crate::collections::sparse_vector::operations::{
         FromVectorElementList, GetVectorElementValue,
     };
-    use crate::collections::sparse_vector::VectorElementList;
+    use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
     use crate::context::{Context, Mode};
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_vector_extraction() {

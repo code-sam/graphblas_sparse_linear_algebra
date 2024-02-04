@@ -98,6 +98,7 @@ mod tests {
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::index_unary_operator::{IsValueGreaterThan, IsValueLessThan};
     use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_zero_scalar_selector() {

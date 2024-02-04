@@ -205,6 +205,7 @@ mod tests {
 
     use crate::collections::sparse_vector::VectorElementList;
     use crate::index::ElementIndex;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_scalar_into_vector() {
