@@ -1,15 +1,13 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_vector::{GetGraphblasSparseVector};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::GetContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::extract::{ExtractMatrixColumn, MatrixColumnExtractor};
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
-use crate::operators::{
-    extract::{ExtractMatrixColumn, MatrixColumnExtractor},
-};
 use crate::value_type::ValueType;
 
 #[derive(Debug, Clone)]

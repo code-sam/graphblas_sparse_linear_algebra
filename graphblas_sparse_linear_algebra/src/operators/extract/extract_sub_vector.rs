@@ -1,5 +1,5 @@
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;
-use crate::collections::sparse_vector::{GetGraphblasSparseVector};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor};
+use crate::operators::options::GetGraphblasDescriptor;
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Vector_extract;

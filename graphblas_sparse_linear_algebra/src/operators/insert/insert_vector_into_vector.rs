@@ -5,8 +5,6 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::GetGraphblasDescriptor;
 
-
-
 use crate::collections::sparse_vector::operations::sparse_vector_length;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};

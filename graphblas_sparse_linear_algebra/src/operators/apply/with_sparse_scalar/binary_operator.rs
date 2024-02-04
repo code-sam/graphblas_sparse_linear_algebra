@@ -11,7 +11,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::apply::BinaryOperatorApplier;
 use crate::operators::binary_operator::{AccumulatorBinaryOperator, BinaryOperator};
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::{GetGraphblasDescriptor};
+use crate::operators::options::GetGraphblasDescriptor;
 use crate::value_type::ValueType;
 
 pub trait ApplyBinaryOperatorWithSparseScalar<EvaluationDomain>
