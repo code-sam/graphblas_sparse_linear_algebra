@@ -22,7 +22,7 @@ use crate::graphblas_bindings::{
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::{GetGraphblasDescriptor, OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
 use crate::value_type::ValueType;
 
@@ -147,7 +147,7 @@ impl<T: ValueType> SparseVector<T> {
                 GetGraphblasSparseVector::graphblas_vector(&diagonal),
                 matrix.graphblas_matrix(),
                 graphblas_diagonal_index,
-                DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
             )
         })?;
 

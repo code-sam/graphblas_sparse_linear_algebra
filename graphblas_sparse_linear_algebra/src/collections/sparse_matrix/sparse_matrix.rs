@@ -13,7 +13,7 @@ use crate::graphblas_bindings::{
 use crate::operators::mask::MatrixMask;
 
 use super::element::MatrixElementList;
-use super::size::{Size, GetMatrixDimensions};
+use super::size::{GetMatrixDimensions, Size};
 
 use crate::context::GetContext;
 use crate::context::{CallGraphBlasContext, Context};
@@ -289,7 +289,10 @@ mod tests {
         let new_size: Size = (1, 2).into();
         sparse_matrix.resize(&new_size).unwrap();
 
-        assert_eq!(new_size.row_height_ref().to_owned(), sparse_matrix.row_height().unwrap());
+        assert_eq!(
+            new_size.row_height_ref().to_owned(),
+            sparse_matrix.row_height().unwrap()
+        );
         assert_eq!(
             new_size.column_width_ref().to_owned(),
             sparse_matrix.column_width().unwrap()

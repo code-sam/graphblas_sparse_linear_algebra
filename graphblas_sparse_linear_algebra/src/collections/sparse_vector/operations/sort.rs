@@ -6,7 +6,7 @@ use suitesparse_graphblas_sys::GxB_Vector_sort;
 
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
 use crate::{
     collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
     error::SparseLinearAlgebraError,
@@ -48,7 +48,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },
@@ -69,7 +69,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     indices_to_sort_self.graphblas_vector(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },
@@ -89,7 +89,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },
@@ -110,7 +110,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
                     indices_to_sort_self.graphblas_vector(),
                     sort_operator.graphblas_type(),
                     self.graphblas_vector(),
-                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.to_graphblas_descriptor(),
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_vector_ref() },

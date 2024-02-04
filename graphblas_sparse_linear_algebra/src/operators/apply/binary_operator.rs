@@ -29,7 +29,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::MutateOperatorOptions;
 use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -61,7 +62,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_right_argument(
@@ -72,7 +73,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_left_argument(
@@ -83,7 +84,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_right_argument(
@@ -94,7 +95,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -109,7 +110,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.to_owned().to_type()?;
@@ -123,7 +124,7 @@ macro_rules! implement_apply_binary_operator {
                             operator.graphblas_type(),
                             first_argument.graphblas_vector(),
                             second_argument,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -140,7 +141,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.to_owned().to_type()?;
@@ -154,7 +155,7 @@ macro_rules! implement_apply_binary_operator {
                             operator.graphblas_type(),
                             first_argument,
                             second_argument.graphblas_vector(),
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_vector() },
@@ -171,7 +172,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.to_owned().to_type()?;
@@ -185,7 +186,7 @@ macro_rules! implement_apply_binary_operator {
                             operator.graphblas_type(),
                             first_argument.graphblas_matrix(),
                             second_argument,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },
@@ -202,7 +203,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.to_owned().to_type()?;
@@ -216,7 +217,7 @@ macro_rules! implement_apply_binary_operator {
                             operator.graphblas_type(),
                             first_argument,
                             second_argument.graphblas_matrix(),
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { &product.graphblas_matrix() },

@@ -47,7 +47,7 @@ impl OperatorOptions {
             transpose_input0,
             transpose_input1,
 
-            graphblas_descriptor: to_graphblas_descriptor(
+            graphblas_descriptor: graphblas_descriptor(
                 clear_output_before_use,
                 use_mask_structure_of_stored_values_as_mask,
                 use_mask_complement,
@@ -71,7 +71,7 @@ impl OperatorOptions {
             use_mask_structure_of_stored_values_as_mask,
             clear_output_before_use,
 
-            graphblas_descriptor: to_graphblas_descriptor(
+            graphblas_descriptor: graphblas_descriptor(
                 clear_output_before_use,
                 use_mask_structure_of_stored_values_as_mask,
                 use_mask_complement,
@@ -81,7 +81,7 @@ impl OperatorOptions {
         }
     }
 
-    // pub fn to_graphblas_descriptor(&self) -> GrB_Descriptor {
+    // pub fn graphblas_descriptor(&self) -> GrB_Descriptor {
     //     match (self.clearOutputBeforeUse, self.useMaskStructureOfStoredValuesAsMask, self.useMaskComplement, self.transposeInput0, self.transposeInput1) {
     //         (false,false,false,false,false) => unsafe {GraphblasDescriptor::Default(ptr::null())},
     //         (false,false,false,false,true) => unsafe {GraphblasDescriptor::Value(GrB_DESC_T1)},
@@ -116,7 +116,7 @@ impl OperatorOptions {
     //     }
     // }
 
-    // pub fn to_graphblas_descriptor(&self) -> GraphblasDescriptor {
+    // pub fn graphblas_descriptor(&self) -> GraphblasDescriptor {
     //     match (self.clearOutputBeforeUse, self.useMaskStructureOfStoredValuesAsMask, self.useMaskComplement, self.transposeInput0, self.transposeInput1) {
     //         (false,false,false,false,false) => unsafe {GraphblasDescriptor::Default(ptr::null())},
     //         (false,false,false,false,true) => unsafe {GraphblasDescriptor::Value(GrB_DESC_T1)},
@@ -154,36 +154,21 @@ impl OperatorOptions {
     // }
 }
 
-// pub struct DefaultOperatorOptions {
-//     clear_output_before_use: bool,
-//     use_mask_structure_of_stored_values_as_mask: bool,
-//     use_mask_complement: bool,
-//     transpose_input0: bool,
-//     transpose_input1: bool,
-// }
-
-// impl DefaultOperatorOptions {
-//     pub fn new() -> Self {
-
-//     }
-// }
-
-// impl OperatorOptionsTrait for DefaultOperatorOptions {
-//     fn negate_transpose_input0(&mut self) {
-//         todo!()
-//     }
-
-//     fn to_graphblas_descriptor(&self) -> GrB_Descriptor {
-//         ptr::null_mut()
-//     }
-// }
-
-pub(crate) trait OperatorOptionsTrait {
-    fn with_negated_transpose_input0(&self) -> Self;
-    fn to_graphblas_descriptor(&self) -> GrB_Descriptor;
+pub trait GetGraphblasDescriptor {
+    fn graphblas_descriptor(&self) -> GrB_Descriptor;
 }
 
-impl OperatorOptionsTrait for OperatorOptions {
+pub trait MutateOperatorOptions {
+    fn with_negated_transpose_input0(&self) -> Self;
+}
+
+impl GetGraphblasDescriptor for OperatorOptions {
+    fn graphblas_descriptor(&self) -> GrB_Descriptor {
+        self.graphblas_descriptor
+    }
+}
+
+impl MutateOperatorOptions for OperatorOptions {
     fn with_negated_transpose_input0(&self) -> Self {
         OperatorOptions::new(
             self.clear_output_before_use,
@@ -193,13 +178,9 @@ impl OperatorOptionsTrait for OperatorOptions {
             self.transpose_input1,
         )
     }
-
-    fn to_graphblas_descriptor(&self) -> GrB_Descriptor {
-        self.graphblas_descriptor
-    }
 }
 
-fn to_graphblas_descriptor(
+fn graphblas_descriptor(
     clear_output_before_use: bool,
     use_mask_structure_of_stored_values_as_mask: bool,
     use_mask_complement: bool,
@@ -348,6 +329,6 @@ mod tests {
     fn test_options() {
         let default_options = OperatorOptions::new_default();
         let expected_value: GrB_Descriptor = ptr::null_mut();
-        assert_eq!(default_options.to_graphblas_descriptor(), expected_value)
+        assert_eq!(default_options.graphblas_descriptor(), expected_value)
     }
 }

@@ -12,8 +12,9 @@ use crate::graphblas_bindings::{
 };
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::MutateOperatorOptions;
 use crate::operators::options::OperatorOptions;
-use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{ConvertScalar, ValueType};
 
@@ -46,7 +47,7 @@ where
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -57,7 +58,7 @@ where
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -76,7 +77,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -98,7 +99,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                     scalar_to_insert,
                                     index.as_ptr(),
                                     number_of_indices_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -115,7 +116,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                     scalar_to_insert,
                                     index,
                                     number_of_indices_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -134,7 +135,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
                 mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-                options: &OperatorOptions,
+                options: &impl GetGraphblasDescriptor,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -156,7 +157,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                     scalar_to_insert,
                                     index.as_ptr(),
                                     number_of_indices_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -173,7 +174,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                     scalar_to_insert,
                                     index,
                                     number_of_indices_to_insert_into,
-                                    options.to_graphblas_descriptor(),
+                                    options.graphblas_descriptor(),
                                 )
                             },
                             unsafe { vector_to_insert_into.graphblas_vector_ref() },

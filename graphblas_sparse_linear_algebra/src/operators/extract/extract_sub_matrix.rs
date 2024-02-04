@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Matrix_extract;
@@ -36,7 +36,7 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -49,7 +49,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -90,7 +90,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             number_of_rows_to_extract,
                             column.as_ptr(),
                             number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -111,7 +111,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             number_of_rows_to_extract,
                             column.as_ptr(),
                             number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -132,7 +132,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             number_of_rows_to_extract,
                             column,
                             number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },
@@ -153,7 +153,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             number_of_rows_to_extract,
                             column,
                             number_of_columns_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_matrix.graphblas_matrix_ref() },

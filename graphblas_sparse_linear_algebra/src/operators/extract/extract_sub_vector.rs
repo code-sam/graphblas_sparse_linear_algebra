@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Vector_extract;
@@ -36,7 +36,7 @@ pub trait ExtractSubVector<SubVector: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -49,7 +49,7 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 
@@ -75,7 +75,7 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
                             vector_to_extract_from.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_vector.graphblas_vector_ref() },
@@ -91,7 +91,7 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
                             vector_to_extract_from.graphblas_vector(),
                             index,
                             number_of_indices_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { sub_vector.graphblas_vector_ref() },

@@ -8,7 +8,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Col_extract;
@@ -37,7 +37,7 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -50,7 +50,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -79,7 +79,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                             index.as_ptr(),
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },
@@ -96,7 +96,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                             index,
                             number_of_indices_to_extract,
                             column_index_to_extract,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { column_vector.graphblas_vector_ref() },

@@ -3,7 +3,7 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
 use crate::operators::{
     binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
 };
@@ -37,7 +37,7 @@ pub trait ApplyElementWiseVectorAdditionSemiringOperator<EvaluationDomain: Value
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -52,7 +52,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionSemiringOperator
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -65,7 +65,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionSemiringOperator
                     operator.graphblas_type(),
                     multiplier.graphblas_vector(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -99,7 +99,7 @@ pub trait ApplyElementWiseVectorAdditionMonoidOperator<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -114,7 +114,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -127,7 +127,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<E
                     operator.graphblas_type(),
                     multiplier.graphblas_vector(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -161,7 +161,7 @@ pub trait ApplyElementWiseVectorAdditionBinaryOperator<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -176,7 +176,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -189,7 +189,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<E
                     operator.graphblas_type(),
                     multiplier.graphblas_vector(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },

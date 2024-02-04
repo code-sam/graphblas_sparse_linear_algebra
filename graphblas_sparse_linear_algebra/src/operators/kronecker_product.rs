@@ -12,7 +12,8 @@ use crate::graphblas_bindings::{
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::mask::MatrixMask;
-use super::options::OperatorOptionsTrait;
+use super::options::MutateOperatorOptions;
+use crate::operators::options::GetGraphblasDescriptor;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
@@ -38,7 +39,7 @@ pub trait SemiringKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -53,7 +54,7 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -66,7 +67,7 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
                     multiplication_operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_matrix_ref() },
@@ -94,7 +95,7 @@ pub trait MonoidKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -109,7 +110,7 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -122,7 +123,7 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
                     multiplication_operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_matrix_ref() },
@@ -150,7 +151,7 @@ pub trait BinaryOperatorKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -165,7 +166,7 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -178,7 +179,7 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
                     multiplication_operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_matrix_ref() },

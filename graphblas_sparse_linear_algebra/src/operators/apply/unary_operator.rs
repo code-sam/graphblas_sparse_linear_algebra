@@ -4,7 +4,7 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
 use crate::operators::{options::OperatorOptions, unary_operator::UnaryOperator};
 use crate::value_type::ValueType;
 
@@ -36,7 +36,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
@@ -46,7 +46,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -58,7 +58,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -70,7 +70,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     argument.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_vector() },
@@ -86,7 +86,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -98,7 +98,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     argument.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { &product.graphblas_matrix() },

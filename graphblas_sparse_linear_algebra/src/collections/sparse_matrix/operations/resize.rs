@@ -1,7 +1,9 @@
 use suitesparse_graphblas_sys::GrB_Matrix_resize;
 
 use crate::{
-    collections::sparse_matrix::{GetGraphblasSparseMatrix, Size, SparseMatrix, size::GetMatrixDimensions},
+    collections::sparse_matrix::{
+        size::GetMatrixDimensions, GetGraphblasSparseMatrix, Size, SparseMatrix,
+    },
     context::{CallGraphBlasContext, GetContext},
     error::SparseLinearAlgebraError,
     index::IndexConversion,

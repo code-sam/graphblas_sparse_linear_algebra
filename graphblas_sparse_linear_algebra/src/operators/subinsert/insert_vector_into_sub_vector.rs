@@ -7,8 +7,9 @@ use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::GxB_Vector_subassign;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::MutateOperatorOptions;
 use crate::operators::options::OperatorOptions;
-use crate::operators::options::OperatorOptionsTrait;
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled
@@ -39,7 +40,7 @@ where
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -50,7 +51,7 @@ where
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -64,7 +65,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_insert_into.context();
 
@@ -85,7 +86,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
                             vector_to_insert.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -102,7 +103,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
                             vector_to_insert.graphblas_vector(),
                             index,
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -121,7 +122,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_insert_into.context();
 
@@ -142,7 +143,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
                             vector_to_insert.graphblas_vector(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },
@@ -159,7 +160,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
                             vector_to_insert.graphblas_vector(),
                             index,
                             number_of_indices_to_insert_into,
-                            options.to_graphblas_descriptor(),
+                            options.graphblas_descriptor(),
                         )
                     },
                     unsafe { vector_to_insert_into.graphblas_vector_ref() },

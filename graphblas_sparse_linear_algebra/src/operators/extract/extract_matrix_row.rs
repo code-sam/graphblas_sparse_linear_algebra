@@ -6,7 +6,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::OperatorOptionsTrait;
+use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
 use crate::operators::{
     extract::{ExtractMatrixColumn, MatrixColumnExtractor},
     options::OperatorOptions,
@@ -34,7 +34,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -47,7 +47,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
     ) -> Result<(), SparseLinearAlgebraError> {
         // TODO: reduce cost by reusing instance
         let column_extractor = MatrixColumnExtractor::new();

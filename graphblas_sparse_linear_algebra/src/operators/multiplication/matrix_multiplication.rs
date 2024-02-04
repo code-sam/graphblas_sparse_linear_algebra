@@ -5,7 +5,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{MutateOperatorOptions, OperatorOptions};
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
 
@@ -35,7 +36,7 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     // TODO: consider a version where the resulting product matrix is generated in the function body
@@ -47,7 +48,7 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -62,7 +63,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -75,7 +76,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_matrix_ref() },
@@ -93,7 +94,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -106,7 +107,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_matrix(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_matrix_ref() },

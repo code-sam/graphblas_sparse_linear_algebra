@@ -6,7 +6,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{OperatorOptions, OperatorOptionsTrait};
+use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{MutateOperatorOptions, OperatorOptions};
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
 
@@ -36,7 +37,7 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     // TODO: consider a version where the resulting product matrix is generated in the function body
@@ -48,7 +49,7 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -63,7 +64,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -76,7 +77,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_vector_ref() },
@@ -94,7 +95,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &OperatorOptions,
+        options: &impl GetGraphblasDescriptor,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -107,7 +108,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix(),
                     multiplicant.graphblas_vector(),
-                    options.to_graphblas_descriptor(),
+                    options.graphblas_descriptor(),
                 )
             },
             unsafe { product.graphblas_vector_ref() },
