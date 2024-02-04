@@ -4,8 +4,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::operators::options::MutateOperatorOptions;
-use crate::operators::options::OperatorOptions;
+
+
 
 use crate::collections::sparse_vector::operations::sparse_vector_length;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;

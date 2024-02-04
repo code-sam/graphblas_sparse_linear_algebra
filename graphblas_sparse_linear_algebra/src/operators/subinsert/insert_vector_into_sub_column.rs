@@ -11,8 +11,8 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::operators::options::MutateOperatorOptions;
-use crate::operators::options::OperatorOptions;
+
+
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled

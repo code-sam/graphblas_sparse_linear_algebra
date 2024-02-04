@@ -6,7 +6,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::GetGraphblasDescriptor;
 use crate::operators::options::MutateOperatorOptions;
-use crate::operators::{binary_operator::BinaryOperator, options::OperatorOptions};
+use crate::operators::{binary_operator::BinaryOperator};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Matrix_reduce_BinaryOp;

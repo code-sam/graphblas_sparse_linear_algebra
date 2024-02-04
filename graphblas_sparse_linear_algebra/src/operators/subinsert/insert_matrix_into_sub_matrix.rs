@@ -7,7 +7,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::GxB_Matrix_subassign;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor};
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled

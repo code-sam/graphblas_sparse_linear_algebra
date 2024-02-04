@@ -6,7 +6,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::operators::options::{MutateOperatorOptions, OperatorOptions};
+
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
 

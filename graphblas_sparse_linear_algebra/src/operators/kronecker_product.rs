@@ -2,7 +2,7 @@ use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{
-    binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
+    binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring,
 };
 use crate::value_type::ValueType;
 
@@ -12,7 +12,7 @@ use crate::graphblas_bindings::{
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::mask::MatrixMask;
-use super::options::MutateOperatorOptions;
+
 use crate::operators::options::GetGraphblasDescriptor;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.

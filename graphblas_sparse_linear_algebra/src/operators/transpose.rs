@@ -4,12 +4,12 @@ use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::GrB_transpose;
-use crate::operators::options::OperatorOptions;
+
 use crate::value_type::ValueType;
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::mask::MatrixMask;
-use super::options::MutateOperatorOptions;
+
 use crate::operators::options::GetGraphblasDescriptor;
 
 #[derive(Debug, Clone)]

@@ -8,8 +8,8 @@ use crate::graphblas_bindings::GxB_Vector_subassign;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::operators::options::MutateOperatorOptions;
-use crate::operators::options::OperatorOptions;
+
+
 use crate::value_type::ValueType;
 
 // TODO: explicitly define how dupicates are handled

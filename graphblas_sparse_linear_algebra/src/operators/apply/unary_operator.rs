@@ -4,8 +4,8 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
-use crate::operators::{options::OperatorOptions, unary_operator::UnaryOperator};
+use crate::operators::options::{GetGraphblasDescriptor};
+use crate::operators::{unary_operator::UnaryOperator};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::{GrB_Matrix_apply, GrB_Vector_apply};

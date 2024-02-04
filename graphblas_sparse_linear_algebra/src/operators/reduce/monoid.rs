@@ -18,7 +18,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::GetGraphblasDescriptor;
 use crate::operators::options::MutateOperatorOptions;
-use crate::operators::{monoid::Monoid, options::OperatorOptions};
+use crate::operators::{monoid::Monoid};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
     implement_macro_for_all_value_types_and_2_typed_graphblas_functions_with_mutable_scalar_type_conversion,

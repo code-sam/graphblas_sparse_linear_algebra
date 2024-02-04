@@ -8,7 +8,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::operators::options::{MutateOperatorOptions, OperatorOptions};
+
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Matrix_assign;

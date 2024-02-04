@@ -7,7 +7,7 @@ use crate::operators::apply::IndexUnaryOperatorApplier;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::{GrB_Matrix_apply_IndexOp_Scalar, GrB_Vector_apply_IndexOp_Scalar};

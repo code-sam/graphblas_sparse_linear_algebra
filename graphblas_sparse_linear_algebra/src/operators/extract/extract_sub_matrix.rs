@@ -1,5 +1,5 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
-use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
+use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix};
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Matrix_extract;

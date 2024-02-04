@@ -6,7 +6,7 @@ use suitesparse_graphblas_sys::GxB_Vector_sort;
 
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions, OperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor, OperatorOptions};
 use crate::{
     collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
     error::SparseLinearAlgebraError,
@@ -101,7 +101,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         &self,
         sort_operator: &B,
     ) -> Result<SparseVector<ElementIndex>, SparseLinearAlgebraError> {
-        let mut indices_to_sort_self =
+        let indices_to_sort_self =
             SparseVector::<ElementIndex>::new(self.context_ref(), &self.length()?)?;
         self.context_ref().call(
             || unsafe {

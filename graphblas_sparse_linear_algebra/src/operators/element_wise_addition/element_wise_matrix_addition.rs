@@ -3,9 +3,9 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor};
 use crate::operators::{
-    binary_operator::BinaryOperator, monoid::Monoid, options::OperatorOptions, semiring::Semiring,
+    binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring,
 };
 use crate::value_type::ValueType;
 
