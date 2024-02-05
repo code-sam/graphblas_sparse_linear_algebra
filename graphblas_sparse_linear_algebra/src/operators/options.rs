@@ -32,6 +32,36 @@ pub struct OperatorOptions {
     graphblas_descriptor: GrB_Descriptor,
 }
 
+pub trait GetOperatorOptions {
+    fn clear_output_before_use(&self) -> bool;
+    fn use_mask_structure_of_stored_values_as_mask(&self) -> bool;
+    fn use_mask_complement(&self) -> bool;
+    fn transpose_input0(&self) -> bool;
+    fn transpose_input1(&self) -> bool;
+}
+
+impl GetOperatorOptions for OperatorOptions {
+    fn clear_output_before_use(&self) -> bool {
+        self.clear_output_before_use
+    }
+
+    fn use_mask_structure_of_stored_values_as_mask(&self) -> bool {
+        self.use_mask_structure_of_stored_values_as_mask
+    }
+
+    fn use_mask_complement(&self) -> bool {
+        self.use_mask_complement
+    }
+
+    fn transpose_input0(&self) -> bool {
+        self.transpose_input0
+    }
+
+    fn transpose_input1(&self) -> bool {
+        self.transpose_input1
+    }
+}
+
 impl OperatorOptions {
     pub fn new(
         clear_output_before_use: bool,
