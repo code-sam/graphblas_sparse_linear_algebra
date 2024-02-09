@@ -207,14 +207,14 @@ mod tests {
     };
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireMatrix;
     use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_element_wisemultiplication() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();

@@ -698,7 +698,7 @@ mod tests {
             },
             Collection,
         },
-        context::{Context, Mode},
+        context::Context,
         operators::{
             apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
             mask::{SelectEntireMatrix, SelectEntireVector},
@@ -719,7 +719,7 @@ mod tests {
 
     #[test]
     fn test_divide_by_zero() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list =
             VectorElementList::<u8>::from_element_vector(vec![(1, 1).into(), (2, 0).into()]);
@@ -803,7 +803,7 @@ mod tests {
 
     #[test]
     fn test_ldexp_and_type_casting_for_floating_point_operators() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<u8>::from_element_vector(vec![
             (0, 1).into(),
@@ -845,7 +845,7 @@ mod tests {
 
     #[test]
     fn test_bitshift() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<f64>::from_element_vector(vec![
             (0, u16::MAX as f64).into(),
@@ -902,7 +902,7 @@ mod tests {
 
     #[test]
     fn test_index() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (1, 1, 1).into(),

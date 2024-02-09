@@ -72,14 +72,14 @@ mod tests {
     use crate::collections::sparse_vector::operations::GetVectorElementValue;
     use crate::collections::sparse_vector::SparseVector;
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_row_extraction() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 1).into(),

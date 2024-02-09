@@ -129,7 +129,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
@@ -138,7 +138,7 @@ mod tests {
 
     #[test]
     fn test_multiplication_with_plus_times() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
         let options = OperatorOptions::new_default();

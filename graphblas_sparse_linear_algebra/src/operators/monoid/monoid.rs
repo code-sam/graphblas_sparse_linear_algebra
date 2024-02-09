@@ -199,7 +199,7 @@ mod tests {
         FromVectorElementList, GetVectorElementList, GetVectorElementValue,
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::element_wise_addition::{
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
@@ -215,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_element_wise_addition_with_equality_operator() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let operator = Equal::<bool>::new();
         let options = OperatorOptions::new_default();

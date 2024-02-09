@@ -43,7 +43,7 @@ macro_rules! sparse_matrix_from_element_vector {
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints
-                let mut vector = Self::new(context, length)?;
+                let vector = Self::new(context, length)?;
 
                 let mut graphblas_indices = Vec::with_capacity(elements.length());
 

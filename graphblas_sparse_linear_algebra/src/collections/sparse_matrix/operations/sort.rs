@@ -382,12 +382,12 @@ mod tests {
     use crate::collections::sparse_matrix::operations::get_element_value::GetSparseMatrixElementValue;
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::MatrixElementList;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{First, IsGreaterThan};
 
     #[test]
     fn sorted_values_and_indices() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<isize>::from_element_vector(vec![
             (1, 1, 2).into(),

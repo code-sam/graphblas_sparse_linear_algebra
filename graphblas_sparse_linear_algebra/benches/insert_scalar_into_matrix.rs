@@ -11,8 +11,6 @@ use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
 use graphblas_sparse_linear_algebra::index::{ElementIndex, ElementIndexSelector};
 
-use graphblas_sparse_linear_algebra::context::Mode;
-
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{MatrixElementList, Size};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::insert::{
@@ -22,7 +20,7 @@ use graphblas_sparse_linear_algebra::operators::insert::{
 use criterion::{criterion_group, criterion_main, Criterion};
 
 fn bench_insert_scalar_into_matrix(c: &mut Criterion) {
-    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+    let context = Context::init_default().unwrap();
 
     c.bench_function("test_insert_scalar_into_matrix", |b| {
         b.iter(|| bench_test(context.to_owned()))

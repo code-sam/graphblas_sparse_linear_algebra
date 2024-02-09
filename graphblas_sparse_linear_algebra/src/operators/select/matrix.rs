@@ -92,7 +92,7 @@ mod tests {
         FromMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn test_lower_triangle() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 1).into(),
@@ -174,7 +174,7 @@ mod tests {
 
     #[test]
     fn test_upper_triangle() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 1).into(),
@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn test_diagonal() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 1).into(),
@@ -368,7 +368,7 @@ mod tests {
 
     #[test]
     fn test_zero_selector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 1).into(),

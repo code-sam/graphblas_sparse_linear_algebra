@@ -129,12 +129,12 @@ mod tests {
     use crate::operators::binary_operator::{First, IsGreaterThan};
     use crate::{
         collections::sparse_vector::{SparseVector, VectorElementList},
-        context::{Context, Mode},
+        context::Context,
     };
 
     #[test]
     fn sorted_values_and_indices() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<isize>::from_element_vector(vec![
             (1, 1).into(),
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn sort() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<isize>::from_element_vector(vec![
             (1, 1).into(),
@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn sorted_values() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<isize>::from_element_vector(vec![
             (1, 1).into(),
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn indices_to_sort() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<isize>::from_element_vector(vec![
             (1, 1).into(),

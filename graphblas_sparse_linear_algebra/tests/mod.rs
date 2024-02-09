@@ -11,7 +11,7 @@ mod tests {
     use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
         Coordinate, GetMatrixElementValue, MatrixElement, Size, SparseMatrix,
     };
-    use graphblas_sparse_linear_algebra::context::{Context, Mode};
+    use graphblas_sparse_linear_algebra::context::Context;
     use graphblas_sparse_linear_algebra::operators::binary_operator::Plus;
     use graphblas_sparse_linear_algebra::operators::element_wise_multiplication::{
         ApplyElementWiseMatrixMultiplicationBinaryOperator,
@@ -22,7 +22,7 @@ mod tests {
 
     #[test]
     fn parallel_calls_to_graphblas() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let number_of_matrices = 100;
 

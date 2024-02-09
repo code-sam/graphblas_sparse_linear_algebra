@@ -121,7 +121,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::OperatorOptions;
@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_matrix_unary_operator() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (1, 1, 1).into(),
@@ -190,7 +190,7 @@ mod tests {
 
     #[test]
     fn test_vector_unary_operator() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<u8>::from_element_vector(vec![
             (1, 1).into(),
@@ -251,7 +251,7 @@ mod tests {
 
     #[test]
     fn test_vector_unary_negation_operator() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let vector_length: usize = 10;
         let vector = SparseVector::<bool>::new(&context, &vector_length).unwrap();

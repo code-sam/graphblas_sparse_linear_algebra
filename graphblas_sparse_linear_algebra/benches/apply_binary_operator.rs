@@ -4,8 +4,8 @@ use graphblas_sparse_linear_algebra::collections::sparse_matrix::MatrixElementLi
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::Size;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::SparseMatrix;
 use graphblas_sparse_linear_algebra::collections::Collection;
+use graphblas_sparse_linear_algebra::context::Context;
 use graphblas_sparse_linear_algebra::context::GetContext;
-use graphblas_sparse_linear_algebra::context::{Context, Mode};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use graphblas_sparse_linear_algebra::operators::apply::ApplyBinaryOperator;
@@ -16,7 +16,7 @@ use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
 use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
 fn bench_vector_indices(c: &mut Criterion) {
-    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+    let context = Context::init_default().unwrap();
 
     let element_list = MatrixElementList::<u8>::from_element_vector(vec![
         (1, 1, 1).into(),

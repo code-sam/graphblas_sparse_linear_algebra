@@ -180,7 +180,7 @@ mod tests {
         FromVectorElementList, GetVectorElementValue,
     };
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
 
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn test_insert_vector_into_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<u8>::from_element_vector(vec![
             (1, 1).into(),

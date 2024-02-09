@@ -106,14 +106,14 @@ mod tests {
         FromMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
     use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_transpose() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 1).into(),

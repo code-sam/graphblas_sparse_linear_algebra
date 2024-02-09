@@ -2,14 +2,14 @@ use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::{
     GetSparseVectorLength, GetVectorElementIndices, SetVectorElement,
 };
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{SparseVector, VectorElement};
-use graphblas_sparse_linear_algebra::context::{Context, Mode};
+use graphblas_sparse_linear_algebra::context::Context;
 use graphblas_sparse_linear_algebra::index::ElementIndex;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand::prelude::*;
 
 fn bench_vector_indices(c: &mut Criterion) {
-    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+    let context = Context::init_default().unwrap();
     let mut rng = rand::thread_rng();
 
     let mut vector = SparseVector::<ElementIndex>::new(&context, &100000).unwrap();

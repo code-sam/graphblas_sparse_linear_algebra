@@ -356,13 +356,12 @@ mod tests {
     // #[macro_use(implement_value_type_for_custom_type)]
 
     use super::*;
-    use crate::context::Mode;
 
     // use crate::value_type::{GraphblasFloat32, GraphblasInt32};
 
     #[test]
     fn new_scalar() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
 
@@ -371,7 +370,7 @@ mod tests {
 
     #[test]
     fn clone_scalar() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let sparse_scalar = SparseScalar::<f32>::new(&context).unwrap();
 
@@ -386,7 +385,7 @@ mod tests {
 
     #[test]
     fn test_set_value() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let mut sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
 
@@ -397,7 +396,7 @@ mod tests {
 
     #[test]
     fn clear_value_from_scalar() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let mut sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
 
@@ -414,7 +413,7 @@ mod tests {
 
     #[test]
     fn test_get_value() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let mut sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
 

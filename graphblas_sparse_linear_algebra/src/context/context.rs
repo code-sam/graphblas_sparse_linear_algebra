@@ -45,6 +45,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::error::{GraphblasError, GraphblasErrorType};
 use crate::error::{SystemError, SystemErrorType};
 
+use super::{MatrixStorageFormat, SetMatrixFormat};
+
 /*
 TO REVIEW: The GraphBLAS context can only be initialized once per process (i.e. not per thread)
 Also, after calling GrB_finalize(), the process must be restarted before GrB_init() can be called again.
@@ -81,7 +83,7 @@ pub trait GetContext {
     fn context_ref(&self) -> &Arc<Context>;
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Mode {
     Blocking,
     NonBlocking,
@@ -117,9 +119,21 @@ impl Context {
         Context::NotReady(NotReady {})
     }
 
-    pub fn init_ready(_mode: Mode) -> Result<Arc<Self>, SparseLinearAlgebraError> {
+    pub fn init(
+        mode: Mode,
+        matrix_storage_format: MatrixStorageFormat,
+    ) -> Result<Arc<Self>, SparseLinearAlgebraError> {
+        let mut context = Context::new();
+        context.start(mode)?;
+        context.set_matrix_format(matrix_storage_format)?;
+        Ok(Arc::new(context))
+    }
+
+    /// Sets MatrixStorageFormat::ByRow
+    pub fn init_default() -> Result<Arc<Self>, SparseLinearAlgebraError> {
         let mut context = Context::new();
         context.start(Mode::NonBlocking)?;
+        context.set_matrix_format(MatrixStorageFormat::ByRow)?;
         Ok(Arc::new(context))
     }
 
@@ -127,7 +141,7 @@ impl Context {
         let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         // println!("number_of_ready_contexts before starting: {:?}",number_of_ready_contexts.load(Ordering::SeqCst));
         if number_of_ready_contexts.load(Ordering::SeqCst) == 0 {
-            let status = initialize(mode.to_owned(), number_of_ready_contexts)?;
+            let status = initialize(mode, number_of_ready_contexts)?;
             *self = Context::Ready(Ready { mode });
             Ok(status)
         } else {
@@ -513,7 +527,7 @@ mod tests {
 
     #[test]
     fn start_and_drop_context_3() {
-        let _context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let _context = Context::init_default().unwrap();
 
         // assert_eq!(
         //     context,
@@ -530,7 +544,7 @@ mod tests {
 
     #[test]
     fn start_and_drop_context_4() {
-        let _context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let _context = Context::init_default().unwrap();
 
         // assert_eq!(
         //     context,
@@ -547,7 +561,7 @@ mod tests {
 
     #[test]
     fn start_and_drop_context_5() {
-        let _context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let _context = Context::init_default().unwrap();
 
         // assert_eq!(
         //     context,
@@ -560,5 +574,15 @@ mod tests {
         // // To compensate this test-specific error, manually increase the context count
         // let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         // number_of_ready_contexts.fetch_add(1, Ordering::SeqCst);
+    }
+
+    #[test]
+    fn custom_matrix_storage_format() {
+        let _context = Context::init(Mode::NonBlocking, MatrixStorageFormat::ByColumn).unwrap();
+    }
+
+    #[test]
+    fn custom_mode() {
+        let _context = Context::init(Mode::Blocking, MatrixStorageFormat::ByColumn).unwrap();
     }
 }
