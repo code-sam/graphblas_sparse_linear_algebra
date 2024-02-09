@@ -129,7 +129,7 @@ mod tests {
     use crate::operators::binary_operator::{First, IsGreaterThan};
     use crate::{
         collections::sparse_vector::{SparseVector, VectorElementList},
-        context::{Context, Mode},
+        context::Context,
     };
 
     #[test]

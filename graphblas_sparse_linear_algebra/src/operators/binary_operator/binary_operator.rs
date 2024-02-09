@@ -698,7 +698,7 @@ mod tests {
             },
             Collection,
         },
-        context::{Context, Mode},
+        context::Context,
         operators::{
             apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
             mask::{SelectEntireMatrix, SelectEntireVector},

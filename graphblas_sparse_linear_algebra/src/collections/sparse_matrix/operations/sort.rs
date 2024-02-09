@@ -382,7 +382,7 @@ mod tests {
     use crate::collections::sparse_matrix::operations::get_element_value::GetSparseMatrixElementValue;
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::MatrixElementList;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{First, IsGreaterThan};
 
     #[test]

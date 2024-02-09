@@ -180,7 +180,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::VectorElementList;
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::options::OperatorOptions;

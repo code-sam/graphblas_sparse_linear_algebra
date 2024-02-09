@@ -585,5 +585,4 @@ mod tests {
     fn custom_mode() {
         let _context = Context::init(Mode::Blocking, MatrixStorageFormat::ByColumn).unwrap();
     }
-
 }

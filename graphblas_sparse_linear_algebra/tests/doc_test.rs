@@ -6,7 +6,7 @@ mod tests {
         MatrixElementList, Size, SparseMatrix,
     };
     use graphblas_sparse_linear_algebra::collections::Collection;
-    use graphblas_sparse_linear_algebra::context::{Context, Mode};
+    use graphblas_sparse_linear_algebra::context::Context;
     use graphblas_sparse_linear_algebra::operators::apply::{
         ApplyBinaryOperator, BinaryOperatorApplier,
     };

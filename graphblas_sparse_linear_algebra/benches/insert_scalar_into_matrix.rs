@@ -11,8 +11,6 @@ use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
 use graphblas_sparse_linear_algebra::index::{ElementIndex, ElementIndexSelector};
 
-use graphblas_sparse_linear_algebra::context::Mode;
-
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{MatrixElementList, Size};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::insert::{

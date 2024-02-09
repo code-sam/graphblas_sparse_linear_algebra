@@ -195,7 +195,7 @@ mod tests {
         FromMatrixElementList, GetSparseMatrixElementList, GetSparseMatrixElementValue,
     };
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Times};
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};

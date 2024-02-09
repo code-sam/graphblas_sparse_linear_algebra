@@ -202,7 +202,7 @@ mod tests {
     use super::*;
 
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::Assignment;
     use crate::operators::binary_operator::First;
     use crate::operators::mask::SelectEntireVector;

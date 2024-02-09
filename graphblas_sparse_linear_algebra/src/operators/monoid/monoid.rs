@@ -199,7 +199,7 @@ mod tests {
         FromVectorElementList, GetVectorElementList, GetVectorElementValue,
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::element_wise_addition::{
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,

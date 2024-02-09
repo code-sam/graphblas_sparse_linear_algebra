@@ -1,5 +1,6 @@
 use suitesparse_graphblas_sys::{
-    GxB_Format_Value, GxB_Format_Value_GxB_BY_COL, GxB_Format_Value_GxB_BY_ROW, GxB_Global_Option_set, GxB_Option_Field, GxB_Option_Field_GxB_FORMAT
+    GxB_Format_Value, GxB_Format_Value_GxB_BY_COL, GxB_Format_Value_GxB_BY_ROW,
+    GxB_Global_Option_set, GxB_Option_Field_GxB_FORMAT,
 };
 
 use crate::error::SparseLinearAlgebraError;
@@ -35,13 +36,14 @@ impl SetMatrixFormat for Context {
     ) -> Result<(), SparseLinearAlgebraError> {
         self.call_without_detailed_error_information(|| unsafe {
             // TODO: use GrB_set() once it becomes available
-            GxB_Global_Option_set(GxB_Option_Field_GxB_FORMAT, <MatrixStorageFormat as Into<GxB_Format_Value>>::into(format))
+            GxB_Global_Option_set(
+                GxB_Option_Field_GxB_FORMAT,
+                <MatrixStorageFormat as Into<GxB_Format_Value>>::into(format),
+            )
         })?;
         Ok(())
     }
 }
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}

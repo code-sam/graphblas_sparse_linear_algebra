@@ -92,7 +92,7 @@ impl<T: ValueType> SparseVector<T> {
         indices: Vec<ElementIndex>,
         value: SparseScalar<T>,
     ) -> Result<Self, SparseLinearAlgebraError> {
-        let mut vector = SparseVector::<T>::new(context, length)?;
+        let vector = SparseVector::<T>::new(context, length)?;
         let context = context.to_owned();
 
         let graphblas_length = indices.len().to_graphblas_index()?;
@@ -390,7 +390,7 @@ mod tests {
         SetVectorElement,
     };
     use crate::collections::sparse_vector::VectorElement;
-    use crate::context::Mode;
+
     use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
     use crate::operators::binary_operator::First;
 

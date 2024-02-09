@@ -108,7 +108,7 @@ mod tests {
         FromVectorElementList, GetVectorElementValue,
     };
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus};
 
     use crate::collections::sparse_matrix::{

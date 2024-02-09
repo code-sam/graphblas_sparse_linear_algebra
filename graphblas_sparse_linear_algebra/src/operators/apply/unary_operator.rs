@@ -121,7 +121,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::OperatorOptions;

@@ -4,8 +4,8 @@ use graphblas_sparse_linear_algebra::collections::sparse_matrix::MatrixElementLi
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::Size;
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::SparseMatrix;
 use graphblas_sparse_linear_algebra::collections::Collection;
+use graphblas_sparse_linear_algebra::context::Context;
 use graphblas_sparse_linear_algebra::context::GetContext;
-use graphblas_sparse_linear_algebra::context::{Context, Mode};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use graphblas_sparse_linear_algebra::operators::apply::ApplyBinaryOperator;

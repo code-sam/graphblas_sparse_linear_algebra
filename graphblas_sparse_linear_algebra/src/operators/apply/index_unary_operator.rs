@@ -147,7 +147,7 @@ mod tests {
     };
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::Collection;
-    use crate::context::{Context, Mode};
+    use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
     use crate::operators::mask::SelectEntireMatrix;

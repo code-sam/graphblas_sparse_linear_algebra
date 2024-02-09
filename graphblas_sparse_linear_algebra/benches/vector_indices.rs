@@ -2,7 +2,7 @@ use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::{
     GetSparseVectorLength, GetVectorElementIndices, SetVectorElement,
 };
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{SparseVector, VectorElement};
-use graphblas_sparse_linear_algebra::context::{Context, Mode};
+use graphblas_sparse_linear_algebra::context::Context;
 use graphblas_sparse_linear_algebra::index::ElementIndex;
 
 use criterion::{criterion_group, criterion_main, Criterion};

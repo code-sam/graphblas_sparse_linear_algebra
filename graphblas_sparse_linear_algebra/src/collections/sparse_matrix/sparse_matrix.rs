@@ -234,7 +234,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::operations::FromVectorElementList;
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
-    use crate::context::Mode;
+
     use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
     use crate::operators::binary_operator::First;
 

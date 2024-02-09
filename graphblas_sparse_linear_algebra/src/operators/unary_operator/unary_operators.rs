@@ -465,7 +465,7 @@ mod tests {
             operations::{FromVectorElementList, GetVectorElementValue},
             SparseVector, VectorElementList,
         },
-        context::{Context, Mode},
+        context::Context,
         operators::{
             apply::{ApplyUnaryOperator, UnaryOperatorApplier},
             binary_operator::{Assignment, First},

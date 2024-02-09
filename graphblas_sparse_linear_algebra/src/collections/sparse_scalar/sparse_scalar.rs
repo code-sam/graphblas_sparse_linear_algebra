@@ -356,7 +356,6 @@ mod tests {
     // #[macro_use(implement_value_type_for_custom_type)]
 
     use super::*;
-    use crate::context::Mode;
 
     // use crate::value_type::{GraphblasFloat32, GraphblasInt32};
 
