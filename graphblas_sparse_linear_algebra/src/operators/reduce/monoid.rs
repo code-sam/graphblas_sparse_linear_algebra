@@ -222,7 +222,7 @@ mod tests {
             paste::paste! {
                 #[test]
                 fn [<test_monoid_to_vector_reducer_ $value_type>]() {
-                    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+                    let context = Context::init_default().unwrap();
 
                     let element_list = MatrixElementList::<$value_type>::from_element_vector(vec![
                         (1, 1, 1 as $value_type).into(),
@@ -290,7 +290,7 @@ mod tests {
 
                 #[test]
                 fn [<test_monoid_to_scalar_reducer_for_matrix_ $value_type>]() {
-                    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+                    let context = Context::init_default().unwrap();
 
                     let element_list = MatrixElementList::<$value_type>::from_element_vector(vec![
                         (1, 1, 1 as $value_type).into(),
@@ -323,7 +323,7 @@ mod tests {
 
                 #[test]
                 fn [<test_monoid_to_scalar_reducer_for_vector_ $value_type>]() {
-                    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+                    let context = Context::init_default().unwrap();
 
                     let element_list = VectorElementList::<$value_type>::from_element_vector(vec![
                         (1, 1 as $value_type).into(),

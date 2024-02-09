@@ -16,7 +16,7 @@ use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
 use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
 
 fn bench_vector_indices(c: &mut Criterion) {
-    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+    let context = Context::init_default().unwrap();
 
     let element_list = MatrixElementList::<u8>::from_element_vector(vec![
         (1, 1, 1).into(),

@@ -396,7 +396,7 @@ mod tests {
 
     #[test]
     fn new_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
 
@@ -408,7 +408,7 @@ mod tests {
 
     #[test]
     fn get_indices() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
         let value: usize = 11;
@@ -431,7 +431,7 @@ mod tests {
 
     #[test]
     fn get_values() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
         let value: u8 = 11;
@@ -455,7 +455,7 @@ mod tests {
 
     #[test]
     fn from_value() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
         let value: isize = 11;
@@ -480,7 +480,7 @@ mod tests {
 
     #[test]
     fn from_sparse_diagonal() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (0, 0, 0).into(),
@@ -520,7 +520,7 @@ mod tests {
 
     #[test]
     fn clone_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
 
@@ -538,7 +538,7 @@ mod tests {
 
     #[test]
     fn resize_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
 
@@ -555,7 +555,7 @@ mod tests {
 
     #[test]
     fn build_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
         let element_list = VectorElementList::<u8>::from_element_vector(vec![
             (1, 1).into(),
             (4, 2).into(),
@@ -582,7 +582,7 @@ mod tests {
 
     #[test]
     fn set_element_in_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
 
@@ -694,7 +694,7 @@ mod tests {
 
     #[test]
     fn remove_element_from_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
 
@@ -714,7 +714,7 @@ mod tests {
 
     #[test]
     fn get_element_from_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let length: ElementIndex = 10;
 
@@ -768,7 +768,7 @@ mod tests {
     #[test]
     fn get_element_list_from_matrix() {
         // TODO: check for a size of zero
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<u8>::from_element_vector(vec![
             (1, 1).into(),

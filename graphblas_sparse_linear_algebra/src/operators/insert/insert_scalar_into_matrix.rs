@@ -330,7 +330,7 @@ mod tests {
 
     #[test]
     fn test_insert_scalar_into_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (1, 1, 1).into(),
@@ -420,7 +420,7 @@ mod tests {
 
     #[test]
     fn test_insert_scalar_into_matrix_with_type_casting() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (1, 1, 1).into(),

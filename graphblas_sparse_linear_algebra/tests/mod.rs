@@ -22,7 +22,7 @@ mod tests {
 
     #[test]
     fn parallel_calls_to_graphblas() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let number_of_matrices = 100;
 

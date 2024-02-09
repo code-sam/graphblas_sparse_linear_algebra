@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn new_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height = 10;
         let target_width = 5;
@@ -256,7 +256,7 @@ mod tests {
 
     #[test]
     fn clone_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height = 10;
         let target_width = 5;
@@ -278,7 +278,7 @@ mod tests {
 
     #[test]
     fn resize_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height = 10;
         let target_width = 5;
@@ -304,7 +304,7 @@ mod tests {
 
     #[test]
     fn build_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (1, 1, 1).into(),
             (2, 2, 2).into(),
@@ -331,7 +331,7 @@ mod tests {
 
     #[test]
     fn from_diagonal_vector() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = VectorElementList::<isize>::from_element_vector(vec![
             (1, 1).into(),
@@ -373,7 +373,7 @@ mod tests {
 
     #[test]
     fn set_element_in_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height = 10;
         let target_width = 5;
@@ -422,7 +422,7 @@ mod tests {
 
     #[test]
     fn remove_element_from_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height: ElementIndex = 10;
         let target_width: ElementIndex = 5;
@@ -446,7 +446,7 @@ mod tests {
 
     #[test]
     fn get_element_from_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height: ElementIndex = 10;
         let target_width: ElementIndex = 5;
@@ -478,7 +478,7 @@ mod tests {
 
     #[test]
     fn get_element_from_usize_matrix() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height: ElementIndex = 10;
         let target_width: ElementIndex = 5;
@@ -511,7 +511,7 @@ mod tests {
     #[test]
     fn get_element_list_from_matrix() {
         // TODO: check for a size of zero
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<u8>::from_element_vector(vec![
             (1, 1, 1).into(),
@@ -556,7 +556,7 @@ mod tests {
 
     #[test]
     fn get_test_error_reporting_while_reading_an_element() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let target_height: ElementIndex = 10;
         let target_width: ElementIndex = 5;

@@ -387,7 +387,7 @@ mod tests {
 
     #[test]
     fn sorted_values_and_indices() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let element_list = MatrixElementList::<isize>::from_element_vector(vec![
             (1, 1, 2).into(),

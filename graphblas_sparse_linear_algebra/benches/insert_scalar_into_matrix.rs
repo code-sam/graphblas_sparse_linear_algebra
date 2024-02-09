@@ -22,7 +22,7 @@ use graphblas_sparse_linear_algebra::operators::insert::{
 use criterion::{criterion_group, criterion_main, Criterion};
 
 fn bench_insert_scalar_into_matrix(c: &mut Criterion) {
-    let context = Context::init_ready(Mode::NonBlocking).unwrap();
+    let context = Context::init_default().unwrap();
 
     c.bench_function("test_insert_scalar_into_matrix", |b| {
         b.iter(|| bench_test(context.to_owned()))

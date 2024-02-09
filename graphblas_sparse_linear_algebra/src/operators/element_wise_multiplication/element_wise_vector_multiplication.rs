@@ -216,7 +216,7 @@ mod tests {
 
     #[test]
     fn test_element_wisemultiplication() {
-        let context = Context::init_ready(Mode::NonBlocking).unwrap();
+        let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
         let options = OperatorOptions::new_default();
