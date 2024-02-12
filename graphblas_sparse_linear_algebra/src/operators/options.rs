@@ -190,6 +190,7 @@ pub trait GetGraphblasDescriptor {
 
 pub trait MutateOperatorOptions {
     fn with_negated_transpose_input0(&self) -> Self;
+    fn with_negated_transpose_input1(&self) -> Self;
 }
 
 impl GetGraphblasDescriptor for OperatorOptions {
@@ -206,6 +207,16 @@ impl MutateOperatorOptions for OperatorOptions {
             self.use_mask_complement,
             !self.transpose_input0,
             self.transpose_input1,
+        )
+    }
+
+    fn with_negated_transpose_input1(&self) -> Self {
+        OperatorOptions::new(
+            self.clear_output_before_use,
+            self.use_mask_structure_of_stored_values_as_mask,
+            self.use_mask_complement,
+            self.transpose_input0,
+            !self.transpose_input1,
         )
     }
 }
