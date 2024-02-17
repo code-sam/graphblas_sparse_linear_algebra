@@ -190,6 +190,10 @@ pub trait GetGraphblasDescriptor {
 
 pub trait MutateOperatorOptions {
     fn with_negated_transpose_input0(&self) -> Self;
+    fn with_negated_transpose_input1(&self) -> Self;
+    fn with_transpose_input0(&self, transpose_input0: bool) -> Self;
+    fn with_transpose_input1(&self, transpose_input1: bool) -> Self;
+    fn with_transpose_input(&self, transpose_input0: bool, transpose_input1: bool) -> Self;
 }
 
 impl GetGraphblasDescriptor for OperatorOptions {
@@ -207,6 +211,58 @@ impl MutateOperatorOptions for OperatorOptions {
             !self.transpose_input0,
             self.transpose_input1,
         )
+    }
+
+    fn with_negated_transpose_input1(&self) -> Self {
+        OperatorOptions::new(
+            self.clear_output_before_use,
+            self.use_mask_structure_of_stored_values_as_mask,
+            self.use_mask_complement,
+            self.transpose_input0,
+            !self.transpose_input1,
+        )
+    }
+
+    fn with_transpose_input0(&self, transpose_input0: bool) -> Self {
+        if transpose_input0 == self.transpose_input0 {
+            self.to_owned()
+        } else {
+            OperatorOptions::new(
+                self.clear_output_before_use,
+                self.use_mask_structure_of_stored_values_as_mask,
+                self.use_mask_complement,
+                transpose_input0,
+                self.transpose_input1,
+            )
+        }
+    }
+
+    fn with_transpose_input1(&self, transpose_input1: bool) -> Self {
+        if transpose_input1 == self.transpose_input1 {
+            self.to_owned()
+        } else {
+            OperatorOptions::new(
+                self.clear_output_before_use,
+                self.use_mask_structure_of_stored_values_as_mask,
+                self.use_mask_complement,
+                self.transpose_input0,
+                transpose_input1,
+            )
+        }
+    }
+
+    fn with_transpose_input(&self, transpose_input0: bool, transpose_input1: bool) -> Self {
+        if transpose_input0 == self.transpose_input0 && transpose_input1 == self.transpose_input1 {
+            self.to_owned()
+        } else {
+            OperatorOptions::new(
+                self.clear_output_before_use,
+                self.use_mask_structure_of_stored_values_as_mask,
+                self.use_mask_complement,
+                transpose_input0,
+                transpose_input1,
+            )
+        }
     }
 }
 
