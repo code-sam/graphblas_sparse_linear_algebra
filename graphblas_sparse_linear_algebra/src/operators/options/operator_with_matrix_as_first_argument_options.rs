@@ -3,7 +3,7 @@ use suitesparse_graphblas_sys::GrB_Descriptor;
 use super::{
     graphblas_descriptor, GetClearOutputBeforeUse, GetGraphblasDescriptor,
     GetMaskedOperatorOptions, GetOperatorMaskOptions, GetOperatorOptions,
-    GetTransposeFirstMatrixArgument, GetTransposeMatrixArgument, WithTransposeMatrixArgument,
+    GetTransposeFirstMatrixArgument, WithTransposeMatrixArgument,
 };
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
