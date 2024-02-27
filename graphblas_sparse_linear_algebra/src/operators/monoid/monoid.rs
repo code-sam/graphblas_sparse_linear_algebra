@@ -205,9 +205,7 @@ mod tests {
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
     };
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions,
-    };
+    use crate::operators::options::MaskedOperatorWithTransposableArgumentsOptions;
 
     #[test]
     fn new_binary_operator() {

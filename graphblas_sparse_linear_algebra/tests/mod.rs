@@ -18,9 +18,7 @@ mod tests {
         ElementWiseMatrixMultiplicationBinaryOperator,
     };
     use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
-    use graphblas_sparse_linear_algebra::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions,
-    };
+    use graphblas_sparse_linear_algebra::operators::options::MaskedOperatorWithTransposableArgumentsOptions;
 
     #[test]
     fn parallel_calls_to_graphblas() {

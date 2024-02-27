@@ -304,8 +304,7 @@ mod tests {
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First, Plus};
     use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions,
-        OperatorWithTransposableArgumentsOptions,
+        MaskedOperatorWithTransposableArgumentsOptions, OperatorWithTransposableArgumentsOptions,
     };
 
     #[test]

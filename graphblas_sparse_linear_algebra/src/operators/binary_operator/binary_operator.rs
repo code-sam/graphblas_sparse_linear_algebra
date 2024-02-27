@@ -702,9 +702,7 @@ mod tests {
         operators::{
             apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
             mask::{SelectEntireMatrix, SelectEntireVector},
-            options::{
-                MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
-            },
+            options::{MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions},
         },
     };
 

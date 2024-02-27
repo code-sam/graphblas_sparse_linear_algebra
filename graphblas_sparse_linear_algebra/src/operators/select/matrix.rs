@@ -102,7 +102,7 @@ mod tests {
         IsOnDiagonal, IsOnOrAboveDiagonal, IsOnOrBelowDiagonal, IsValueGreaterThan, IsValueLessThan,
     };
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions};
+    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
 
     #[test]
     fn test_lower_triangle() {

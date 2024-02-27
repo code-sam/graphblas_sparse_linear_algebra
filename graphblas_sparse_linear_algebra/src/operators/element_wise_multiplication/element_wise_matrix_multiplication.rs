@@ -210,9 +210,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions,
-    };
+    use crate::operators::options::MaskedOperatorWithTransposableArgumentsOptions;
 
     #[test]
     fn test_element_wisemultiplication() {
