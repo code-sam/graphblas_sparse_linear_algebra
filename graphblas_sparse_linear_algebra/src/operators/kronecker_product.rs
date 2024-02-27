@@ -202,7 +202,7 @@ mod tests {
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::operators::mask::SelectEntireMatrix;
     use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+        MaskedOperatorWithTransposableArgumentsOptions,
     };
 
     #[test]

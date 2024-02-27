@@ -115,7 +115,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
+    use crate::operators::options::{MaskedOperatorOptions};
 
     #[test]
     fn test_vector_extraction() {

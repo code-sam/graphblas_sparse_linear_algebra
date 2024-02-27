@@ -10,7 +10,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions, GetOperatorOptions,
+    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
     GetOperatorWithMatrixArgumentOptions,
 };
 
@@ -204,7 +204,7 @@ mod tests {
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::options::{
-        MaskedOperatorWithMatrixArgumentOptions, OperatorOptions, OperatorWithMatrixArgumentOptions,
+        MaskedOperatorWithMatrixArgumentOptions, OperatorWithMatrixArgumentOptions,
     };
 
     #[test]

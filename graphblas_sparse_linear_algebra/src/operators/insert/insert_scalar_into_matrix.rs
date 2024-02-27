@@ -329,7 +329,7 @@ mod tests {
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::options::{
-        MaskedOperatorWithMatrixArgumentOptions, OperatorOptions, OperatorWithMatrixArgumentOptions,
+        MaskedOperatorWithMatrixArgumentOptions, OperatorWithMatrixArgumentOptions,
     };
 
     #[test]

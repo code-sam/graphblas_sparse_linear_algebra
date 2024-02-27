@@ -13,8 +13,7 @@ use crate::graphblas_bindings::{
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
-    GetMaskedOperatorWithTransposableArgumentsOptions, GetOperatorWithMatrixArgumentOptions,
+    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions, GetOperatorWithMatrixArgumentOptions,
 };
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
@@ -325,8 +324,7 @@ mod tests {
     use crate::collections::sparse_matrix::{MatrixElementList, Size};
     use crate::index::ElementIndex;
     use crate::operators::options::{
-        GetMaskedOperatorWithMatrixArgumentOptions, MaskedOperatorWithMatrixArgumentOptions,
-        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+        MaskedOperatorWithMatrixArgumentOptions,
         OperatorWithMatrixArgumentOptions,
     };
 

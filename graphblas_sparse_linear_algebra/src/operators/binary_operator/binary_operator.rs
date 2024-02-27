@@ -704,7 +704,6 @@ mod tests {
             mask::{SelectEntireMatrix, SelectEntireVector},
             options::{
                 MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
-                OperatorOptions,
             },
         },
     };

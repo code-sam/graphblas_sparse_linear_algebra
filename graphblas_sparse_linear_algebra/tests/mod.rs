@@ -19,7 +19,7 @@ mod tests {
     };
     use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
     use graphblas_sparse_linear_algebra::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+        MaskedOperatorWithTransposableArgumentsOptions,
     };
 
     #[test]

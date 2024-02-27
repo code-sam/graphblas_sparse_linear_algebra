@@ -4,7 +4,7 @@ use std::ffi::OsString;
 use std::fs;
 use std::path::PathBuf;
 
-use git2::{Object, Oid, Repository, Revwalk};
+use git2::{Object, Oid, Repository};
 
 extern crate bindgen;
 extern crate cmake;

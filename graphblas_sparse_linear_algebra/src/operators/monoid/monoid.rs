@@ -206,7 +206,7 @@ mod tests {
     };
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+        MaskedOperatorWithTransposableArgumentsOptions,
     };
 
     #[test]

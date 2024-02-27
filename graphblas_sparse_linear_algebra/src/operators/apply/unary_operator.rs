@@ -6,7 +6,6 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
     GetGraphblasDescriptor, GetMaskedOperatorOptions, GetMaskedOperatorWithMatrixArgumentOptions,
-    GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
 };
 use crate::operators::unary_operator::UnaryOperator;
 use crate::value_type::ValueType;
@@ -128,7 +127,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::{
-        MaskedOperatorOptions, MaskedOperatorWithMatrixArgumentOptions, OperatorOptions,
+        MaskedOperatorOptions, MaskedOperatorWithMatrixArgumentOptions,
     };
     use crate::operators::unary_operator::{Identity, LogicalNegation, One};
 

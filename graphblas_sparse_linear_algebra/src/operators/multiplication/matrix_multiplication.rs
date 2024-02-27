@@ -134,8 +134,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
     use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
-        OperatorWithTransposableArgumentsOptions,
+        MaskedOperatorWithTransposableArgumentsOptions,
     };
     use crate::operators::semiring::PlusTimes;
 
