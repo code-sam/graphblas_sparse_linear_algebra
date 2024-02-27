@@ -10,7 +10,10 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{
+    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
+    GetOperatorWithMatrixArgumentOptions,
+};
 
 use crate::value_type::ValueType;
 
@@ -43,7 +46,7 @@ where
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -55,7 +58,7 @@ where
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -70,7 +73,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -131,7 +134,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         mask_for_column_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -198,7 +201,9 @@ mod tests {
     use crate::context::Context;
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{
+        MaskedOperatorWithMatrixArgumentOptions, OperatorOptions, OperatorWithMatrixArgumentOptions,
+    };
 
     #[test]
     fn test_insert_vector_into_column() {
@@ -264,7 +269,7 @@ mod tests {
                 &column_to_insert_into,
                 &vector_to_insert,
                 &Assignment::new(),
-                &OperatorOptions::new_default(),
+                &OperatorWithMatrixArgumentOptions::new_default(),
             )
             .unwrap();
 
@@ -291,7 +296,7 @@ mod tests {
                 &vector_to_insert,
                 &mask,
                 &Assignment::new(),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
             )
             .unwrap();
 

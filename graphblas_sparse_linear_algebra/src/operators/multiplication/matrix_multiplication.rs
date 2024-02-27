@@ -5,7 +5,10 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{
+    GetGraphblasDescriptor, GetMaskedOperatorWithTransposableArgumentsOptions,
+    GetOperatorWithTransposableArgumentsOptions,
+};
 
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
@@ -36,7 +39,7 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorWithTransposableArgumentsOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     // TODO: consider a version where the resulting product matrix is generated in the function body
@@ -48,7 +51,7 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -63,7 +66,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorWithTransposableArgumentsOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -94,7 +97,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -130,7 +133,10 @@ mod tests {
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{
+        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+        OperatorWithTransposableArgumentsOptions,
+    };
     use crate::operators::semiring::PlusTimes;
 
     #[test]
@@ -138,7 +144,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
-        let options = OperatorOptions::new_default();
+        let options = MaskedOperatorWithTransposableArgumentsOptions::new_default();
         let matrix_multiplier = MatrixMultiplicationOperator::new();
 
         let height = 2;
@@ -158,7 +164,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireMatrix::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithTransposableArgumentsOptions::new_default(),
             )
             .unwrap();
         let element_list = product.element_list().unwrap();
@@ -204,7 +210,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireMatrix::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithTransposableArgumentsOptions::new_default(),
             )
             .unwrap();
 

@@ -470,7 +470,7 @@ mod tests {
             apply::{ApplyUnaryOperator, UnaryOperatorApplier},
             binary_operator::{Assignment, First},
             mask::SelectEntireVector,
-            options::OperatorOptions,
+            options::{MaskedOperatorOptions, OperatorOptions},
         },
     };
 
@@ -511,7 +511,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 

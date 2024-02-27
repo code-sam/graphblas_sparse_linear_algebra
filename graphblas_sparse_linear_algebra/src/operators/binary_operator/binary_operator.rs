@@ -702,7 +702,10 @@ mod tests {
         operators::{
             apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
             mask::{SelectEntireMatrix, SelectEntireVector},
-            options::OperatorOptions,
+            options::{
+                MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
+                OperatorOptions,
+            },
         },
     };
 
@@ -746,7 +749,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -768,7 +771,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -788,7 +791,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
         println!("{}", product_vector);
@@ -833,7 +836,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -877,7 +880,7 @@ mod tests {
                     &Assignment::new(),
                     &mut product_vector,
                     &SelectEntireVector::new(&context),
-                    &OperatorOptions::new_default(),
+                    &MaskedOperatorOptions::new_default(),
                 )
                 .unwrap();
 
@@ -933,7 +936,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixAsFirstArgumentOptions::new_default(),
             )
             .unwrap();
 

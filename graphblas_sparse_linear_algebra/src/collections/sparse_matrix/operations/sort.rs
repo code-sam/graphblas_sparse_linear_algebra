@@ -2,11 +2,13 @@ use std::ptr;
 
 use once_cell::sync::Lazy;
 
-use suitesparse_graphblas_sys::{GrB_DESC_T0, GxB_Matrix_sort};
+use suitesparse_graphblas_sys::GxB_Matrix_sort;
 
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
-use crate::operators::options::{GetGraphblasDescriptor, OperatorOptions};
+use crate::operators::options::{
+    GetGraphblasDescriptor, OperatorOptions, OperatorWithMatrixAsFirstArgumentOptions,
+};
 use crate::{
     collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
     error::SparseLinearAlgebraError,
@@ -15,6 +17,10 @@ use crate::{
 };
 
 use super::GetSparseMatrixSize;
+
+static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT: Lazy<
+    OperatorWithMatrixAsFirstArgumentOptions,
+> = Lazy::new(|| OperatorWithMatrixAsFirstArgumentOptions::new(false, true));
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
@@ -82,7 +88,8 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
                     self.graphblas_matrix(),
-                    GrB_DESC_T0,
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
+                        .graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_matrix_ref() },
@@ -124,7 +131,8 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
                     indices_to_sort_columns.graphblas_matrix(),
                     sort_operator.graphblas_type(),
                     self.graphblas_matrix(),
-                    GrB_DESC_T0,
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
+                        .graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_matrix_ref() },
@@ -161,7 +169,8 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
                     self.graphblas_matrix(),
-                    GrB_DESC_T0,
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
+                        .graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_matrix_ref() },
@@ -203,7 +212,8 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
                     indices_to_sort_self.graphblas_matrix(),
                     sort_operator.graphblas_type(),
                     self.graphblas_matrix(),
-                    GrB_DESC_T0,
+                    DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
+                        .graphblas_descriptor(),
                 )
             },
             unsafe { self.graphblas_matrix_ref() },

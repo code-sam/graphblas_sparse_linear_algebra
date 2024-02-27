@@ -8,7 +8,10 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{
+    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
+    GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
+};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Col_extract;
@@ -37,7 +40,7 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -50,7 +53,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -120,7 +123,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions, OperatorOptions};
 
     #[test]
     fn test_column_extraction() {
@@ -158,7 +161,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut column_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
             )
             .unwrap();
 
@@ -204,7 +207,7 @@ mod tests {
                 &Assignment::<f32>::new(),
                 &mut column_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
             )
             .unwrap();
 

@@ -3,7 +3,7 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{GetGraphblasDescriptor, GetMaskedOperatorOptions};
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
 
@@ -35,7 +35,7 @@ pub trait ApplyElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain:
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -51,7 +51,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -98,7 +98,7 @@ pub trait ApplyElementWiseVectorMultiplicationMonoidOperator<EvaluationDomain: V
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -114,7 +114,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -161,7 +161,7 @@ pub trait ApplyElementWiseVectorMultiplicationBinaryOperator<EvaluationDomain: V
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -177,7 +177,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -212,14 +212,14 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
 
     #[test]
     fn test_element_wisemultiplication() {
         let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
-        let options = OperatorOptions::new_default();
+        let options = MaskedOperatorOptions::new_default();
         let element_wise_vector_multiplier = ElementWiseVectorMultiplicationBinaryOperator::new();
 
         let length = 4;

@@ -205,7 +205,9 @@ mod tests {
         ApplyElementWiseVectorAdditionMonoidOperator, ElementWiseVectorAdditionMonoidOperator,
     };
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{
+        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+    };
 
     #[test]
     fn new_binary_operator() {
@@ -218,7 +220,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let operator = Equal::<bool>::new();
-        let options = OperatorOptions::new_default();
+        let options = MaskedOperatorWithTransposableArgumentsOptions::new_default();
         let equality_operator = ElementWiseVectorAdditionMonoidOperator::new();
 
         let length = 7;

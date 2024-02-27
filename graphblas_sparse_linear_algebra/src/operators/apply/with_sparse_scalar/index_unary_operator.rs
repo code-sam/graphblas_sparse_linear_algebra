@@ -7,7 +7,7 @@ use crate::operators::apply::IndexUnaryOperatorApplier;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{GetGraphblasDescriptor, GetOperatorOptions};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::{GrB_Matrix_apply_IndexOp_Scalar, GrB_Vector_apply_IndexOp_Scalar};
@@ -24,7 +24,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
@@ -35,7 +35,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -50,7 +50,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -80,7 +80,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
