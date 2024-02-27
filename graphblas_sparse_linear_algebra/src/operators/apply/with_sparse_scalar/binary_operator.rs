@@ -14,7 +14,7 @@ use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
     GetGraphblasDescriptor, GetMaskedOperatorOptions,
     GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
-    GetMaskedOperatorWithMatrixAsSecondArgumentOptions, GetOperatorOptions,
+    GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
 };
 use crate::value_type::ValueType;
 
@@ -210,7 +210,7 @@ mod tests {
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::{
         MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
-        MaskedOperatorWithMatrixAsSecondArgumentOptions, OperatorOptions,
+        MaskedOperatorWithMatrixAsSecondArgumentOptions,
     };
 
     #[test]

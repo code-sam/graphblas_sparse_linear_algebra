@@ -303,8 +303,7 @@ mod tests {
     use crate::collections::sparse_matrix::{MatrixElementList, Size};
     use crate::index::ElementIndex;
     use crate::operators::options::{
-        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
-        OperatorWithTransposableArgumentsOptions,
+        MaskedOperatorWithTransposableArgumentsOptions, OperatorWithTransposableArgumentsOptions,
     };
 
     #[test]

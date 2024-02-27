@@ -258,8 +258,7 @@ mod tests {
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::{
         MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
-        MaskedOperatorWithMatrixAsSecondArgumentOptions, OperatorOptions,
-        OperatorWithMatrixAsFirstArgumentOptions, OperatorWithMatrixAsSecondArgumentOptions,
+        MaskedOperatorWithMatrixAsSecondArgumentOptions,
     };
 
     #[test]

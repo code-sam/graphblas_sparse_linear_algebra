@@ -212,7 +212,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
+    use crate::operators::options::MaskedOperatorOptions;
 
     #[test]
     fn test_element_wisemultiplication() {

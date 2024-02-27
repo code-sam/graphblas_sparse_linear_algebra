@@ -470,7 +470,7 @@ mod tests {
             apply::{ApplyUnaryOperator, UnaryOperatorApplier},
             binary_operator::{Assignment, First},
             mask::SelectEntireVector,
-            options::{MaskedOperatorOptions, OperatorOptions},
+            options::MaskedOperatorOptions,
         },
     };
 

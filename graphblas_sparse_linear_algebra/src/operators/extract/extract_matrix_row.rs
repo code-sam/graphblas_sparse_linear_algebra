@@ -8,8 +8,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::extract::{ExtractMatrixColumn, MatrixColumnExtractor};
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
-    GetMaskedOperatorWithMatrixArgumentOptions, GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
-    WithTransposeMatrixArgument,
+    GetMaskedOperatorWithMatrixArgumentOptions, WithTransposeMatrixArgument,
 };
 use crate::value_type::ValueType;
 
@@ -78,7 +77,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions, OperatorOptions};
+    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
 
     #[test]
     fn test_row_extraction() {

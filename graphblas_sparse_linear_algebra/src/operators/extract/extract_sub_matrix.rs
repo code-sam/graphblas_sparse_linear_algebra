@@ -8,8 +8,7 @@ use crate::index::{
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetMaskedOperatorWithMatrixArgumentOptions,
-    GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
+    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
 };
 use crate::value_type::ValueType;
 
@@ -180,7 +179,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions, OperatorOptions};
+    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
 
     #[test]
     fn test_matrix_extraction() {

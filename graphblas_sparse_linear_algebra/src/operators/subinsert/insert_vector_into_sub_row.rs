@@ -203,7 +203,7 @@ mod tests {
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::index::ElementIndex;
     use crate::operators::options::{
-        MaskedOperatorWithMatrixArgumentOptions, OperatorOptions, OperatorWithMatrixArgumentOptions,
+        MaskedOperatorWithMatrixArgumentOptions, OperatorWithMatrixArgumentOptions,
     };
 
     #[test]

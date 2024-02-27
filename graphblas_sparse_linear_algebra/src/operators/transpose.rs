@@ -112,7 +112,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions, OperatorOptions};
+    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
 
     #[test]
     fn test_transpose() {
