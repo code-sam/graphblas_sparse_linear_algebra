@@ -22,12 +22,12 @@ use crate::graphblas_bindings::{
 };
 use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementIndex, IndexConversion};
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, OperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor, OperatorWithMatrixAsFirstArgumentOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
 use crate::value_type::ValueType;
 
-static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
-    Lazy::new(|| OperatorOptions::new_default());
+static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorWithMatrixAsFirstArgumentOptions> =
+    Lazy::new(|| OperatorWithMatrixAsFirstArgumentOptions::new_default());
 
 #[derive(Debug)]
 pub struct SparseVector<T: ValueType> {

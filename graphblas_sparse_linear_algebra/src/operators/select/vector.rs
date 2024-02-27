@@ -11,7 +11,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{GetGraphblasDescriptor, GetMaskedOperatorOptions};
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -40,7 +40,7 @@ pub trait SelectFromVector<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -55,7 +55,7 @@ macro_rules! implement_select_from_vector {
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
                 product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetMaskedOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.to_owned().to_type()?;
                 argument.context_ref().call(
@@ -98,7 +98,7 @@ mod tests {
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::index_unary_operator::{IsValueGreaterThan, IsValueLessThan};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
 
     #[test]
     fn test_zero_scalar_selector() {
@@ -133,7 +133,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -155,7 +155,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -198,7 +198,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -220,7 +220,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 

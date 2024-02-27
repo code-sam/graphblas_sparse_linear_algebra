@@ -7,7 +7,10 @@ use crate::index::{ElementIndex, ElementIndexSelector};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::extract::{ExtractMatrixColumn, MatrixColumnExtractor};
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, MutateOperatorOptions};
+use crate::operators::options::{
+    GetMaskedOperatorWithMatrixArgumentOptions, GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
+    WithTransposeMatrixArgument,
+};
 use crate::value_type::ValueType;
 
 #[derive(Debug, Clone)]
@@ -31,7 +34,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
+        options: &(impl GetMaskedOperatorWithMatrixArgumentOptions + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -44,7 +47,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetGraphblasDescriptor + MutateOperatorOptions),
+        options: &(impl GetMaskedOperatorWithMatrixArgumentOptions + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError> {
         // TODO: reduce cost by reusing instance
         let column_extractor = MatrixColumnExtractor::new();
@@ -56,7 +59,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
             accumulator,
             row_vector,
             mask,
-            &options.with_negated_transpose_input0(),
+            &options.with_negated_transpose_matrix_argument(),
         )?;
 
         Ok(())
@@ -75,7 +78,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions, OperatorOptions};
 
     #[test]
     fn test_row_extraction() {
@@ -113,7 +116,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut column_vector,
                 &SelectEntireVector::new(&context),
-                &mut OperatorOptions::new_default(),
+                &mut MaskedOperatorWithMatrixArgumentOptions::new_default(),
             )
             .unwrap();
 

@@ -6,7 +6,9 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{
+    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetOperatorOptions,
+};
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -47,7 +49,7 @@ where
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire vector_to_insert_to
@@ -58,7 +60,7 @@ where
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -77,7 +79,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -135,7 +137,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetMaskedOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -205,7 +207,7 @@ mod tests {
     use crate::context::Context;
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
 
     #[test]
     fn test_insert_scalar_into_vector() {
@@ -279,7 +281,7 @@ mod tests {
                 &scalar_to_insert,
                 &Assignment::<u8>::new(),
                 &mask,
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 

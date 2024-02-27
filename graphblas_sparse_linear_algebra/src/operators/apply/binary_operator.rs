@@ -29,7 +29,10 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::GetGraphblasDescriptor;
+use crate::operators::options::{
+    GetMaskedOperatorOptions, GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
+    GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
+};
 
 use crate::operators::binary_operator::BinaryOperator;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_4_typed_graphblas_functions_with_implementation_type;
@@ -62,7 +65,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_right_argument(
@@ -73,7 +76,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_left_argument(
@@ -84,7 +87,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_right_argument(
@@ -95,7 +98,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -110,7 +113,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetMaskedOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.to_owned().to_type()?;
@@ -141,7 +144,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseVector + GetContext),
                 mask: &(impl VectorMask + GetContext),
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetMaskedOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.to_owned().to_type()?;
@@ -172,7 +175,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.to_owned().to_type()?;
@@ -203,7 +206,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &impl GetGraphblasDescriptor,
+                options: &impl GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.to_owned().to_type()?;
@@ -253,7 +256,11 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{
+        MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
+        MaskedOperatorWithMatrixAsSecondArgumentOptions, OperatorOptions,
+        OperatorWithMatrixAsFirstArgumentOptions, OperatorWithMatrixAsSecondArgumentOptions,
+    };
 
     #[test]
     fn test_matrix_binary_operator_application() {
@@ -290,7 +297,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixAsFirstArgumentOptions::new_default(),
             )
             .unwrap();
 
@@ -310,7 +317,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixAsSecondArgumentOptions::new_default(),
             )
             .unwrap();
 
@@ -355,7 +362,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -375,7 +382,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -420,7 +427,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -440,7 +447,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -485,7 +492,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -505,7 +512,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -514,60 +521,5 @@ mod tests {
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
         assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 1);
         assert_eq!(product_vector.element_value(&9).unwrap(), None);
-
-        // let operator = BinaryOperatorApplier::new(
-        //     &First::<u8, u8, u8, u8>::new(),
-        //     &OperatorOptions::new_default(),
-        //     None,
-        // );
-        // let first_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
-        // operator
-        //     .apply_with_vector_as_second_argument(&first_argument, &vector, &mut product_vector)
-        //     .unwrap();
-
-        // println!("{}", vector);
-        // println!("{}", product_vector);
-
-        // assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        // assert_eq!(product_vector.get_element_value(&2).unwrap(), 10);
-        // assert_eq!(product_vector.get_element_value(&9).unwrap(), 0);
     }
-
-    // #[test]
-    // fn test_operator_destructor() {
-    //     let context = Context::init_ready(Mode::NonBlocking).unwrap();
-    //     // Test if this causes a memory leak, due to the absence of an explicit call to GrB_free.
-    //     for i in 0..(1e5 as usize) {
-    //         let element_list = VectorElementList::<usize>::from_element_vector(vec![
-    //             (1, 1).into(),
-    //             (2, 2).into(),
-    //             (4, 4).into(),
-    //             (5, 5).into(),
-    //             (10+i, i).into(),
-    //         ]);
-
-    //         let vector_length: usize = 100+i;
-    //         let vector = SparseVector::<usize>::from_element_list(
-    //             &context.to_owned(),
-    //             &vector_length,
-    //             &element_list,
-    //             &First::<usize, usize, usize>::new(),
-    //         )
-    //         .unwrap();
-    //         let mut product_vector = SparseVector::<usize>::new(&context, &vector_length).unwrap();
-
-    //         let operator = BinaryOperatorApplier::new(
-    //             &Plus::<usize, usize, usize>::new(),
-    //             &OperatorOptions::new_default(),
-    //             None,
-    //         );
-
-    //         operator
-    //             .apply_with_vector_as_second_argument(&10, &vector, &mut product_vector)
-    //             .unwrap();
-
-    //         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 5);
-    //         assert_eq!(product_vector.get_element_value(&(10+i)).unwrap(), i+10);
-    //     }
-    // }
 }

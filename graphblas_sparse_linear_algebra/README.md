@@ -5,19 +5,22 @@ Rust wrapper for SuiteSparse:GraphBLAS
 ## Minimum example
 ```rust
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetSparseMatrixElementValue,
-    };
-    use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
-        MatrixElementList, Size, SparseMatrix,
-    };
-    use graphblas_sparse_linear_algebra::collections::Collection;
-    use graphblas_sparse_linear_algebra::context::{Context, Mode};
-    use graphblas_sparse_linear_algebra::operators::apply::{
-        ApplyBinaryOperator, BinaryOperatorApplier,
-    };
-    use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
-    use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
-    use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
+    FromMatrixElementList, GetSparseMatrixElementValue,
+};
+use graphblas_sparse_linear_algebra::collections::sparse_matrix::{
+    MatrixElementList, Size, SparseMatrix,
+};
+use graphblas_sparse_linear_algebra::collections::Collection;
+use graphblas_sparse_linear_algebra::context::Context;
+use graphblas_sparse_linear_algebra::operators::apply::{
+    ApplyBinaryOperator, BinaryOperatorApplier,
+};
+use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
+use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
+use graphblas_sparse_linear_algebra::operators::options::{
+    MaskedOperatorWithMatrixAsFirstArgumentOptions,
+    MaskedOperatorWithMatrixAsSecondArgumentOptions,
+};
 
 fn main() {
     let context = Context::init_default().unwrap();
@@ -50,7 +53,7 @@ fn main() {
             &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
-            &OperatorOptions::new_default(),
+            &MaskedOperatorWithMatrixAsFirstArgumentOptions::new_default(),
         )
         .unwrap();
 
@@ -70,7 +73,7 @@ fn main() {
             &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
-            &OperatorOptions::new_default(),
+            &MaskedOperatorWithMatrixAsSecondArgumentOptions::new_default(),
         )
         .unwrap();
 

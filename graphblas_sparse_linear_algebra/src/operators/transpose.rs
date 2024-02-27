@@ -9,6 +9,9 @@ use crate::value_type::ValueType;
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::mask::MatrixMask;
+use super::options::{
+    GetMaskedOperatorWithMatrixArgumentOptions, GetOperatorWithMatrixArgumentOptions,
+};
 
 use crate::operators::options::GetGraphblasDescriptor;
 
@@ -33,7 +36,7 @@ pub trait TransposeMatrix<EvaluationDomain: ValueType> {
         matrix: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         transpose: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_mask(
@@ -42,7 +45,7 @@ pub trait TransposeMatrix<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         transpose: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -52,7 +55,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
         matrix: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         transpose: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
@@ -78,7 +81,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         transpose: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetGraphblasDescriptor,
+        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();
 
@@ -109,7 +112,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OperatorOptions;
+    use crate::operators::options::{MaskedOperatorWithMatrixArgumentOptions, OperatorOptions};
 
     #[test]
     fn test_transpose() {
@@ -140,7 +143,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut matrix_transpose,
                 &SelectEntireMatrix::new(&context),
-                &OperatorOptions::new_default(),
+                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
             )
             .unwrap();
 

@@ -18,7 +18,9 @@ mod tests {
         ElementWiseMatrixMultiplicationBinaryOperator,
     };
     use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
-    use graphblas_sparse_linear_algebra::operators::options::OperatorOptions;
+    use graphblas_sparse_linear_algebra::operators::options::{
+        MaskedOperatorWithTransposableArgumentsOptions, OperatorOptions,
+    };
 
     #[test]
     fn parallel_calls_to_graphblas() {
@@ -39,7 +41,7 @@ mod tests {
         });
 
         let add_operator = Plus::<i32>::new();
-        let options = OperatorOptions::new_default();
+        let options = MaskedOperatorWithTransposableArgumentsOptions::new_default();
         let result_matrix = Mutex::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap());
 
         let element_wise_matrix_add_operator = ElementWiseMatrixMultiplicationBinaryOperator::new();
