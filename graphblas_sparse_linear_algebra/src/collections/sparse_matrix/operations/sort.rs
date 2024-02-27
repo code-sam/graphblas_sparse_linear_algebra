@@ -7,7 +7,7 @@ use suitesparse_graphblas_sys::GxB_Matrix_sort;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::index::ElementIndex;
 use crate::operators::options::{
-    GetGraphblasDescriptor, OperatorOptions, OperatorWithMatrixArgumentOptions,
+    GetGraphblasDescriptor, OperatorOptions, OptionsForOperatorWithMatrixArgument,
 };
 use crate::{
     collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
@@ -19,8 +19,8 @@ use crate::{
 use super::GetSparseMatrixSize;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT: Lazy<
-    OperatorWithMatrixArgumentOptions,
-> = Lazy::new(|| OperatorWithMatrixArgumentOptions::new(false, true));
+    OptionsForOperatorWithMatrixArgument,
+> = Lazy::new(|| OptionsForOperatorWithMatrixArgument::new(false, true));
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());

@@ -3,55 +3,55 @@ use suitesparse_graphblas_sys::GrB_Descriptor;
 use super::{
     graphblas_descriptor, GetClearOutputBeforeUse, GetGraphblasDescriptor,
     GetMaskedOperatorOptions, GetOperatorMaskOptions, GetOperatorOptions,
-    GetTransposeSecondMatrixArgument, WithTransposeMatrixArgument,
+    GetTransposeMatrixArgument, WithTransposeMatrixArgument,
 };
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for OperatorWithMatrixAsSecondArgumentOptions {}
-unsafe impl Sync for OperatorWithMatrixAsSecondArgumentOptions {}
+unsafe impl Send for OptionsForOperatorWithMatrixArgument {}
+unsafe impl Sync for OptionsForOperatorWithMatrixArgument {}
 
-unsafe impl Send for MaskedOperatorWithMatrixAsSecondArgumentOptions {}
-unsafe impl Sync for MaskedOperatorWithMatrixAsSecondArgumentOptions {}
+unsafe impl Send for OptionsForMaskedOperatorWithMatrixArgument {}
+unsafe impl Sync for OptionsForMaskedOperatorWithMatrixArgument {}
 
 #[derive(Debug, Clone)]
-pub struct OperatorWithMatrixAsSecondArgumentOptions {
+pub struct OptionsForOperatorWithMatrixArgument {
     clear_output_before_use: bool,
     transpose_matrix_argument: bool,
 
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetOperatorWithMatrixAsSecondArgumentOptions:
-    GetOperatorOptions + GetTransposeSecondMatrixArgument
+pub trait GetOptionsForOperatorWithMatrixArgument:
+    GetOperatorOptions + GetTransposeMatrixArgument
 {
 }
 
-impl GetOperatorOptions for OperatorWithMatrixAsSecondArgumentOptions {}
-impl GetOperatorWithMatrixAsSecondArgumentOptions for OperatorWithMatrixAsSecondArgumentOptions {}
+impl GetOperatorOptions for OptionsForOperatorWithMatrixArgument {}
+impl GetOptionsForOperatorWithMatrixArgument for OptionsForOperatorWithMatrixArgument {}
 
-impl GetClearOutputBeforeUse for OperatorWithMatrixAsSecondArgumentOptions {
+impl GetClearOutputBeforeUse for OptionsForOperatorWithMatrixArgument {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
     }
 }
 
-impl GetTransposeSecondMatrixArgument for OperatorWithMatrixAsSecondArgumentOptions {
-    fn transpose_second_matrix_argument(&self) -> bool {
+impl GetTransposeMatrixArgument for OptionsForOperatorWithMatrixArgument {
+    fn transpose_matrix_argument(&self) -> bool {
         self.transpose_matrix_argument
     }
 }
 
-impl GetGraphblasDescriptor for OperatorWithMatrixAsSecondArgumentOptions {
+impl GetGraphblasDescriptor for OptionsForOperatorWithMatrixArgument {
     fn graphblas_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
 }
 
-impl WithTransposeMatrixArgument for OperatorWithMatrixAsSecondArgumentOptions {
+impl WithTransposeMatrixArgument for OptionsForOperatorWithMatrixArgument {
     fn with_negated_transpose_matrix_argument(&self) -> Self {
-        OperatorWithMatrixAsSecondArgumentOptions::new(
+        OptionsForOperatorWithMatrixArgument::new(
             self.clear_output_before_use,
             !self.transpose_matrix_argument,
         )
@@ -61,7 +61,7 @@ impl WithTransposeMatrixArgument for OperatorWithMatrixAsSecondArgumentOptions {
         if transpose_matrix_argument == self.transpose_matrix_argument {
             self.to_owned()
         } else {
-            OperatorWithMatrixAsSecondArgumentOptions::new(
+            OptionsForOperatorWithMatrixArgument::new(
                 self.clear_output_before_use,
                 transpose_matrix_argument,
             )
@@ -69,7 +69,7 @@ impl WithTransposeMatrixArgument for OperatorWithMatrixAsSecondArgumentOptions {
     }
 }
 
-impl OperatorWithMatrixAsSecondArgumentOptions {
+impl OptionsForOperatorWithMatrixArgument {
     pub fn new(clear_output_before_use: bool, transpose_matrix_argument: bool) -> Self {
         Self {
             clear_output_before_use,
@@ -79,8 +79,8 @@ impl OperatorWithMatrixAsSecondArgumentOptions {
                 clear_output_before_use,
                 false,
                 false,
-                false,
                 transpose_matrix_argument,
+                false,
             ),
         }
     }
@@ -97,15 +97,15 @@ impl OperatorWithMatrixAsSecondArgumentOptions {
                 clear_output_before_use,
                 false,
                 false,
-                false,
                 transpose_matrix_argument,
+                false,
             ),
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct MaskedOperatorWithMatrixAsSecondArgumentOptions {
+pub struct OptionsForMaskedOperatorWithMatrixArgument {
     clear_output_before_use: bool,
     use_mask_structure_of_stored_values_as_mask: bool,
     use_mask_complement: bool,
@@ -114,24 +114,21 @@ pub struct MaskedOperatorWithMatrixAsSecondArgumentOptions {
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetMaskedOperatorWithMatrixAsSecondArgumentOptions:
-    GetMaskedOperatorOptions + GetTransposeSecondMatrixArgument
+pub trait GetOptionsForMaskedOperatorWithMatrixArgument:
+    GetMaskedOperatorOptions + GetTransposeMatrixArgument
 {
 }
 
-impl GetMaskedOperatorOptions for MaskedOperatorWithMatrixAsSecondArgumentOptions {}
-impl GetMaskedOperatorWithMatrixAsSecondArgumentOptions
-    for MaskedOperatorWithMatrixAsSecondArgumentOptions
-{
-}
+impl GetMaskedOperatorOptions for OptionsForMaskedOperatorWithMatrixArgument {}
+impl GetOptionsForMaskedOperatorWithMatrixArgument for OptionsForMaskedOperatorWithMatrixArgument {}
 
-impl GetClearOutputBeforeUse for MaskedOperatorWithMatrixAsSecondArgumentOptions {
+impl GetClearOutputBeforeUse for OptionsForMaskedOperatorWithMatrixArgument {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
     }
 }
 
-impl GetOperatorMaskOptions for MaskedOperatorWithMatrixAsSecondArgumentOptions {
+impl GetOperatorMaskOptions for OptionsForMaskedOperatorWithMatrixArgument {
     fn use_mask_structure_of_stored_values_as_mask(&self) -> bool {
         self.use_mask_structure_of_stored_values_as_mask
     }
@@ -141,21 +138,21 @@ impl GetOperatorMaskOptions for MaskedOperatorWithMatrixAsSecondArgumentOptions 
     }
 }
 
-impl GetTransposeSecondMatrixArgument for MaskedOperatorWithMatrixAsSecondArgumentOptions {
-    fn transpose_second_matrix_argument(&self) -> bool {
+impl GetTransposeMatrixArgument for OptionsForMaskedOperatorWithMatrixArgument {
+    fn transpose_matrix_argument(&self) -> bool {
         self.transpose_matrix_argument
     }
 }
 
-impl GetGraphblasDescriptor for MaskedOperatorWithMatrixAsSecondArgumentOptions {
+impl GetGraphblasDescriptor for OptionsForMaskedOperatorWithMatrixArgument {
     fn graphblas_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
 }
 
-impl WithTransposeMatrixArgument for MaskedOperatorWithMatrixAsSecondArgumentOptions {
+impl WithTransposeMatrixArgument for OptionsForMaskedOperatorWithMatrixArgument {
     fn with_negated_transpose_matrix_argument(&self) -> Self {
-        MaskedOperatorWithMatrixAsSecondArgumentOptions::new(
+        OptionsForMaskedOperatorWithMatrixArgument::new(
             self.clear_output_before_use,
             self.use_mask_structure_of_stored_values_as_mask,
             self.use_mask_complement,
@@ -167,7 +164,7 @@ impl WithTransposeMatrixArgument for MaskedOperatorWithMatrixAsSecondArgumentOpt
         if transpose_matrix == self.transpose_matrix_argument {
             self.to_owned()
         } else {
-            MaskedOperatorWithMatrixAsSecondArgumentOptions::new(
+            OptionsForMaskedOperatorWithMatrixArgument::new(
                 self.clear_output_before_use,
                 self.use_mask_structure_of_stored_values_as_mask,
                 self.use_mask_complement,
@@ -177,7 +174,7 @@ impl WithTransposeMatrixArgument for MaskedOperatorWithMatrixAsSecondArgumentOpt
     }
 }
 
-impl MaskedOperatorWithMatrixAsSecondArgumentOptions {
+impl OptionsForMaskedOperatorWithMatrixArgument {
     pub fn new(
         clear_output_before_use: bool,
         use_mask_structure_of_stored_values_as_mask: bool,
@@ -194,8 +191,8 @@ impl MaskedOperatorWithMatrixAsSecondArgumentOptions {
                 clear_output_before_use,
                 false,
                 false,
-                false,
                 transpose_matrix_argument,
+                false,
             ),
         }
     }
@@ -216,8 +213,8 @@ impl MaskedOperatorWithMatrixAsSecondArgumentOptions {
                 clear_output_before_use,
                 false,
                 false,
-                false,
                 transpose_matrix_argument,
+                false,
             ),
         }
     }
@@ -231,7 +228,7 @@ mod tests {
 
     #[test]
     fn test_options() {
-        let default_options = MaskedOperatorWithMatrixAsSecondArgumentOptions::new_default();
+        let default_options = OptionsForMaskedOperatorWithMatrixArgument::new_default();
         let expected_value: GrB_Descriptor = ptr::null_mut();
         assert_eq!(default_options.graphblas_descriptor(), expected_value)
     }

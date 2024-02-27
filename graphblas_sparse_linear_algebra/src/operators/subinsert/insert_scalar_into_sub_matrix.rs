@@ -13,8 +13,8 @@ use crate::graphblas_bindings::{
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
-    GetOperatorWithMatrixArgumentOptions,
+    GetOptionsForMaskedOperatorWithMatrixArgument,
+    GetOptionsForOperatorWithMatrixArgument,
 };
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
@@ -50,7 +50,7 @@ where
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -62,7 +62,7 @@ where
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -82,7 +82,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-                options: &impl GetOperatorWithMatrixArgumentOptions,
+                options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -197,7 +197,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
                 mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-                options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+                options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -325,7 +325,7 @@ mod tests {
     use crate::collections::sparse_matrix::{MatrixElementList, Size};
     use crate::index::ElementIndex;
     use crate::operators::options::{
-        MaskedOperatorWithMatrixArgumentOptions, OperatorWithMatrixArgumentOptions,
+        OptionsForMaskedOperatorWithMatrixArgument, OptionsForOperatorWithMatrixArgument,
     };
 
     #[test]
@@ -378,7 +378,7 @@ mod tests {
                 &columns_to_insert,
                 &scalar_to_insert,
                 &Assignment::new(),
-                &OperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -404,7 +404,7 @@ mod tests {
                 &scalar_to_insert,
                 &Assignment::new(),
                 &mask,
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

@@ -8,7 +8,7 @@ use crate::index::{
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
 };
 use crate::value_type::ValueType;
 
@@ -38,7 +38,7 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -51,7 +51,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
         sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();
 
@@ -179,7 +179,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
 
     #[test]
     fn test_matrix_extraction() {
@@ -217,7 +217,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut sub_matrix,
                 &SelectEntireMatrix::new(&context),
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -241,7 +241,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut sub_matrix,
                 &SelectEntireMatrix::new(&context),
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

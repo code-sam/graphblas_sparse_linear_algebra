@@ -3,7 +3,7 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::GetMaskedOperatorWithTransposableArgumentsOptions;
+use crate::operators::options::GetOptionsForMaskedOperatorWithTransposableArguments;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
 
@@ -35,7 +35,7 @@ pub trait ApplyElementWiseMatrixMultiplicationSemiring<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
+        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -50,7 +50,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixMultiplicationSemiring<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
+        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -96,7 +96,7 @@ pub trait ApplyElementWiseMatrixMultiplicationMonoidOperator<EvaluationDomain: V
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
+        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -112,7 +112,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
+        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -159,7 +159,7 @@ pub trait ApplyElementWiseMatrixMultiplicationBinaryOperator<EvaluationDomain: V
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
+        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -175,7 +175,7 @@ impl<EvaluationDomain: ValueType>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithTransposableArgumentsOptions,
+        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -210,14 +210,14 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::MaskedOperatorWithTransposableArgumentsOptions;
+    use crate::operators::options::OptionsForMaskedOperatorWithTransposableArguments;
 
     #[test]
     fn test_element_wisemultiplication() {
         let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
-        let options = MaskedOperatorWithTransposableArgumentsOptions::new_default();
+        let options = OptionsForMaskedOperatorWithTransposableArguments::new_default();
         let element_wise_matrix_multiplier = ElementWiseMatrixMultiplicationBinaryOperator::new();
 
         let height = 2;

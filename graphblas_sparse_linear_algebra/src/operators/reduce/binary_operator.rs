@@ -6,7 +6,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions, WithTransposeMatrixArgument,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument, WithTransposeMatrixArgument,
 };
 use crate::value_type::ValueType;
 
@@ -35,7 +35,7 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn to_row_vector(
@@ -45,7 +45,7 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetMaskedOperatorWithMatrixArgumentOptions + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -59,7 +59,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -87,7 +87,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetMaskedOperatorWithMatrixArgumentOptions + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError> {
         self.to_colunm_vector(
             operator,
@@ -117,7 +117,7 @@ mod tests {
     };
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
 
     #[test]
     fn test_binary_operator_reducer() {
@@ -152,7 +152,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -188,7 +188,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &mask,
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

@@ -30,8 +30,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
-    GetMaskedOperatorOptions, GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
-    GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
+    GetMaskedOperatorOptions, GetOptionsForMaskedOperatorWithMatrixAsFirstArgument,
+    GetOptionsForMaskedOperatorWithMatrixAsSecondArgument,
 };
 
 use crate::operators::binary_operator::BinaryOperator;
@@ -87,7 +87,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_right_argument(
@@ -98,7 +98,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -175,7 +175,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &impl GetMaskedOperatorWithMatrixAsFirstArgumentOptions,
+                options: &impl GetOptionsForMaskedOperatorWithMatrixAsFirstArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let second_argument = second_argument.to_owned().to_type()?;
@@ -206,7 +206,7 @@ macro_rules! implement_apply_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &impl GetMaskedOperatorWithMatrixAsSecondArgumentOptions,
+                options: &impl GetOptionsForMaskedOperatorWithMatrixAsSecondArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let first_argument = first_argument.to_owned().to_type()?;
@@ -257,8 +257,8 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First, Plus};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::{
-        MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions,
-        MaskedOperatorWithMatrixAsSecondArgumentOptions,
+        MaskedOperatorOptions, OptionsForMaskedOperatorWithMatrixAsFirstArgument,
+        OptionsForMaskedOperatorWithMatrixAsSecondArgument,
     };
 
     #[test]
@@ -296,7 +296,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &MaskedOperatorWithMatrixAsFirstArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
 
@@ -316,7 +316,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &MaskedOperatorWithMatrixAsSecondArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixAsSecondArgument::new_default(),
             )
             .unwrap();
 
