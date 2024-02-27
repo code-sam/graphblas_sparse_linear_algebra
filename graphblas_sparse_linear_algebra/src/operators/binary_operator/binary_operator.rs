@@ -702,7 +702,7 @@ mod tests {
         operators::{
             apply::{ApplyBinaryOperatorWithSparseScalar, BinaryOperatorApplier},
             mask::{SelectEntireMatrix, SelectEntireVector},
-            options::{MaskedOperatorOptions, MaskedOperatorWithMatrixAsFirstArgumentOptions},
+            options::{MaskedOperatorOptions, OptionsForMaskedOperatorWithMatrixAsFirstArgument},
         },
     };
 
@@ -933,7 +933,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &MaskedOperatorWithMatrixAsFirstArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
 

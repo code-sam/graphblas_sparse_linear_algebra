@@ -18,7 +18,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetMaskedOperatorWithMatrixArgumentOptions,
+    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetOptionsForMaskedOperatorWithMatrixArgument,
 };
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
@@ -62,7 +62,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -108,7 +108,7 @@ macro_rules! implement_apply_index_binary_operator {
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+                options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
                 let argument = argument.to_owned().to_type()?;
@@ -153,7 +153,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::index_unary_operator::IsValueGreaterThan;
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
 
     #[test]
     fn test_matrix_index_unary_operator() {
@@ -189,7 +189,7 @@ mod tests {
                 &Assignment::<i8>::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

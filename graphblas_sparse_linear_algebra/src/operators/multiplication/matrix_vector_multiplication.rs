@@ -7,9 +7,9 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions,
-    GetMaskedOperatorWithTransposableArgumentsOptions, GetOperatorWithMatrixArgumentOptions,
-    GetOperatorWithTransposableArgumentsOptions,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
+    GetOptionsForMaskedOperatorWithTransposableArguments, GetOptionsForOperatorWithMatrixArgument,
+    GetOptionsForOperatorWithTransposableArguments,
 };
 
 use crate::operators::semiring::Semiring;
@@ -41,7 +41,7 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     // TODO: consider a version where the resulting product matrix is generated in the function body
@@ -53,7 +53,7 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -68,7 +68,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -99,7 +99,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -138,7 +138,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::options::{
-        MaskedOperatorWithMatrixArgumentOptions, MaskedOperatorWithTransposableArgumentsOptions,
+        OptionsForMaskedOperatorWithMatrixArgument, OptionsForMaskedOperatorWithTransposableArguments,
     };
     use crate::operators::semiring::PlusTimes;
 
@@ -147,7 +147,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
-        let options = MaskedOperatorWithMatrixArgumentOptions::new_default();
+        let options = OptionsForMaskedOperatorWithMatrixArgument::new_default();
         let matrix_multiplier = MatrixVectorMultiplicationOperator::new();
 
         let length = 2;
@@ -166,7 +166,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorWithMatrixArgumentOptions::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
         let element_list = product.get_element_list().unwrap();

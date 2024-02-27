@@ -18,8 +18,8 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::monoid::Monoid;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorWithMatrixArgumentOptions, GetOperatorOptions,
-    GetOperatorWithMatrixArgumentOptions, WithTransposeMatrixArgument,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument, GetOperatorOptions,
+    GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
 };
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
@@ -50,7 +50,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn to_row_vector(
@@ -60,7 +60,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetMaskedOperatorWithMatrixArgumentOptions + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -72,7 +72,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -100,7 +100,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetMaskedOperatorWithMatrixArgumentOptions + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError> {
         self.to_column_vector(
             operator,
@@ -120,7 +120,7 @@ pub trait MonoidScalarReducer<EvaluationDomain: ValueType> {
         argument: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut EvaluationDomain,
-        options: &impl GetOperatorWithMatrixArgumentOptions,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn vector_to_scalar(
@@ -142,7 +142,7 @@ macro_rules! implement_monoid_reducer {
                 argument: &(impl GetGraphblasSparseMatrix + GetContext),
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
                 product: &mut $value_type,
-                options: &impl GetOperatorWithMatrixArgumentOptions,
+                options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
                 let mut tmp_product = product.to_owned().to_type()?;
@@ -209,9 +209,9 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::monoid::Plus as MonoidPlus;
-    use crate::operators::options::MaskedOperatorWithMatrixArgumentOptions;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
     use crate::operators::options::OperatorOptions;
-    use crate::operators::options::OperatorWithMatrixArgumentOptions;
+    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::GetMatrixDimensions;
@@ -255,7 +255,7 @@ mod tests {
                         &MonoidPlus::<$value_type>::new(),
                         &matrix, &Assignment::<$value_type>::new(),
                         &mut product_vector, &SelectEntireVector::new(&context),
-                        &MaskedOperatorWithMatrixArgumentOptions::new_default()).unwrap();
+                        &OptionsForMaskedOperatorWithMatrixArgument::new_default()).unwrap();
 
                     println!("{}", product_vector);
 
@@ -288,7 +288,7 @@ mod tests {
                             &matrix, &Assignment::<$value_type>::new(),
                             &mut product_vector,
                             &mask,
-                            &MaskedOperatorWithMatrixArgumentOptions::new_default())
+                            &OptionsForMaskedOperatorWithMatrixArgument::new_default())
                         .unwrap();
 
                     println!("{}", matrix);
@@ -332,7 +332,7 @@ mod tests {
                         &matrix,
                         &Assignment::new(),
                         &mut product,
-                        &OperatorWithMatrixArgumentOptions::new_default(),).unwrap();
+                        &OptionsForOperatorWithMatrixArgument::new_default(),).unwrap();
 
                     println!("{}", product);
 

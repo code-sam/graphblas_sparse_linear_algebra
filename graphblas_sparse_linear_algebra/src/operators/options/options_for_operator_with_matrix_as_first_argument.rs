@@ -9,49 +9,49 @@ use super::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for OperatorWithMatrixAsFirstArgumentOptions {}
-unsafe impl Sync for OperatorWithMatrixAsFirstArgumentOptions {}
+unsafe impl Send for OptionsForOperatorWithMatrixAsFirstArgument {}
+unsafe impl Sync for OptionsForOperatorWithMatrixAsFirstArgument {}
 
-unsafe impl Send for MaskedOperatorWithMatrixAsFirstArgumentOptions {}
-unsafe impl Sync for MaskedOperatorWithMatrixAsFirstArgumentOptions {}
+unsafe impl Send for OptionsForMaskedOperatorWithMatrixAsFirstArgument {}
+unsafe impl Sync for OptionsForMaskedOperatorWithMatrixAsFirstArgument {}
 
 #[derive(Debug, Clone)]
-pub struct OperatorWithMatrixAsFirstArgumentOptions {
+pub struct OptionsForOperatorWithMatrixAsFirstArgument {
     clear_output_before_use: bool,
     transpose_matrix_argument: bool,
 
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetOperatorWithMatrixAsFirstArgumentOptions:
+pub trait GetOptionsForOperatorWithMatrixAsFirstArgument:
     GetOperatorOptions + GetTransposeFirstMatrixArgument
 {
 }
 
-impl GetOperatorOptions for OperatorWithMatrixAsFirstArgumentOptions {}
-impl GetOperatorWithMatrixAsFirstArgumentOptions for OperatorWithMatrixAsFirstArgumentOptions {}
+impl GetOperatorOptions for OptionsForOperatorWithMatrixAsFirstArgument {}
+impl GetOptionsForOperatorWithMatrixAsFirstArgument for OptionsForOperatorWithMatrixAsFirstArgument {}
 
-impl GetClearOutputBeforeUse for OperatorWithMatrixAsFirstArgumentOptions {
+impl GetClearOutputBeforeUse for OptionsForOperatorWithMatrixAsFirstArgument {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
     }
 }
 
-impl GetTransposeFirstMatrixArgument for OperatorWithMatrixAsFirstArgumentOptions {
+impl GetTransposeFirstMatrixArgument for OptionsForOperatorWithMatrixAsFirstArgument {
     fn transpose_first_matrix_argument(&self) -> bool {
         self.transpose_matrix_argument
     }
 }
 
-impl GetGraphblasDescriptor for OperatorWithMatrixAsFirstArgumentOptions {
+impl GetGraphblasDescriptor for OptionsForOperatorWithMatrixAsFirstArgument {
     fn graphblas_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
 }
 
-impl WithTransposeMatrixArgument for OperatorWithMatrixAsFirstArgumentOptions {
+impl WithTransposeMatrixArgument for OptionsForOperatorWithMatrixAsFirstArgument {
     fn with_negated_transpose_matrix_argument(&self) -> Self {
-        OperatorWithMatrixAsFirstArgumentOptions::new(
+        OptionsForOperatorWithMatrixAsFirstArgument::new(
             self.clear_output_before_use,
             !self.transpose_matrix_argument,
         )
@@ -61,7 +61,7 @@ impl WithTransposeMatrixArgument for OperatorWithMatrixAsFirstArgumentOptions {
         if transpose_matrix_argument == self.transpose_matrix_argument {
             self.to_owned()
         } else {
-            OperatorWithMatrixAsFirstArgumentOptions::new(
+            OptionsForOperatorWithMatrixAsFirstArgument::new(
                 self.clear_output_before_use,
                 transpose_matrix_argument,
             )
@@ -69,7 +69,7 @@ impl WithTransposeMatrixArgument for OperatorWithMatrixAsFirstArgumentOptions {
     }
 }
 
-impl OperatorWithMatrixAsFirstArgumentOptions {
+impl OptionsForOperatorWithMatrixAsFirstArgument {
     pub fn new(clear_output_before_use: bool, transpose_matrix_argument: bool) -> Self {
         Self {
             clear_output_before_use,
@@ -105,7 +105,7 @@ impl OperatorWithMatrixAsFirstArgumentOptions {
 }
 
 #[derive(Debug, Clone)]
-pub struct MaskedOperatorWithMatrixAsFirstArgumentOptions {
+pub struct OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     clear_output_before_use: bool,
     use_mask_structure_of_stored_values_as_mask: bool,
     use_mask_complement: bool,
@@ -114,24 +114,24 @@ pub struct MaskedOperatorWithMatrixAsFirstArgumentOptions {
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetMaskedOperatorWithMatrixAsFirstArgumentOptions:
+pub trait GetOptionsForMaskedOperatorWithMatrixAsFirstArgument:
     GetMaskedOperatorOptions + GetTransposeFirstMatrixArgument
 {
 }
 
-impl GetMaskedOperatorOptions for MaskedOperatorWithMatrixAsFirstArgumentOptions {}
-impl GetMaskedOperatorWithMatrixAsFirstArgumentOptions
-    for MaskedOperatorWithMatrixAsFirstArgumentOptions
+impl GetMaskedOperatorOptions for OptionsForMaskedOperatorWithMatrixAsFirstArgument {}
+impl GetOptionsForMaskedOperatorWithMatrixAsFirstArgument
+    for OptionsForMaskedOperatorWithMatrixAsFirstArgument
 {
 }
 
-impl GetClearOutputBeforeUse for MaskedOperatorWithMatrixAsFirstArgumentOptions {
+impl GetClearOutputBeforeUse for OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
     }
 }
 
-impl GetOperatorMaskOptions for MaskedOperatorWithMatrixAsFirstArgumentOptions {
+impl GetOperatorMaskOptions for OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     fn use_mask_structure_of_stored_values_as_mask(&self) -> bool {
         self.use_mask_structure_of_stored_values_as_mask
     }
@@ -141,21 +141,21 @@ impl GetOperatorMaskOptions for MaskedOperatorWithMatrixAsFirstArgumentOptions {
     }
 }
 
-impl GetTransposeFirstMatrixArgument for MaskedOperatorWithMatrixAsFirstArgumentOptions {
+impl GetTransposeFirstMatrixArgument for OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     fn transpose_first_matrix_argument(&self) -> bool {
         self.transpose_matrix_argument
     }
 }
 
-impl GetGraphblasDescriptor for MaskedOperatorWithMatrixAsFirstArgumentOptions {
+impl GetGraphblasDescriptor for OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     fn graphblas_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
 }
 
-impl WithTransposeMatrixArgument for MaskedOperatorWithMatrixAsFirstArgumentOptions {
+impl WithTransposeMatrixArgument for OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     fn with_negated_transpose_matrix_argument(&self) -> Self {
-        MaskedOperatorWithMatrixAsFirstArgumentOptions::new(
+        OptionsForMaskedOperatorWithMatrixAsFirstArgument::new(
             self.clear_output_before_use,
             self.use_mask_structure_of_stored_values_as_mask,
             self.use_mask_complement,
@@ -167,7 +167,7 @@ impl WithTransposeMatrixArgument for MaskedOperatorWithMatrixAsFirstArgumentOpti
         if transpose_matrix == self.transpose_matrix_argument {
             self.to_owned()
         } else {
-            MaskedOperatorWithMatrixAsFirstArgumentOptions::new(
+            OptionsForMaskedOperatorWithMatrixAsFirstArgument::new(
                 self.clear_output_before_use,
                 self.use_mask_structure_of_stored_values_as_mask,
                 self.use_mask_complement,
@@ -177,7 +177,7 @@ impl WithTransposeMatrixArgument for MaskedOperatorWithMatrixAsFirstArgumentOpti
     }
 }
 
-impl MaskedOperatorWithMatrixAsFirstArgumentOptions {
+impl OptionsForMaskedOperatorWithMatrixAsFirstArgument {
     pub fn new(
         clear_output_before_use: bool,
         use_mask_structure_of_stored_values_as_mask: bool,
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn test_options() {
-        let default_options = MaskedOperatorWithMatrixAsFirstArgumentOptions::new_default();
+        let default_options = OptionsForMaskedOperatorWithMatrixAsFirstArgument::new_default();
         let expected_value: GrB_Descriptor = ptr::null_mut();
         assert_eq!(default_options.graphblas_descriptor(), expected_value)
     }
