@@ -18,7 +18,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::monoid::Monoid;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument, GetOperatorOptions,
+    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForMaskedOperatorWithMatrixArgument,
     GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
 };
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
@@ -209,8 +209,8 @@ mod tests {
     use crate::operators::binary_operator::First;
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::monoid::Plus as MonoidPlus;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
     use crate::operators::options::OperatorOptions;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
     use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;

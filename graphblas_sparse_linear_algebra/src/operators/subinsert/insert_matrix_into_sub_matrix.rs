@@ -8,8 +8,8 @@ use crate::graphblas_bindings::GxB_Matrix_subassign;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithTransposableArguments,
-    GetOptionsForOperatorWithTransposableArguments,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArguments,
+    GetOptionsForOperatorWithMatrixArguments,
 };
 use crate::value_type::ValueType;
 
@@ -42,7 +42,7 @@ where
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetOptionsForOperatorWithTransposableArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     /// mask and replace option apply to entire matrix_to_insert_to
@@ -54,7 +54,7 @@ where
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -69,7 +69,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        options: &impl GetOptionsForOperatorWithTransposableArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -183,7 +183,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrixTrait<MatrixToInser
         matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -303,7 +303,7 @@ mod tests {
     use crate::collections::sparse_matrix::{MatrixElementList, Size};
     use crate::index::ElementIndex;
     use crate::operators::options::{
-        OptionsForMaskedOperatorWithTransposableArguments, OptionsForOperatorWithTransposableArguments,
+        OptionsForMaskedOperatorWithMatrixArguments, OptionsForOperatorWithMatrixArguments,
     };
 
     #[test]
@@ -370,7 +370,7 @@ mod tests {
                 &columns_to_insert,
                 &matrix_to_insert,
                 &Assignment::new(),
-                &OptionsForOperatorWithTransposableArguments::new_default(),
+                &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
 
@@ -399,7 +399,7 @@ mod tests {
                 &matrix_to_insert,
                 &Assignment::new(),
                 &mask,
-                &OptionsForMaskedOperatorWithTransposableArguments::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
 

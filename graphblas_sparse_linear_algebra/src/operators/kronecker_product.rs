@@ -10,7 +10,7 @@ use crate::graphblas_bindings::{
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::mask::MatrixMask;
-use super::options::GetOptionsForMaskedOperatorWithTransposableArguments;
+use super::options::GetOptionsForMaskedOperatorWithMatrixArguments;
 
 use crate::operators::options::GetGraphblasDescriptor;
 
@@ -38,7 +38,7 @@ pub trait SemiringKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -53,7 +53,7 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -94,7 +94,7 @@ pub trait MonoidKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -109,7 +109,7 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -150,7 +150,7 @@ pub trait BinaryOperatorKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -165,7 +165,7 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -201,14 +201,14 @@ mod tests {
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OptionsForMaskedOperatorWithTransposableArguments;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArguments;
 
     #[test]
     fn test_element_wisemultiplication() {
         let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
-        let options = OptionsForMaskedOperatorWithTransposableArguments::new_default();
+        let options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
         let element_wise_matrix_multiplier = BinaryOperatorKroneckerProductOperator::new();
 
         let height = 2;

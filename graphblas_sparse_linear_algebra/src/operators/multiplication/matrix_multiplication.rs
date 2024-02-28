@@ -6,8 +6,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithTransposableArguments,
-    GetOptionsForOperatorWithTransposableArguments,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArguments,
+    GetOptionsForOperatorWithMatrixArguments,
 };
 
 use crate::operators::semiring::Semiring;
@@ -39,7 +39,7 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForOperatorWithTransposableArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     // TODO: consider a version where the resulting product matrix is generated in the function body
@@ -51,7 +51,7 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -66,7 +66,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForOperatorWithTransposableArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -97,7 +97,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithTransposableArguments,
+        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -133,7 +133,7 @@ mod tests {
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OptionsForMaskedOperatorWithTransposableArguments;
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArguments;
     use crate::operators::semiring::PlusTimes;
 
     #[test]
@@ -141,7 +141,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
-        let options = OptionsForMaskedOperatorWithTransposableArguments::new_default();
+        let options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
         let matrix_multiplier = MatrixMultiplicationOperator::new();
 
         let height = 2;
@@ -161,7 +161,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithTransposableArguments::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
         let element_list = product.element_list().unwrap();
@@ -207,7 +207,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithTransposableArguments::new_default(),
+                &OptionsForMaskedOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
 

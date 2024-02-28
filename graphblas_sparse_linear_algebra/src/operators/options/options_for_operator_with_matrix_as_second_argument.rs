@@ -29,7 +29,10 @@ pub trait GetOptionsForOperatorWithMatrixAsSecondArgument:
 }
 
 impl GetOperatorOptions for OptionsForOperatorWithMatrixAsSecondArgument {}
-impl GetOptionsForOperatorWithMatrixAsSecondArgument for OptionsForOperatorWithMatrixAsSecondArgument {}
+impl GetOptionsForOperatorWithMatrixAsSecondArgument
+    for OptionsForOperatorWithMatrixAsSecondArgument
+{
+}
 
 impl GetClearOutputBeforeUse for OptionsForOperatorWithMatrixAsSecondArgument {
     fn clear_output_before_use(&self) -> bool {
