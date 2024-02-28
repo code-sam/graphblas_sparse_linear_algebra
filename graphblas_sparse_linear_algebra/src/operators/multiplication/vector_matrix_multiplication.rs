@@ -136,10 +136,7 @@ mod tests {
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::{
-        OptionsForMaskedOperatorWithMatrixArguments,
-        OptionsForMaskedOperatorWithMatrixAsSecondArgument,
-    };
+    use crate::operators::options::OptionsForMaskedOperatorWithMatrixAsSecondArgument;
     use crate::operators::semiring::PlusTimes;
 
     #[test]
