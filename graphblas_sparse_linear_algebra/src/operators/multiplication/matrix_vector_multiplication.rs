@@ -8,8 +8,8 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
     GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
-    GetOptionsForMaskedOperatorWithTransposableArguments, GetOptionsForOperatorWithMatrixArgument,
-    GetOptionsForOperatorWithTransposableArguments,
+    GetOptionsForMaskedOperatorWithMatrixArguments, GetOptionsForOperatorWithMatrixArgument,
+    GetOptionsForOperatorWithMatrixArguments,
 };
 
 use crate::operators::semiring::Semiring;
@@ -138,7 +138,7 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::options::{
-        OptionsForMaskedOperatorWithMatrixArgument, OptionsForMaskedOperatorWithTransposableArguments,
+        OptionsForMaskedOperatorWithMatrixArgument, OptionsForMaskedOperatorWithMatrixArguments,
     };
     use crate::operators::semiring::PlusTimes;
 

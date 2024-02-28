@@ -9,14 +9,14 @@ use super::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for OptionsForOperatorWithTransposableArguments {}
-unsafe impl Sync for OptionsForOperatorWithTransposableArguments {}
+unsafe impl Send for OptionsForOperatorWithMatrixArguments {}
+unsafe impl Sync for OptionsForOperatorWithMatrixArguments {}
 
-unsafe impl Send for OptionsForMaskedOperatorWithTransposableArguments {}
-unsafe impl Sync for OptionsForMaskedOperatorWithTransposableArguments {}
+unsafe impl Send for OptionsForMaskedOperatorWithMatrixArguments {}
+unsafe impl Sync for OptionsForMaskedOperatorWithMatrixArguments {}
 
 #[derive(Debug, Clone)]
-pub struct OptionsForOperatorWithTransposableArguments {
+pub struct OptionsForOperatorWithMatrixArguments {
     clear_output_before_use: bool,
     transpose_first_argument: bool,
     transpose_second_argument: bool,
@@ -24,21 +24,21 @@ pub struct OptionsForOperatorWithTransposableArguments {
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetOptionsForOperatorWithTransposableArguments:
+pub trait GetOptionsForOperatorWithMatrixArguments:
     GetOperatorOptions + GetTransposeArguments
 {
 }
 
-impl GetOperatorOptions for OptionsForOperatorWithTransposableArguments {}
-impl GetOptionsForOperatorWithTransposableArguments for OptionsForOperatorWithTransposableArguments {}
+impl GetOperatorOptions for OptionsForOperatorWithMatrixArguments {}
+impl GetOptionsForOperatorWithMatrixArguments for OptionsForOperatorWithMatrixArguments {}
 
-impl GetClearOutputBeforeUse for OptionsForOperatorWithTransposableArguments {
+impl GetClearOutputBeforeUse for OptionsForOperatorWithMatrixArguments {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
     }
 }
 
-impl GetTransposeArguments for OptionsForOperatorWithTransposableArguments {
+impl GetTransposeArguments for OptionsForOperatorWithMatrixArguments {
     fn transpose_first_argument(&self) -> bool {
         self.transpose_first_argument
     }
@@ -48,15 +48,15 @@ impl GetTransposeArguments for OptionsForOperatorWithTransposableArguments {
     }
 }
 
-impl GetGraphblasDescriptor for OptionsForOperatorWithTransposableArguments {
+impl GetGraphblasDescriptor for OptionsForOperatorWithMatrixArguments {
     fn graphblas_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
 }
 
-impl WithTransposeArguments for OptionsForOperatorWithTransposableArguments {
+impl WithTransposeArguments for OptionsForOperatorWithMatrixArguments {
     fn with_negated_transpose_first_argument(&self) -> Self {
-        OptionsForOperatorWithTransposableArguments::new(
+        OptionsForOperatorWithMatrixArguments::new(
             self.clear_output_before_use,
             !self.transpose_first_argument,
             self.transpose_second_argument,
@@ -64,7 +64,7 @@ impl WithTransposeArguments for OptionsForOperatorWithTransposableArguments {
     }
 
     fn with_negated_transpose_second_argument(&self) -> Self {
-        OptionsForOperatorWithTransposableArguments::new(
+        OptionsForOperatorWithMatrixArguments::new(
             self.clear_output_before_use,
             self.transpose_first_argument,
             !self.transpose_second_argument,
@@ -75,7 +75,7 @@ impl WithTransposeArguments for OptionsForOperatorWithTransposableArguments {
         if transpose_first_argument == self.transpose_first_argument {
             self.to_owned()
         } else {
-            OptionsForOperatorWithTransposableArguments::new(
+            OptionsForOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
                 transpose_first_argument,
                 self.transpose_second_argument,
@@ -87,7 +87,7 @@ impl WithTransposeArguments for OptionsForOperatorWithTransposableArguments {
         if transpose_second_argument == self.transpose_second_argument {
             self.to_owned()
         } else {
-            OptionsForOperatorWithTransposableArguments::new(
+            OptionsForOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
                 self.transpose_first_argument,
                 transpose_second_argument,
@@ -105,7 +105,7 @@ impl WithTransposeArguments for OptionsForOperatorWithTransposableArguments {
         {
             self.to_owned()
         } else {
-            OptionsForOperatorWithTransposableArguments::new(
+            OptionsForOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
                 transpose_first_argument,
                 transpose_second_argument,
@@ -114,7 +114,7 @@ impl WithTransposeArguments for OptionsForOperatorWithTransposableArguments {
     }
 }
 
-impl OptionsForOperatorWithTransposableArguments {
+impl OptionsForOperatorWithMatrixArguments {
     pub fn new(
         clear_output_before_use: bool,
         transpose_first_argument: bool,
@@ -157,7 +157,7 @@ impl OptionsForOperatorWithTransposableArguments {
 }
 
 #[derive(Debug, Clone)]
-pub struct OptionsForMaskedOperatorWithTransposableArguments {
+pub struct OptionsForMaskedOperatorWithMatrixArguments {
     clear_output_before_use: bool,
     use_mask_structure_of_stored_values_as_mask: bool,
     use_mask_complement: bool,
@@ -167,24 +167,24 @@ pub struct OptionsForMaskedOperatorWithTransposableArguments {
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetOptionsForMaskedOperatorWithTransposableArguments:
+pub trait GetOptionsForMaskedOperatorWithMatrixArguments:
     GetMaskedOperatorOptions + GetTransposeArguments
 {
 }
 
-impl GetMaskedOperatorOptions for OptionsForMaskedOperatorWithTransposableArguments {}
-impl GetOptionsForMaskedOperatorWithTransposableArguments
-    for OptionsForMaskedOperatorWithTransposableArguments
+impl GetMaskedOperatorOptions for OptionsForMaskedOperatorWithMatrixArguments {}
+impl GetOptionsForMaskedOperatorWithMatrixArguments
+    for OptionsForMaskedOperatorWithMatrixArguments
 {
 }
 
-impl GetClearOutputBeforeUse for OptionsForMaskedOperatorWithTransposableArguments {
+impl GetClearOutputBeforeUse for OptionsForMaskedOperatorWithMatrixArguments {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
     }
 }
 
-impl GetOperatorMaskOptions for OptionsForMaskedOperatorWithTransposableArguments {
+impl GetOperatorMaskOptions for OptionsForMaskedOperatorWithMatrixArguments {
     fn use_mask_structure_of_stored_values_as_mask(&self) -> bool {
         self.use_mask_structure_of_stored_values_as_mask
     }
@@ -194,7 +194,7 @@ impl GetOperatorMaskOptions for OptionsForMaskedOperatorWithTransposableArgument
     }
 }
 
-impl GetTransposeArguments for OptionsForMaskedOperatorWithTransposableArguments {
+impl GetTransposeArguments for OptionsForMaskedOperatorWithMatrixArguments {
     fn transpose_first_argument(&self) -> bool {
         self.transpose_first_argument
     }
@@ -204,15 +204,15 @@ impl GetTransposeArguments for OptionsForMaskedOperatorWithTransposableArguments
     }
 }
 
-impl GetGraphblasDescriptor for OptionsForMaskedOperatorWithTransposableArguments {
+impl GetGraphblasDescriptor for OptionsForMaskedOperatorWithMatrixArguments {
     fn graphblas_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
 }
 
-impl WithTransposeArguments for OptionsForMaskedOperatorWithTransposableArguments {
+impl WithTransposeArguments for OptionsForMaskedOperatorWithMatrixArguments {
     fn with_negated_transpose_first_argument(&self) -> Self {
-        OptionsForMaskedOperatorWithTransposableArguments::new(
+        OptionsForMaskedOperatorWithMatrixArguments::new(
             self.clear_output_before_use,
             self.use_mask_structure_of_stored_values_as_mask,
             self.use_mask_complement,
@@ -222,7 +222,7 @@ impl WithTransposeArguments for OptionsForMaskedOperatorWithTransposableArgument
     }
 
     fn with_negated_transpose_second_argument(&self) -> Self {
-        OptionsForMaskedOperatorWithTransposableArguments::new(
+        OptionsForMaskedOperatorWithMatrixArguments::new(
             self.clear_output_before_use,
             self.use_mask_structure_of_stored_values_as_mask,
             self.use_mask_complement,
@@ -235,7 +235,7 @@ impl WithTransposeArguments for OptionsForMaskedOperatorWithTransposableArgument
         if transpose_first_argument == self.transpose_first_argument {
             self.to_owned()
         } else {
-            OptionsForMaskedOperatorWithTransposableArguments::new(
+            OptionsForMaskedOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
                 self.use_mask_structure_of_stored_values_as_mask,
                 self.use_mask_complement,
@@ -249,7 +249,7 @@ impl WithTransposeArguments for OptionsForMaskedOperatorWithTransposableArgument
         if transpose_second_argument == self.transpose_second_argument {
             self.to_owned()
         } else {
-            OptionsForMaskedOperatorWithTransposableArguments::new(
+            OptionsForMaskedOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
                 self.use_mask_structure_of_stored_values_as_mask,
                 self.use_mask_complement,
@@ -269,7 +269,7 @@ impl WithTransposeArguments for OptionsForMaskedOperatorWithTransposableArgument
         {
             self.to_owned()
         } else {
-            OptionsForMaskedOperatorWithTransposableArguments::new(
+            OptionsForMaskedOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
                 self.use_mask_structure_of_stored_values_as_mask,
                 self.use_mask_complement,
@@ -280,7 +280,7 @@ impl WithTransposeArguments for OptionsForMaskedOperatorWithTransposableArgument
     }
 }
 
-impl OptionsForMaskedOperatorWithTransposableArguments {
+impl OptionsForMaskedOperatorWithMatrixArguments {
     pub fn new(
         clear_output_before_use: bool,
         use_mask_structure_of_stored_values_as_mask: bool,
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn test_options() {
-        let default_options = OptionsForMaskedOperatorWithTransposableArguments::new_default();
+        let default_options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
         let expected_value: GrB_Descriptor = ptr::null_mut();
         assert_eq!(default_options.graphblas_descriptor(), expected_value)
     }

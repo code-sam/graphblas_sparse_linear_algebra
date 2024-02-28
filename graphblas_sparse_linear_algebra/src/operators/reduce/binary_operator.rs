@@ -6,7 +6,8 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument, WithTransposeMatrixArgument,
+    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
+    WithTransposeMatrixArgument,
 };
 use crate::value_type::ValueType;
 
