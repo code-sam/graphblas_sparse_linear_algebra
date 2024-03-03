@@ -1,4 +1,4 @@
-use std::ptr;
+
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
