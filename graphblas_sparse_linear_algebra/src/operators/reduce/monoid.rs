@@ -18,8 +18,8 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::monoid::Monoid;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForMaskedOperatorWithMatrixArgument,
-    GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
+    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
+    WithTransposeMatrixArgument,
 };
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,
@@ -50,7 +50,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn to_row_vector(
@@ -60,7 +60,7 @@ pub trait MonoidVectorReducer<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -72,7 +72,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -100,7 +100,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError> {
         self.to_column_vector(
             operator,
@@ -210,7 +210,6 @@ mod tests {
     use crate::operators::mask::SelectEntireVector;
     use crate::operators::monoid::Plus as MonoidPlus;
     use crate::operators::options::OperatorOptions;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
     use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
@@ -255,7 +254,7 @@ mod tests {
                         &MonoidPlus::<$value_type>::new(),
                         &matrix, &Assignment::<$value_type>::new(),
                         &mut product_vector, &SelectEntireVector::new(&context),
-                        &OptionsForMaskedOperatorWithMatrixArgument::new_default()).unwrap();
+                        &OptionsForOperatorWithMatrixArgument::new_default()).unwrap();
 
                     println!("{}", product_vector);
 
@@ -288,7 +287,7 @@ mod tests {
                             &matrix, &Assignment::<$value_type>::new(),
                             &mut product_vector,
                             &mask,
-                            &OptionsForMaskedOperatorWithMatrixArgument::new_default())
+                            &OptionsForOperatorWithMatrixArgument::new_default())
                         .unwrap();
 
                     println!("{}", matrix);

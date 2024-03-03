@@ -5,7 +5,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetOptionsForMaskedOperatorWithMatrixArgument,
+    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
 };
 use crate::operators::unary_operator::UnaryOperator;
 use crate::value_type::ValueType;
@@ -38,7 +38,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
@@ -48,7 +48,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -60,7 +60,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -88,7 +88,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = argument.context();
 
@@ -126,9 +126,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
-    use crate::operators::options::{
-        MaskedOperatorOptions, OptionsForMaskedOperatorWithMatrixArgument,
-    };
+    use crate::operators::options::{OperatorOptions, OptionsForOperatorWithMatrixArgument};
     use crate::operators::unary_operator::{Identity, LogicalNegation, One};
 
     #[test]
@@ -162,7 +160,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -180,7 +178,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -223,7 +221,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -241,7 +239,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -271,7 +269,7 @@ mod tests {
                 &Assignment::<bool>::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 

@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::context::{CallGraphBlasContext, GetContext};
@@ -12,9 +10,8 @@ use crate::graphblas_bindings::{
 };
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::{
-    GetOptionsForMaskedOperatorWithMatrixArgument, GetOptionsForOperatorWithMatrixArgument,
-};
+use crate::operators::mask::MatrixMask;
+use crate::operators::options::GetOptionsForOperatorWithMatrixArgument;
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -41,7 +38,7 @@ where
     MatrixToInsertInto: ValueType,
     ScalarToInsert: ValueType,
 {
-    /// replace option applies to entire matrix_to_insert_to
+    /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
@@ -49,19 +46,8 @@ where
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+        mask_for_matrix_to_insert_into: &(impl MatrixMask + GetContext),
         options: &impl GetOptionsForOperatorWithMatrixArgument,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask(
-        &self,
-        matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
-        rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
-        columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        scalar_to_insert: &ScalarToInsert,
-        accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -73,7 +59,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
             InsertScalarIntoSubMatrixTrait<MatrixToInsertInto, $value_type_scalar_to_insert>
             for InsertScalarIntoSubMatrix
         {
-            /// replace option applies to entire matrix_to_insert_to
+            /// mask and replace option apply to entire matrix_to_insert_to
             fn apply(
                 &self,
                 matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
@@ -81,6 +67,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
+                mask_for_matrix_to_insert_into: &(impl MatrixMask + GetContext),
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
@@ -105,122 +92,9 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    accumulator.accumulator_graphblas_type(),
-                                    scalar_to_insert,
-                                    row.as_ptr(),
-                                    number_of_rows_to_insert_into,
-                                    column.as_ptr(),
-                                    number_of_columns_to_insert_into,
-                                    options.graphblas_descriptor(),
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-                    (
-                        ElementIndexSelectorGraphblasType::All(row),
-                        ElementIndexSelectorGraphblasType::Index(column),
-                    ) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    accumulator.accumulator_graphblas_type(),
-                                    scalar_to_insert,
-                                    row,
-                                    number_of_rows_to_insert_into,
-                                    column.as_ptr(),
-                                    number_of_columns_to_insert_into,
-                                    options.graphblas_descriptor(),
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-                    (
-                        ElementIndexSelectorGraphblasType::Index(row),
-                        ElementIndexSelectorGraphblasType::All(column),
-                    ) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    accumulator.accumulator_graphblas_type(),
-                                    scalar_to_insert,
-                                    row.as_ptr(),
-                                    number_of_rows_to_insert_into,
-                                    column,
-                                    number_of_columns_to_insert_into,
-                                    options.graphblas_descriptor(),
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-                    (
-                        ElementIndexSelectorGraphblasType::All(row),
-                        ElementIndexSelectorGraphblasType::All(column),
-                    ) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
-                                    ptr::null_mut(),
-                                    accumulator.accumulator_graphblas_type(),
-                                    scalar_to_insert,
-                                    row,
-                                    number_of_rows_to_insert_into,
-                                    column,
-                                    number_of_columns_to_insert_into,
-                                    options.graphblas_descriptor(),
-                                )
-                            },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                        )?;
-                    }
-                }
-
-                Ok(())
-            }
-
-            /// mask and replace option apply to entire matrix_to_insert_to
-            fn apply_with_mask(
-                &self,
-                matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
-                rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
-                columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-                scalar_to_insert: &$value_type_scalar_to_insert,
-                accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-                mask_for_matrix_to_insert_into: &(impl GetGraphblasSparseMatrix + GetContext),
-                options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let context = matrix_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
-
-                let number_of_rows_to_insert_into = rows_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
-                    .to_graphblas_index()?;
-
-                let number_of_columns_to_insert_into = columns_to_insert_into
-                    .number_of_selected_elements(matrix_to_insert_into.column_width()?)?
-                    .to_graphblas_index()?;
-
-                let rows_to_insert_into = rows_to_insert_into.to_graphblas_type()?;
-                let columns_to_insert_into = columns_to_insert_into.to_graphblas_type()?;
-
-                match (rows_to_insert_into, columns_to_insert_into) {
-                    (
-                        ElementIndexSelectorGraphblasType::Index(row),
-                        ElementIndexSelectorGraphblasType::Index(column),
-                    ) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                        matrix_to_insert_into,
+                                    ),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -241,7 +115,9 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                        matrix_to_insert_into,
+                                    ),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -262,7 +138,9 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                        matrix_to_insert_into,
+                                    ),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -283,7 +161,9 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                        matrix_to_insert_into,
+                                    ),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -323,9 +203,8 @@ mod tests {
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size};
     use crate::index::ElementIndex;
-    use crate::operators::options::{
-        OptionsForMaskedOperatorWithMatrixArgument, OptionsForOperatorWithMatrixArgument,
-    };
+    use crate::operators::mask::SelectEntireMatrix;
+    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     #[test]
     fn test_insert_scalar_into_matrix() {
@@ -377,6 +256,7 @@ mod tests {
                 &columns_to_insert,
                 &scalar_to_insert,
                 &Assignment::new(),
+                &SelectEntireMatrix::new(&context),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -396,14 +276,14 @@ mod tests {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(
+            .apply(
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
                 &scalar_to_insert,
                 &Assignment::new(),
                 &mask,
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

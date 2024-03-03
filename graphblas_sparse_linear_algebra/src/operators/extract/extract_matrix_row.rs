@@ -8,7 +8,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::extract::{ExtractMatrixColumn, MatrixColumnExtractor};
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
-    GetOptionsForMaskedOperatorWithMatrixArgument, WithTransposeMatrixArgument,
+    GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
 };
 use crate::value_type::ValueType;
 
@@ -33,7 +33,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -46,7 +46,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &(impl GetOptionsForMaskedOperatorWithMatrixArgument + WithTransposeMatrixArgument),
+        options: &(impl GetOptionsForOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError> {
         // TODO: reduce cost by reusing instance
         let column_extractor = MatrixColumnExtractor::new();
@@ -77,7 +77,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
+    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     #[test]
     fn test_row_extraction() {
@@ -115,7 +115,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut column_vector,
                 &SelectEntireVector::new(&context),
-                &mut OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &mut OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

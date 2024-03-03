@@ -13,16 +13,31 @@ unsafe impl Sync for OperatorOptions {}
 #[derive(Debug, Clone)]
 pub struct OperatorOptions {
     clear_output_before_use: bool,
+    use_mask_structure_of_stored_values_as_mask: bool,
+    use_mask_complement: bool,
     graphblas_descriptor: GrB_Descriptor,
 }
 
-pub trait GetOperatorOptions: GetClearOutputBeforeUse + GetGraphblasDescriptor {}
+pub trait GetOperatorOptions:
+    GetClearOutputBeforeUse + GetOperatorMaskOptions + GetGraphblasDescriptor
+{
+}
 
 impl GetOperatorOptions for OperatorOptions {}
 
 impl GetClearOutputBeforeUse for OperatorOptions {
     fn clear_output_before_use(&self) -> bool {
         self.clear_output_before_use
+    }
+}
+
+impl GetOperatorMaskOptions for OperatorOptions {
+    fn use_mask_structure_of_stored_values_as_mask(&self) -> bool {
+        self.use_mask_structure_of_stored_values_as_mask
+    }
+
+    fn use_mask_complement(&self) -> bool {
+        self.use_mask_complement
     }
 }
 
@@ -33,72 +48,6 @@ impl GetGraphblasDescriptor for OperatorOptions {
 }
 
 impl OperatorOptions {
-    pub fn new(clear_output_before_use: bool) -> Self {
-        Self {
-            clear_output_before_use,
-            graphblas_descriptor: graphblas_descriptor(
-                clear_output_before_use,
-                false,
-                false,
-                false,
-                false,
-            ),
-        }
-    }
-
-    pub fn new_default() -> Self {
-        let clear_output_before_use = false;
-        Self {
-            clear_output_before_use,
-            graphblas_descriptor: graphblas_descriptor(
-                clear_output_before_use,
-                false,
-                false,
-                false,
-                false,
-            ),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct MaskedOperatorOptions {
-    clear_output_before_use: bool,
-    use_mask_structure_of_stored_values_as_mask: bool,
-    use_mask_complement: bool,
-    graphblas_descriptor: GrB_Descriptor,
-}
-
-pub trait GetMaskedOperatorOptions:
-    GetClearOutputBeforeUse + GetOperatorMaskOptions + GetGraphblasDescriptor
-{
-}
-
-impl GetMaskedOperatorOptions for MaskedOperatorOptions {}
-
-impl GetClearOutputBeforeUse for MaskedOperatorOptions {
-    fn clear_output_before_use(&self) -> bool {
-        self.clear_output_before_use
-    }
-}
-
-impl GetOperatorMaskOptions for MaskedOperatorOptions {
-    fn use_mask_structure_of_stored_values_as_mask(&self) -> bool {
-        self.use_mask_structure_of_stored_values_as_mask
-    }
-
-    fn use_mask_complement(&self) -> bool {
-        self.use_mask_complement
-    }
-}
-
-impl GetGraphblasDescriptor for MaskedOperatorOptions {
-    fn graphblas_descriptor(&self) -> GrB_Descriptor {
-        self.graphblas_descriptor
-    }
-}
-
-impl MaskedOperatorOptions {
     pub fn new(
         clear_output_before_use: bool,
         use_mask_structure_of_stored_values_as_mask: bool,

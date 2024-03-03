@@ -20,7 +20,7 @@ use super::GetSparseMatrixSize;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT: Lazy<
     OptionsForOperatorWithMatrixArgument,
-> = Lazy::new(|| OptionsForOperatorWithMatrixArgument::new(false, true));
+> = Lazy::new(|| OptionsForOperatorWithMatrixArgument::new(false, false, false, true));
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());

@@ -3,9 +3,7 @@ use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArguments,
-};
+use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArguments};
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
 
@@ -37,7 +35,7 @@ pub trait ApplyElementWiseMatrixAdditionSemiring<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -52,7 +50,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionSemiring<Evaluat
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -98,7 +96,7 @@ pub trait ApplyElementWiseMatrixAdditionMonoidOperator<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -113,7 +111,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionMonoidOperator<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -160,7 +158,7 @@ pub trait ApplyElementWiseMatrixAdditionBinaryOperator<EvaluationDomain: ValueTy
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -175,7 +173,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionBinaryOperator<E
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -210,14 +208,14 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First, Plus, Times};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArguments;
+    use crate::operators::options::OptionsForOperatorWithMatrixArguments;
 
     #[test]
     fn test_element_wise_multiplication() {
         let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
-        let options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
+        let options = OptionsForOperatorWithMatrixArguments::new_default();
         let element_wise_matrix_multiplier = ElementWiseMatrixAdditionBinaryOperator::new();
 
         let height = 2;
@@ -354,7 +352,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let operator = Plus::<i32>::new();
-        let options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
+        let options = OptionsForOperatorWithMatrixArguments::new_default();
         let element_wise_matrix_adder = ElementWiseMatrixAdditionBinaryOperator::new();
 
         let height = 2;

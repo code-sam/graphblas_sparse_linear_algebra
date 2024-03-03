@@ -89,7 +89,7 @@ fn bench_test(context: Arc<Context>) {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(
+            .apply(
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,

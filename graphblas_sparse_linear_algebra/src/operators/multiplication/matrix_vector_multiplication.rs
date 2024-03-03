@@ -1,15 +1,10 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
-    GetOptionsForOperatorWithMatrixArgument,
-};
+use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument};
 
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
@@ -40,19 +35,8 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetOptionsForOperatorWithMatrixArgument,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    // TODO: consider a version where the resulting product matrix is generated in the function body
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -67,38 +51,8 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetOptionsForOperatorWithMatrixArgument,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_mxv(
-                    product.graphblas_vector(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_vector(),
-                    options.graphblas_descriptor(),
-                )
-            },
-            unsafe { product.graphblas_vector_ref() },
-        )?;
-
-        Ok(())
-    }
-
-    // TODO: consider a version where the resulting product matrix is generated in the function body
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -136,7 +90,7 @@ mod tests {
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
+    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
     use crate::operators::semiring::PlusTimes;
 
     #[test]
@@ -144,7 +98,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
-        let options = OptionsForMaskedOperatorWithMatrixArgument::new_default();
+        let options = OptionsForOperatorWithMatrixArgument::new_default();
         let matrix_multiplier = MatrixVectorMultiplicationOperator::new();
 
         let length = 2;
@@ -156,14 +110,14 @@ mod tests {
 
         // Test multiplication of empty matrices
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireVector::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
         let element_list = product.get_element_list().unwrap();
@@ -198,7 +152,7 @@ mod tests {
 
         // Test multiplication of full matrices
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
@@ -224,7 +178,7 @@ mod tests {
         let matrix_multiplier_with_accumulator = MatrixVectorMultiplicationOperator::new();
 
         matrix_multiplier_with_accumulator
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
@@ -254,7 +208,7 @@ mod tests {
         let mut product = SparseVector::<f32>::new(&context, &length).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
