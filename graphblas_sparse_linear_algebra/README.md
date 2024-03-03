@@ -18,8 +18,7 @@ use graphblas_sparse_linear_algebra::operators::apply::{
 use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::mask::SelectEntireMatrix;
 use graphblas_sparse_linear_algebra::operators::options::{
-    OptionsForMaskedOperatorWithMatrixAsFirstArgument,
-    OptionsForMaskedOperatorWithMatrixAsSecondArgument,
+    OptionsForOperatorWithMatrixAsFirstArgument, OptionsForOperatorWithMatrixAsSecondArgument,
 };
 
 fn main() {
@@ -53,7 +52,7 @@ fn main() {
             &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
-            &OptionsForMaskedOperatorWithMatrixAsFirstArgument::new_default(),
+            &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
         )
         .unwrap();
 
@@ -73,7 +72,7 @@ fn main() {
             &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(&context),
-            &OptionsForMaskedOperatorWithMatrixAsSecondArgument::new_default(),
+            &OptionsForOperatorWithMatrixAsSecondArgument::new_default(),
         )
         .unwrap();
 

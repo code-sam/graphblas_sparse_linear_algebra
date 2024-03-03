@@ -10,9 +10,7 @@ use crate::graphblas_bindings::{
 
 use super::binary_operator::AccumulatorBinaryOperator;
 use super::mask::MatrixMask;
-use super::options::GetOptionsForMaskedOperatorWithMatrixArguments;
-
-use crate::operators::options::GetGraphblasDescriptor;
+use super::options::GetOptionsForOperatorWithMatrixArguments;
 
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
@@ -38,7 +36,7 @@ pub trait SemiringKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -53,7 +51,7 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -94,7 +92,7 @@ pub trait MonoidKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -109,7 +107,7 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -150,7 +148,7 @@ pub trait BinaryOperatorKroneckerProduct<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -165,7 +163,7 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -201,14 +199,14 @@ mod tests {
 
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArguments;
+    use crate::operators::options::OptionsForOperatorWithMatrixArguments;
 
     #[test]
     fn test_element_wisemultiplication() {
         let context = Context::init_default().unwrap();
 
         let operator = Times::<i32>::new();
-        let options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
+        let options = OptionsForOperatorWithMatrixArguments::new_default();
         let element_wise_matrix_multiplier = BinaryOperatorKroneckerProductOperator::new();
 
         let height = 2;

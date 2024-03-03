@@ -11,9 +11,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
-};
+use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument};
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -42,7 +40,7 @@ pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -57,7 +55,7 @@ macro_rules! implement_select_from_matrix {
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
                 product: &mut (impl GetGraphblasSparseMatrix + GetContext),
                 mask: &(impl MatrixMask + GetContext),
-                options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
+                options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.to_owned().to_type()?;
                 argument.context_ref().call(
@@ -102,7 +100,7 @@ mod tests {
         IsOnDiagonal, IsOnOrAboveDiagonal, IsOnOrBelowDiagonal, IsValueGreaterThan, IsValueLessThan,
     };
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArgument;
+    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     #[test]
     fn test_lower_triangle() {
@@ -139,7 +137,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -161,7 +159,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -209,7 +207,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -231,7 +229,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -279,7 +277,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -302,7 +300,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -401,7 +399,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 
@@ -423,7 +421,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

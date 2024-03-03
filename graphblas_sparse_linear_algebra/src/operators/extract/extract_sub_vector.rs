@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetMaskedOperatorOptions};
+use crate::operators::options::{GetGraphblasDescriptor, GetOperatorOptions};
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Vector_extract;
@@ -36,7 +36,7 @@ pub trait ExtractSubVector<SubVector: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -49,7 +49,7 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
         sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
 
@@ -115,7 +115,7 @@ mod tests {
     use crate::context::Context;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::MaskedOperatorOptions;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_vector_extraction() {
@@ -150,7 +150,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut sub_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -211,7 +211,7 @@ mod tests {
                 &Assignment::<u8>::new(),
                 &mut sub_vector,
                 &mask,
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 

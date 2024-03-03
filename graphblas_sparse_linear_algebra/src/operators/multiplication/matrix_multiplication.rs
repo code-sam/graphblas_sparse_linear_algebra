@@ -1,14 +1,11 @@
-use std::ptr;
+
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArguments,
-    GetOptionsForOperatorWithMatrixArguments,
-};
+use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArguments};
 
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
@@ -39,19 +36,8 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForOperatorWithMatrixArguments,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    // TODO: consider a version where the resulting product matrix is generated in the function body
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -66,38 +52,8 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
         multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        options: &impl GetOptionsForOperatorWithMatrixArguments,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
-
-        context.call(
-            || unsafe {
-                GrB_mxm(
-                    product.graphblas_matrix(),
-                    ptr::null_mut(),
-                    accumulator.accumulator_graphblas_type(),
-                    operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
-                    options.graphblas_descriptor(),
-                )
-            },
-            unsafe { product.graphblas_matrix_ref() },
-        )?;
-
-        Ok(())
-    }
-
-    // TODO: consider a version where the resulting product matrix is generated in the function body
-    fn apply_with_mask(
-        &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
-        operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArguments,
+        options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -133,7 +89,7 @@ mod tests {
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireMatrix;
-    use crate::operators::options::OptionsForMaskedOperatorWithMatrixArguments;
+    use crate::operators::options::OptionsForOperatorWithMatrixArguments;
     use crate::operators::semiring::PlusTimes;
 
     #[test]
@@ -141,7 +97,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
-        let options = OptionsForMaskedOperatorWithMatrixArguments::new_default();
+        let options = OptionsForOperatorWithMatrixArguments::new_default();
         let matrix_multiplier = MatrixMultiplicationOperator::new();
 
         let height = 2;
@@ -154,14 +110,14 @@ mod tests {
 
         // Test multiplication of empty matrices
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArguments::new_default(),
+                &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
         let element_list = product.element_list().unwrap();
@@ -200,14 +156,14 @@ mod tests {
 
         // Test multiplication of full matrices
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixArguments::new_default(),
+                &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
 
@@ -232,7 +188,7 @@ mod tests {
         let matrix_multiplier_with_accumulator = MatrixMultiplicationOperator::new();
 
         matrix_multiplier_with_accumulator
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,
@@ -267,7 +223,7 @@ mod tests {
         let mut product = SparseMatrix::<f32>::new(&context, &size).unwrap();
 
         matrix_multiplier
-            .apply_with_mask(
+            .apply(
                 &multiplier,
                 &semiring,
                 &multiplicant,

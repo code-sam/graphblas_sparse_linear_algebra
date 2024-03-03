@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_matrix::operations::sparse_matrix_row_height;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
@@ -9,10 +7,8 @@ use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForMaskedOperatorWithMatrixArgument,
-    GetOptionsForOperatorWithMatrixArgument,
-};
+use crate::operators::mask::VectorMask;
+use crate::operators::options::GetOptionsForOperatorWithMatrixArgument;
 
 use crate::value_type::ValueType;
 
@@ -39,7 +35,7 @@ pub trait InsertVectorIntoColumnTrait<AccumulatorEvaluationDomain>
 where
     AccumulatorEvaluationDomain: ValueType,
 {
-    /// replace option applies to entire matrix_to_insert_to
+    /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
         matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
@@ -47,26 +43,15 @@ where
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
+        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
         options: &impl GetOptionsForOperatorWithMatrixArgument,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask(
-        &self,
-        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        column_indices_to_insert_into: &ElementIndexSelector,
-        column_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<AccumulatorEvaluationDomain: ValueType>
     InsertVectorIntoColumnTrait<AccumulatorEvaluationDomain> for InsertVectorIntoColumn
 {
-    /// replace option applies to entire matrix_to_insert_to
+    /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
         matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
@@ -74,68 +59,8 @@ impl<AccumulatorEvaluationDomain: ValueType>
         column_to_insert_into: &ElementIndex,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
+        mask_for_column_to_insert_into: &(impl VectorMask + GetContext),
         options: &impl GetOptionsForOperatorWithMatrixArgument,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_insert_into.context();
-
-        let number_of_indices_to_insert_into = column_indices_to_insert_into
-            .number_of_selected_elements(sparse_matrix_row_height(matrix_to_insert_into)?)?
-            .to_graphblas_index()?;
-
-        let indices_to_insert_into = column_indices_to_insert_into.to_graphblas_type()?;
-        let column_to_insert_into = column_to_insert_into.to_graphblas_index()?;
-
-        match indices_to_insert_into {
-            ElementIndexSelectorGraphblasType::Index(index) => {
-                context.call(
-                    || unsafe {
-                        GrB_Col_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
-                            index.as_ptr(),
-                            number_of_indices_to_insert_into,
-                            column_to_insert_into,
-                            options.graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                )?;
-            }
-
-            ElementIndexSelectorGraphblasType::All(index) => {
-                context.call(
-                    || unsafe {
-                        GrB_Col_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
-                            index,
-                            number_of_indices_to_insert_into,
-                            column_to_insert_into,
-                            options.graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
-                )?;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask(
-        &self,
-        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        column_indices_to_insert_into: &ElementIndexSelector,
-        column_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_column_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();
 
@@ -203,9 +128,8 @@ mod tests {
     use crate::collections::sparse_matrix::GetMatrixDimensions;
     use crate::collections::sparse_matrix::{MatrixElementList, Size, SparseMatrix};
     use crate::collections::sparse_vector::{SparseVector, VectorElementList};
-    use crate::operators::options::{
-        OptionsForMaskedOperatorWithMatrixArgument, OptionsForOperatorWithMatrixArgument,
-    };
+    use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
 
     #[test]
     fn test_insert_vector_into_column() {
@@ -271,6 +195,7 @@ mod tests {
                 &column_to_insert_into,
                 &vector_to_insert,
                 &Assignment::<u8>::new(),
+                &SelectEntireVector::new(&context),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -291,14 +216,14 @@ mod tests {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(
+            .apply(
                 &mut matrix,
                 &indices_to_insert,
                 &column_to_insert_into,
                 &vector_to_insert,
                 &Assignment::<u8>::new(),
                 &mask,
-                &OptionsForMaskedOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
 

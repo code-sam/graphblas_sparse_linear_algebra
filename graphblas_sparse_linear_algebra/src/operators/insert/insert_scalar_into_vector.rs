@@ -1,14 +1,11 @@
-use std::ptr;
-
 use crate::collections::sparse_vector::operations::sparse_vector_length;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetOperatorOptions,
-};
+use crate::operators::mask::VectorMask;
+use crate::operators::options::GetOperatorOptions;
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_2_type_macro_for_all_value_types_and_typed_graphblas_function_with_scalar_type_conversion;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -42,25 +39,15 @@ where
     AccumulatorEvaluationDomain: ValueType,
     ScalarToInsert: ValueType,
 {
-    /// replace option applies to entire vector_to_insert_to
+    /// mask and replace option apply to entire vector_to_insert_to
     fn apply(
         &self,
         vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
+        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
         options: &impl GetOperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    /// mask and replace option apply to entire vector_to_insert_to
-    fn apply_with_mask(
-        &self,
-        vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
-        indices_to_insert_into: &ElementIndexSelector,
-        scalar_to_insert: &ScalarToInsert,
-        accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -72,72 +59,15 @@ macro_rules! implement_insert_scalar_into_vector_trait {
             InsertScalarIntoVectorTrait<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
             for InsertScalarIntoVector
         {
-            /// replace option applies to entire vector_to_insert_to
+            /// mask and replace option apply to entire vector_to_insert_to
             fn apply(
                 &self,
                 vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
+                mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
                 options: &impl GetOperatorOptions,
-            ) -> Result<(), SparseLinearAlgebraError> {
-                let context = vector_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
-
-                let number_of_indices_to_insert_into = indices_to_insert_into
-                    .number_of_selected_elements(sparse_vector_length(vector_to_insert_into)?)?
-                    .to_graphblas_index()?;
-
-                let indices_to_insert_into = indices_to_insert_into.to_graphblas_type()?;
-
-                match indices_to_insert_into {
-                    ElementIndexSelectorGraphblasType::Index(index) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    vector_to_insert_into.graphblas_vector(),
-                                    ptr::null_mut(),
-                                    accumulator.accumulator_graphblas_type(),
-                                    scalar_to_insert,
-                                    index.as_ptr(),
-                                    number_of_indices_to_insert_into,
-                                    options.graphblas_descriptor(),
-                                )
-                            },
-                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
-                        )?;
-                    }
-
-                    ElementIndexSelectorGraphblasType::All(index) => {
-                        context.call(
-                            || unsafe {
-                                $graphblas_insert_function(
-                                    vector_to_insert_into.graphblas_vector(),
-                                    ptr::null_mut(),
-                                    accumulator.accumulator_graphblas_type(),
-                                    scalar_to_insert,
-                                    index,
-                                    number_of_indices_to_insert_into,
-                                    options.graphblas_descriptor(),
-                                )
-                            },
-                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
-                        )?;
-                    }
-                }
-
-                Ok(())
-            }
-
-            /// mask and replace option apply to entire vector_to_insert_to
-            fn apply_with_mask(
-                &self,
-                vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
-                indices_to_insert_into: &ElementIndexSelector,
-                scalar_to_insert: &$value_type_scalar_to_insert,
-                accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-                mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-                options: &impl GetMaskedOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();
                 let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
@@ -207,7 +137,8 @@ mod tests {
     use crate::context::Context;
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
-    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
+    use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_scalar_into_vector() {
@@ -256,6 +187,7 @@ mod tests {
                 &indices_to_insert,
                 &scalar_to_insert,
                 &Assignment::<u8>::new(),
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -275,13 +207,13 @@ mod tests {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(
+            .apply(
                 &mut vector,
                 &indices_to_insert,
                 &scalar_to_insert,
                 &Assignment::<u8>::new(),
                 &mask,
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 

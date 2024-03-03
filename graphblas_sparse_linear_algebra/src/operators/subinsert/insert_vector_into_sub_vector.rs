@@ -1,5 +1,3 @@
-use std::ptr;
-
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;
 use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
 use crate::context::{CallGraphBlasContext, GetContext};
@@ -7,9 +5,8 @@ use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::GxB_Vector_subassign;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorOptions, GetOperatorOptions,
-};
+use crate::operators::mask::VectorMask;
+use crate::operators::options::GetOperatorOptions;
 
 use crate::value_type::ValueType;
 
@@ -34,38 +31,29 @@ pub trait InsertVectorIntoSubVectorTrait<VectorToInsertInto>
 where
     VectorToInsertInto: ValueType,
 {
-    /// replace option applies to entire matrix_to_insert_to
+    /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
         options: &impl GetOperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError>;
-
-    /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask(
-        &self,
-        vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
-        indices_to_insert_into: &ElementIndexSelector,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetMaskedOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInsertInto>
     for InsertVectorIntoSubVector
 {
-    /// replace option applies to entire matrix_to_insert_to
+    /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
         vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
+        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_insert_into.context();
@@ -81,64 +69,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
                 context.call(
                     || unsafe {
                         GxB_Vector_subassign(
-                            vector_to_insert_into.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
-                            index.as_ptr(),
-                            number_of_indices_to_insert_into,
-                            options.graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { vector_to_insert_into.graphblas_vector_ref() },
-                )?;
-            }
-
-            ElementIndexSelectorGraphblasType::All(index) => {
-                context.call(
-                    || unsafe {
-                        GxB_Vector_subassign(
-                            vector_to_insert_into.graphblas_vector(),
-                            ptr::null_mut(),
-                            accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
-                            index,
-                            number_of_indices_to_insert_into,
-                            options.graphblas_descriptor(),
-                        )
-                    },
-                    unsafe { vector_to_insert_into.graphblas_vector_ref() },
-                )?;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// mask and replace option apply to entire matrix_to_insert_to
-    fn apply_with_mask(
-        &self,
-        vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
-        indices_to_insert_into: &ElementIndexSelector,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
-        mask_for_vector_to_insert_into: &(impl GetGraphblasSparseVector + GetContext),
-        options: &impl GetMaskedOperatorOptions,
-    ) -> Result<(), SparseLinearAlgebraError> {
-        let context = vector_to_insert_into.context();
-
-        let number_of_indices_to_insert_into = indices_to_insert_into
-            .number_of_selected_elements(vector_to_insert_into.length()?)?
-            .to_graphblas_index()?;
-
-        let indices_to_insert_into = indices_to_insert_into.to_graphblas_type()?;
-
-        match indices_to_insert_into {
-            ElementIndexSelectorGraphblasType::Index(index) => {
-                context.call(
-                    || unsafe {
-                        GxB_Vector_subassign(
-                            vector_to_insert_into.graphblas_vector(),
+                            GetGraphblasSparseVector::graphblas_vector(vector_to_insert_into),
                             mask_for_vector_to_insert_into.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
@@ -155,7 +86,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInser
                 context.call(
                     || unsafe {
                         GxB_Vector_subassign(
-                            vector_to_insert_into.graphblas_vector(),
+                            GetGraphblasSparseVector::graphblas_vector(vector_to_insert_into),
                             mask_for_vector_to_insert_into.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
@@ -185,7 +116,8 @@ mod tests {
     use crate::context::Context;
     use crate::index::ElementIndex;
     use crate::operators::binary_operator::{Assignment, First};
-    use crate::operators::options::{MaskedOperatorOptions, OperatorOptions};
+    use crate::operators::mask::SelectEntireVector;
+    use crate::operators::options::OperatorOptions;
 
     #[test]
     fn test_insert_vector_into_vector() {
@@ -248,6 +180,7 @@ mod tests {
                 &indices_to_insert,
                 &vector_to_insert,
                 &Assignment::new(),
+                &SelectEntireVector::new(&context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -269,13 +202,13 @@ mod tests {
         .unwrap();
 
         insert_operator
-            .apply_with_mask(
+            .apply(
                 &mut vector,
                 &indices_to_insert,
                 &vector_to_insert,
                 &Assignment::new(),
                 &mask,
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 

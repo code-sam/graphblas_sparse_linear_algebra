@@ -12,9 +12,8 @@ use crate::operators::apply::BinaryOperatorApplier;
 use crate::operators::binary_operator::{AccumulatorBinaryOperator, BinaryOperator};
 use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetMaskedOperatorOptions,
-    GetOptionsForMaskedOperatorWithMatrixAsFirstArgument,
-    GetOptionsForMaskedOperatorWithMatrixAsSecondArgument,
+    GetOperatorOptions, GetOptionsForOperatorWithMatrixAsFirstArgument,
+    GetOptionsForOperatorWithMatrixAsSecondArgument,
 };
 use crate::value_type::ValueType;
 
@@ -30,7 +29,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_vector_as_right_argument(
@@ -41,7 +40,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_left_argument(
@@ -52,7 +51,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixAsFirstArgument,
+        options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_right_argument(
@@ -63,7 +62,7 @@ where
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixAsSecondArgument,
+        options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -78,7 +77,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -108,7 +107,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseVector + GetContext),
         mask: &(impl VectorMask + GetContext),
-        options: &impl GetMaskedOperatorOptions,
+        options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -138,7 +137,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixAsFirstArgument,
+        options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -168,7 +167,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut (impl GetGraphblasSparseMatrix + GetContext),
         mask: &(impl MatrixMask + GetContext),
-        options: &impl GetOptionsForMaskedOperatorWithMatrixAsSecondArgument,
+        options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -209,8 +208,8 @@ mod tests {
     use crate::operators::binary_operator::{Assignment, First, Plus};
     use crate::operators::mask::{SelectEntireMatrix, SelectEntireVector};
     use crate::operators::options::{
-        MaskedOperatorOptions, OptionsForMaskedOperatorWithMatrixAsFirstArgument,
-        OptionsForMaskedOperatorWithMatrixAsSecondArgument,
+        OperatorOptions, OptionsForOperatorWithMatrixAsFirstArgument,
+        OptionsForOperatorWithMatrixAsSecondArgument,
     };
 
     #[test]
@@ -246,7 +245,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixAsFirstArgument::new_default(),
+                &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
 
@@ -266,7 +265,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_matrix,
                 &SelectEntireMatrix::new(&context),
-                &OptionsForMaskedOperatorWithMatrixAsSecondArgument::new_default(),
+                &OptionsForOperatorWithMatrixAsSecondArgument::new_default(),
             )
             .unwrap();
 
@@ -311,7 +310,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -331,7 +330,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -376,7 +375,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -396,7 +395,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -441,7 +440,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
@@ -461,7 +460,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product_vector,
                 &SelectEntireVector::new(&context),
-                &MaskedOperatorOptions::new_default(),
+                &OperatorOptions::new_default(),
             )
             .unwrap();
 
