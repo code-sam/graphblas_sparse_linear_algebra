@@ -24,7 +24,7 @@ impl<T: ValueType> ResizeSparseMatrix for SparseMatrix<T> {
 
 /// All elements of self with an index coordinate outside of the new size are dropped.
 pub fn resize_sparse_matrix(
-    matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &mut impl GetGraphblasSparseMatrix,
     new_size: &Size,
 ) -> Result<(), SparseLinearAlgebraError> {
     let new_row_height = new_size.row_height_ref().to_graphblas_index()?;

@@ -239,7 +239,7 @@ impl<T: ValueType> Collection for SparseVector<T> {
     }
 }
 
-pub trait GetGraphblasSparseVector {
+pub trait GetGraphblasSparseVector: GetContext {
     unsafe fn graphblas_vector(&self) -> GrB_Vector;
     unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector;
     unsafe fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector;

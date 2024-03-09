@@ -29,12 +29,12 @@ impl ElementWiseVectorMultiplicationSemiringOperator {
 pub trait ApplyElementWiseVectorMultiplicationSemiringOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
+        multiplicant: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -45,12 +45,12 @@ impl<EvaluationDomain: ValueType>
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
+        multiplicant: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -92,12 +92,12 @@ impl ElementWiseVectorMultiplicationMonoidOperator {
 pub trait ApplyElementWiseVectorMultiplicationMonoidOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
+        multiplicant: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -108,12 +108,12 @@ impl<EvaluationDomain: ValueType>
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
+        multiplicant: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -155,12 +155,12 @@ impl ElementWiseVectorMultiplicationBinaryOperator {
 pub trait ApplyElementWiseVectorMultiplicationBinaryOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
+        multiplicant: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -171,12 +171,12 @@ impl<EvaluationDomain: ValueType>
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseVector + GetContext),
+        multiplicant: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();

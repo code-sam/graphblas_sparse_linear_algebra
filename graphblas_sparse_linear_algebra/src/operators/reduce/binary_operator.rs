@@ -31,20 +31,20 @@ pub trait ReduceWithBinaryOperator<EvaluationDomain: ValueType> {
     fn to_colunm_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn to_row_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &(impl GetOptionsForOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -55,10 +55,10 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
     fn to_colunm_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -83,10 +83,10 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
     fn to_row_vector(
         &self,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &(impl GetOptionsForOperatorWithMatrixArgument + WithTransposeMatrixArgument),
     ) -> Result<(), SparseLinearAlgebraError> {
         self.to_colunm_vector(

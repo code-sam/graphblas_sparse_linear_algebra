@@ -59,12 +59,12 @@ where
 {
     fn apply_with_vector_as_left_argument(
         &self,
-        first_argument: &(impl GetGraphblasSparseVector + GetContext),
+        first_argument: &impl GetGraphblasSparseVector,
         operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -72,21 +72,21 @@ where
         &self,
         first_argument: &EvaluationDomain,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GetGraphblasSparseVector + GetContext),
+        second_argument: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_with_matrix_as_left_argument(
         &self,
-        first_argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        first_argument: &impl GetGraphblasSparseMatrix,
         operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -94,10 +94,10 @@ where
         &self,
         first_argument: &EvaluationDomain,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        second_argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -107,12 +107,12 @@ macro_rules! implement_apply_binary_operator {
         impl ApplyBinaryOperator<$value_type> for BinaryOperatorApplier {
             fn apply_with_vector_as_left_argument(
                 &self,
-                first_argument: &(impl GetGraphblasSparseVector + GetContext),
+                first_argument: &impl GetGraphblasSparseVector,
                 operator: &impl BinaryOperator<$value_type>,
                 second_argument: &$value_type,
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
-                product: &mut (impl GetGraphblasSparseVector + GetContext),
-                mask: &(impl VectorMask + GetContext),
+                product: &mut impl GetGraphblasSparseVector,
+                mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -140,10 +140,10 @@ macro_rules! implement_apply_binary_operator {
                 &self,
                 first_argument: &$value_type,
                 operator: &impl BinaryOperator<$value_type>,
-                second_argument: &(impl GetGraphblasSparseVector + GetContext),
+                second_argument: &impl GetGraphblasSparseVector,
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
-                product: &mut (impl GetGraphblasSparseVector + GetContext),
-                mask: &(impl VectorMask + GetContext),
+                product: &mut impl GetGraphblasSparseVector,
+                mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -169,12 +169,12 @@ macro_rules! implement_apply_binary_operator {
 
             fn apply_with_matrix_as_left_argument(
                 &self,
-                first_argument: &(impl GetGraphblasSparseMatrix + GetContext),
+                first_argument: &impl GetGraphblasSparseMatrix,
                 operator: &impl BinaryOperator<$value_type>,
                 second_argument: &$value_type,
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
-                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-                mask: &(impl MatrixMask + GetContext),
+                product: &mut impl GetGraphblasSparseMatrix,
+                mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -202,10 +202,10 @@ macro_rules! implement_apply_binary_operator {
                 &self,
                 first_argument: &$value_type,
                 operator: &impl BinaryOperator<$value_type>,
-                second_argument: &(impl GetGraphblasSparseMatrix + GetContext),
+                second_argument: &impl GetGraphblasSparseMatrix,
                 accumulator: &impl AccumulatorBinaryOperator<$value_type>,
-                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-                mask: &(impl MatrixMask + GetContext),
+                product: &mut impl GetGraphblasSparseMatrix,
+                mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();

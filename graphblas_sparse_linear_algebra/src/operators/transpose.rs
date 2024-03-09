@@ -1,5 +1,3 @@
-
-
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
@@ -29,10 +27,10 @@ impl MatrixTranspose {
 pub trait TransposeMatrix<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+        matrix: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        transpose: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        transpose: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -40,10 +38,10 @@ pub trait TransposeMatrix<EvaluationDomain: ValueType> {
 impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTranspose {
     fn apply(
         &self,
-        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+        matrix: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        transpose: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        transpose: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = transpose.context();

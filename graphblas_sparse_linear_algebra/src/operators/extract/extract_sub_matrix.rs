@@ -34,8 +34,8 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-        sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        sub_matrix: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -47,8 +47,8 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
-        sub_matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        sub_matrix: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();

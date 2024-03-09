@@ -65,7 +65,7 @@ impl<T: ValueType> IsSparseMatrixElement for SparseMatrix<T> {
 }
 
 pub fn is_sparse_matrix_element(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
     row_index: &ElementIndex,
     column_index: &ElementIndex,
 ) -> Result<bool, SparseLinearAlgebraError> {
@@ -90,7 +90,7 @@ pub fn is_sparse_matrix_element(
 }
 
 pub fn is_sparse_matrix_element_at_coordinate(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
     coordinate: &impl GetCoordinateIndices,
 ) -> Result<bool, SparseLinearAlgebraError> {
     is_sparse_matrix_element(
@@ -101,7 +101,7 @@ pub fn is_sparse_matrix_element_at_coordinate(
 }
 
 pub fn try_is_sparse_matrix_element(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
     row_index: &ElementIndex,
     column_index: &ElementIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
@@ -121,7 +121,7 @@ pub fn try_is_sparse_matrix_element(
 }
 
 pub fn try_is_sparse_matrix_element_at_coordinate(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
     coordinate: &impl GetCoordinateIndices,
 ) -> Result<(), SparseLinearAlgebraError> {
     try_is_sparse_matrix_element(

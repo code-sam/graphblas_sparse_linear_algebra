@@ -40,9 +40,9 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_row_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -56,9 +56,9 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubRowTrait<MatrixToInsertIn
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_row_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();

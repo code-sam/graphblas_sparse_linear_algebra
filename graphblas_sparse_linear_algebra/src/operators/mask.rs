@@ -4,11 +4,11 @@ use suitesparse_graphblas_sys::{GrB_Matrix, GrB_Vector};
 
 use crate::context::{Context, GetContext};
 
-pub trait MatrixMask {
+pub trait MatrixMask: GetContext {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
 }
 
-pub trait VectorMask {
+pub trait VectorMask: GetContext {
     unsafe fn graphblas_vector(&self) -> GrB_Vector;
 }
 

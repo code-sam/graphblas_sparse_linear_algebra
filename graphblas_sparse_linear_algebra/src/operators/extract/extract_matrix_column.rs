@@ -35,8 +35,8 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
-        column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        column_vector: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -48,8 +48,8 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         column_index_to_extract: &ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
-        column_vector: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        column_vector: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_extract_from.context();

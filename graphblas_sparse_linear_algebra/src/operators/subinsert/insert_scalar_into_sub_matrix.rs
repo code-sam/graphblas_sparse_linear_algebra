@@ -46,7 +46,7 @@ where
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-        mask_for_matrix_to_insert_into: &(impl MatrixMask + GetContext),
+        mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -67,7 +67,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
-                mask_for_matrix_to_insert_into: &(impl MatrixMask + GetContext),
+                mask_for_matrix_to_insert_into: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();

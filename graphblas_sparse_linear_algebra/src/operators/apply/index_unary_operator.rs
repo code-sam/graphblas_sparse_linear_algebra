@@ -45,23 +45,23 @@ where
 {
     fn apply_to_vector(
         &self,
-        vector: &(impl GetGraphblasSparseVector + GetContext),
+        vector: &impl GetGraphblasSparseVector,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
-        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+        matrix: &impl GetGraphblasSparseMatrix,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -71,12 +71,12 @@ macro_rules! implement_apply_index_binary_operator {
         impl ApplyIndexUnaryOperator<$evaluation_domain> for IndexUnaryOperatorApplier {
             fn apply_to_vector(
                 &self,
-                vector: &(impl GetGraphblasSparseVector + GetContext),
+                vector: &impl GetGraphblasSparseVector,
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GetGraphblasSparseVector + GetContext),
-                mask: &(impl VectorMask + GetContext),
+                product: &mut impl GetGraphblasSparseVector,
+                mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -102,12 +102,12 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_matrix(
                 &self,
-                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+                matrix: &impl GetGraphblasSparseMatrix,
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-                mask: &(impl MatrixMask + GetContext),
+                product: &mut impl GetGraphblasSparseMatrix,
+                mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();

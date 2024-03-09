@@ -35,11 +35,11 @@ where
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
-        vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert_into: &mut impl GetGraphblasSparseVector,
         indices_to_insert_into: &ElementIndexSelector,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_vector_to_insert_into: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -50,11 +50,11 @@ impl<AccumulatorEvaluationDomain: ValueType>
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
-        vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert_into: &mut impl GetGraphblasSparseVector,
         indices_to_insert_into: &ElementIndexSelector,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_vector_to_insert_into: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_insert_into.context();

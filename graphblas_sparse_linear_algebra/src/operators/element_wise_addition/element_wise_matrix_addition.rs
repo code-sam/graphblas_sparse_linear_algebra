@@ -29,12 +29,12 @@ impl ElementWiseMatrixAdditionSemiringOperator {
 pub trait ApplyElementWiseMatrixAdditionSemiring<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -44,12 +44,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionSemiring<Evaluat
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -90,12 +90,12 @@ impl ElementWiseMatrixAdditionMonoidOperator {
 pub trait ApplyElementWiseMatrixAdditionMonoidOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -105,12 +105,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionMonoidOperator<E
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -152,12 +152,12 @@ impl ElementWiseMatrixAdditionBinaryOperator {
 pub trait ApplyElementWiseMatrixAdditionBinaryOperator<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -167,12 +167,12 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionBinaryOperator<E
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();

@@ -30,12 +30,12 @@ pub trait MultiplyVectorByMatrix<EvaluationDomain: ValueType> {
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -46,12 +46,12 @@ impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix<EvaluationDomain>
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseVector + GetContext),
+        multiplier: &impl GetGraphblasSparseVector,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();

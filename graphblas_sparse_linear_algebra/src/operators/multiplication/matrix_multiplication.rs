@@ -1,5 +1,3 @@
-
-
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::context::{CallGraphBlasContext, GetContext};
 use crate::error::SparseLinearAlgebraError;
@@ -31,12 +29,12 @@ pub trait MultiplyMatrices<EvaluationDomain: ValueType> {
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -47,12 +45,12 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
     // TODO: consider a version where the resulting product matrix is generated in the function body
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();

@@ -34,8 +34,8 @@ pub trait ExtractSubVector<SubVector: ValueType> {
         vector_to_extract_from: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        sub_vector: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -47,8 +47,8 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
         vector_to_extract_from: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        sub_vector: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();

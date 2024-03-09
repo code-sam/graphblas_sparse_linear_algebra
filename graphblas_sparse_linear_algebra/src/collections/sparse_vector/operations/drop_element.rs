@@ -25,7 +25,7 @@ impl<T: ValueType> DeleteSparseVectorElement for SparseVector<T> {
 }
 
 pub fn drop_sparse_vector_element(
-    vector: &mut (impl GetGraphblasSparseVector + GetContext),
+    vector: &mut impl GetGraphblasSparseVector,
     index_to_delete: ElementIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
     let index_to_delete = index_to_delete.to_graphblas_index()?;

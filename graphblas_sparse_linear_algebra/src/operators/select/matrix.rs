@@ -36,10 +36,10 @@ pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
         &self,
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
         selector_argument: &EvaluationDomain,
-        argument: &(impl GetGraphblasSparseMatrix + GetContext),
+        argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -51,10 +51,10 @@ macro_rules! implement_select_from_matrix {
                 &self,
                 selector: &impl IndexUnaryOperator<$selector_argument_type>,
                 selector_argument: &$selector_argument_type,
-                argument: &(impl GetGraphblasSparseMatrix + GetContext),
+                argument: &impl GetGraphblasSparseMatrix,
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
-                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-                mask: &(impl MatrixMask + GetContext),
+                product: &mut impl GetGraphblasSparseMatrix,
+                mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.to_owned().to_type()?;
