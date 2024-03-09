@@ -4,7 +4,7 @@ use crate::{
     collections::sparse_matrix::{
         size::GetMatrixDimensions, GetGraphblasSparseMatrix, Size, SparseMatrix,
     },
-    context::{CallGraphBlasContext, GetContext},
+    context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::IndexConversion,
     value_type::ValueType,

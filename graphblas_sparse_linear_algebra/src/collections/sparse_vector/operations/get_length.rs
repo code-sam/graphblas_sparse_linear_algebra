@@ -5,7 +5,7 @@ use suitesparse_graphblas_sys::{GrB_Index, GrB_Vector_size};
 use crate::index::IndexConversion;
 use crate::{
     collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
-    context::{CallGraphBlasContext, GetContext},
+    context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::ElementIndex,
     value_type::ValueType,

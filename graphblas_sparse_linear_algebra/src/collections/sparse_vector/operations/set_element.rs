@@ -3,7 +3,6 @@ use crate::collections::sparse_vector::GetVectorElementIndex;
 use crate::collections::sparse_vector::GetVectorElementValue;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
-use crate::context::GetContext;
 use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::value_type::ConvertScalar;

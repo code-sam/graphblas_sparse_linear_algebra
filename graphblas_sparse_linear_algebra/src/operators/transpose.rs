@@ -1,5 +1,5 @@
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::GrB_transpose;
 

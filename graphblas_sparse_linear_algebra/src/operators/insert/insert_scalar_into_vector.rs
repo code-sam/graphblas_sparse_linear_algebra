@@ -1,6 +1,6 @@
 use crate::collections::sparse_vector::operations::sparse_vector_length;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;

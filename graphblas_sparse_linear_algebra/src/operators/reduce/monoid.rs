@@ -2,7 +2,7 @@ use std::convert::TryInto;
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
     GrB_Matrix_reduce_BOOL, GrB_Matrix_reduce_FP32, GrB_Matrix_reduce_FP64,

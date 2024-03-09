@@ -1,5 +1,5 @@
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;

@@ -2,7 +2,7 @@ use suitesparse_graphblas_sys::GrB_Vector_removeElement;
 
 use crate::{
     collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
-    context::{CallGraphBlasContext, GetContext},
+    context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::{ElementIndex, IndexConversion},
     value_type::ValueType,

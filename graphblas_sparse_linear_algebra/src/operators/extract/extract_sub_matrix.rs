@@ -1,6 +1,6 @@
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
@@ -30,7 +30,7 @@ impl SubMatrixExtractor {
 pub trait ExtractSubMatrix<SubMatrix: ValueType> {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize + GetContext),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,
@@ -43,7 +43,7 @@ pub trait ExtractSubMatrix<SubMatrix: ValueType> {
 impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
     fn apply(
         &self,
-        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize + GetContext),
+        matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize),
         rows_to_extract: &ElementIndexSelector, // length must equal row_height of sub_matrix
         columns_to_extract: &ElementIndexSelector, // length must equal column_width of sub_matrix
         accumulator: &impl AccumulatorBinaryOperator<SubMatrix>,

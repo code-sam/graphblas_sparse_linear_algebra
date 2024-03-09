@@ -12,14 +12,12 @@ use suitesparse_graphblas_sys::{
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
-};
+use crate::operators::options::{GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument};
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};

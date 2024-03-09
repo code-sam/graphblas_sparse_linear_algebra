@@ -1,7 +1,7 @@
 use crate::collections::sparse_matrix::operations::sparse_matrix_column_width;
 use crate::collections::sparse_matrix::operations::sparse_matrix_row_height;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;

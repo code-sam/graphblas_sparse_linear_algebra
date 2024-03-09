@@ -1,9 +1,9 @@
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOperatorOptions};
+use crate::operators::options::GetOperatorOptions;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
 
