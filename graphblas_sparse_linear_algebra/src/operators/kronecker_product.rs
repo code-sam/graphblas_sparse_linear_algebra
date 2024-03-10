@@ -1,5 +1,5 @@
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::{binary_operator::BinaryOperator, monoid::Monoid, semiring::Semiring};
 use crate::value_type::ValueType;
@@ -30,12 +30,12 @@ impl SemiringKroneckerProductOperator {
 pub trait SemiringKroneckerProduct<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         multiplication_operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -45,12 +45,12 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         multiplication_operator: &impl Semiring<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -86,12 +86,12 @@ impl MonoidKroneckerProductOperator {
 pub trait MonoidKroneckerProduct<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         multiplication_operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -101,12 +101,12 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         multiplication_operator: &impl Monoid<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
@@ -142,12 +142,12 @@ impl BinaryOperatorKroneckerProductOperator {
 pub trait BinaryOperatorKroneckerProduct<EvaluationDomain: ValueType> {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         multiplication_operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -157,12 +157,12 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
 {
     fn apply(
         &self,
-        multiplier: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplier: &impl GetGraphblasSparseMatrix,
         multiplication_operator: &impl BinaryOperator<EvaluationDomain>,
-        multiplicant: &(impl GetGraphblasSparseMatrix + GetContext),
+        multiplicant: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();

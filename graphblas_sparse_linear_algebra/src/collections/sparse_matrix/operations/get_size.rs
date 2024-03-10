@@ -5,7 +5,7 @@ use suitesparse_graphblas_sys::{GrB_Index, GrB_Matrix_ncols, GrB_Matrix_nrows};
 use crate::index::IndexConversion;
 use crate::{
     collections::sparse_matrix::{GetGraphblasSparseMatrix, Size, SparseMatrix},
-    context::{CallGraphBlasContext, GetContext},
+    context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::ElementIndex,
     value_type::ValueType,
@@ -32,7 +32,7 @@ impl<T: ValueType> GetSparseMatrixSize for SparseMatrix<T> {
 }
 
 pub fn sparse_matrix_column_width(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
 ) -> Result<ElementIndex, SparseLinearAlgebraError> {
     let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     matrix.context_ref().call(
@@ -44,7 +44,7 @@ pub fn sparse_matrix_column_width(
 }
 
 pub fn sparse_matrix_row_height(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
 ) -> Result<ElementIndex, SparseLinearAlgebraError> {
     let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     matrix.context_ref().call(
@@ -56,7 +56,7 @@ pub fn sparse_matrix_row_height(
 }
 
 pub fn sparse_matrix_size(
-    matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &impl GetGraphblasSparseMatrix,
 ) -> Result<Size, SparseLinearAlgebraError> {
     Ok(Size::new(
         sparse_matrix_row_height(matrix)?,

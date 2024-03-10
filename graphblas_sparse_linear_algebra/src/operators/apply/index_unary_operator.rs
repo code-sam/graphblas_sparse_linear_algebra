@@ -12,14 +12,12 @@ use suitesparse_graphblas_sys::{
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::{
-    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
-};
+use crate::operators::options::{GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument};
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_2_typed_graphblas_functions_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -45,23 +43,23 @@ where
 {
     fn apply_to_vector(
         &self,
-        vector: &(impl GetGraphblasSparseVector + GetContext),
+        vector: &impl GetGraphblasSparseVector,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn apply_to_matrix(
         &self,
-        matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+        matrix: &impl GetGraphblasSparseMatrix,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
         argument: &EvaluationDomain,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-        mask: &(impl MatrixMask + GetContext),
+        product: &mut impl GetGraphblasSparseMatrix,
+        mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -71,12 +69,12 @@ macro_rules! implement_apply_index_binary_operator {
         impl ApplyIndexUnaryOperator<$evaluation_domain> for IndexUnaryOperatorApplier {
             fn apply_to_vector(
                 &self,
-                vector: &(impl GetGraphblasSparseVector + GetContext),
+                vector: &impl GetGraphblasSparseVector,
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GetGraphblasSparseVector + GetContext),
-                mask: &(impl VectorMask + GetContext),
+                product: &mut impl GetGraphblasSparseVector,
+                mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
@@ -102,12 +100,12 @@ macro_rules! implement_apply_index_binary_operator {
 
             fn apply_to_matrix(
                 &self,
-                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+                matrix: &impl GetGraphblasSparseMatrix,
                 operator: &impl IndexUnaryOperator<$evaluation_domain>,
                 argument: &$evaluation_domain,
                 accumulator: &impl AccumulatorBinaryOperator<$evaluation_domain>,
-                product: &mut (impl GetGraphblasSparseMatrix + GetContext),
-                mask: &(impl MatrixMask + GetContext),
+                product: &mut impl GetGraphblasSparseMatrix,
+                mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();

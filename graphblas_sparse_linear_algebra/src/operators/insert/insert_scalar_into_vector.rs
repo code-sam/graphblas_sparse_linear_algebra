@@ -1,6 +1,6 @@
 use crate::collections::sparse_vector::operations::sparse_vector_length;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -42,11 +42,11 @@ where
     /// mask and replace option apply to entire vector_to_insert_to
     fn apply(
         &self,
-        vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert_into: &mut impl GetGraphblasSparseVector,
         indices_to_insert_into: &ElementIndexSelector,
         scalar_to_insert: &ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_vector_to_insert_into: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -62,11 +62,11 @@ macro_rules! implement_insert_scalar_into_vector_trait {
             /// mask and replace option apply to entire vector_to_insert_to
             fn apply(
                 &self,
-                vector_to_insert_into: &mut (impl GetGraphblasSparseVector + GetContext),
+                vector_to_insert_into: &mut impl GetGraphblasSparseVector,
                 indices_to_insert_into: &ElementIndexSelector,
                 scalar_to_insert: &$value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-                mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
+                mask_for_vector_to_insert_into: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = vector_to_insert_into.context();

@@ -124,7 +124,7 @@ impl<T: ValueType> Collection for SparseMatrix<T> {
     }
 }
 
-pub trait GetGraphblasSparseMatrix {
+pub trait GetGraphblasSparseMatrix: GetContext {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
     unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix;
     unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix;

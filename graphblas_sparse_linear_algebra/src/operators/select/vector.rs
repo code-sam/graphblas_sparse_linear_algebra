@@ -6,7 +6,7 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
@@ -36,10 +36,10 @@ pub trait SelectFromVector<EvaluationDomain: ValueType> {
         &self,
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
         selector_argument: &EvaluationDomain,
-        argument: &(impl GetGraphblasSparseVector + GetContext),
+        argument: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
-        product: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        product: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -51,10 +51,10 @@ macro_rules! implement_select_from_vector {
                 &self,
                 selector: &impl IndexUnaryOperator<$selector_argument_type>,
                 selector_argument: &$selector_argument_type,
-                argument: &(impl GetGraphblasSparseVector + GetContext),
+                argument: &impl GetGraphblasSparseVector,
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
-                product: &mut (impl GetGraphblasSparseVector + GetContext),
-                mask: &(impl VectorMask + GetContext),
+                product: &mut impl GetGraphblasSparseVector,
+                mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let selector_argument = selector_argument.to_owned().to_type()?;

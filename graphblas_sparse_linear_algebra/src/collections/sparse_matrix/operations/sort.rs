@@ -224,7 +224,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
 
 // TODO: review how safe these untyped functions would be, and if such untyped function would be desireable.
 // pub fn sort_sparse_matrix_rows<T: ValueType>(
-//     matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
+//     matrix: &mut impl GetGraphblasSparseMatrix,
 //     sort_operator: &(impl BinaryOperator<T> + ReturnsBool),
 // ) -> Result<(), SparseLinearAlgebraError> {
 //     matrix.context_ref().call(
@@ -243,7 +243,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
 // }
 
 // fn sort_sparse_matrix_columns<T: ValueType>(
-//     matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
+//     matrix: &mut impl GetGraphblasSparseMatrix,
 //     sort_operator: &(impl BinaryOperator<T> + ReturnsBool),
 // ) -> Result<(), SparseLinearAlgebraError> {
 //     matrix.context_ref().call(
@@ -262,7 +262,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
 // }
 
 // fn sorted_rows_and_indices<T: ValueType>(
-//     matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+//     matrix: &impl GetGraphblasSparseMatrix,
 //     sorted_values: &mut SparseMatrix<T>,
 //     indices_to_sort_rows: &mut SparseMatrix<ElementIndex>,
 //     sort_operator: &(impl BinaryOperator<T> + ReturnsBool),

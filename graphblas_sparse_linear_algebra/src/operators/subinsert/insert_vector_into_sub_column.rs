@@ -40,8 +40,8 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        mask_for_vector_to_insert_into: &(impl VectorMask + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
+        mask_for_vector_to_insert_into: &impl VectorMask,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
@@ -56,8 +56,8 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumnTrait<MatrixToInser
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         column_indices_to_insert_into: &ElementIndexSelector,
         column_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
-        mask_for_column_to_insert_into: &(impl VectorMask + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
+        mask_for_column_to_insert_into: &impl VectorMask,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {

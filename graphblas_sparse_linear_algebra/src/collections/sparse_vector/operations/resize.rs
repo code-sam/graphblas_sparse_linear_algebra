@@ -2,7 +2,7 @@ use suitesparse_graphblas_sys::GrB_Vector_resize;
 
 use crate::{
     collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
-    context::{CallGraphBlasContext, GetContext},
+    context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::{ElementIndex, IndexConversion},
     value_type::ValueType,
@@ -21,7 +21,7 @@ impl<T: ValueType> ResizeSparseVector for SparseVector<T> {
 
 /// All elements of self with an index coordinate outside of the new size are dropped.
 pub fn resize_sparse_vector(
-    vector: &mut (impl GetGraphblasSparseVector + GetContext),
+    vector: &mut impl GetGraphblasSparseVector,
     new_length: ElementIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
     let new_length = new_length.to_graphblas_index()?;

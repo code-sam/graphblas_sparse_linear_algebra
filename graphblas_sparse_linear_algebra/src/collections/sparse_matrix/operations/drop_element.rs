@@ -2,7 +2,7 @@ use suitesparse_graphblas_sys::GrB_Matrix_removeElement;
 
 use crate::{
     collections::sparse_matrix::{GetCoordinateIndices, GetGraphblasSparseMatrix, SparseMatrix},
-    context::{CallGraphBlasContext, GetContext},
+    context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::{ElementIndex, IndexConversion},
     value_type::ValueType,
@@ -37,7 +37,7 @@ impl<T: ValueType> DropSparseMatrixElement for SparseMatrix<T> {
 }
 
 pub fn drop_sparse_matrix_element(
-    matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &mut impl GetGraphblasSparseMatrix,
     row_index: &ElementIndex,
     column_index: &ElementIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
@@ -58,7 +58,7 @@ pub fn drop_sparse_matrix_element(
 }
 
 pub fn drop_sparse_matrix_element_with_coordinate(
-    matrix: &mut (impl GetGraphblasSparseMatrix + GetContext),
+    matrix: &mut impl GetGraphblasSparseMatrix,
     coordinate: &impl GetCoordinateIndices,
 ) -> Result<(), SparseLinearAlgebraError> {
     let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;

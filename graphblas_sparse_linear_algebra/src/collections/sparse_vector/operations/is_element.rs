@@ -47,7 +47,7 @@ impl<T: ValueType> IsSparseVectorElement for SparseVector<T> {
 }
 
 pub fn is_element(
-    vector: &(impl GetGraphblasSparseVector + GetContext),
+    vector: &impl GetGraphblasSparseVector,
     index: ElementIndex,
 ) -> Result<bool, SparseLinearAlgebraError> {
     let index = index.to_graphblas_index()?;
@@ -67,7 +67,7 @@ pub fn is_element(
 }
 
 pub fn try_is_element(
-    vector: &(impl GetGraphblasSparseVector + GetContext),
+    vector: &impl GetGraphblasSparseVector,
     index: ElementIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
     let index = index.to_graphblas_index()?;

@@ -1,7 +1,7 @@
 use crate::collections::sparse_matrix::operations::sparse_matrix_row_height;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
@@ -38,12 +38,12 @@ where
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
-        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_row_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -54,12 +54,12 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRowTrait<Accumulato
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
-        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &(impl GetGraphblasSparseVector + GetContext),
+        vector_to_insert: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_row_to_insert_into: &(impl VectorMask + GetContext),
+        mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();

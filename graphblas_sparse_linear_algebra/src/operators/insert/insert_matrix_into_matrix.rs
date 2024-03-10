@@ -1,7 +1,7 @@
 use crate::collections::sparse_matrix::operations::sparse_matrix_column_width;
 use crate::collections::sparse_matrix::operations::sparse_matrix_row_height;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion};
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
@@ -35,12 +35,12 @@ where
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
-        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
+        matrix_to_insert: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_matrix_to_insert_into: &(impl MatrixMask + GetContext),
+        mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -51,12 +51,12 @@ impl<AccumulatorEvaluationDomain: ValueType>
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
         &self,
-        matrix_to_insert_into: &mut (impl GetGraphblasSparseMatrix + GetContext),
+        matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        matrix_to_insert: &(impl GetGraphblasSparseMatrix + GetContext),
+        matrix_to_insert: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
-        mask_for_matrix_to_insert_into: &(impl MatrixMask + GetContext),
+        mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = matrix_to_insert_into.context();

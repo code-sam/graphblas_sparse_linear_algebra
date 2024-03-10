@@ -170,7 +170,7 @@ impl<T: ValueType> Clone for SparseScalar<T> {
     }
 }
 
-pub trait GraphblasSparseScalarTrait {
+pub trait GraphblasSparseScalarTrait: GetContext {
     unsafe fn graphblas_scalar(&self) -> GrB_Scalar;
     unsafe fn graphblas_scalar_ref(&self) -> &GrB_Scalar;
     unsafe fn graphblas_scalar_mut_ref(&mut self) -> &mut GrB_Scalar;

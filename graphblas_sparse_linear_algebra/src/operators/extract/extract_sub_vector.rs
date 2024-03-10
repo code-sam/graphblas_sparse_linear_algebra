@@ -1,6 +1,6 @@
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
-use crate::context::{CallGraphBlasContext, GetContext};
+use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::index::{
     ElementIndex, ElementIndexSelector, ElementIndexSelectorGraphblasType, IndexConversion,
@@ -31,11 +31,11 @@ pub trait ExtractSubVector<SubVector: ValueType> {
     /// Length of the mask must equal length of sub_vector
     fn apply(
         &self,
-        vector_to_extract_from: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
+        vector_to_extract_from: &(impl GetGraphblasSparseVector + GetSparseVectorLength),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        sub_vector: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
@@ -44,11 +44,11 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
     /// Length of the mask must equal length of sub_vector
     fn apply(
         &self,
-        vector_to_extract_from: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
+        vector_to_extract_from: &(impl GetGraphblasSparseVector + GetSparseVectorLength),
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<SubVector>,
-        sub_vector: &mut (impl GetGraphblasSparseVector + GetContext),
-        mask: &(impl VectorMask + GetContext),
+        sub_vector: &mut impl GetGraphblasSparseVector,
+        mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = vector_to_extract_from.context();
