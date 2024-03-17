@@ -4,7 +4,7 @@ use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument};
+use crate::operators::options::GetOptionsForOperatorWithMatrixAsFirstArgument;
 
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
@@ -36,7 +36,7 @@ pub trait MultiplyMatrixByVector<EvaluationDomain: ValueType> {
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
         mask: &impl VectorMask,
-        options: &impl GetOptionsForOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -52,7 +52,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
         mask: &impl VectorMask,
-        options: &impl GetOptionsForOperatorWithMatrixArgument,
+        options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
         let context = product.context();
 
@@ -90,7 +90,7 @@ mod tests {
     use crate::operators::binary_operator::Plus;
     use crate::operators::binary_operator::{Assignment, First};
     use crate::operators::mask::SelectEntireVector;
-    use crate::operators::options::OptionsForOperatorWithMatrixArgument;
+    use crate::operators::options::OptionsForOperatorWithMatrixAsFirstArgument;
     use crate::operators::semiring::PlusTimes;
 
     #[test]
@@ -98,7 +98,7 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let semiring = PlusTimes::<f32>::new();
-        let options = OptionsForOperatorWithMatrixArgument::new_default();
+        let options = OptionsForOperatorWithMatrixAsFirstArgument::new_default();
         let matrix_multiplier = MatrixVectorMultiplicationOperator::new();
 
         let length = 2;
@@ -117,7 +117,7 @@ mod tests {
                 &Assignment::new(),
                 &mut product,
                 &SelectEntireVector::new(&context),
-                &OptionsForOperatorWithMatrixArgument::new_default(),
+                &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
         let element_list = product.get_element_list().unwrap();
