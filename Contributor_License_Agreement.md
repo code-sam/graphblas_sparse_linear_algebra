@@ -23,12 +23,12 @@ You covenant, represent, warrant and agree that:
 - to the best of your knowledge, each contribution will not violate any third party’s copyrights, trademarks, patents, or other intellectual property rights.
 
 ## Obligation
-You acknowledge that we are under no obligation to use or incorporate your Contributions into the project. The decision to use or incorporate your Contributions into the project will be made at the sole discretion of us or our authorized delegates
+You acknowledge that we are under no obligation to use or incorporate your Contributions into the project. The decision to use or incorporate your Contributions into the project will be made at the sole discretion of us or our authorized delegates.
 To the fullest extent permitted under applicable law, your Contributions are provided on an "asis" basis, without any warranties or conditions, express or implied, including, without limitation, any implied warranties or conditions of non-infringement, merchantability or fitness for a particular purpose. You are not required to provide support for your Contributions, except to the extent you desire to provide support.
 
 ## Disclosure
 You agree to notify us if you become aware of any circumstance which would make any of the foregoing representations inaccurate in any respect.
-Sam Dekker may publicly disclose your participation in the project, including the fact that you have signed this Agreement.
+We may publicly disclose your participation in the project, including the fact that you have signed this Agreement.
 
 ## Effectiveness
 The rights that you grant to us under these terms are effective on the date you first submitted a contribution to us, even if your submission took place before the date you sign these terms. 
