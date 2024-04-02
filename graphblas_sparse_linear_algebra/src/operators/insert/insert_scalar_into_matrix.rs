@@ -23,19 +23,19 @@ use crate::graphblas_bindings::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertScalarIntoMatrix {}
-unsafe impl Sync for InsertScalarIntoMatrix {}
+unsafe impl Send for InsertScalarIntoMatrixOperator {}
+unsafe impl Sync for InsertScalarIntoMatrixOperator {}
 
 #[derive(Debug, Clone)]
-pub struct InsertScalarIntoMatrix {}
+pub struct InsertScalarIntoMatrixOperator {}
 
-impl InsertScalarIntoMatrix {
+impl InsertScalarIntoMatrixOperator {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-pub trait InsertScalarIntoMatrixTrait<AccumulatorEvaluationDomain, ScalarToInsert>
+pub trait InsertScalarIntoMatrix<AccumulatorEvaluationDomain, ScalarToInsert>
 where
     AccumulatorEvaluationDomain: ValueType,
     ScalarToInsert: ValueType,
@@ -58,8 +58,8 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
         $value_type_matrix_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
         impl<AccumulatorEvaluationDomain: ValueType>
-            InsertScalarIntoMatrixTrait<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
-            for InsertScalarIntoMatrix
+            InsertScalarIntoMatrix<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
+            for InsertScalarIntoMatrixOperator
         {
             /// mask and replace option apply to entire matrix_to_insert_to
             fn apply(
@@ -240,7 +240,7 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertScalarIntoMatrix::new();
+        let insert_operator = InsertScalarIntoMatrixOperator::new();
 
         let scalar_to_insert: u8 = 8;
 
@@ -317,7 +317,7 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertScalarIntoMatrix::new();
+        let insert_operator = InsertScalarIntoMatrixOperator::new();
 
         let scalar_to_insert: f32 = 8.0;
 

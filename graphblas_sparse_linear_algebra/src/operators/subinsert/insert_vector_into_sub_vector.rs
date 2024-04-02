@@ -15,19 +15,19 @@ use crate::value_type::ValueType;
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertVectorIntoSubVector {}
-unsafe impl Sync for InsertVectorIntoSubVector {}
+unsafe impl Send for InsertVectorIntoSubVectorOperator {}
+unsafe impl Sync for InsertVectorIntoSubVectorOperator {}
 
 #[derive(Debug, Clone)]
-pub struct InsertVectorIntoSubVector {}
+pub struct InsertVectorIntoSubVectorOperator {}
 
-impl InsertVectorIntoSubVector {
+impl InsertVectorIntoSubVectorOperator {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-pub trait InsertVectorIntoSubVectorTrait<VectorToInsertInto>
+pub trait InsertVectorIntoSubVector<VectorToInsertInto>
 where
     VectorToInsertInto: ValueType,
 {
@@ -43,8 +43,8 @@ where
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVectorTrait<VectorToInsertInto>
-    for InsertVectorIntoSubVector
+impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVector<VectorToInsertInto>
+    for InsertVectorIntoSubVectorOperator
 {
     /// mask and replace option apply to entire matrix_to_insert_to
     fn apply(
@@ -172,7 +172,7 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..5).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertVectorIntoSubVector::new();
+        let insert_operator = InsertVectorIntoSubVectorOperator::new();
 
         insert_operator
             .apply(

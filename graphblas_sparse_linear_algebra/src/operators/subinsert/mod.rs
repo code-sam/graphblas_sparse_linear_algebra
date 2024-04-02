@@ -6,18 +6,18 @@ mod insert_vector_into_sub_row;
 mod insert_vector_into_sub_vector;
 
 pub use insert_matrix_into_sub_matrix::{
-    InsertMatrixIntoSubMatrix, InsertMatrixIntoSubMatrixTrait,
+    InsertMatrixIntoSubMatrix, InsertMatrixIntoSubMatrixOperator,
 };
 pub use insert_scalar_into_sub_matrix::{
-    InsertScalarIntoSubMatrix, InsertScalarIntoSubMatrixTrait,
+    InsertScalarIntoSubMatrix, InsertScalarIntoSubMatrixOperator,
 };
 pub use insert_scalar_into_sub_vector::{
-    InsertScalarIntoSubVector, InsertScalarIntoSubVectorTrait,
+    InsertScalarIntoSubVector, InsertScalarIntoSubVectorOperator,
 };
 pub use insert_vector_into_sub_column::{
-    InsertVectorIntoSubColumn, InsertVectorIntoSubColumnTrait,
+    InsertVectorIntoSubColumn, InsertVectorIntoSubColumnOperator,
 };
-pub use insert_vector_into_sub_row::{InsertVectorIntoSubRow, InsertVectorIntoSubRowTrait};
+pub use insert_vector_into_sub_row::{InsertVectorIntoSubRow, InsertVectorIntoSubRowOperator};
 pub use insert_vector_into_sub_vector::{
-    InsertVectorIntoSubVector, InsertVectorIntoSubVectorTrait,
+    InsertVectorIntoSubVector, InsertVectorIntoSubVectorOperator,
 };

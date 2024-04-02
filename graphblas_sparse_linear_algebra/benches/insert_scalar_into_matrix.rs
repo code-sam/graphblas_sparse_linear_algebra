@@ -14,7 +14,7 @@ use graphblas_sparse_linear_algebra::index::{ElementIndex, ElementIndexSelector}
 use graphblas_sparse_linear_algebra::collections::sparse_matrix::{MatrixElementList, Size};
 use graphblas_sparse_linear_algebra::operators::binary_operator::{Assignment, First};
 use graphblas_sparse_linear_algebra::operators::insert::{
-    InsertScalarIntoMatrix, InsertScalarIntoMatrixTrait,
+    InsertScalarIntoMatrix, InsertScalarIntoMatrixOperator,
 };
 
 use criterion::{criterion_group, criterion_main, Criterion};
@@ -66,7 +66,7 @@ fn bench_test(context: Arc<Context>) {
     let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
     let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-    let insert_operator = InsertScalarIntoMatrix::new();
+    let insert_operator = InsertScalarIntoMatrixOperator::new();
 
     for scalar_to_insert in 1..10 as u8 {
         insert_operator

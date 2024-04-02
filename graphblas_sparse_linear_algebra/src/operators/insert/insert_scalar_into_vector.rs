@@ -22,19 +22,19 @@ use crate::graphblas_bindings::{
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertScalarIntoVector {}
-unsafe impl Sync for InsertScalarIntoVector {}
+unsafe impl Send for InsertScalarIntoVectorOperator {}
+unsafe impl Sync for InsertScalarIntoVectorOperator {}
 
 #[derive(Debug, Clone)]
-pub struct InsertScalarIntoVector {}
+pub struct InsertScalarIntoVectorOperator {}
 
-impl InsertScalarIntoVector {
+impl InsertScalarIntoVectorOperator {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-pub trait InsertScalarIntoVectorTrait<AccumulatorEvaluationDomain, ScalarToInsert>
+pub trait InsertScalarIntoVector<AccumulatorEvaluationDomain, ScalarToInsert>
 where
     AccumulatorEvaluationDomain: ValueType,
     ScalarToInsert: ValueType,
@@ -56,8 +56,8 @@ macro_rules! implement_insert_scalar_into_vector_trait {
         $_value_type_vector_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implementation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
         impl<AccumulatorEvaluationDomain: ValueType>
-            InsertScalarIntoVectorTrait<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
-            for InsertScalarIntoVector
+            InsertScalarIntoVector<AccumulatorEvaluationDomain, $value_type_scalar_to_insert>
+            for InsertScalarIntoVectorOperator
         {
             /// mask and replace option apply to entire vector_to_insert_to
             fn apply(
@@ -177,7 +177,7 @@ mod tests {
         let indices_to_insert: Vec<ElementIndex> = (0..3).collect();
         let indices_to_insert = ElementIndexSelector::Index(&indices_to_insert);
 
-        let insert_operator = InsertScalarIntoVector::new();
+        let insert_operator = InsertScalarIntoVectorOperator::new();
 
         let scalar_to_insert: u8 = 8;
 

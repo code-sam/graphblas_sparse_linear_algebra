@@ -21,19 +21,19 @@ use crate::value_type::{ConvertScalar, ValueType};
 // Implemented methods do not provide mutable access to GraphBLAS operators or options.
 // Code review must consider that no mtable access is provided.
 // https://doc.rust-lang.org/nomicon/send-and-sync.html
-unsafe impl Send for InsertScalarIntoSubMatrix {}
-unsafe impl Sync for InsertScalarIntoSubMatrix {}
+unsafe impl Send for InsertScalarIntoSubMatrixOperator {}
+unsafe impl Sync for InsertScalarIntoSubMatrixOperator {}
 
 #[derive(Debug, Clone)]
-pub struct InsertScalarIntoSubMatrix {}
+pub struct InsertScalarIntoSubMatrixOperator {}
 
-impl InsertScalarIntoSubMatrix {
+impl InsertScalarIntoSubMatrixOperator {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-pub trait InsertScalarIntoSubMatrixTrait<MatrixToInsertInto, ScalarToInsert>
+pub trait InsertScalarIntoSubMatrix<MatrixToInsertInto, ScalarToInsert>
 where
     MatrixToInsertInto: ValueType,
     ScalarToInsert: ValueType,
@@ -56,8 +56,8 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
         $_value_type_matrix_to_insert_into:ty, $value_type_scalar_to_insert:ty, $graphblas_implemenation_type:ty, $graphblas_insert_function:ident, $convert_to_type:ident
     ) => {
         impl<MatrixToInsertInto: ValueType>
-            InsertScalarIntoSubMatrixTrait<MatrixToInsertInto, $value_type_scalar_to_insert>
-            for InsertScalarIntoSubMatrix
+            InsertScalarIntoSubMatrix<MatrixToInsertInto, $value_type_scalar_to_insert>
+            for InsertScalarIntoSubMatrixOperator
         {
             /// mask and replace option apply to entire matrix_to_insert_to
             fn apply(
@@ -245,7 +245,7 @@ mod tests {
         let columns_to_insert: Vec<ElementIndex> = (0..6).collect();
         let columns_to_insert = ElementIndexSelector::Index(&columns_to_insert);
 
-        let insert_operator = InsertScalarIntoSubMatrix::new();
+        let insert_operator = InsertScalarIntoSubMatrixOperator::new();
 
         let scalar_to_insert: u8 = 8;
 
