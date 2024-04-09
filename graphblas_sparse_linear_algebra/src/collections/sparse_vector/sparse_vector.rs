@@ -281,13 +281,13 @@ impl<T: ValueType> Clone for SparseVector<T> {
 
 pub unsafe fn clone_graphblas_vector(
     context: &Arc<Context>,
-    matrix: &GrB_Vector,
+    vector: &GrB_Vector,
 ) -> Result<GrB_Vector, SparseLinearAlgebraError> {
-    let mut matrix_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
+    let mut vector_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
     context
-        .call(|| GrB_Vector_dup(matrix_copy.as_mut_ptr(), *matrix), matrix)
+        .call(|| GrB_Vector_dup(vector_copy.as_mut_ptr(), *vector), vector)
         .unwrap();
-    return Ok(matrix_copy.assume_init());
+    return Ok(vector_copy.assume_init());
 }
 
 // TODO: use standard GrB method
