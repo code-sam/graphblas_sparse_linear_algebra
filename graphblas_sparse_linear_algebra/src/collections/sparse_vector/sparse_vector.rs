@@ -524,16 +524,20 @@ mod tests {
 
         let length: ElementIndex = 10;
 
-        let sparse_vector = SparseVector::<f32>::new(&context, &length).unwrap();
+        let mut sparse_vector = SparseVector::<f32>::new(&context, &length).unwrap();
+        sparse_vector.set_value(&1, 1.0).unwrap();
+        sparse_vector.set_value(&2, 2.0).unwrap();
 
-        let clone_of_sparse_vector = sparse_vector.to_owned();
+        let mut clone_of_sparse_vector = sparse_vector.to_owned();
 
-        // TODO: implement and test equality operator
-        assert_eq!(length, sparse_vector.length().unwrap());
-        assert_eq!(
-            0,
-            clone_of_sparse_vector.number_of_stored_elements().unwrap()
-        );
+        sparse_vector.set_value(&1, 10.0).unwrap();
+        clone_of_sparse_vector.set_value(&2, 20.0).unwrap();
+
+        assert_eq!(sparse_vector.element_value(&1).unwrap(), Some(10.0));
+        assert_eq!(clone_of_sparse_vector.element_value(&1).unwrap(), Some(1.0));
+
+        assert_eq!(sparse_vector.element_value(&2).unwrap(), Some(2.0));
+        assert_eq!(clone_of_sparse_vector.element_value(&2).unwrap(), Some(20.0));
     }
 
     #[test]
