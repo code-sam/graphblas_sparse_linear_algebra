@@ -11,7 +11,6 @@ use crate::index::{ElementIndex, IndexConversion};
 use crate::value_type::ConvertScalar;
 use crate::{
     collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
-    context::GetContext,
     error::SparseLinearAlgebraError,
     value_type::{
         utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,

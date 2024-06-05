@@ -11,7 +11,7 @@ use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;
-use crate::collections::sparse_vector::operations::GetVectorElementList;
+use crate::collections::sparse_vector::operations::GetSparseVectorElementList;
 use crate::collections::sparse_vector::VectorElementList;
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, GetContext};
@@ -385,9 +385,9 @@ mod tests {
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::MatrixElementList;
     use crate::collections::sparse_vector::operations::{
-        DeleteSparseVectorElement, FromVectorElementList, GetVectorElement,
-        GetVectorElementIndices, GetVectorElementValue, GetVectorElementValues, ResizeSparseVector,
-        SetVectorElement,
+        DeleteSparseVectorElement, FromVectorElementList, GetSparseVectorElement,
+        GetSparseVectorElementIndices, GetSparseVectorElementValue, GetSparseVectorElementValues, ResizeSparseVector,
+        SetSparseVectorElement,
     };
     use crate::collections::sparse_vector::VectorElement;
 

@@ -462,7 +462,7 @@ implement_macro_with_1_type_trait_and_typed_graphblas_function_for_all_floating_
 mod tests {
     use crate::{
         collections::sparse_vector::{
-            operations::{FromVectorElementList, GetVectorElementValue},
+            operations::{FromVectorElementList, GetSparseVectorElementValue},
             SparseVector, VectorElementList,
         },
         context::Context,

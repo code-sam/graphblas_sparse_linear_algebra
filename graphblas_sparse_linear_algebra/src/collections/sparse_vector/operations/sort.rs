@@ -124,7 +124,7 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_vector::operations::{
-        FromVectorElementList, GetVectorElementValue,
+        FromVectorElementList, GetSparseVectorElementValue,
     };
     use crate::operators::binary_operator::{First, IsGreaterThan};
     use crate::{

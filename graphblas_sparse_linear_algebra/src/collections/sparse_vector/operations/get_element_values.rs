@@ -18,23 +18,23 @@ use crate::index::IndexConversion;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertVector, ValueType};
 
-pub trait GetVectorElementValues<T: ValueType> {
+pub trait GetSparseVectorElementValues<T: ValueType> {
     fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetVectorElementValuesTyped<T>> GetVectorElementValues<T> for SparseVector<T> {
+impl<T: ValueType + GetSparseVectorElementValuesTyped<T>> GetSparseVectorElementValues<T> for SparseVector<T> {
     fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError> {
         T::element_values(self)
     }
 }
 
-pub trait GetVectorElementValuesTyped<T: ValueType> {
+pub trait GetSparseVectorElementValuesTyped<T: ValueType> {
     fn element_values(vector: &SparseVector<T>) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_element_values {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetVectorElementValuesTyped<$value_type> for $value_type {
+        impl GetSparseVectorElementValuesTyped<$value_type> for $value_type {
             fn element_values(
                 vector: &SparseVector<$value_type>,
             ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {

@@ -71,7 +71,7 @@ mod tests {
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::{MatrixElementList, SparseMatrix};
-    use crate::collections::sparse_vector::operations::GetVectorElementValue;
+    use crate::collections::sparse_vector::operations::GetSparseVectorElementValue;
     use crate::collections::sparse_vector::SparseVector;
     use crate::collections::Collection;
     use crate::context::Context;

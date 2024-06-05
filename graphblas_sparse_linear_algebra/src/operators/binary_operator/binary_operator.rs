@@ -693,7 +693,7 @@ mod tests {
             },
             sparse_scalar::SparseScalar,
             sparse_vector::{
-                operations::{FromVectorElementList, GetVectorElementValue},
+                operations::{FromVectorElementList, GetSparseVectorElementValue},
                 SparseVector, VectorElementList,
             },
             Collection,
