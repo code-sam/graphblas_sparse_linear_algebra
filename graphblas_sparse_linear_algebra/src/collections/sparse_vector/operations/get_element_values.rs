@@ -22,7 +22,9 @@ pub trait GetSparseVectorElementValues<T: ValueType> {
     fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetSparseVectorElementValuesTyped<T>> GetSparseVectorElementValues<T> for SparseVector<T> {
+impl<T: ValueType + GetSparseVectorElementValuesTyped<T>> GetSparseVectorElementValues<T>
+    for SparseVector<T>
+{
     fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError> {
         T::element_values(self)
     }

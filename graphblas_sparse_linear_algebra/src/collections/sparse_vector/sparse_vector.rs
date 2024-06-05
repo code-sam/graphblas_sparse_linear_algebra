@@ -10,8 +10,8 @@ use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
-use crate::collections::sparse_vector::operations::GetSparseVectorLength;
 use crate::collections::sparse_vector::operations::GetSparseVectorElementList;
+use crate::collections::sparse_vector::operations::GetSparseVectorLength;
 use crate::collections::sparse_vector::VectorElementList;
 use crate::context::CallGraphBlasContext;
 use crate::context::{Context, GetContext};
@@ -386,8 +386,8 @@ mod tests {
     use crate::collections::sparse_matrix::MatrixElementList;
     use crate::collections::sparse_vector::operations::{
         DeleteSparseVectorElement, FromVectorElementList, GetSparseVectorElement,
-        GetSparseVectorElementIndices, GetSparseVectorElementValue, GetSparseVectorElementValues, ResizeSparseVector,
-        SetSparseVectorElement,
+        GetSparseVectorElementIndices, GetSparseVectorElementValue, GetSparseVectorElementValues,
+        ResizeSparseVector, SetSparseVectorElement,
     };
     use crate::collections::sparse_vector::VectorElement;
 
@@ -537,7 +537,10 @@ mod tests {
         assert_eq!(clone_of_sparse_vector.element_value(&1).unwrap(), Some(1.0));
 
         assert_eq!(sparse_vector.element_value(&2).unwrap(), Some(2.0));
-        assert_eq!(clone_of_sparse_vector.element_value(&2).unwrap(), Some(20.0));
+        assert_eq!(
+            clone_of_sparse_vector.element_value(&2).unwrap(),
+            Some(20.0)
+        );
     }
 
     #[test]
