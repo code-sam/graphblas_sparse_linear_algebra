@@ -1,5 +1,5 @@
 use graphblas_sparse_linear_algebra::collections::sparse_vector::operations::{
-    GetSparseVectorLength, GetVectorElementIndices, SetVectorElement,
+    GetSparseVectorElementIndices, GetSparseVectorLength, SetSparseVectorElement,
 };
 use graphblas_sparse_linear_algebra::collections::sparse_vector::{SparseVector, VectorElement};
 use graphblas_sparse_linear_algebra::context::Context;

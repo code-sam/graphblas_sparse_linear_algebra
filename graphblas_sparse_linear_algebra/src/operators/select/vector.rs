@@ -89,7 +89,7 @@ mod tests {
     use super::*;
 
     use crate::collections::sparse_vector::operations::{
-        FromVectorElementList, GetVectorElementValue,
+        FromVectorElementList, GetSparseVectorElementValue,
     };
     use crate::collections::Collection;
     use crate::context::Context;

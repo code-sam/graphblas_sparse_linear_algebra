@@ -106,7 +106,7 @@ mod tests {
 
     use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_vector::operations::{
-        FromVectorElementList, GetVectorElementValue,
+        FromVectorElementList, GetSparseVectorElementValue,
     };
     use crate::collections::Collection;
     use crate::context::Context;

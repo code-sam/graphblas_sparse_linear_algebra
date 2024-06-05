@@ -21,7 +21,7 @@ use crate::graphblas_bindings::{
     GrB_Vector_setElement_UINT64, GrB_Vector_setElement_UINT8,
 };
 
-pub trait SetVectorElement<T: ValueType> {
+pub trait SetSparseVectorElement<T: ValueType> {
     fn set_element(
         &mut self,
         element: &(impl GetVectorElementIndex + GetVectorElementValue<T>),
@@ -30,7 +30,7 @@ pub trait SetVectorElement<T: ValueType> {
         -> Result<(), SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + SetVectorElementTyped<T>> SetVectorElement<T> for SparseVector<T> {
+impl<T: ValueType + SetSparseVectorElementTyped<T>> SetSparseVectorElement<T> for SparseVector<T> {
     fn set_element(
         &mut self,
         element: &(impl GetVectorElementIndex + GetVectorElementValue<T>),
@@ -46,7 +46,7 @@ impl<T: ValueType + SetVectorElementTyped<T>> SetVectorElement<T> for SparseVect
     }
 }
 
-pub trait SetVectorElementTyped<T: ValueType> {
+pub trait SetSparseVectorElementTyped<T: ValueType> {
     fn set_element(
         vector: &mut impl GetGraphblasSparseVector,
         element: &(impl GetVectorElementIndex + GetVectorElementValue<T>),
@@ -60,7 +60,7 @@ pub trait SetVectorElementTyped<T: ValueType> {
 
 macro_rules! implement_set_element_for_built_in_type {
     ($value_type:ty, $graphblas_implementation_type:ident, $add_element_function:ident) => {
-        impl SetVectorElementTyped<$value_type> for $value_type {
+        impl SetSparseVectorElementTyped<$value_type> for $value_type {
             fn set_element(
                 vector: &mut impl GetGraphblasSparseVector,
                 element: &(impl GetVectorElementIndex + GetVectorElementValue<$value_type>),
