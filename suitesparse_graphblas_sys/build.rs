@@ -10,7 +10,7 @@ extern crate bindgen;
 extern crate cmake;
 
 // NOTE: when updating the version, make sure to delete any existing clones
-const GIT_COMMIT: &str = "736cc8c4c166d4a3f3f69aaabc0002ff1025a3c4";
+const GIT_COMMIT: &str = "9bdf19dea3de59210979a9691807cfabccdf04ea";
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -273,17 +273,18 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
     build_configuration
-        .define("NSTATIC", "false")
+        .define("BUILD_SHARED_LIBS", "true")
+        .define("GRAPHBLAS_BUILD_STATIC_LIBS", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
         .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned());
 
     if !cfg!(feature = "build-standard-kernels") {
-        build_configuration.define("COMPACT", "true");
+        build_configuration.define("GRAPHBLAS_COMPACT", "true");
     }
 
     if cfg!(feature = "disable-just-in-time-compiler") {
-        build_configuration.define("NJIT", "true");
+        build_configuration.define("GRAPHBLAS_USE_JIT", "false");
     }
 
     let _dst = build_configuration.build();
