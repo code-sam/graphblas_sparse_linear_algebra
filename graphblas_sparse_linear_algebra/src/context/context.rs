@@ -291,7 +291,7 @@ macro_rules! implement_CallGraphBlasContext {
                                 message = CStr::from_ptr(graphblas_error_message).to_str();
                             }
                             match message {
-                                Ok(message) => message.clone(),
+                                Ok(message) => message.to_owned(),
                                 Err(error) => format!("Something went wrong while calling the GraphBLAS implementation. Unable to parse detailed error message due to: {}", error)
                             }
                         }

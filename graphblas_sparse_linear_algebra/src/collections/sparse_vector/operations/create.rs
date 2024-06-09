@@ -51,7 +51,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     graphblas_indices.push(elements.index(i)?.to_graphblas_index()?);
                 }
                 let number_of_elements = elements.length().to_graphblas_index()?;
-                let element_values = elements.values_ref().clone().to_type()?;
+                let element_values = elements.values_ref().to_owned().to_type()?;
                 vector.context_ref().call(
                     || unsafe {
                         $build_function(
