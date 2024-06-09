@@ -33,7 +33,7 @@ impl MatrixMask for SelectEntireMatrix {
 
 impl GetContext for SelectEntireMatrix {
     fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
 
     fn context_ref(&self) -> &Arc<Context> {
@@ -62,7 +62,7 @@ impl VectorMask for SelectEntireVector {
 
 impl GetContext for SelectEntireVector {
     fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
 
     fn context_ref(&self) -> &Arc<Context> {

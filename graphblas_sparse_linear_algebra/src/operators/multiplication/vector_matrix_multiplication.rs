@@ -106,7 +106,7 @@ mod tests {
 
         let multiplier = SparseVector::<f32>::new(context.clone(), length).unwrap();
         let multiplicant = SparseMatrix::<f32>::new(context.clone(), size).unwrap();
-        let mut product = multiplier.to_owned();
+        let mut product = multiplier.clone();
 
         // Test multiplication of empty matrices
         matrix_multiplier

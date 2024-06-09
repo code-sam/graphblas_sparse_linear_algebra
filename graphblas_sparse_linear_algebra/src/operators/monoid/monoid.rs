@@ -224,8 +224,8 @@ mod tests {
         let length = 7;
 
         let multiplier = SparseVector::<bool>::new(context.clone(), length).unwrap();
-        let multiplicant = multiplier.to_owned();
-        let mut product = multiplier.to_owned();
+        let multiplicant = multiplier.clone();
+        let mut product = multiplier.clone();
 
         // Test multiplication of empty matrices
         equality_operator

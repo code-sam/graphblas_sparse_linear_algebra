@@ -225,8 +225,8 @@ mod tests {
         let size: Size = (height, width).into();
 
         let multiplier = SparseMatrix::<i32>::new(context.clone(), size).unwrap();
-        let multiplicant = multiplier.to_owned();
-        let mut product = multiplier.to_owned();
+        let multiplicant = multiplier.clone();
+        let mut product = multiplier.clone();
 
         // Test multiplication of empty matrices
         element_wise_matrix_multiplier

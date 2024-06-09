@@ -109,7 +109,7 @@ macro_rules! sparse_matrix_from_element_vector {
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints
-                let matrix = Self::new(context.to_owned(), size)?;
+                let matrix = Self::new(context.clone(), size)?;
 
                 let graphblas_row_indices: Vec<GrB_Index> = elements
                     .row_indices_ref()
@@ -122,7 +122,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     .map(|index| index.to_graphblas_index().unwrap())
                     .collect();
 
-                let element_values = elements.values_ref().to_owned().to_type()?;
+                let element_values = elements.values_ref().clone().to_type()?;
 
                 {
                     let number_of_elements = elements.length().to_graphblas_index()?;

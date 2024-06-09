@@ -72,7 +72,7 @@ impl WithTransposeMatrixArgument for OptionsForOperatorWithMatrixAsSecondArgumen
 
     fn with_transpose_matrix_argument(&self, transpose_matrix: bool) -> Self {
         if transpose_matrix == self.transpose_matrix_argument {
-            self.to_owned()
+            self.clone()
         } else {
             OptionsForOperatorWithMatrixAsSecondArgument::new(
                 self.clear_output_before_use,

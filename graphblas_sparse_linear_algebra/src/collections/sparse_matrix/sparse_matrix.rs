@@ -83,7 +83,7 @@ impl<T: ValueType> SparseMatrix<T> {
         matrix: GrB_Matrix,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
         Ok(SparseMatrix {
-            context: context.to_owned(),
+            context: context.clone(),
             matrix,
             value_type: PhantomData,
         })
@@ -97,7 +97,7 @@ impl<T: ValueType> SparseMatrix<T> {
 
 impl<T: ValueType> GetContext for SparseMatrix<T> {
     fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
     fn context_ref(&self) -> &Arc<Context> {
         &self.context
@@ -130,7 +130,7 @@ pub trait GetGraphblasSparseMatrix: GetContext {
 
 impl<T: ValueType> GetGraphblasSparseMatrix for SparseMatrix<T> {
     unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
-        self.matrix.to_owned()
+        self.matrix.clone()
     }
 
     unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix {
@@ -144,7 +144,7 @@ impl<T: ValueType> GetGraphblasSparseMatrix for SparseMatrix<T> {
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
-        let context = self.context.to_owned();
+        let context = self.context.clone();
         let _ = context.call_without_detailed_error_information(|| unsafe {
             GrB_Matrix_free(&mut self.matrix)
         });
@@ -154,7 +154,7 @@ impl<T: ValueType> Drop for SparseMatrix<T> {
 impl<T: ValueType> Clone for SparseMatrix<T> {
     fn clone(&self) -> Self {
         SparseMatrix {
-            context: self.context.to_owned(),
+            context: self.context.clone(),
             matrix: unsafe {
                 clone_graphblas_matrix(self.context_ref(), self.graphblas_matrix_ref()).unwrap()
             },
@@ -262,7 +262,7 @@ mod tests {
 
         let sparse_matrix = SparseMatrix::<u8>::new(context, size).unwrap();
 
-        let clone_of_sparse_matrix = sparse_matrix.to_owned();
+        let clone_of_sparse_matrix = sparse_matrix.clone();
 
         // TODO: implement and test equality operator
         assert_eq!(target_height, clone_of_sparse_matrix.row_height().unwrap());
@@ -288,11 +288,11 @@ mod tests {
         sparse_matrix.resize(new_size).unwrap();
 
         assert_eq!(
-            new_size.row_height_ref().to_owned(),
+            new_size.row_height(),
             sparse_matrix.row_height().unwrap()
         );
         assert_eq!(
-            new_size.column_width_ref().to_owned(),
+            new_size.column_width(),
             sparse_matrix.column_width().unwrap()
         );
         assert_eq!(new_size, sparse_matrix.size().unwrap());
@@ -365,7 +365,7 @@ mod tests {
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
         );
-        println!("{}", matrix.to_owned());
+        println!("{}", matrix.clone());
         assert_eq!(matrix.element_value(&7, &5).unwrap().unwrap(), 5);
     }
 

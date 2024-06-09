@@ -78,7 +78,7 @@ macro_rules! implement_apply_index_binary_operator {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let argument = argument.to_owned().to_type()?;
+                let argument = argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -109,7 +109,7 @@ macro_rules! implement_apply_index_binary_operator {
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let argument = argument.to_owned().to_type()?;
+                let argument = argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {

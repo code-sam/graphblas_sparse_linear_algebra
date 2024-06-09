@@ -116,7 +116,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let second_argument = second_argument.to_owned().to_type()?;
+                let second_argument = second_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -147,7 +147,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let first_argument = first_argument.to_owned().to_type()?;
+                let first_argument = first_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -178,7 +178,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let second_argument = second_argument.to_owned().to_type()?;
+                let second_argument = second_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -209,7 +209,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let first_argument = first_argument.to_owned().to_type()?;
+                let first_argument = first_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {

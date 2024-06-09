@@ -57,7 +57,7 @@ macro_rules! implement_select_from_matrix {
                 mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let selector_argument = selector_argument.to_owned().to_type()?;
+                let selector_argument = selector_argument.clone().to_type()?;
                 argument.context_ref().call(
                     || unsafe {
                         $graphblas_operator(

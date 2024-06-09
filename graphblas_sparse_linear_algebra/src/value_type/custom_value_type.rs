@@ -33,9 +33,9 @@ pub(crate) struct RegisteredCustomValueType<T> {
 
 impl<T> Drop for RegisteredCustomValueType<T> {
     fn drop(&mut self) {
-        let context = self.context.to_owned();
+        let context = self.context.clone();
         let _ = context.call(
-            || unsafe { GrB_Type_free(&mut self.graphblas_type.to_owned()) },
+            || unsafe { GrB_Type_free(&mut self.graphblas_type.clone()) },
             &self.graphblas_type,
         );
     }
@@ -53,11 +53,11 @@ impl<T> RegisteredCustomValueType<T> {
 
 impl<T> RegisteredCustomValueType<T> {
     pub fn to_graphblas_type(&self) -> GrB_Type {
-        self.graphblas_type.to_owned()
+        self.graphblas_type.clone()
     }
 
     pub fn size_in_graphblas(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
-        let context = self.context.to_owned();
+        let context = self.context.clone();
 
         let mut size: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
 
@@ -71,7 +71,7 @@ impl<T> RegisteredCustomValueType<T> {
     }
 
     pub fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
 }
 
@@ -85,7 +85,7 @@ macro_rules! implement_value_type_for_custom_type {
             fn to_graphblas_type(
                 registered_value_type: RegisteredCustomValueType<$value_type>,
             ) -> GrB_Type {
-                registered_value_type.graphblas_type.to_owned()
+                registered_value_type.graphblas_type.clone()
             }
         }
 
@@ -95,7 +95,7 @@ macro_rules! implement_value_type_for_custom_type {
             fn register(
                 context: Arc<Context>,
             ) -> Result<Arc<RegisteredCustomValueType<Self::Type>>, SparseLinearAlgebraError> {
-                let context = context.to_owned();
+                let context = context.clone();
                 let mut graphblas_type: MaybeUninit<
                     $crate::bindings_to_graphblas_implementation::GrB_Type,
                 > = MaybeUninit::uninit();
@@ -141,7 +141,7 @@ mod tests {
 
         implement_value_type_for_custom_type!(CustomType);
 
-        let custom_type = CustomType::register(context.to_owned()).unwrap();
+        let custom_type = CustomType::register(context.clone()).unwrap();
         let expected_size = std::mem::size_of::<CustomType>();
         assert_eq!(expected_size, custom_type.size_in_graphblas().unwrap());
     }

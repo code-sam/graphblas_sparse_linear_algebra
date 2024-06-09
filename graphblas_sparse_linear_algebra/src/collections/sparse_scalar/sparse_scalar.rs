@@ -115,7 +115,7 @@ implement_macro_for_all_value_types!(sparse_scalar_from_scalar);
 
 impl<T: ValueType> GetContext for SparseScalar<T> {
     fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
 
     fn context_ref(&self) -> &Arc<Context> {
@@ -162,7 +162,7 @@ impl<T: ValueType> Clone for SparseScalar<T> {
             .unwrap();
 
         SparseScalar {
-            context: self.context.to_owned(),
+            context: self.context.clone(),
             scalar: unsafe { scalar_copy.assume_init() },
             value_type: PhantomData,
         }
@@ -243,7 +243,7 @@ pub trait SetScalarValue<T: ValueType> {
 
 // impl<T: ValueType> SetScalarValue<T> for SparseScalar<T> {
 //     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError> {
-//         let value = value.to_owned(); // TODO: review if clone can be removed, and if this improves performance
+//         let value = value.clone(); // TODO: review if clone can be removed, and if this improves performance
 //         convert_to_target_type!(value, $graphblas_implementation_type);
 //         self.context.call(
 //             || unsafe { GrB_Scalar_setElement(self.scalar, value) },
@@ -373,7 +373,7 @@ mod tests {
 
         let sparse_scalar = SparseScalar::<f32>::new(context).unwrap();
 
-        let clone_of_sparse_scalar = sparse_scalar.to_owned();
+        let clone_of_sparse_scalar = sparse_scalar.clone();
 
         // TODO: implement and test equality operator
         assert_eq!(

@@ -145,7 +145,7 @@ macro_rules! implement_monoid_reducer {
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                let mut tmp_product = product.to_owned().to_type()?;
+                let mut tmp_product = product.clone().to_type()?;
 
                 // TODO: support detailed error information
                 context.call_without_detailed_error_information(|| unsafe {
@@ -173,7 +173,7 @@ macro_rules! implement_monoid_reducer {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                let mut tmp_product = product.to_owned().to_type()?;
+                let mut tmp_product = product.clone().to_type()?;
 
                 context.call_without_detailed_error_information(|| unsafe {
                     $vector_reducer_operator(
