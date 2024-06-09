@@ -191,9 +191,9 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let mut matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list.clone(),
             &First::<u8>::new(),
         )
         .unwrap();
@@ -207,9 +207,9 @@ mod tests {
 
         let matrix_size_to_insert: Size = (5, 10).into();
         let matrix_to_insert = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &matrix_size_to_insert,
-            &element_list_to_insert,
+            context.clone(),
+            matrix_size_to_insert,
+            element_list_to_insert,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -221,9 +221,9 @@ mod tests {
             (2, 5, true).into(),
         ]);
         let mask = SparseMatrix::<bool>::from_element_list(
-            &context,
-            &matrix_size,
-            &mask_element_list,
+            context.clone(),
+            matrix_size,
+            mask_element_list,
             &First::<bool>::new(),
         )
         .unwrap();
@@ -242,7 +242,7 @@ mod tests {
                 &columns_to_insert,
                 &matrix_to_insert,
                 &Assignment::<u8>::new(),
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
@@ -257,9 +257,9 @@ mod tests {
         assert_eq!(matrix.element_value_or_default(&9, &5).unwrap(), 11);
 
         let mut matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -299,9 +299,9 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let mut matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -317,7 +317,7 @@ mod tests {
                 &ElementIndexSelector::All,
                 &matrix_to_insert,
                 &Plus::<f32>::new(),
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();

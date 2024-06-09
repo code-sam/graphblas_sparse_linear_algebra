@@ -132,9 +132,9 @@ mod tests {
 
         let vector_length: usize = 10;
         let mut vector = SparseVector::<u8>::from_element_list(
-            &context,
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list.clone(),
             &First::<u8>::new(),
         )
         .unwrap();
@@ -148,9 +148,9 @@ mod tests {
 
         let vector_to_insert_length: usize = 5;
         let vector_to_insert = SparseVector::<u8>::from_element_list(
-            &context,
-            &vector_to_insert_length,
-            &element_list_to_insert,
+            context.clone(),
+            vector_to_insert_length,
+            element_list_to_insert,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -162,9 +162,9 @@ mod tests {
             // (5, true).into(),
         ]);
         let mask = SparseVector::<bool>::from_element_list(
-            &context,
-            &vector_to_insert_length,
-            &mask_element_list,
+            context.clone(),
+            vector_to_insert_length,
+            mask_element_list,
             &First::<bool>::new(),
         )
         .unwrap();
@@ -180,7 +180,7 @@ mod tests {
                 &indices_to_insert,
                 &vector_to_insert,
                 &Assignment::new(),
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -194,9 +194,9 @@ mod tests {
         assert_eq!(vector.element_value_or_default(&5).unwrap(), 12);
 
         let mut vector = SparseVector::<u8>::from_element_list(
-            &context,
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();

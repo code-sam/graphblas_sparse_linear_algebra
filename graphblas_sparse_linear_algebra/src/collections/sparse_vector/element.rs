@@ -46,7 +46,7 @@ impl<T: ValueType> GetVectorElementIndex for VectorElement<T> {
 
 impl<T: ValueType + Clone> VectorElement<T> {
     pub fn index(&self) -> ElementIndex {
-        self.index.to_owned()
+        self.index.clone()
     }
 
     pub fn from_pair(index: ElementIndex, value: T) -> Self {

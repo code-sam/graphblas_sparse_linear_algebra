@@ -93,14 +93,14 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &(3, 2).into(),
-            &element_list,
+            context.clone(),
+            (3, 2).into(),
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut column_vector = SparseVector::<u8>::new(&context, &2).unwrap();
+        let mut column_vector = SparseVector::<u8>::new(context.clone(), 2).unwrap();
 
         let indices_to_extract: Vec<ElementIndex> = vec![0, 1];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
@@ -114,7 +114,7 @@ mod tests {
                 &indices_to_extract,
                 &Assignment::<u8>::new(),
                 &mut column_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &mut OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();

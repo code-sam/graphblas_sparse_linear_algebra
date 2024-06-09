@@ -11,7 +11,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOperatorOptions};
+use crate::operators::options::GetOperatorOptions;
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -113,14 +113,14 @@ mod tests {
 
         let vector_length: usize = 4;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<u8>::new(context.clone(), vector_length).unwrap();
 
         let index_operator = IsValueGreaterThan::<u8>::new();
         let selector = VectorSelector::new();
@@ -132,7 +132,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -154,7 +154,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -178,14 +178,14 @@ mod tests {
 
         let vector_length: usize = 4;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<u8>::new(context.clone(), vector_length).unwrap();
 
         let index_operator = IsValueGreaterThan::<u8>::new();
         let selector = VectorSelector::new();
@@ -197,7 +197,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -219,7 +219,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

@@ -18,9 +18,9 @@ pub struct SelectEntireMatrix {
 }
 
 impl SelectEntireMatrix {
-    pub fn new(context: &Arc<Context>) -> Self {
+    pub fn new(context: Arc<Context>) -> Self {
         SelectEntireMatrix {
-            context: context.to_owned(),
+            context,
         }
     }
 }
@@ -33,7 +33,7 @@ impl MatrixMask for SelectEntireMatrix {
 
 impl GetContext for SelectEntireMatrix {
     fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
 
     fn context_ref(&self) -> &Arc<Context> {
@@ -47,9 +47,9 @@ pub struct SelectEntireVector {
 }
 
 impl SelectEntireVector {
-    pub fn new(context: &Arc<Context>) -> Self {
+    pub fn new(context: Arc<Context>) -> Self {
         SelectEntireVector {
-            context: context.to_owned(),
+            context,
         }
     }
 }
@@ -62,7 +62,7 @@ impl VectorMask for SelectEntireVector {
 
 impl GetContext for SelectEntireVector {
     fn context(&self) -> Arc<Context> {
-        self.context.to_owned()
+        self.context.clone()
     }
 
     fn context_ref(&self) -> &Arc<Context> {

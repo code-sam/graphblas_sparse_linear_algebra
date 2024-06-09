@@ -1,5 +1,7 @@
 use crate::collections::sparse_matrix::element::GetMatrixElementCoordinate;
 use crate::collections::sparse_matrix::element::GetMatrixElementValue;
+use crate::collections::sparse_matrix::ColumnIndex;
+use crate::collections::sparse_matrix::RowIndex;
 use crate::context::CallGraphBlasContext;
 use crate::graphblas_bindings::{
     GrB_Matrix_setElement_BOOL, GrB_Matrix_setElement_FP32, GrB_Matrix_setElement_FP64,
@@ -21,8 +23,8 @@ use crate::{
 pub trait SetSparseMatrixElement<T: ValueType> {
     fn set_matrix_value(
         &mut self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
         value: T,
     ) -> Result<(), SparseLinearAlgebraError>;
     fn set_matrix_element(
@@ -34,8 +36,8 @@ pub trait SetSparseMatrixElement<T: ValueType> {
 impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> for SparseMatrix<T> {
     fn set_matrix_value(
         &mut self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
         value: T,
     ) -> Result<(), SparseLinearAlgebraError> {
         T::set_graphblas_matrix_value(self, row_index, column_index, value)
@@ -52,8 +54,8 @@ impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> fo
 pub trait SetSparseMatrixElementTyped<T: ValueType> {
     fn set_graphblas_matrix_value(
         matrix: &mut impl GetGraphblasSparseMatrix,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
         value: T,
     ) -> Result<(), SparseLinearAlgebraError>;
 
@@ -68,8 +70,8 @@ macro_rules! implement_set_element_typed {
         impl SetSparseMatrixElementTyped<$value_type> for $value_type {
             fn set_graphblas_matrix_value(
                 matrix: &mut impl GetGraphblasSparseMatrix,
-                row_index: &ElementIndex,
-                column_index: &ElementIndex,
+                row_index: RowIndex,
+                column_index: ColumnIndex,
                 value: $value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let row_index_to_set = row_index.as_graphblas_index()?;
@@ -95,8 +97,8 @@ macro_rules! implement_set_element_typed {
             ) -> Result<(), SparseLinearAlgebraError> {
                 <$value_type>::set_graphblas_matrix_value(
                     matrix,
-                    element.row_index_ref(),
-                    element.column_index_ref(),
+                    element.row_index(),
+                    element.column_index(),
                     element.value(),
                 )
             }

@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOperatorOptions};
+use crate::operators::options::GetOperatorOptions;
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Vector_extract;
@@ -129,14 +129,14 @@ mod tests {
         ]);
 
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &10,
-            &element_list,
+            context.clone(),
+            10,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut sub_vector = SparseVector::<u8>::new(&context, &3).unwrap();
+        let mut sub_vector = SparseVector::<u8>::new(context.clone(), 3).unwrap();
 
         let indices_to_extract: Vec<ElementIndex> = (0..3).collect();
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
@@ -149,7 +149,7 @@ mod tests {
                 &indices_to_extract,
                 &Assignment::<u8>::new(),
                 &mut sub_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -171,9 +171,9 @@ mod tests {
         ]);
 
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &10,
-            &vector_element_list,
+            context.clone(),
+            10,
+            vector_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -189,14 +189,14 @@ mod tests {
         ]);
 
         let mask = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &4,
-            &mask_element_list,
+            context.clone(),
+            4,
+            mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut sub_vector = SparseVector::<u8>::new(&context, &4).unwrap();
+        let mut sub_vector = SparseVector::<u8>::new(context.clone(), 4).unwrap();
 
         let indices_to_extract: Vec<ElementIndex> = (0..4).collect();
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);

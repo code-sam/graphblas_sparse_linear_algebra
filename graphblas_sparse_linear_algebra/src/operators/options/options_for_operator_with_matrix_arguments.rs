@@ -85,7 +85,7 @@ impl WithTransposeArguments for OptionsForOperatorWithMatrixArguments {
 
     fn with_transpose_first_argument(&self, transpose_first_argument: bool) -> Self {
         if transpose_first_argument == self.transpose_first_argument {
-            self.to_owned()
+            self.clone()
         } else {
             OptionsForOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
@@ -99,7 +99,7 @@ impl WithTransposeArguments for OptionsForOperatorWithMatrixArguments {
 
     fn with_transpose_second_argument(&self, transpose_second_argument: bool) -> Self {
         if transpose_second_argument == self.transpose_second_argument {
-            self.to_owned()
+            self.clone()
         } else {
             OptionsForOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,
@@ -119,7 +119,7 @@ impl WithTransposeArguments for OptionsForOperatorWithMatrixArguments {
         if transpose_first_argument == self.transpose_first_argument
             && transpose_second_argument == self.transpose_second_argument
         {
-            self.to_owned()
+            self.clone()
         } else {
             OptionsForOperatorWithMatrixArguments::new(
                 self.clear_output_before_use,

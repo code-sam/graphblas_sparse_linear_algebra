@@ -44,10 +44,10 @@ impl LogicError {
     }
 
     pub fn error_type(&self) -> LogicErrorType {
-        self.error_type.to_owned()
+        self.error_type.clone()
     }
     pub fn explanation(&self) -> String {
-        self.explanation.to_owned()
+        self.explanation.clone()
     }
 }
 

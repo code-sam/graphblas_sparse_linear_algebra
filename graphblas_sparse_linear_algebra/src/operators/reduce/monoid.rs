@@ -18,7 +18,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::monoid::Monoid;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
+    GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
     WithTransposeMatrixArgument,
 };
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
@@ -145,7 +145,7 @@ macro_rules! implement_monoid_reducer {
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                let mut tmp_product = product.to_owned().to_type()?;
+                let mut tmp_product = product.clone().to_type()?;
 
                 // TODO: support detailed error information
                 context.call_without_detailed_error_information(|| unsafe {
@@ -173,7 +173,7 @@ macro_rules! implement_monoid_reducer {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = argument.context();
-                let mut tmp_product = product.to_owned().to_type()?;
+                let mut tmp_product = product.clone().to_type()?;
 
                 context.call_without_detailed_error_information(|| unsafe {
                     $vector_reducer_operator(
@@ -237,15 +237,15 @@ mod tests {
 
                     let matrix_size: Size = (10, 15).into();
                     let matrix = SparseMatrix::<$value_type>::from_element_list(
-                        &context.to_owned(),
-                        &matrix_size,
-                        &element_list,
+                        context.clone(),
+                        matrix_size,
+                        element_list,
                         &First::<$value_type>::new(),
                     )
                     .unwrap();
 
                     let mut product_vector =
-                        SparseVector::<$value_type>::new(&context, matrix_size.row_height_ref()).unwrap();
+                        SparseVector::<$value_type>::new(context.clone(), matrix_size.row_height()).unwrap();
 
                     let reducer = MonoidReducer::new(
                     );
@@ -253,7 +253,7 @@ mod tests {
                     reducer.to_column_vector(
                         &MonoidPlus::<$value_type>::new(),
                         &matrix, &Assignment::<$value_type>::new(),
-                        &mut product_vector, &SelectEntireVector::new(&context),
+                        &mut product_vector, &SelectEntireVector::new(context.clone()),
                         &OptionsForOperatorWithMatrixArgument::new_default()).unwrap();
 
                     println!("{}", product_vector);
@@ -271,15 +271,15 @@ mod tests {
                     ]);
 
                     let mask = SparseVector::<$value_type>::from_element_list(
-                        &context.to_owned(),
-                        matrix_size.row_height_ref(),
-                        &mask_element_list,
+                        context.clone(),
+                        matrix_size.row_height(),
+                        mask_element_list,
                         &First::<$value_type>::new(),
                     )
                     .unwrap();
 
                     let mut product_vector =
-                        SparseVector::<$value_type>::new(&context, matrix_size.row_height_ref()).unwrap();
+                        SparseVector::<$value_type>::new(context.clone(), matrix_size.row_height()).unwrap();
 
                     reducer
                         .to_column_vector(
@@ -314,9 +314,9 @@ mod tests {
 
                     let matrix_size: Size = (10, 15).into();
                     let matrix = SparseMatrix::<$value_type>::from_element_list(
-                        &context.to_owned(),
-                        &matrix_size,
-                        &element_list,
+                        context.clone(),
+                        matrix_size,
+                        element_list,
                         &First::<$value_type>::new(),
                     )
                     .unwrap();
@@ -351,9 +351,9 @@ mod tests {
 
                     let vector_length = 10;
                     let vector = SparseVector::<$value_type>::from_element_list(
-                        &context.to_owned(),
-                        &vector_length,
-                        &element_list,
+                        context.clone(),
+                        vector_length,
+                        element_list,
                         &First::<$value_type>::new(),
                     )
                     .unwrap();

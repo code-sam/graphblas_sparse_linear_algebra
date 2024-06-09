@@ -8,7 +8,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument};
+use crate::operators::options::GetOptionsForOperatorWithMatrixArgument;
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Col_extract;
@@ -136,14 +136,14 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &(3, 2).into(),
-            &element_list,
+            context.clone(),
+            (3, 2).into(),
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut column_vector = SparseVector::<u8>::new(&context, &2).unwrap();
+        let mut column_vector = SparseVector::<u8>::new(context.clone(), 2).unwrap();
 
         let indices_to_extract: Vec<ElementIndex> = vec![0, 2];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
@@ -157,7 +157,7 @@ mod tests {
                 &indices_to_extract,
                 &Assignment::<u8>::new(),
                 &mut column_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -181,15 +181,15 @@ mod tests {
             (2, 1, 6).into(),
         ]);
 
-        let matrix = SparseMatrix::<u16>::from_element_list(
-            &context.to_owned(),
-            &(3, 2).into(),
-            &element_list,
+        let matrix: SparseMatrix<u16> = SparseMatrix::<u16>::from_element_list(
+            context.clone(),
+            (3, 2).into(),
+            element_list,
             &First::<u16>::new(),
         )
         .unwrap();
 
-        let mut column_vector = SparseVector::<u8>::new(&context, &2).unwrap();
+        let mut column_vector = SparseVector::<u8>::new(context.clone(), 2).unwrap();
 
         let indices_to_extract: Vec<ElementIndex> = vec![0, 2];
         let indices_to_extract = ElementIndexSelector::Index(&indices_to_extract);
@@ -203,7 +203,7 @@ mod tests {
                 &indices_to_extract,
                 &Assignment::<f32>::new(),
                 &mut column_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();

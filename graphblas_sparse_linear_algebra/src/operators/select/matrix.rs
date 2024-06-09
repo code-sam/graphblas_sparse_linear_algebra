@@ -11,7 +11,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::index_unary_operator::IndexUnaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument};
+use crate::operators::options::GetOptionsForOperatorWithMatrixArgument;
 
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertScalar, ValueType};
@@ -57,7 +57,7 @@ macro_rules! implement_select_from_matrix {
                 mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let selector_argument = selector_argument.to_owned().to_type()?;
+                let selector_argument = selector_argument.clone().to_type()?;
                 argument.context_ref().call(
                     || unsafe {
                         $graphblas_operator(
@@ -115,14 +115,14 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let index_operator = IsOnOrBelowDiagonal::new();
         let selector = MatrixSelector::new();
@@ -136,7 +136,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -158,7 +158,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -185,14 +185,14 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let index_operator = IsOnOrAboveDiagonal::new();
         let selector = MatrixSelector::new();
@@ -206,7 +206,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -228,7 +228,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -255,14 +255,14 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let index_operator = IsOnDiagonal::new();
         let selector = MatrixSelector::new();
@@ -276,7 +276,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -299,7 +299,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -379,14 +379,14 @@ mod tests {
 
         let matrix_size: Size = (2, 2).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let index_operator = IsValueGreaterThan::<u8>::new();
         let selector = MatrixSelector::new();
@@ -398,7 +398,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -420,7 +420,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();

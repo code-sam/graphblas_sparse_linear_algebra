@@ -81,7 +81,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         &self,
         sort_operator: &B,
     ) -> Result<SparseVector<T>, SparseLinearAlgebraError> {
-        let sorted_values = SparseVector::<T>::new(self.context_ref(), &self.length()?)?;
+        let sorted_values = SparseVector::<T>::new(self.context(), self.length()?)?;
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
@@ -102,7 +102,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         sort_operator: &B,
     ) -> Result<SparseVector<ElementIndex>, SparseLinearAlgebraError> {
         let indices_to_sort_self =
-            SparseVector::<ElementIndex>::new(self.context_ref(), &self.length()?)?;
+            SparseVector::<ElementIndex>::new(self.context(), self.length()?)?;
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
@@ -144,15 +144,15 @@ mod tests {
         ]);
 
         let vector = SparseVector::<isize>::from_element_list(
-            &context.to_owned(),
-            &10,
-            &element_list,
+            context.clone(),
+            10,
+            element_list,
             &First::<isize>::new(),
         )
         .unwrap();
 
-        let mut sorted = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
-        let mut indices = SparseVector::new(&context, &vector.length().unwrap()).unwrap();
+        let mut sorted = SparseVector::new(context.clone(), vector.length().unwrap()).unwrap();
+        let mut indices = SparseVector::new(context, vector.length().unwrap()).unwrap();
 
         let larger_than_operator = IsGreaterThan::<isize>::new();
 
@@ -183,9 +183,9 @@ mod tests {
         ]);
 
         let mut vector = SparseVector::<isize>::from_element_list(
-            &context.to_owned(),
-            &10,
-            &element_list,
+            context.clone(),
+            10,
+            element_list,
             &First::<isize>::new(),
         )
         .unwrap();
@@ -212,9 +212,9 @@ mod tests {
         ]);
 
         let vector = SparseVector::<isize>::from_element_list(
-            &context.to_owned(),
-            &10,
-            &element_list,
+            context.clone(),
+            10,
+            element_list,
             &First::<isize>::new(),
         )
         .unwrap();
@@ -241,9 +241,9 @@ mod tests {
         ]);
 
         let vector = SparseVector::<isize>::from_element_list(
-            &context.to_owned(),
-            &10,
-            &element_list,
+            context.clone(),
+            10,
+            element_list,
             &First::<isize>::new(),
         )
         .unwrap();

@@ -4,6 +4,7 @@ use crate::error::{SparseLinearAlgebraError, SystemError};
 use crate::graphblas_bindings::GrB_Index;
 
 pub type ElementIndex = usize;
+pub type ElementCount = ElementIndex;
 
 pub trait IndexConversion {
     fn to_graphblas_index(&self) -> Result<GrB_Index, SparseLinearAlgebraError>;

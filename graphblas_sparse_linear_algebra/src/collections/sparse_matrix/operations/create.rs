@@ -36,14 +36,12 @@ use crate::{
 
 pub trait FromDiagonalVector<T: ValueType> {
     fn from_diagonal_vector(
-        context: &Arc<Context>,
         diagonal: &SparseVector<T>,
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
 
     /// The type of the diagonal must match the type of the returned SparseMarix
     fn from_diagonal_vector_untyped(
-        context: &Arc<Context>,
         diagonal: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
@@ -52,16 +50,14 @@ pub trait FromDiagonalVector<T: ValueType> {
 impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
     /// Returns a square matrix
     fn from_diagonal_vector(
-        context: &Arc<Context>,
         diagonal: &SparseVector<T>,
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
-        Self::from_diagonal_vector_untyped(context, diagonal, diagonal_index)
+        Self::from_diagonal_vector_untyped(diagonal, diagonal_index)
     }
 
     /// The type of the diagonal must match the type of the returned SparseMarix
     fn from_diagonal_vector_untyped(
-        context: &Arc<Context>,
         diagonal: &(impl GetGraphblasSparseVector + GetContext + GetSparseVectorLength),
         diagonal_index: &DiagonalIndex,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
@@ -77,10 +73,10 @@ impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
         let column_width = diagonal_length + absolute_diagonal_index;
 
         let mut matrix: SparseMatrix<T> =
-            SparseMatrix::<T>::new(context, &(row_height, column_width).into())?;
+            SparseMatrix::<T>::new(diagonal.context(), (row_height, column_width).into())?;
         let graphblas_diagonal_index = diagonal_index.as_graphblas_index()?;
 
-        context.call_without_detailed_error_information(|| unsafe {
+        diagonal.context_ref().call_without_detailed_error_information(|| unsafe {
             GrB_Matrix_diag(
                 matrix.graphblas_matrix_mut_ref(),
                 diagonal.graphblas_vector(),
@@ -93,9 +89,9 @@ impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
 
 pub trait FromMatrixElementList<T: ValueType> {
     fn from_element_list(
-        context: &Arc<Context>,
-        size: &Size,
-        elements: &MatrixElementList<T>,
+        context: Arc<Context>,
+        size: Size,
+        elements: MatrixElementList<T>,
         reduction_operator_for_duplicates: &impl BinaryOperator<T>,
     ) -> Result<Self, SparseLinearAlgebraError>
     where
@@ -106,14 +102,14 @@ macro_rules! sparse_matrix_from_element_vector {
     ($value_type:ty, $conversion_target_type: ty, $build_function:ident) => {
         impl FromMatrixElementList<$value_type> for SparseMatrix<$value_type> {
             fn from_element_list(
-                context: &Arc<Context>,
-                size: &Size,
-                elements: &MatrixElementList<$value_type>,
+                context: Arc<Context>,
+                size: Size,
+                elements: MatrixElementList<$value_type>,
                 reduction_operator_for_duplicates: &impl BinaryOperator<$value_type>,
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates
                 // TODO: check size constraints
-                let matrix = Self::new(context, size)?;
+                let matrix = Self::new(context.clone(), size)?;
 
                 let graphblas_row_indices: Vec<GrB_Index> = elements
                     .row_indices_ref()

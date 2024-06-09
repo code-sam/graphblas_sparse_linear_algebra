@@ -116,7 +116,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let second_argument = second_argument.to_owned().to_type()?;
+                let second_argument = second_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -147,7 +147,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let first_argument = first_argument.to_owned().to_type()?;
+                let first_argument = first_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -178,7 +178,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let second_argument = second_argument.to_owned().to_type()?;
+                let second_argument = second_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -209,7 +209,7 @@ macro_rules! implement_apply_binary_operator {
                 options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let first_argument = first_argument.to_owned().to_type()?;
+                let first_argument = first_argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -274,14 +274,14 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
@@ -295,7 +295,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
@@ -315,7 +315,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixAsSecondArgument::new_default(),
             )
             .unwrap();
@@ -341,14 +341,14 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<u8>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
@@ -360,7 +360,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -380,7 +380,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -406,14 +406,14 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<usize>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<usize>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<usize>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<usize>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
@@ -425,7 +425,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -445,7 +445,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -471,14 +471,14 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<i8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<i8>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
@@ -490,7 +490,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -510,7 +510,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

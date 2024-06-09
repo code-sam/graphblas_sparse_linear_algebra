@@ -225,18 +225,18 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let second_argument = SparseScalar::<u8>::from_value(context.clone(), 10).unwrap();
         operator
             .apply_with_matrix_as_left_argument(
                 &matrix,
@@ -244,7 +244,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
@@ -256,7 +256,7 @@ mod tests {
         assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
-        let first_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let first_argument = SparseScalar::<u8>::from_value(context.clone(), 10).unwrap();
         operator
             .apply_with_matrix_as_right_argument(
                 &first_argument,
@@ -264,7 +264,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context),
                 &OptionsForOperatorWithMatrixAsSecondArgument::new_default(),
             )
             .unwrap();
@@ -290,18 +290,18 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<u8>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let second_argument = SparseScalar::<u8>::from_value(context.clone(), 10).unwrap();
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
@@ -309,7 +309,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -321,7 +321,7 @@ mod tests {
         assert_eq!(product_vector.element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
-        let first_argument = SparseScalar::<u8>::from_value(&context, 10).unwrap();
+        let first_argument = SparseScalar::<u8>::from_value(context.clone(), 10).unwrap();
         operator
             .apply_with_vector_as_right_argument(
                 &first_argument,
@@ -329,7 +329,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -355,18 +355,18 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<usize>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<usize>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<usize>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<usize>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_argument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
+        let second_argument = SparseScalar::<usize>::from_value(context.clone(), 10).unwrap();
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
@@ -374,7 +374,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -386,7 +386,7 @@ mod tests {
         assert_eq!(product_vector.element_value(&9).unwrap(), None);
 
         let operator = BinaryOperatorApplier::new();
-        let first_argument = SparseScalar::<usize>::from_value(&context, 10).unwrap();
+        let first_argument = SparseScalar::<usize>::from_value(context.clone(), 10).unwrap();
         operator
             .apply_with_vector_as_right_argument(
                 &first_argument,
@@ -394,7 +394,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -420,18 +420,18 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<i8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<i8>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 
-        let second_argument = SparseScalar::<bool>::from_value(&context, true).unwrap();
+        let second_argument = SparseScalar::<bool>::from_value(context.clone(), true).unwrap();
         operator
             .apply_with_vector_as_left_argument(
                 &vector,
@@ -439,7 +439,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -459,7 +459,7 @@ mod tests {
                 &second_argument,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

@@ -6,7 +6,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::binary_operator::BinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
+    GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
 };
 use crate::value_type::ValueType;
 
@@ -133,15 +133,15 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector =
-            SparseVector::<u8>::new(&context, matrix_size.row_height_ref()).unwrap();
+            SparseVector::<u8>::new(context.clone(), matrix_size.row_height()).unwrap();
 
         let reducer = BinaryOperatorReducer::new();
 
@@ -151,7 +151,7 @@ mod tests {
                 &matrix,
                 &Assignment::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -171,15 +171,15 @@ mod tests {
         ]);
 
         let mask = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            matrix_size.row_height_ref(),
-            &mask_element_list,
+            context.clone(),
+            matrix_size.row_height(),
+            mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let mut product_vector =
-            SparseVector::<u8>::new(&context, matrix_size.row_height_ref()).unwrap();
+            SparseVector::<u8>::new(context.clone(), matrix_size.row_height()).unwrap();
 
         reducer
             .to_colunm_vector(

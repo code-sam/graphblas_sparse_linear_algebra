@@ -3,7 +3,7 @@ use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArguments};
+use crate::operators::options::GetOptionsForOperatorWithMatrixArguments;
 
 use crate::operators::semiring::Semiring;
 use crate::value_type::ValueType;
@@ -102,9 +102,9 @@ mod tests {
         let width = 2;
         let size: Size = (height, width).into();
 
-        let multiplier = SparseMatrix::<f32>::new(&context, &size).unwrap();
-        let multiplicant = multiplier.to_owned();
-        let mut product = multiplier.to_owned();
+        let multiplier = SparseMatrix::<f32>::new(context.clone(), size).unwrap();
+        let multiplicant = multiplier.clone();
+        let mut product = multiplier.clone();
 
         // Test multiplication of empty matrices
         matrix_multiplier
@@ -114,7 +114,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
@@ -131,9 +131,9 @@ mod tests {
             (1, 1, 4.0).into(),
         ]);
         let multiplier = SparseMatrix::<f32>::from_element_list(
-            &context,
-            &size,
-            &multiplier_element_list,
+            context.clone(),
+            size,
+            multiplier_element_list,
             &First::<f32>::new(),
         )
         .unwrap();
@@ -145,9 +145,9 @@ mod tests {
             (1, 1, 8.0).into(),
         ]);
         let multiplicant = SparseMatrix::<f32>::from_element_list(
-            &context,
-            &size,
-            &multiplicant_element_list,
+            context.clone(),
+            size,
+            multiplicant_element_list,
             &First::<f32>::new(),
         )
         .unwrap();
@@ -160,7 +160,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
             )
             .unwrap();
@@ -192,7 +192,7 @@ mod tests {
                 &multiplicant,
                 &accumulator,
                 &mut product,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -209,16 +209,16 @@ mod tests {
             (1, 1, 1).into(),
         ]);
         let mask = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &size,
-            &mask_element_list,
+            context.clone(),
+            size,
+            mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let matrix_multiplier = MatrixMultiplicationOperator::new();
 
-        let mut product = SparseMatrix::<f32>::new(&context, &size).unwrap();
+        let mut product = SparseMatrix::<f32>::new(context.clone(), size).unwrap();
 
         matrix_multiplier
             .apply(

@@ -12,12 +12,12 @@ use crate::{
 
 pub trait ResizeSparseMatrix {
     /// All elements of self with an index coordinate outside of the new size are dropped.
-    fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError>;
+    fn resize(&mut self, new_size: Size) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType> ResizeSparseMatrix for SparseMatrix<T> {
     /// All elements of self with an index coordinate outside of the new size are dropped.
-    fn resize(&mut self, new_size: &Size) -> Result<(), SparseLinearAlgebraError> {
+    fn resize(&mut self, new_size: Size) -> Result<(), SparseLinearAlgebraError> {
         resize_sparse_matrix(self, new_size)
     }
 }
@@ -25,7 +25,7 @@ impl<T: ValueType> ResizeSparseMatrix for SparseMatrix<T> {
 /// All elements of self with an index coordinate outside of the new size are dropped.
 pub fn resize_sparse_matrix(
     matrix: &mut impl GetGraphblasSparseMatrix,
-    new_size: &Size,
+    new_size: Size,
 ) -> Result<(), SparseLinearAlgebraError> {
     let new_row_height = new_size.row_height_ref().to_graphblas_index()?;
     let new_column_width = new_size.column_width_ref().to_graphblas_index()?;

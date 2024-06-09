@@ -224,9 +224,9 @@ mod tests {
         let width = 2;
         let size: Size = (height, width).into();
 
-        let multiplier = SparseMatrix::<i32>::new(&context, &size).unwrap();
-        let multiplicant = multiplier.to_owned();
-        let mut product = multiplier.to_owned();
+        let multiplier = SparseMatrix::<i32>::new(context.clone(), size).unwrap();
+        let multiplicant = multiplier.clone();
+        let mut product = multiplier.clone();
 
         // Test multiplication of empty matrices
         element_wise_matrix_multiplier
@@ -236,7 +236,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::<i32>::new(),
                 &mut product,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -253,9 +253,9 @@ mod tests {
             (1, 1, 4).into(),
         ]);
         let multiplier = SparseMatrix::<i32>::from_element_list(
-            &context,
-            &size,
-            &multiplier_element_list,
+            context.clone(),
+            size,
+            multiplier_element_list,
             &First::<i32>::new(),
         )
         .unwrap();
@@ -267,9 +267,9 @@ mod tests {
             (1, 1, 8).into(),
         ]);
         let multiplicant = SparseMatrix::<i32>::from_element_list(
-            &context,
-            &size,
-            &multiplicant_element_list,
+            context.clone(),
+            size,
+            multiplicant_element_list,
             &First::<i32>::new(),
         )
         .unwrap();
@@ -282,7 +282,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::<i32>::new(),
                 &mut product,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -304,7 +304,7 @@ mod tests {
                 &multiplicant,
                 &accumulator,
                 &mut product,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -321,16 +321,16 @@ mod tests {
             (1, 1, 1).into(),
         ]);
         let mask = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &size,
-            &mask_element_list,
+            context.clone(),
+            size,
+            mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let matrix_multiplier = ElementWiseMatrixMultiplicationBinaryOperator::new();
 
-        let mut product = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let mut product = SparseMatrix::<i32>::new(context.clone(), size).unwrap();
 
         matrix_multiplier
             .apply(

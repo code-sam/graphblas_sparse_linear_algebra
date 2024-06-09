@@ -78,7 +78,7 @@ macro_rules! implement_apply_index_binary_operator {
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let argument = argument.to_owned().to_type()?;
+                let argument = argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -109,7 +109,7 @@ macro_rules! implement_apply_index_binary_operator {
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = product.context();
-                let argument = argument.to_owned().to_type()?;
+                let argument = argument.clone().to_type()?;
 
                 context.call(
                     || unsafe {
@@ -168,14 +168,14 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<f32>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<f32>::new(context.clone(), matrix_size).unwrap();
 
         let operator = IndexUnaryOperatorApplier::new();
 
@@ -186,7 +186,7 @@ mod tests {
                 &argument,
                 &Assignment::<i8>::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();

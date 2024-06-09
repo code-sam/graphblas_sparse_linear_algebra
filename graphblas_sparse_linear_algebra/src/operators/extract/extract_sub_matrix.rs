@@ -7,7 +7,7 @@ use crate::index::{
 };
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::MatrixMask;
-use crate::operators::options::{GetGraphblasDescriptor, GetOptionsForOperatorWithMatrixArgument};
+use crate::operators::options::GetOptionsForOperatorWithMatrixArgument;
 use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::GrB_Matrix_extract;
@@ -191,14 +191,14 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &(10, 15).into(),
-            &element_list,
+            context.clone(),
+            (10, 15).into(),
+            element_list.clone(),
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut sub_matrix = SparseMatrix::<u8>::new(&context, &(3, 6).into()).unwrap();
+        let mut sub_matrix = SparseMatrix::<u8>::new(context.clone(), (3, 6).into()).unwrap();
 
         let rows_to_extract: Vec<ElementIndex> = (0..3).collect();
         let rows_to_extract = ElementIndexSelector::Index(&rows_to_extract);
@@ -214,7 +214,7 @@ mod tests {
                 &columns_to_extract,
                 &Assignment::<u8>::new(),
                 &mut sub_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -238,7 +238,7 @@ mod tests {
                 &columns_to_extract,
                 &Assignment::<u8>::new(),
                 &mut sub_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();

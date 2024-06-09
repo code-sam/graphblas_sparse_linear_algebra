@@ -1,7 +1,7 @@
 use suitesparse_graphblas_sys::GxB_Matrix_isStoredElement;
 
 use crate::{
-    collections::sparse_matrix::{GetCoordinateIndices, GetGraphblasSparseMatrix, SparseMatrix},
+    collections::sparse_matrix::{ColumnIndex, GetCoordinateIndices, GetGraphblasSparseMatrix, RowIndex, SparseMatrix},
     context::CallGraphBlasContext,
     error::{
         GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
@@ -13,13 +13,13 @@ use crate::{
 pub trait IsSparseMatrixElement {
     fn is_element(
         &self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: &RowIndex,
+        column_index: &ColumnIndex,
     ) -> Result<bool, SparseLinearAlgebraError>;
     fn try_is_element(
         &self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: &RowIndex,
+        column_index: &ColumnIndex,
     ) -> Result<(), SparseLinearAlgebraError>;
 
     fn is_element_at_coordinate(
@@ -35,16 +35,16 @@ pub trait IsSparseMatrixElement {
 impl<T: ValueType> IsSparseMatrixElement for SparseMatrix<T> {
     fn is_element(
         &self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: &RowIndex,
+        column_index: &ColumnIndex,
     ) -> Result<bool, SparseLinearAlgebraError> {
         is_sparse_matrix_element(self, row_index, column_index)
     }
 
     fn try_is_element(
         &self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: &RowIndex,
+        column_index: &ColumnIndex,
     ) -> Result<(), SparseLinearAlgebraError> {
         try_is_sparse_matrix_element(self, row_index, column_index)
     }
@@ -66,8 +66,8 @@ impl<T: ValueType> IsSparseMatrixElement for SparseMatrix<T> {
 
 pub fn is_sparse_matrix_element(
     matrix: &impl GetGraphblasSparseMatrix,
-    row_index: &ElementIndex,
-    column_index: &ElementIndex,
+    row_index: &RowIndex,
+    column_index: &ColumnIndex,
 ) -> Result<bool, SparseLinearAlgebraError> {
     let row_index = row_index.as_graphblas_index()?;
     let column_index = column_index.as_graphblas_index()?;
@@ -102,8 +102,8 @@ pub fn is_sparse_matrix_element_at_coordinate(
 
 pub fn try_is_sparse_matrix_element(
     matrix: &impl GetGraphblasSparseMatrix,
-    row_index: &ElementIndex,
-    column_index: &ElementIndex,
+    row_index: &RowIndex,
+    column_index: &ColumnIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
     let row_index = row_index.as_graphblas_index()?;
     let column_index = column_index.as_graphblas_index()?;

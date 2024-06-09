@@ -223,9 +223,9 @@ mod tests {
 
         let length = 7;
 
-        let multiplier = SparseVector::<bool>::new(&context, &length).unwrap();
-        let multiplicant = multiplier.to_owned();
-        let mut product = multiplier.to_owned();
+        let multiplier = SparseVector::<bool>::new(context.clone(), length).unwrap();
+        let multiplicant = multiplier.clone();
+        let mut product = multiplier.clone();
 
         // Test multiplication of empty matrices
         equality_operator
@@ -235,7 +235,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -250,9 +250,9 @@ mod tests {
             (6, true).into(),
         ]);
         let multiplier = SparseVector::<bool>::from_element_list(
-            &context,
-            &length,
-            &multiplier_element_list,
+            context.clone(),
+            length,
+            multiplier_element_list,
             &First::<bool>::new(),
         )
         .unwrap();
@@ -264,9 +264,9 @@ mod tests {
             (6, false).into(),
         ]);
         let multiplicant = SparseVector::<bool>::from_element_list(
-            &context,
-            &length,
-            &multiplicant_element_list,
+            context.clone(),
+            length,
+            multiplicant_element_list,
             &First::<bool>::new(),
         )
         .unwrap();
@@ -279,7 +279,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
