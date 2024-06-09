@@ -21,7 +21,7 @@ use crate::graphblas_bindings::{
     GrB_Scalar_setElement_INT64, GrB_Scalar_setElement_INT8, GrB_Scalar_setElement_UINT16,
     GrB_Scalar_setElement_UINT32, GrB_Scalar_setElement_UINT64, GrB_Scalar_setElement_UINT8,
 };
-use crate::index::{ElementIndex, IndexConversion};
+use crate::index::{ElementCount, ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
     implement_macro_for_all_value_types,
@@ -44,9 +44,8 @@ unsafe impl<T: ValueType> Send for SparseScalar<T> {}
 unsafe impl<T: ValueType> Sync for SparseScalar<T> {}
 
 impl<T: ValueType> SparseScalar<T> {
-    pub fn new(context: &Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
+    pub fn new(context: Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
         let mut scalar: MaybeUninit<GrB_Scalar> = MaybeUninit::uninit();
-        let context = context.to_owned();
 
         context.call_without_detailed_error_information(|| unsafe {
             GrB_Scalar_new(scalar.as_mut_ptr(), <T>::to_graphblas_type())
@@ -82,11 +81,11 @@ macro_rules! sparse_scalar_from_scalar {
     ($value_type: ty) => {
         impl SparseScalar<$value_type> {
             pub fn from_value(
-                context: &Arc<Context>,
+                context: Arc<Context>,
                 value: $value_type,
             ) -> Result<Self, SparseLinearAlgebraError> {
                 let mut sparse_scalar = SparseScalar::new(context)?;
-                sparse_scalar.set_value(&value)?;
+                sparse_scalar.set_value(value)?;
                 Ok(sparse_scalar)
             }
         }
@@ -131,7 +130,7 @@ impl<T: ValueType> Collection for SparseScalar<T> {
         Ok(())
     }
 
-    fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+    fn number_of_stored_elements(&self) -> Result<ElementCount, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         self.context.call(
             || unsafe { GrB_Scalar_nvals(number_of_values.as_mut_ptr(), self.scalar) },
@@ -229,7 +228,7 @@ macro_rules! implement_dispay {
 implement_macro_for_all_value_types!(implement_dispay);
 
 pub trait SetScalarValue<T: ValueType> {
-    fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError>;
+    fn set_value(&mut self, value: T) -> Result<(), SparseLinearAlgebraError>;
 }
 
 // pub trait SetScalarValueGAT {
@@ -289,7 +288,7 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
 macro_rules! implement_set_value_for_built_in_type {
     ($value_type:ty) => {
         impl SetScalarValue<$value_type> for SparseScalar<$value_type> {
-            fn set_value(&mut self, value: &$value_type) -> Result<(), SparseLinearAlgebraError> {
+            fn set_value(&mut self, value: $value_type) -> Result<(), SparseLinearAlgebraError> {
                 let value = value.to_type()?;
                 self.context.call(
                     || unsafe {
@@ -363,7 +362,7 @@ mod tests {
     fn new_scalar() {
         let context = Context::init_default().unwrap();
 
-        let sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
+        let sparse_scalar = SparseScalar::<i32>::new(context).unwrap();
 
         assert_eq!(0, sparse_scalar.number_of_stored_elements().unwrap());
     }
@@ -372,7 +371,7 @@ mod tests {
     fn clone_scalar() {
         let context = Context::init_default().unwrap();
 
-        let sparse_scalar = SparseScalar::<f32>::new(&context).unwrap();
+        let sparse_scalar = SparseScalar::<f32>::new(context).unwrap();
 
         let clone_of_sparse_scalar = sparse_scalar.to_owned();
 
@@ -387,9 +386,9 @@ mod tests {
     fn test_set_value() {
         let context = Context::init_default().unwrap();
 
-        let mut sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
+        let mut sparse_scalar = SparseScalar::<i32>::new(context).unwrap();
 
-        sparse_scalar.set_value(&2).unwrap();
+        sparse_scalar.set_value(2).unwrap();
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
     }
@@ -398,9 +397,9 @@ mod tests {
     fn clear_value_from_scalar() {
         let context = Context::init_default().unwrap();
 
-        let mut sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
+        let mut sparse_scalar = SparseScalar::<i32>::new(context).unwrap();
 
-        sparse_scalar.set_value(&2).unwrap();
+        sparse_scalar.set_value(2).unwrap();
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
 
@@ -415,9 +414,9 @@ mod tests {
     fn test_get_value() {
         let context = Context::init_default().unwrap();
 
-        let mut sparse_scalar = SparseScalar::<i32>::new(&context).unwrap();
+        let mut sparse_scalar = SparseScalar::<i32>::new(context).unwrap();
 
-        sparse_scalar.set_value(&2).unwrap();
+        sparse_scalar.set_value(2).unwrap();
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
 

@@ -18,9 +18,9 @@ pub struct SelectEntireMatrix {
 }
 
 impl SelectEntireMatrix {
-    pub fn new(context: &Arc<Context>) -> Self {
+    pub fn new(context: Arc<Context>) -> Self {
         SelectEntireMatrix {
-            context: context.to_owned(),
+            context,
         }
     }
 }
@@ -47,9 +47,9 @@ pub struct SelectEntireVector {
 }
 
 impl SelectEntireVector {
-    pub fn new(context: &Arc<Context>) -> Self {
+    pub fn new(context: Arc<Context>) -> Self {
         SelectEntireVector {
-            context: context.to_owned(),
+            context,
         }
     }
 }

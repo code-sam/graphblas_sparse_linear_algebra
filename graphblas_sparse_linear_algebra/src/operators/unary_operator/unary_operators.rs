@@ -494,15 +494,15 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<i64>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<i64>::new(),
         )
         .unwrap();
         let operator = UnaryOperatorApplier::new();
 
-        let mut product = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+        let mut product = SparseVector::<u8>::new(context.clone(), vector_length).unwrap();
 
         operator
             .apply_to_vector(
@@ -510,7 +510,7 @@ mod tests {
                 &vector,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();

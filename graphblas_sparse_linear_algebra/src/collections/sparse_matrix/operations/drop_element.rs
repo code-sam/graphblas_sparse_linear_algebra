@@ -1,36 +1,36 @@
 use suitesparse_graphblas_sys::GrB_Matrix_removeElement;
 
 use crate::{
-    collections::sparse_matrix::{GetCoordinateIndices, GetGraphblasSparseMatrix, SparseMatrix},
+    collections::sparse_matrix::{ColumnIndex, GetCoordinateIndices, GetGraphblasSparseMatrix, RowIndex, SparseMatrix},
     context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
-    index::{ElementIndex, IndexConversion},
+    index::IndexConversion,
     value_type::ValueType,
 };
 
 pub trait DropSparseMatrixElement {
     fn drop_element_with_coordinate(
         &mut self,
-        coordinate: &impl GetCoordinateIndices,
+        coordinate: impl GetCoordinateIndices,
     ) -> Result<(), SparseLinearAlgebraError>;
     fn drop_element(
         &mut self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType> DropSparseMatrixElement for SparseMatrix<T> {
     fn drop_element_with_coordinate(
         &mut self,
-        coordinate: &impl GetCoordinateIndices,
+        coordinate: impl GetCoordinateIndices,
     ) -> Result<(), SparseLinearAlgebraError> {
         drop_sparse_matrix_element_with_coordinate(self, coordinate)
     }
     fn drop_element(
         &mut self,
-        row_index: &ElementIndex,
-        column_index: &ElementIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<(), SparseLinearAlgebraError> {
         drop_sparse_matrix_element(self, row_index, column_index)
     }
@@ -38,8 +38,8 @@ impl<T: ValueType> DropSparseMatrixElement for SparseMatrix<T> {
 
 pub fn drop_sparse_matrix_element(
     matrix: &mut impl GetGraphblasSparseMatrix,
-    row_index: &ElementIndex,
-    column_index: &ElementIndex,
+    row_index: RowIndex,
+    column_index: ColumnIndex,
 ) -> Result<(), SparseLinearAlgebraError> {
     let row_index_to_delete = row_index.as_graphblas_index()?;
     let column_index_to_delete = column_index.as_graphblas_index()?;
@@ -59,7 +59,7 @@ pub fn drop_sparse_matrix_element(
 
 pub fn drop_sparse_matrix_element_with_coordinate(
     matrix: &mut impl GetGraphblasSparseMatrix,
-    coordinate: &impl GetCoordinateIndices,
+    coordinate: impl GetCoordinateIndices,
 ) -> Result<(), SparseLinearAlgebraError> {
     let row_index_to_delete = coordinate.row_index().to_graphblas_index()?;
     let column_index_to_delete = coordinate.column_index().to_graphblas_index()?;

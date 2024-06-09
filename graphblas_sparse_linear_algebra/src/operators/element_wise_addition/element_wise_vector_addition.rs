@@ -221,7 +221,7 @@ mod tests {
 
         let length = 4;
 
-        let multiplier = SparseVector::<i32>::new(&context, &length).unwrap();
+        let multiplier = SparseVector::<i32>::new(context.clone(), length).unwrap();
         let multiplicant = multiplier.to_owned();
         let mut product = multiplier.to_owned();
 
@@ -233,7 +233,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -250,9 +250,9 @@ mod tests {
             (3, 4).into(),
         ]);
         let multiplier = SparseVector::<i32>::from_element_list(
-            &context,
-            &length,
-            &multiplier_element_list,
+            context.clone(),
+            length,
+            multiplier_element_list,
             &First::<i32>::new(),
         )
         .unwrap();
@@ -264,9 +264,9 @@ mod tests {
             (3, 8).into(),
         ]);
         let multiplicant = SparseVector::<i32>::from_element_list(
-            &context,
-            &length,
-            &multiplicant_element_list,
+            context.clone(),
+            length,
+            multiplicant_element_list,
             &First::<i32>::new(),
         )
         .unwrap();
@@ -279,7 +279,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::<i32>::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -300,7 +300,7 @@ mod tests {
                 &multiplicant,
                 &accumulator,
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -317,16 +317,16 @@ mod tests {
             (3, 1).into(),
         ]);
         let mask = SparseVector::<u8>::from_element_list(
-            &context,
-            &length,
-            &mask_element_list,
+            context.clone(),
+            length,
+            mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let matrix_multiplier = ElementWiseVectorAdditionBinaryOperator::new();
 
-        let mut product = SparseVector::<i32>::new(&context, &length).unwrap();
+        let mut product = SparseVector::<i32>::new(context.clone(), length).unwrap();
 
         matrix_multiplier
             .apply(

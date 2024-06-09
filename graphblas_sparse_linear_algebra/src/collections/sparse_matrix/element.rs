@@ -1,9 +1,9 @@
 use super::coordinate::Coordinate;
-use super::GetCoordinateIndices;
+use super::{ColumnIndex, GetCoordinateIndices, RowIndex};
 use crate::error::{
     GraphblasError, GraphblasErrorType, LogicError, LogicErrorType, SparseLinearAlgebraError,
 };
-use crate::index::ElementIndex;
+use crate::index::{ElementCount, ElementIndex};
 use crate::value_type::ValueType;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -22,11 +22,11 @@ pub trait GetMatrixElementCoordinate {
     fn coordinate(&self) -> Coordinate;
     fn coordinate_ref(&self) -> &Coordinate;
 
-    fn row_index(&self) -> ElementIndex;
-    fn row_index_ref(&self) -> &ElementIndex;
+    fn row_index(&self) -> RowIndex;
+    fn row_index_ref(&self) -> &RowIndex;
 
-    fn column_index(&self) -> ElementIndex;
-    fn column_index_ref(&self) -> &ElementIndex;
+    fn column_index(&self) -> ColumnIndex;
+    fn column_index_ref(&self) -> &ColumnIndex;
 }
 
 impl<T: ValueType> GetMatrixElementCoordinate for MatrixElement<T> {
@@ -36,16 +36,16 @@ impl<T: ValueType> GetMatrixElementCoordinate for MatrixElement<T> {
     fn coordinate_ref(&self) -> &Coordinate {
         &self.coordinate
     }
-    fn row_index(&self) -> ElementIndex {
+    fn row_index(&self) -> RowIndex {
         self.coordinate.row_index()
     }
-    fn row_index_ref(&self) -> &ElementIndex {
+    fn row_index_ref(&self) -> &RowIndex {
         self.coordinate.row_index_ref()
     }
-    fn column_index(&self) -> ElementIndex {
+    fn column_index(&self) -> ColumnIndex {
         self.coordinate.column_index()
     }
-    fn column_index_ref(&self) -> &ElementIndex {
+    fn column_index_ref(&self) -> &ColumnIndex {
         self.coordinate.column_index_ref()
     }
 }
@@ -65,13 +65,13 @@ impl<T: ValueType + Copy> GetMatrixElementValue<T> for MatrixElement<T> {
 }
 
 impl<T: ValueType + Copy> MatrixElement<T> {
-    pub fn from_triple(row_index: ElementIndex, column_index: ElementIndex, value: T) -> Self {
+    pub fn from_triple(row_index: RowIndex, column_index: ColumnIndex, value: T) -> Self {
         Self::new(Coordinate::new(row_index, column_index), value)
     }
 }
 
-impl<T: ValueType> From<(ElementIndex, ElementIndex, T)> for MatrixElement<T> {
-    fn from(element: (ElementIndex, ElementIndex, T)) -> Self {
+impl<T: ValueType> From<(RowIndex, ColumnIndex, T)> for MatrixElement<T> {
+    fn from(element: (RowIndex, ColumnIndex, T)) -> Self {
         Self {
             coordinate: Coordinate::new(element.0, element.1),
             value: element.2,
@@ -83,8 +83,8 @@ impl<T: ValueType> From<(ElementIndex, ElementIndex, T)> for MatrixElement<T> {
 /// Equivalent to Sparse Coordinate List (COO)
 #[derive(Debug, Clone, PartialEq)]
 pub struct MatrixElementList<T: ValueType> {
-    row_index: Vec<ElementIndex>,
-    column_index: Vec<ElementIndex>,
+    row_index: Vec<RowIndex>,
+    column_index: Vec<ColumnIndex>,
     value: Vec<T>,
 }
 
@@ -97,7 +97,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         }
     }
 
-    pub fn with_capacity(capacity: usize) -> Self {
+    pub fn with_capacity(capacity: ElementCount) -> Self {
         Self {
             row_index: Vec::with_capacity(capacity),
             column_index: Vec::with_capacity(capacity),
@@ -106,8 +106,8 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     }
 
     pub fn from_vectors(
-        row_index: Vec<ElementIndex>,
-        column_index: Vec<ElementIndex>,
+        row_index: Vec<RowIndex>,
+        column_index: Vec<ColumnIndex>,
         value: Vec<T>,
     ) -> Result<Self, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
@@ -145,14 +145,14 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         self.value.append(&mut element_list_to_append.value);
     }
 
-    pub fn row_indices_ref(&self) -> &[ElementIndex] {
+    pub fn row_indices_ref(&self) -> &[RowIndex] {
         self.row_index.as_slice()
     }
 
     pub fn row_index(
         &self,
         index: ElementIndex,
-    ) -> Result<&ElementIndex, SparseLinearAlgebraError> {
+    ) -> Result<&RowIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index >= self.length() {
             return Err(LogicError::new(
@@ -172,7 +172,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     pub fn column_index(
         &self,
         index: ElementIndex,
-    ) -> Result<&ElementIndex, SparseLinearAlgebraError> {
+    ) -> Result<&ColumnIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index >= self.length() {
             return Err(LogicError::new(
@@ -189,7 +189,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         Ok(&self.column_index[index])
     }
 
-    pub fn column_indices_ref(&self) -> &[ElementIndex] {
+    pub fn column_indices_ref(&self) -> &[ColumnIndex] {
         self.column_index.as_slice()
     }
 
@@ -201,7 +201,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     //     &self.value
     // }
 
-    pub fn length(&self) -> usize {
+    pub fn length(&self) -> ElementCount {
         self.value.len()
     }
 }

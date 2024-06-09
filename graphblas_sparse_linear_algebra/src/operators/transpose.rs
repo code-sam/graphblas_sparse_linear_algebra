@@ -87,14 +87,14 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &(2, 2).into(),
-            &element_list,
+            context.clone(),
+            (2, 2).into(),
+            element_list.clone(),
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut matrix_transpose = SparseMatrix::<u8>::new(&context, &(2, 2).into()).unwrap();
+        let mut matrix_transpose = SparseMatrix::<u8>::new(context.clone(), (2, 2).into()).unwrap();
 
         let transpose_operator = MatrixTranspose::new();
 
@@ -103,7 +103,7 @@ mod tests {
                 &matrix,
                 &Assignment::<u8>::new(),
                 &mut matrix_transpose,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();

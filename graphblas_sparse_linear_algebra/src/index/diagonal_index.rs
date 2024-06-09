@@ -22,7 +22,7 @@ pub trait DiagonalIndexConversion {
     fn to_graphblas_element_index(&self) -> Result<ElementIndex, SparseLinearAlgebraError>;
     fn to_sparse_scalar(
         &self,
-        context: &Arc<Context>,
+        context: Arc<Context>,
     ) -> Result<SparseScalar<GraphblasDiagionalIndex>, SparseLinearAlgebraError>;
 }
 
@@ -62,7 +62,7 @@ impl DiagonalIndexConversion for DiagonalIndex {
 
     fn to_sparse_scalar(
         &self,
-        context: &Arc<Context>,
+        context: Arc<Context>,
     ) -> Result<SparseScalar<GraphblasDiagionalIndex>, SparseLinearAlgebraError> {
         Ok(SparseScalar::<GraphblasDiagionalIndex>::from_value(
             context,

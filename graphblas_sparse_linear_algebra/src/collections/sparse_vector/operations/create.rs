@@ -25,9 +25,9 @@ use crate::{
 
 pub trait FromVectorElementList<T: ValueType> {
     fn from_element_list(
-        context: &Arc<Context>,
-        lenth: &ElementIndex,
-        elements: &VectorElementList<T>,
+        context: Arc<Context>,
+        lenth: ElementIndex,
+        elements: VectorElementList<T>,
         reduction_operator_for_duplicates: &impl BinaryOperator<T>,
     ) -> Result<SparseVector<T>, SparseLinearAlgebraError>;
 }
@@ -36,9 +36,9 @@ macro_rules! sparse_matrix_from_element_vector {
     ($value_type:ty, $graphblas_implementation_type:ty, $build_function:ident) => {
         impl FromVectorElementList<$value_type> for SparseVector<$value_type> {
             fn from_element_list(
-                context: &Arc<Context>,
-                length: &ElementIndex,
-                elements: &VectorElementList<$value_type>,
+                context: Arc<Context>,
+                length: ElementIndex,
+                elements: VectorElementList<$value_type>,
                 reduction_operator_for_duplicates: &impl BinaryOperator<$value_type>,
             ) -> Result<Self, SparseLinearAlgebraError> {
                 // TODO: check for duplicates

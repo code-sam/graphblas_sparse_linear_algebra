@@ -20,7 +20,7 @@ use crate::context::{CallGraphBlasContext, Context};
 
 use crate::collections::sparse_matrix::operations::GetSparseMatrixElementList;
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
-use crate::index::{ElementIndex, IndexConversion};
+use crate::index::{ElementCount, ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
 use crate::value_type::ValueType;
 
@@ -46,7 +46,7 @@ unsafe impl<T: ValueType> Sync for SparseMatrix<T> {}
 
 pub unsafe fn new_graphblas_matrix(
     context: &Arc<Context>,
-    size: &Size,
+    size: Size,
     graphblas_value_type: GrB_Type,
 ) -> Result<GrB_Matrix, SparseLinearAlgebraError> {
     let row_height = size.row_height_ref().to_graphblas_index()?;
@@ -68,9 +68,7 @@ pub unsafe fn new_graphblas_matrix(
 }
 
 impl<T: ValueType> SparseMatrix<T> {
-    pub fn new(context: &Arc<Context>, size: &Size) -> Result<Self, SparseLinearAlgebraError> {
-        let context = context.to_owned();
-
+    pub fn new(context: Arc<Context>, size: Size) -> Result<Self, SparseLinearAlgebraError> {
         let matrix = unsafe { new_graphblas_matrix(&context, size, T::to_graphblas_type()) }?;
 
         return Ok(SparseMatrix {
@@ -113,14 +111,14 @@ impl<T: ValueType> Collection for SparseMatrix<T> {
         Ok(())
     }
 
-    fn number_of_stored_elements(&self) -> Result<ElementIndex, SparseLinearAlgebraError> {
+    fn number_of_stored_elements(&self) -> Result<ElementCount, SparseLinearAlgebraError> {
         let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
         self.context.call(
             || unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) },
             &self.matrix,
         )?;
         let number_of_values = unsafe { number_of_values.assume_init() };
-        Ok(ElementIndex::from_graphblas_index(number_of_values)?)
+        Ok(ElementCount::from_graphblas_index(number_of_values)?)
     }
 }
 
@@ -246,7 +244,7 @@ mod tests {
         let target_width = 5;
         let size: Size = (target_height, target_width).into();
 
-        let sparse_matrix = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         assert_eq!(target_height, sparse_matrix.row_height().unwrap());
         assert_eq!(target_width, sparse_matrix.column_width().unwrap());
@@ -262,7 +260,7 @@ mod tests {
         let target_width = 5;
         let size: Size = (target_height, target_width).into();
 
-        let sparse_matrix = SparseMatrix::<u8>::new(&context, &size).unwrap();
+        let sparse_matrix = SparseMatrix::<u8>::new(context, size).unwrap();
 
         let clone_of_sparse_matrix = sparse_matrix.to_owned();
 
@@ -284,10 +282,10 @@ mod tests {
         let target_width = 5;
         let size: Size = (target_height, target_width).into();
 
-        let mut sparse_matrix = SparseMatrix::<u8>::new(&context, &size).unwrap();
+        let mut sparse_matrix = SparseMatrix::<u8>::new(context, size).unwrap();
 
         let new_size: Size = (1, 2).into();
-        sparse_matrix.resize(&new_size).unwrap();
+        sparse_matrix.resize(new_size).unwrap();
 
         assert_eq!(
             new_size.row_height_ref().to_owned(),
@@ -315,9 +313,9 @@ mod tests {
         // println!("{:?}", element_list.to_owned());
 
         let _matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &(3, 5).into(),
-            &element_list,
+            context,
+            (3, 5).into(),
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -341,28 +339,28 @@ mod tests {
 
         let vector_length = 10;
         let vector = SparseVector::<isize>::from_element_list(
-            &context,
-            &vector_length,
-            &element_list,
+            context,
+            vector_length,
+            element_list,
             &First::<isize>::new(),
         )
         .unwrap();
 
-        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&context, &vector, &0).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&vector, &0).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length, vector_length)
         );
         assert_eq!(matrix.element_value(&5, &5).unwrap().unwrap(), 5);
 
-        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&context, &vector, &2).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&vector, &2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
         );
         assert_eq!(matrix.element_value(&5, &7).unwrap().unwrap(), 5);
 
-        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&context, &vector, &-2).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector( &vector, &-2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
@@ -379,7 +377,7 @@ mod tests {
         let target_width = 5;
         let size: Size = (target_height, target_width).into();
 
-        let mut sparse_matrix = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         sparse_matrix
             .set_matrix_element(&MatrixElement::from_triple(1, 2, 3))
@@ -424,11 +422,11 @@ mod tests {
     fn remove_element_from_matrix() {
         let context = Context::init_default().unwrap();
 
-        let target_height: ElementIndex = 10;
-        let target_width: ElementIndex = 5;
+        let target_height: RowIndex = 10;
+        let target_width: ColumnIndex = 5;
         let size = Size::new(target_height, target_width);
 
-        let mut sparse_matrix = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         sparse_matrix
             .set_matrix_element(&MatrixElement::from_triple(1, 2, 3))
@@ -438,7 +436,7 @@ mod tests {
             .unwrap();
 
         sparse_matrix
-            .drop_element_with_coordinate(&Coordinate::new(1, 2))
+            .drop_element_with_coordinate(Coordinate::new(1, 2))
             .unwrap();
 
         assert_eq!(sparse_matrix.number_of_stored_elements().unwrap(), 1)
@@ -448,11 +446,11 @@ mod tests {
     fn get_element_from_matrix() {
         let context = Context::init_default().unwrap();
 
-        let target_height: ElementIndex = 10;
-        let target_width: ElementIndex = 5;
+        let target_height: RowIndex = 10;
+        let target_width: ColumnIndex = 5;
         let size = Size::new(target_height, target_width);
 
-        let mut sparse_matrix = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         let element_1 = MatrixElement::from_triple(1, 2, 1);
         let element_2 = MatrixElement::from_triple(2, 3, 2);
@@ -480,11 +478,11 @@ mod tests {
     fn get_element_from_usize_matrix() {
         let context = Context::init_default().unwrap();
 
-        let target_height: ElementIndex = 10;
-        let target_width: ElementIndex = 5;
+        let target_height: RowIndex = 10;
+        let target_width: ColumnIndex = 5;
         let size = Size::new(target_height, target_width);
 
-        let mut sparse_matrix = SparseMatrix::<usize>::new(&context, &size).unwrap();
+        let mut sparse_matrix = SparseMatrix::<usize>::new(context, size).unwrap();
 
         let element_1 = MatrixElement::<usize>::from_triple(1, 2, 1);
         let element_2 = MatrixElement::<usize>::from_triple(2, 3, 2);
@@ -521,9 +519,9 @@ mod tests {
         ]);
 
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &(10, 15).into(),
-            &element_list,
+            context.clone(),
+            (10, 15).into(),
+            element_list.clone(),
             &First::<u8>::new(),
         )
         .unwrap();
@@ -542,9 +540,9 @@ mod tests {
 
         let empty_element_list = MatrixElementList::<u8>::new();
         let _empty_matrix = SparseMatrix::<u8>::from_element_list(
-            &context,
-            &(10, 15).into(),
-            &empty_element_list,
+            context,
+            (10, 15).into(),
+            empty_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
@@ -558,11 +556,11 @@ mod tests {
     fn get_test_error_reporting_while_reading_an_element() {
         let context = Context::init_default().unwrap();
 
-        let target_height: ElementIndex = 10;
-        let target_width: ElementIndex = 5;
+        let target_height: RowIndex = 10;
+        let target_width: ColumnIndex = 5;
         let size = Size::new(target_height, target_width);
 
-        let mut sparse_matrix = SparseMatrix::<i32>::new(&context, &size).unwrap();
+        let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         let element_1 = MatrixElement::from_triple(1, 2, 1);
         let element_2 = MatrixElement::from_triple(20, 3, 2);

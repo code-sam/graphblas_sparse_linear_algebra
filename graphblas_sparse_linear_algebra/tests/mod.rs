@@ -29,7 +29,7 @@ mod tests {
         let matrix_size = Size::new(10, 5);
         let mut matrices: Vec<SparseMatrix<i32>> = (0..number_of_matrices)
             .into_par_iter()
-            .map(|_| SparseMatrix::<i32>::new(&context, &matrix_size).unwrap())
+            .map(|_| SparseMatrix::<i32>::new(context.clone(), matrix_size).unwrap())
             .collect();
 
         matrices.par_iter_mut().for_each(|matrix| {
@@ -40,7 +40,7 @@ mod tests {
 
         let add_operator = Plus::<i32>::new();
         let options = OptionsForOperatorWithMatrixArguments::new_default();
-        let result_matrix = Mutex::new(SparseMatrix::<i32>::new(&context, &matrix_size).unwrap());
+        let result_matrix = Mutex::new(SparseMatrix::<i32>::new(context.clone(), matrix_size).unwrap());
 
         let element_wise_matrix_add_operator = ElementWiseMatrixMultiplicationBinaryOperator::new();
 
@@ -52,7 +52,7 @@ mod tests {
                     &*matrix,
                     &add_operator,
                     &mut *result_matrix.lock().unwrap(),
-                    &SelectEntireMatrix::new(&context),
+                    &SelectEntireMatrix::new(context.clone()),
                     &options,
                 )
                 .unwrap();

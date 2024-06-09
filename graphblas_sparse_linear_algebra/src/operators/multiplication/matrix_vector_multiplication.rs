@@ -104,8 +104,8 @@ mod tests {
         let length = 2;
         let size: Size = (length, length).into();
 
-        let multiplier = SparseMatrix::<f32>::new(&context, &size).unwrap();
-        let multiplicant = SparseVector::<f32>::new(&context, &length).unwrap();
+        let multiplier = SparseMatrix::<f32>::new(context.clone(), size).unwrap();
+        let multiplicant = SparseVector::<f32>::new(context.clone(), length).unwrap();
         let mut product = multiplicant.to_owned();
 
         // Test multiplication of empty matrices
@@ -116,7 +116,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
@@ -129,9 +129,9 @@ mod tests {
         let multiplicant_element_list =
             VectorElementList::<f32>::from_element_vector(vec![(0, 1.0).into(), (1, 2.0).into()]);
         let multiplicant = SparseVector::<f32>::from_element_list(
-            &context,
-            &length,
-            &multiplicant_element_list,
+            context.clone(),
+            length,
+            multiplicant_element_list,
             &First::<f32>::new(),
         )
         .unwrap();
@@ -143,9 +143,9 @@ mod tests {
             (1, 1, 8.0).into(),
         ]);
         let multiplier = SparseMatrix::<f32>::from_element_list(
-            &context,
-            &size,
-            &multiplier_element_list,
+            context.clone(),
+            size,
+            multiplier_element_list,
             &First::<f32>::new(),
         )
         .unwrap();
@@ -158,7 +158,7 @@ mod tests {
                 &multiplicant,
                 &Assignment::new(),
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -184,7 +184,7 @@ mod tests {
                 &multiplicant,
                 &accumulator,
                 &mut product,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &options,
             )
             .unwrap();
@@ -196,16 +196,16 @@ mod tests {
         let mask_element_list =
             VectorElementList::<u8>::from_element_vector(vec![(0, 3).into(), (1, 0).into()]);
         let mask = SparseVector::<u8>::from_element_list(
-            &context,
-            &length,
-            &mask_element_list,
+            context.clone(),
+            length,
+            mask_element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
         let matrix_multiplier = MatrixVectorMultiplicationOperator::new();
 
-        let mut product = SparseVector::<f32>::new(&context, &length).unwrap();
+        let mut product = SparseVector::<f32>::new(context.clone(), length).unwrap();
 
         matrix_multiplier
             .apply(

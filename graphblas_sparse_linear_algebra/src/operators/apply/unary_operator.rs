@@ -142,14 +142,14 @@ mod tests {
 
         let matrix_size: Size = (10, 15).into();
         let matrix = SparseMatrix::<u8>::from_element_list(
-            &context.to_owned(),
-            &matrix_size,
-            &element_list,
+            context.clone(),
+            matrix_size,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_matrix = SparseMatrix::<u8>::new(&context, &matrix_size).unwrap();
+        let mut product_matrix = SparseMatrix::<u8>::new(context.clone(), matrix_size).unwrap();
 
         let operator = UnaryOperatorApplier::new();
 
@@ -159,7 +159,7 @@ mod tests {
                 &matrix,
                 &Assignment::<u8>::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -177,7 +177,7 @@ mod tests {
                 &matrix,
                 &Assignment::<u8>::new(),
                 &mut product_matrix,
-                &SelectEntireMatrix::new(&context),
+                &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
             )
             .unwrap();
@@ -203,14 +203,14 @@ mod tests {
 
         let vector_length: usize = 10;
         let vector = SparseVector::<u8>::from_element_list(
-            &context.to_owned(),
-            &vector_length,
-            &element_list,
+            context.clone(),
+            vector_length,
+            element_list,
             &First::<u8>::new(),
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<u8>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<u8>::new(context.clone(), vector_length).unwrap();
 
         let operator = UnaryOperatorApplier::new();
 
@@ -220,7 +220,7 @@ mod tests {
                 &vector,
                 &Assignment::<u8>::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -238,7 +238,7 @@ mod tests {
                 &vector,
                 &Assignment::<u8>::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
@@ -256,9 +256,9 @@ mod tests {
         let context = Context::init_default().unwrap();
 
         let vector_length: usize = 10;
-        let vector = SparseVector::<bool>::new(&context, &vector_length).unwrap();
+        let vector = SparseVector::<bool>::new(context.clone(), vector_length).unwrap();
 
-        let mut product_vector = SparseVector::<bool>::new(&context, &vector_length).unwrap();
+        let mut product_vector = SparseVector::<bool>::new(context.clone(), vector_length).unwrap();
 
         let operator = UnaryOperatorApplier::new();
 
@@ -268,7 +268,7 @@ mod tests {
                 &vector,
                 &Assignment::<bool>::new(),
                 &mut product_vector,
-                &SelectEntireVector::new(&context),
+                &SelectEntireVector::new(context),
                 &OperatorOptions::new_default(),
             )
             .unwrap();
