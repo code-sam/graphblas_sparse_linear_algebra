@@ -9,7 +9,7 @@ use crate::graphblas_bindings::{
     GrB_Matrix_setElement_INT8, GrB_Matrix_setElement_UINT16, GrB_Matrix_setElement_UINT32,
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
-use crate::index::{ElementIndex, IndexConversion};
+use crate::index::IndexConversion;
 use crate::value_type::ConvertScalar;
 use crate::{
     collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
@@ -29,7 +29,7 @@ pub trait SetSparseMatrixElement<T: ValueType> {
     ) -> Result<(), SparseLinearAlgebraError>;
     fn set_element(
         &mut self,
-        element: &(impl GetMatrixElementCoordinate + GetMatrixElementValue<T>),
+        element: impl GetMatrixElementCoordinate + GetMatrixElementValue<T>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -45,7 +45,7 @@ impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> fo
 
     fn set_element(
         &mut self,
-        element: &(impl GetMatrixElementCoordinate + GetMatrixElementValue<T>),
+        element: impl GetMatrixElementCoordinate + GetMatrixElementValue<T>,
     ) -> Result<(), SparseLinearAlgebraError> {
         T::set_graphblas_matrix_element(self, element)
     }
@@ -61,7 +61,7 @@ pub trait SetSparseMatrixElementTyped<T: ValueType> {
 
     fn set_graphblas_matrix_element(
         matrix: &mut impl GetGraphblasSparseMatrix,
-        element: &(impl GetMatrixElementCoordinate + GetMatrixElementValue<T>),
+        element: impl GetMatrixElementCoordinate + GetMatrixElementValue<T>,
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
@@ -93,7 +93,7 @@ macro_rules! implement_set_element_typed {
 
             fn set_graphblas_matrix_element(
                 matrix: &mut impl GetGraphblasSparseMatrix,
-                element: &(impl GetMatrixElementCoordinate + GetMatrixElementValue<$value_type>),
+                element: impl GetMatrixElementCoordinate + GetMatrixElementValue<$value_type>,
             ) -> Result<(), SparseLinearAlgebraError> {
                 <$value_type>::set_graphblas_matrix_value(
                     matrix,
