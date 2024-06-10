@@ -380,18 +380,18 @@ mod tests {
         let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         sparse_matrix
-            .set_element(&MatrixElement::from_triple(1, 2, 3))
+            .set_element(MatrixElement::from_triple(1, 2, 3))
             .unwrap();
 
         assert_eq!(1, sparse_matrix.number_of_stored_elements().unwrap());
 
         sparse_matrix
-            .set_element(&MatrixElement::from_triple(1, 3, 3))
+            .set_element(MatrixElement::from_triple(1, 3, 3))
             .unwrap();
 
         assert_eq!(2, sparse_matrix.number_of_stored_elements().unwrap());
 
-        match sparse_matrix.set_element(&MatrixElement::from_triple(1, 10, 3)) {
+        match sparse_matrix.set_element(MatrixElement::from_triple(1, 10, 3)) {
             Err(error) => {
                 match error.error_type() {
                     SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
@@ -429,10 +429,10 @@ mod tests {
         let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
 
         sparse_matrix
-            .set_element(&MatrixElement::from_triple(1, 2, 3))
+            .set_element(MatrixElement::from_triple(1, 2, 3))
             .unwrap();
         sparse_matrix
-            .set_element(&MatrixElement::from_triple(1, 4, 4))
+            .set_element(MatrixElement::from_triple(1, 4, 4))
             .unwrap();
 
         sparse_matrix
@@ -455,8 +455,8 @@ mod tests {
         let element_1 = MatrixElement::from_triple(1, 2, 1);
         let element_2 = MatrixElement::from_triple(2, 3, 2);
 
-        sparse_matrix.set_element(&element_1).unwrap();
-        sparse_matrix.set_element(&element_2).unwrap();
+        sparse_matrix.set_element(element_1).unwrap();
+        sparse_matrix.set_element(element_2).unwrap();
 
         assert_eq!(
             element_1,
@@ -487,8 +487,8 @@ mod tests {
         let element_1 = MatrixElement::<usize>::from_triple(1, 2, 1);
         let element_2 = MatrixElement::<usize>::from_triple(2, 3, 2);
 
-        sparse_matrix.set_element(&element_1).unwrap();
-        sparse_matrix.set_element(&element_2).unwrap();
+        sparse_matrix.set_element(element_1).unwrap();
+        sparse_matrix.set_element(element_2).unwrap();
 
         assert_eq!(
             element_1,
@@ -565,9 +565,9 @@ mod tests {
         let element_1 = MatrixElement::from_triple(1, 2, 1);
         let element_2 = MatrixElement::from_triple(20, 3, 2);
 
-        sparse_matrix.set_element(&element_1).unwrap();
+        sparse_matrix.set_element(element_1).unwrap();
 
-        match sparse_matrix.set_element(&element_2) {
+        match sparse_matrix.set_element(element_2) {
             Ok(_) => assert!(false),
             Err(error) => {
                 println!("{}", error.to_string());
