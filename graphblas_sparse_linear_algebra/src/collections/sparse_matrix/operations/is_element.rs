@@ -6,7 +6,7 @@ use crate::{
     error::{
         GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
     },
-    index::{ElementIndex, IndexConversion},
+    index::IndexConversion,
     value_type::ValueType,
 };
 

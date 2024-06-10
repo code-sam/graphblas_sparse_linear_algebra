@@ -34,7 +34,7 @@ mod tests {
 
         matrices.par_iter_mut().for_each(|matrix| {
             matrix
-                .set_matrix_element(&MatrixElement::from_triple(1, 2, 3))
+                .set_element(&MatrixElement::from_triple(1, 2, 3))
                 .unwrap()
         });
 
