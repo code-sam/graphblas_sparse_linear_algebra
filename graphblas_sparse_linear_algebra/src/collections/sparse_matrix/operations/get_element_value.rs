@@ -10,7 +10,6 @@ use crate::context::GetContext;
 use crate::error::GraphblasErrorType;
 use crate::error::LogicErrorType;
 use crate::error::SparseLinearAlgebraErrorType;
-use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::{
     error::SparseLinearAlgebraError,

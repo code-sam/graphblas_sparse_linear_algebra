@@ -35,23 +35,23 @@ impl<T: ValueType + SetSparseVectorElementTyped<T>> SetSparseVectorElement<T> fo
         &mut self,
         element: &(impl GetVectorElementIndex + GetVectorElementValue<T>),
     ) -> Result<(), SparseLinearAlgebraError> {
-        T::set_element(self, element)
+        T::set_graphblas_vector_element(self, element)
     }
     fn set_value(
         &mut self,
         index: &ElementIndex,
         value: T,
     ) -> Result<(), SparseLinearAlgebraError> {
-        T::set_value(self, index, value)
+        T::set_graphblas_vector_value(self, index, value)
     }
 }
 
 pub trait SetSparseVectorElementTyped<T: ValueType> {
-    fn set_element(
+    fn set_graphblas_vector_element(
         vector: &mut impl GetGraphblasSparseVector,
         element: &(impl GetVectorElementIndex + GetVectorElementValue<T>),
     ) -> Result<(), SparseLinearAlgebraError>;
-    fn set_value(
+    fn set_graphblas_vector_value(
         vector: &mut impl GetGraphblasSparseVector,
         index: &ElementIndex,
         value: T,
@@ -61,7 +61,7 @@ pub trait SetSparseVectorElementTyped<T: ValueType> {
 macro_rules! implement_set_element_for_built_in_type {
     ($value_type:ty, $graphblas_implementation_type:ident, $add_element_function:ident) => {
         impl SetSparseVectorElementTyped<$value_type> for $value_type {
-            fn set_element(
+            fn set_graphblas_vector_element(
                 vector: &mut impl GetGraphblasSparseVector,
                 element: &(impl GetVectorElementIndex + GetVectorElementValue<$value_type>),
             ) -> Result<(), SparseLinearAlgebraError> {
@@ -80,7 +80,7 @@ macro_rules! implement_set_element_for_built_in_type {
                 Ok(())
             }
 
-            fn set_value(
+            fn set_graphblas_vector_value(
                 vector: &mut impl GetGraphblasSparseVector,
                 index: &ElementIndex,
                 value: $value_type,

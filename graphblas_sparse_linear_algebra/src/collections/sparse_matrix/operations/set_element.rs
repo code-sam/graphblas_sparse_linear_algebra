@@ -21,20 +21,20 @@ use crate::{
 };
 
 pub trait SetSparseMatrixElement<T: ValueType> {
-    fn set_matrix_value(
+    fn set_value(
         &mut self,
         row_index: RowIndex,
         column_index: ColumnIndex,
         value: T,
     ) -> Result<(), SparseLinearAlgebraError>;
-    fn set_matrix_element(
+    fn set_element(
         &mut self,
         element: &(impl GetMatrixElementCoordinate + GetMatrixElementValue<T>),
     ) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> for SparseMatrix<T> {
-    fn set_matrix_value(
+    fn set_value(
         &mut self,
         row_index: RowIndex,
         column_index: ColumnIndex,
@@ -43,7 +43,7 @@ impl<T: ValueType + SetSparseMatrixElementTyped<T>> SetSparseMatrixElement<T> fo
         T::set_graphblas_matrix_value(self, row_index, column_index, value)
     }
 
-    fn set_matrix_element(
+    fn set_element(
         &mut self,
         element: &(impl GetMatrixElementCoordinate + GetMatrixElementValue<T>),
     ) -> Result<(), SparseLinearAlgebraError> {
