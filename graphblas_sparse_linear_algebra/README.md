@@ -48,7 +48,7 @@ fn main() {
         .apply_with_matrix_as_left_argument(
             &matrix,
             &First::<u8>::new(),
-            &first_argument,
+            first_argument,
             &Assignment::new(),
             &mut product_matrix,
             &SelectEntireMatrix::new(context.clone()),
@@ -66,7 +66,7 @@ fn main() {
     let second_argument = 10;
     operator
         .apply_with_matrix_as_right_argument(
-            &second_argument,
+            second_argument,
             &First::<u8>::new(),
             &matrix,
             &Assignment::new(),
