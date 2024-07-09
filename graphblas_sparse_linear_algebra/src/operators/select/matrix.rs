@@ -35,7 +35,7 @@ pub trait SelectFromMatrix<EvaluationDomain: ValueType> {
     fn apply(
         &self,
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
-        selector_argument: &EvaluationDomain,
+        selector_argument: EvaluationDomain,
         argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseMatrix,
@@ -50,7 +50,7 @@ macro_rules! implement_select_from_matrix {
             fn apply(
                 &self,
                 selector: &impl IndexUnaryOperator<$selector_argument_type>,
-                selector_argument: &$selector_argument_type,
+                selector_argument: $selector_argument_type,
                 argument: &impl GetGraphblasSparseMatrix,
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
                 product: &mut impl GetGraphblasSparseMatrix,
@@ -132,7 +132,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &diagonal_index,
+                diagonal_index,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -154,7 +154,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &diagonal_index,
+                diagonal_index,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -202,7 +202,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &diagonal_index,
+                diagonal_index,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -224,7 +224,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &diagonal_index,
+                diagonal_index,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -272,7 +272,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &diagonal_index,
+                diagonal_index,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -295,7 +295,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &diagonal_index,
+                diagonal_index,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -394,7 +394,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &0,
+                0,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,
@@ -416,7 +416,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &0,
+                0,
                 &matrix,
                 &Assignment::new(),
                 &mut product_matrix,

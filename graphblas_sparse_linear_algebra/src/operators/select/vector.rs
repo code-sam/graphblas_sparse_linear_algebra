@@ -35,7 +35,7 @@ pub trait SelectFromVector<EvaluationDomain: ValueType> {
     fn apply(
         &self,
         selector: &impl IndexUnaryOperator<EvaluationDomain>,
-        selector_argument: &EvaluationDomain,
+        selector_argument: EvaluationDomain,
         argument: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
@@ -50,7 +50,7 @@ macro_rules! implement_select_from_vector {
             fn apply(
                 &self,
                 selector: &impl IndexUnaryOperator<$selector_argument_type>,
-                selector_argument: &$selector_argument_type,
+                selector_argument: $selector_argument_type,
                 argument: &impl GetGraphblasSparseVector,
                 accumulator: &impl AccumulatorBinaryOperator<$selector_argument_type>,
                 product: &mut impl GetGraphblasSparseVector,
@@ -128,7 +128,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &0,
+                0,
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
@@ -150,7 +150,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &0,
+                0,
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
@@ -193,7 +193,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &1,
+                1,
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
@@ -215,7 +215,7 @@ mod tests {
         selector
             .apply(
                 &index_operator,
-                &3,
+                3,
                 &vector,
                 &Assignment::new(),
                 &mut product_vector,
