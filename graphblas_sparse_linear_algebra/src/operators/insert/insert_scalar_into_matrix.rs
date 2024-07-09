@@ -46,7 +46,7 @@ where
         matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        scalar_to_insert: &ScalarToInsert,
+        scalar_to_insert: ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
@@ -67,7 +67,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                 matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-                scalar_to_insert: &$value_type_scalar_to_insert,
+                scalar_to_insert: $value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
                 mask_for_matrix_to_insert_into: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
@@ -249,7 +249,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                &scalar_to_insert,
+                scalar_to_insert,
                 &Assignment::<u8>::new(),
                 &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
@@ -275,7 +275,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                &scalar_to_insert,
+                scalar_to_insert,
                 &Assignment::<u8>::new(),
                 &mask,
                 &OptionsForOperatorWithMatrixArgument::new_default(),
@@ -326,7 +326,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                &scalar_to_insert,
+                scalar_to_insert,
                 &Assignment::<u8>::new(),
                 &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
