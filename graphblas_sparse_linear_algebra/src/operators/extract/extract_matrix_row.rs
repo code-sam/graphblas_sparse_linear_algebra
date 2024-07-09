@@ -28,7 +28,7 @@ pub trait ExtractMatrixRow<Row: ValueType> {
     fn apply(
         &self,
         matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize + GetContext),
-        row_index_to_extract: &ElementIndex,
+        row_index_to_extract: ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut impl GetGraphblasSparseVector,
@@ -41,7 +41,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
     fn apply(
         &self,
         matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize + GetContext),
-        row_index_to_extract: &ElementIndex,
+        row_index_to_extract: ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Row>,
         row_vector: &mut impl GetGraphblasSparseVector,
@@ -53,7 +53,7 @@ impl<Row: ValueType> ExtractMatrixRow<Row> for MatrixRowExtractor {
 
         column_extractor.apply(
             matrix_to_extract_from,
-            &row_index_to_extract,
+            row_index_to_extract,
             indices_to_extract,
             accumulator,
             row_vector,
@@ -110,7 +110,7 @@ mod tests {
         extractor
             .apply(
                 &matrix,
-                &2,
+                2,
                 &indices_to_extract,
                 &Assignment::<u8>::new(),
                 &mut column_vector,
