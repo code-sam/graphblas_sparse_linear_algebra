@@ -76,13 +76,15 @@ impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
             SparseMatrix::<T>::new(diagonal.context(), (row_height, column_width).into())?;
         let graphblas_diagonal_index = diagonal_index.as_graphblas_index()?;
 
-        diagonal.context_ref().call_without_detailed_error_information(|| unsafe {
-            GrB_Matrix_diag(
-                matrix.graphblas_matrix_mut_ref(),
-                diagonal.graphblas_vector(),
-                graphblas_diagonal_index,
-            )
-        })?;
+        diagonal
+            .context_ref()
+            .call_without_detailed_error_information(|| unsafe {
+                GrB_Matrix_diag(
+                    matrix.graphblas_matrix_mut_ref(),
+                    diagonal.graphblas_vector(),
+                    graphblas_diagonal_index,
+                )
+            })?;
         return Ok(matrix);
     }
 }

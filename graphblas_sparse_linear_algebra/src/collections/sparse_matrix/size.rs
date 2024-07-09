@@ -2,7 +2,6 @@ use crate::index::ElementIndex;
 
 use super::{ColumnIndex, RowIndex};
 
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Size {
     row_height: RowIndex,

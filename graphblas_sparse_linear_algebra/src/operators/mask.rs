@@ -19,9 +19,7 @@ pub struct SelectEntireMatrix {
 
 impl SelectEntireMatrix {
     pub fn new(context: Arc<Context>) -> Self {
-        SelectEntireMatrix {
-            context,
-        }
+        SelectEntireMatrix { context }
     }
 }
 
@@ -48,9 +46,7 @@ pub struct SelectEntireVector {
 
 impl SelectEntireVector {
     pub fn new(context: Arc<Context>) -> Self {
-        SelectEntireVector {
-            context,
-        }
+        SelectEntireVector { context }
     }
 }
 

@@ -18,8 +18,7 @@ use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::VectorMask;
 use crate::operators::monoid::Monoid;
 use crate::operators::options::{
-    GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
-    WithTransposeMatrixArgument,
+    GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument, WithTransposeMatrixArgument,
 };
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
     convert_mut_scalar_to_type, identity_conversion,

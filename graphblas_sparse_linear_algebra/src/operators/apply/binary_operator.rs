@@ -413,7 +413,8 @@ mod tests {
         )
         .unwrap();
 
-        let mut product_vector = SparseVector::<usize>::new(context.clone(), vector_length).unwrap();
+        let mut product_vector =
+            SparseVector::<usize>::new(context.clone(), vector_length).unwrap();
 
         let operator = BinaryOperatorApplier::new();
 

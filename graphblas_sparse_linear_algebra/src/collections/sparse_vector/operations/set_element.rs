@@ -26,8 +26,7 @@ pub trait SetSparseVectorElement<T: ValueType> {
         &mut self,
         element: impl GetVectorElementIndex + GetVectorElementValue<T>,
     ) -> Result<(), SparseLinearAlgebraError>;
-    fn set_value(&mut self, index: ElementIndex, value: T)
-        -> Result<(), SparseLinearAlgebraError>;
+    fn set_value(&mut self, index: ElementIndex, value: T) -> Result<(), SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + SetSparseVectorElementTyped<T>> SetSparseVectorElement<T> for SparseVector<T> {
@@ -37,11 +36,7 @@ impl<T: ValueType + SetSparseVectorElementTyped<T>> SetSparseVectorElement<T> fo
     ) -> Result<(), SparseLinearAlgebraError> {
         T::set_graphblas_vector_element(self, element)
     }
-    fn set_value(
-        &mut self,
-        index: ElementIndex,
-        value: T,
-    ) -> Result<(), SparseLinearAlgebraError> {
+    fn set_value(&mut self, index: ElementIndex, value: T) -> Result<(), SparseLinearAlgebraError> {
         T::set_graphblas_vector_value(self, index, value)
     }
 }

@@ -40,7 +40,8 @@ mod tests {
 
         let add_operator = Plus::<i32>::new();
         let options = OptionsForOperatorWithMatrixArguments::new_default();
-        let result_matrix = Mutex::new(SparseMatrix::<i32>::new(context.clone(), matrix_size).unwrap());
+        let result_matrix =
+            Mutex::new(SparseMatrix::<i32>::new(context.clone(), matrix_size).unwrap());
 
         let element_wise_matrix_add_operator = ElementWiseMatrixMultiplicationBinaryOperator::new();
 

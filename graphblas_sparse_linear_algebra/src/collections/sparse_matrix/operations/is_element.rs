@@ -1,7 +1,9 @@
 use suitesparse_graphblas_sys::GxB_Matrix_isStoredElement;
 
 use crate::{
-    collections::sparse_matrix::{ColumnIndex, GetCoordinateIndices, GetGraphblasSparseMatrix, RowIndex, SparseMatrix},
+    collections::sparse_matrix::{
+        ColumnIndex, GetCoordinateIndices, GetGraphblasSparseMatrix, RowIndex, SparseMatrix,
+    },
     context::CallGraphBlasContext,
     error::{
         GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,

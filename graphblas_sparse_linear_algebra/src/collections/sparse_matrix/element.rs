@@ -149,10 +149,7 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         self.row_index.as_slice()
     }
 
-    pub fn row_index(
-        &self,
-        index: ElementIndex,
-    ) -> Result<&RowIndex, SparseLinearAlgebraError> {
+    pub fn row_index(&self, index: ElementIndex) -> Result<&RowIndex, SparseLinearAlgebraError> {
         #[cfg(debug_assertions)]
         if index >= self.length() {
             return Err(LogicError::new(

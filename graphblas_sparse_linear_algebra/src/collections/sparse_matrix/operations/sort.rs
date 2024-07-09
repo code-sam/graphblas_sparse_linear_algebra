@@ -182,8 +182,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         &self,
         sort_operator: &B,
     ) -> Result<SparseMatrix<RowIndex>, SparseLinearAlgebraError> {
-        let indices_to_sort_self =
-            SparseMatrix::<RowIndex>::new(self.context(), self.size()?)?;
+        let indices_to_sort_self = SparseMatrix::<RowIndex>::new(self.context(), self.size()?)?;
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
@@ -203,8 +202,7 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         &self,
         sort_operator: &B,
     ) -> Result<SparseMatrix<ColumnIndex>, SparseLinearAlgebraError> {
-        let indices_to_sort_self =
-            SparseMatrix::<ColumnIndex>::new(self.context(), self.size()?)?;
+        let indices_to_sort_self = SparseMatrix::<ColumnIndex>::new(self.context(), self.size()?)?;
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(

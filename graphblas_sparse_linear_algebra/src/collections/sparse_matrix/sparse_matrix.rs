@@ -287,10 +287,7 @@ mod tests {
         let new_size: Size = (1, 2).into();
         sparse_matrix.resize(new_size).unwrap();
 
-        assert_eq!(
-            new_size.row_height(),
-            sparse_matrix.row_height().unwrap()
-        );
+        assert_eq!(new_size.row_height(), sparse_matrix.row_height().unwrap());
         assert_eq!(
             new_size.column_width(),
             sparse_matrix.column_width().unwrap()
@@ -360,7 +357,7 @@ mod tests {
         );
         assert_eq!(matrix.element_value(&5, &7).unwrap().unwrap(), 5);
 
-        let matrix = SparseMatrix::<isize>::from_diagonal_vector( &vector, &-2).unwrap();
+        let matrix = SparseMatrix::<isize>::from_diagonal_vector(&vector, &-2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
