@@ -20,7 +20,9 @@ use crate::graphblas_bindings::{
     GrB_Index, GrB_Vector, GrB_Vector_clear, GrB_Vector_dup, GrB_Vector_free, GrB_Vector_new,
     GrB_Vector_nvals,
 };
-use crate::index::{DiagonalIndex, DiagonalIndexConversion, ElementCount, ElementIndex, IndexConversion};
+use crate::index::{
+    DiagonalIndex, DiagonalIndexConversion, ElementCount, ElementIndex, IndexConversion,
+};
 use crate::operators::mask::VectorMask;
 use crate::operators::options::{GetGraphblasDescriptor, OperatorOptions};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
@@ -65,7 +67,6 @@ impl<T: ValueType> SparseVector<T> {
         context: Arc<Context>,
         length: ElementCount,
     ) -> Result<Self, SparseLinearAlgebraError> {
-
         let vector = unsafe { new_graphblas_vector(&context, length, T::to_graphblas_type())? };
         return Ok(SparseVector {
             context,
@@ -421,8 +422,7 @@ mod tests {
         let indices = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         let sparse_vector =
-            SparseVector::<usize>::from_value(context, length, indices.clone(), value)
-                .unwrap();
+            SparseVector::<usize>::from_value(context, length, indices.clone(), value).unwrap();
 
         assert_eq!(indices, sparse_vector.element_indices().unwrap());
     }
@@ -436,7 +436,8 @@ mod tests {
         let indices = vec![2, 3, 5];
 
         let sparse_vector =
-            SparseVector::<u8>::from_value(context.clone(), length, indices.clone(), value).unwrap();
+            SparseVector::<u8>::from_value(context.clone(), length, indices.clone(), value)
+                .unwrap();
 
         assert_eq!(vec![11, 11, 11], sparse_vector.element_values().unwrap());
 
@@ -460,8 +461,7 @@ mod tests {
         let indices = vec![2, 3, 5];
 
         let sparse_vector =
-            SparseVector::<isize>::from_value(context, length, indices.clone(), value)
-                .unwrap();
+            SparseVector::<isize>::from_value(context, length, indices.clone(), value).unwrap();
 
         assert_eq!(length, sparse_vector.length().unwrap());
         assert_eq!(
@@ -570,13 +570,9 @@ mod tests {
         ]);
         // println!("{:?}", element_list.clone());
 
-        let vector = SparseVector::<u8>::from_element_list(
-            context,
-            10,
-            element_list,
-            &First::<u8>::new(),
-        )
-        .unwrap();
+        let vector =
+            SparseVector::<u8>::from_element_list(context, 10, element_list, &First::<u8>::new())
+                .unwrap();
 
         // println!("{:?}",matrix.get_element_list().unwrap());
         // println!("{:?}", vector.number_of_stored_elements().unwrap());

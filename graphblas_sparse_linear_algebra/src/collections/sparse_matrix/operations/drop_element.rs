@@ -1,7 +1,9 @@
 use suitesparse_graphblas_sys::GrB_Matrix_removeElement;
 
 use crate::{
-    collections::sparse_matrix::{ColumnIndex, GetCoordinateIndices, GetGraphblasSparseMatrix, RowIndex, SparseMatrix},
+    collections::sparse_matrix::{
+        ColumnIndex, GetCoordinateIndices, GetGraphblasSparseMatrix, RowIndex, SparseMatrix,
+    },
     context::CallGraphBlasContext,
     error::SparseLinearAlgebraError,
     index::IndexConversion,

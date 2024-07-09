@@ -32,7 +32,7 @@ pub trait ExtractMatrixColumn<Column: ValueType> {
     fn apply(
         &self,
         matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize),
-        column_index_to_extract: &ElementIndex,
+        column_index_to_extract: ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut impl GetGraphblasSparseVector,
@@ -45,7 +45,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
     fn apply(
         &self,
         matrix_to_extract_from: &(impl GetGraphblasSparseMatrix + GetSparseMatrixSize),
-        column_index_to_extract: &ElementIndex,
+        column_index_to_extract: ElementIndex,
         indices_to_extract: &ElementIndexSelector,
         accumulator: &impl AccumulatorBinaryOperator<Column>,
         column_vector: &mut impl GetGraphblasSparseVector,
@@ -153,7 +153,7 @@ mod tests {
         extractor
             .apply(
                 &matrix,
-                &0,
+                0,
                 &indices_to_extract,
                 &Assignment::<u8>::new(),
                 &mut column_vector,
@@ -199,7 +199,7 @@ mod tests {
         extractor
             .apply(
                 &matrix,
-                &0,
+                0,
                 &indices_to_extract,
                 &Assignment::<f32>::new(),
                 &mut column_vector,
