@@ -44,7 +44,7 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        scalar_to_insert: &ScalarToInsert,
+        scalar_to_insert: ScalarToInsert,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
@@ -65,13 +65,13 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
                 rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
                 columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-                scalar_to_insert: &$value_type_scalar_to_insert,
+                scalar_to_insert: $value_type_scalar_to_insert,
                 accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
                 mask_for_matrix_to_insert_into: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
                 let context = matrix_to_insert_into.context();
-                let scalar_to_insert = scalar_to_insert.to_owned().to_type()?;
+                let scalar_to_insert = scalar_to_insert.to_type()?;
 
                 let number_of_rows_to_insert_into = rows_to_insert_into
                     .number_of_selected_elements(matrix_to_insert_into.row_height()?)?
@@ -254,7 +254,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                &scalar_to_insert,
+                scalar_to_insert,
                 &Assignment::new(),
                 &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
@@ -280,7 +280,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                &scalar_to_insert,
+                scalar_to_insert,
                 &Assignment::new(),
                 &mask,
                 &OptionsForOperatorWithMatrixArgument::new_default(),
