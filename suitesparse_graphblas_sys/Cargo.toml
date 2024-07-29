@@ -17,8 +17,6 @@ build-standard-kernels = []
 disable-just-in-time-compiler = []
 # recompile-on-new-jit-kernels = []
 
-[dependencies]
-
 [build-dependencies]
 bindgen = "0.69"
 cmake = "0.1"

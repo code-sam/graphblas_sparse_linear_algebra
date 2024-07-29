@@ -1,16 +1,19 @@
 mod create;
 mod drop_element;
 // mod sort_matrix;
+mod deserialize;
 mod get_element;
 mod get_element_list;
 mod get_element_value;
 mod get_size;
 mod is_element;
 mod resize;
+mod serialize;
 mod set_element;
 mod sort;
 
 pub use create::*;
+pub use deserialize::*;
 pub use drop_element::*;
 pub use get_element::*;
 pub use get_element_list::*;
@@ -18,5 +21,6 @@ pub use get_element_value::*;
 pub use get_size::*;
 pub use is_element::*;
 pub use resize::*;
+pub use serialize::*;
 pub use set_element::*;
 pub use sort::SortSparseMatrix;

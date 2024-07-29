@@ -79,11 +79,11 @@ impl<T: ValueType> SparseMatrix<T> {
     }
 
     pub unsafe fn from_graphblas_matrix(
-        context: &Arc<Context>,
+        context: Arc<Context>,
         matrix: GrB_Matrix,
     ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
         Ok(SparseMatrix {
-            context: context.clone(),
+            context: context,
             matrix,
             value_type: PhantomData,
         })
@@ -144,10 +144,11 @@ impl<T: ValueType> GetGraphblasSparseMatrix for SparseMatrix<T> {
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
-        let context = self.context.clone();
-        let _ = context.call_without_detailed_error_information(|| unsafe {
-            GrB_Matrix_free(&mut self.matrix)
-        });
+        let _ = self
+            .context
+            .call_without_detailed_error_information(|| unsafe {
+                GrB_Matrix_free(&mut self.matrix)
+            });
     }
 }
 
