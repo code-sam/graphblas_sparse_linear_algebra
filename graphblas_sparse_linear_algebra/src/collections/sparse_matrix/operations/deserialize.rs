@@ -2,12 +2,9 @@ use std::ffi::c_void;
 use std::ptr;
 use std::{mem::MaybeUninit, sync::Arc};
 
-use suitesparse_graphblas_sys::{
-    GrB_Index, GrB_Matrix, GrB_Matrix_deserialize, GxB_Matrix_deserialize,
-};
+use suitesparse_graphblas_sys::{GrB_Index, GrB_Matrix, GrB_Matrix_deserialize};
 
-use crate::context::CallGraphBlasContext;
-use crate::index::{ElementIndex, IndexConversion};
+use crate::index::IndexConversion;
 use crate::{context::Context, error::SparseLinearAlgebraError};
 
 pub unsafe fn deserialize_suitesparse_graphblas_sparse_matrix(
@@ -41,15 +38,13 @@ pub unsafe fn deserialize_suitesparse_graphblas_sparse_matrix(
 #[cfg(test)]
 mod tests {
     use crate::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetSparseMatrixElementList, GetSparseMatrixSize,
+        FromMatrixElementList, GetSparseMatrixElementList,
+        SerializeSuitesparseGraphblasSparseMatrix,
     };
     use crate::collections::sparse_matrix::{
         GetGraphblasSparseMatrix, MatrixElementList, SparseMatrix,
     };
-    use crate::collections::{
-        GraphblasCollectionSerializerUsingZstandardCompression,
-        SerializeSuitesparseGraphblasSparseMatrix,
-    };
+    use crate::collections::GraphblasCollectionSerializerUsingZstandardCompression;
     use crate::operators::binary_operator::First;
 
     use super::*;

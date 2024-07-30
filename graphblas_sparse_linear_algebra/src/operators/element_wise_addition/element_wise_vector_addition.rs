@@ -237,7 +237,7 @@ mod tests {
                 &options,
             )
             .unwrap();
-        let element_list = product.get_element_list().unwrap();
+        let element_list = product.element_list().unwrap();
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);

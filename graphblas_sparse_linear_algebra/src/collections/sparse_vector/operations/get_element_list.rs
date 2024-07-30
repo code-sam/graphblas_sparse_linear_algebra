@@ -26,13 +26,13 @@ use crate::{
 use suitesparse_graphblas_sys::GrB_Index;
 
 pub trait GetSparseVectorElementList<T: ValueType> {
-    fn get_element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError>;
+    fn element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + GetVectorElementListTyped<T>> GetSparseVectorElementList<T>
     for SparseVector<T>
 {
-    fn get_element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError> {
+    fn element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError> {
         T::get_element_list(self)
     }
 }

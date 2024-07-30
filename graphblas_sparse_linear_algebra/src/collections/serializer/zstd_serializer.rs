@@ -1,20 +1,23 @@
-use core::slice;
-use std::ffi::c_char;
-use std::{mem::MaybeUninit, os::raw::c_void, sync::Arc};
+use std::{mem::MaybeUninit, sync::Arc};
 
 use suitesparse_graphblas_sys::{
-    GrB_Desc_Field_GxB_COMPRESSION, GrB_Descriptor, GrB_Descriptor_free, GrB_Descriptor_new, GrB_Descriptor_set, GrB_Index, GrB_Matrix, GxB_COMPRESSION_ZSTD, GxB_Desc_set, GxB_Matrix_serialize
+    GrB_Desc_Field_GxB_COMPRESSION, GrB_Descriptor, GrB_Descriptor_free, GrB_Descriptor_new,
+    GrB_Matrix, GrB_Vector, GxB_COMPRESSION_ZSTD, GxB_Desc_set,
 };
 
+use crate::collections::sparse_matrix::operations::{
+    serialize_suitesparse_grapblas_sparse_matrix, SerializeSuitesparseGraphblasSparseMatrix,
+};
+use crate::collections::sparse_vector::operations::{
+    serialize_suitesparse_grapblas_sparse_vector, SerializeSuitesparseGraphblasSparseVector,
+};
 use crate::context::CallGraphBlasContext;
-use crate::index::IndexConversion;
 use crate::{
     context::{Context, GetContext},
     error::SparseLinearAlgebraError,
-    index::ElementIndex,
 };
 
-use super::SerializeSuitesparseGraphblasSparseMatrix;
+use super::GetGraphblasSerializerDescriptor;
 
 /// Higher levels target higher compression ratios but take increasingly more time.
 pub enum ZstandardCompressionLevel {
@@ -83,27 +86,40 @@ impl GetContext for GraphblasCollectionSerializerUsingZstandardCompression {
     }
 }
 
+impl GetGraphblasSerializerDescriptor for GraphblasCollectionSerializerUsingZstandardCompression {
+    unsafe fn graphblas_serializer_descriptor(&self) -> GrB_Descriptor {
+        self.graphblas_descriptor
+    }
+
+    unsafe fn graphblas_serializer_descriptor_ref(&self) -> &GrB_Descriptor {
+        &self.graphblas_descriptor
+    }
+}
+
 impl GraphblasCollectionSerializerUsingZstandardCompression {
     pub fn new(
         context: Arc<Context>,
         compression_level: ZstandardCompressionLevel,
     ) -> Result<Self, SparseLinearAlgebraError> {
         let mut graphblas_descriptor: MaybeUninit<GrB_Descriptor> = MaybeUninit::uninit();
-        
+
         context.call_without_detailed_error_information(|| unsafe {
             GrB_Descriptor_new(graphblas_descriptor.as_mut_ptr())
         })?;
 
         let graphblas_descriptor = unsafe { graphblas_descriptor.assume_init() };
-        
-        context.call(|| unsafe {
-            GxB_Desc_set(
-                graphblas_descriptor,
-                GrB_Desc_Field_GxB_COMPRESSION,
-                GxB_COMPRESSION_ZSTD + compression_level.to_graphblas_descriptor_offset(),
-            )
-        }, &graphblas_descriptor)?;
-        
+
+        context.call(
+            || unsafe {
+                GxB_Desc_set(
+                    graphblas_descriptor,
+                    GrB_Desc_Field_GxB_COMPRESSION,
+                    GxB_COMPRESSION_ZSTD + compression_level.to_graphblas_descriptor_offset(),
+                )
+            },
+            &graphblas_descriptor,
+        )?;
+
         Ok(Self {
             context,
             compression_level,
@@ -129,32 +145,37 @@ impl SerializeSuitesparseGraphblasSparseMatrix
         &self,
         suitesparse_graphblas_sparse_matrix: GrB_Matrix,
     ) -> Result<&[u8], SparseLinearAlgebraError> {
-        let mut size_of_serialized_matrix: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        let mut serialized_matrix_pointer: MaybeUninit<*mut c_void> = MaybeUninit::uninit();
+        serialize_suitesparse_grapblas_sparse_matrix(self, suitesparse_graphblas_sparse_matrix)
+    }
+}
 
-        self.context_ref().call(
-            || unsafe {
-                GxB_Matrix_serialize(
-                    serialized_matrix_pointer.as_mut_ptr(),
-                    size_of_serialized_matrix.as_mut_ptr(),
-                    suitesparse_graphblas_sparse_matrix,
-                    self.graphblas_descriptor,
-                )
-            },
-            &self.graphblas_descriptor,
-        )?;
+impl SerializeSuitesparseGraphblasSparseVector
+    for GraphblasCollectionSerializerUsingZstandardCompression
+{
+    unsafe fn serialize_suitesparse_grapblas_sparse_vector(
+        &self,
+        suitesparse_graphblas_sparse_vector: GrB_Vector,
+    ) -> Result<&[u8], SparseLinearAlgebraError> {
+        serialize_suitesparse_grapblas_sparse_vector(self, suitesparse_graphblas_sparse_vector)
+    }
+}
 
-        let size_of_serialized_matrix =
-            ElementIndex::from_graphblas_index(unsafe { size_of_serialized_matrix.assume_init() })?;
-        let serialized_matrix_pointer = unsafe { serialized_matrix_pointer.assume_init() };
+#[cfg(test)]
+mod tests {
+    use crate::collections::GraphblasCollectionSerializerUsingZstandardCompression;
 
-        let serialized_matrix = unsafe {
-            slice::from_raw_parts(
-                serialized_matrix_pointer as *const u8,
-                size_of_serialized_matrix,
-            )
-        };
+    use super::*;
 
-        Ok(serialized_matrix)
+    #[test]
+    fn new_serializer() {
+        let context = Context::init_default().unwrap();
+
+        let _zstd_serializer = GraphblasCollectionSerializerUsingZstandardCompression::new(
+            context.clone(),
+            crate::collections::ZstandardCompressionLevel::DEFAULT,
+        )
+        .unwrap();
+
+        assert!(true)
     }
 }
