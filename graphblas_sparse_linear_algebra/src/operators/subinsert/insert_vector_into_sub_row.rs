@@ -61,7 +61,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubRow<MatrixToInsertInto>
         mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_insert_into.context();
+        let context = matrix_to_insert_into.context_ref();
 
         let number_of_indices_to_insert_into = row_indices_to_insert_into
             .number_of_selected_elements(matrix_to_insert_into.row_height()?)?

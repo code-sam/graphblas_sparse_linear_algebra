@@ -53,7 +53,7 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -109,7 +109,7 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -165,7 +165,7 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {

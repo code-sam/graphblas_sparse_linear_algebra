@@ -54,7 +54,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {

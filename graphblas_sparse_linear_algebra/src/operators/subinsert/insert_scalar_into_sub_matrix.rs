@@ -70,7 +70,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                 mask_for_matrix_to_insert_into: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = matrix_to_insert_into.context();
+                let context = matrix_to_insert_into.context_ref();
                 let scalar_to_insert = scalar_to_insert.to_type()?;
 
                 let number_of_rows_to_insert_into = rows_to_insert_into

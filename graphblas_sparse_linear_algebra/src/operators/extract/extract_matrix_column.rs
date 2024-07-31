@@ -52,7 +52,7 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
         mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_extract_from.context();
+        let context = matrix_to_extract_from.context_ref();
 
         let number_of_indices_to_extract: ElementIndex;
         match indices_to_extract {

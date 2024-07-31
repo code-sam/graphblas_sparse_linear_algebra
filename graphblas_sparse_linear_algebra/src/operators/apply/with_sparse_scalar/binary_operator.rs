@@ -79,7 +79,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -109,7 +109,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -139,7 +139,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -169,7 +169,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {

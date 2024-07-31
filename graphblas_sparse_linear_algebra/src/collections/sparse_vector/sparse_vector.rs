@@ -138,7 +138,7 @@ impl<T: ValueType> SparseVector<T> {
         }
 
         let diagonal = SparseVector::new(matrix.context(), diagonal_length)?;
-        let context = matrix.context();
+        let context = matrix.context_ref();
         let graphblas_diagonal_index = diagonal_index.to_graphblas_index()?;
 
         context.call_without_detailed_error_information(|| unsafe {

@@ -69,7 +69,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                 mask_for_vector_to_insert_into: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = vector_to_insert_into.context();
+                let context = vector_to_insert_into.context_ref();
                 let scalar_to_insert = scalar_to_insert.clone().to_type()?;
 
                 let number_of_indices_to_insert_into = indices_to_insert_into

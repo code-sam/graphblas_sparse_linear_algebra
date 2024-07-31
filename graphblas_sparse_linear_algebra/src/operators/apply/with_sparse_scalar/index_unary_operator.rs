@@ -52,7 +52,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = argument.context();
+        let context = argument.context_ref();
 
         context.call(
             || unsafe {
@@ -82,7 +82,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         mask: &impl MatrixMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = argument.context();
+        let context = argument.context_ref();
 
         context.call(
             || unsafe {

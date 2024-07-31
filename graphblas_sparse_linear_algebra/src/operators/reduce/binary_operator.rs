@@ -61,7 +61,7 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {

@@ -77,7 +77,7 @@ macro_rules! implement_apply_index_binary_operator {
                 mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
+                let context = product.context_ref();
                 let argument = argument.clone().to_type()?;
 
                 context.call(
@@ -108,7 +108,7 @@ macro_rules! implement_apply_index_binary_operator {
                 mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
+                let context = product.context_ref();
                 let argument = argument.clone().to_type()?;
 
                 context.call(

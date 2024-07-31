@@ -44,7 +44,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = transpose.context();
+        let context = transpose.context_ref();
 
         context.call(
             || unsafe {
