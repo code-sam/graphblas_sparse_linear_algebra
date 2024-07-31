@@ -56,7 +56,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVector<VectorToInsertInto
         mask_for_vector_to_insert_into: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = vector_to_insert_into.context();
+        let context = vector_to_insert_into.context_ref();
 
         let number_of_indices_to_insert_into = indices_to_insert_into
             .number_of_selected_elements(vector_to_insert_into.length()?)?

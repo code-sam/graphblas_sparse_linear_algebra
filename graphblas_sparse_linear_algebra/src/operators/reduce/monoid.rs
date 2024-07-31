@@ -73,7 +73,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -143,7 +143,7 @@ macro_rules! implement_monoid_reducer {
                 product: &mut $value_type,
                 options: &impl GetOptionsForOperatorWithMatrixArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = argument.context();
+                let context = argument.context_ref();
                 let mut tmp_product = product.clone().to_type()?;
 
                 // TODO: support detailed error information
@@ -171,7 +171,7 @@ macro_rules! implement_monoid_reducer {
                 product: &mut $value_type,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = argument.context();
+                let context = argument.context_ref();
                 let mut tmp_product = product.clone().to_type()?;
 
                 context.call_without_detailed_error_information(|| unsafe {

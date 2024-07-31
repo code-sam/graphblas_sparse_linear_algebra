@@ -261,7 +261,7 @@ pub fn implement_monoid_reducer(input: TokenStream) -> TokenStream {
                 argument: &SparseMatrix<#value_type>,
                 product: &mut #value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = argument.context();
+                let context = argument.context_ref();
                 // let mut tmp_product = product.to_owned();
                 // $convert_to_type!(tmp_product, $graphblas_implementation_type);
 
@@ -286,7 +286,7 @@ pub fn implement_monoid_reducer(input: TokenStream) -> TokenStream {
                 argument: &SparseVector<#value_type>,
                 product: &mut #value_type,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = argument.context();
+                let context = argument.context_ref();
                 // let mut tmp_product = product.to_owned();
                 // $convert_to_type!(tmp_product, $graphblas_implementation_type);
 

@@ -138,7 +138,7 @@ impl<T: ValueType> SparseVector<T> {
         }
 
         let diagonal = SparseVector::new(matrix.context(), diagonal_length)?;
-        let context = matrix.context();
+        let context = matrix.context_ref();
         let graphblas_diagonal_index = diagonal_index.to_graphblas_index()?;
 
         context.call_without_detailed_error_information(|| unsafe {
@@ -297,7 +297,7 @@ macro_rules! implement_dispay {
         impl std::fmt::Display for SparseVector<$value_type> {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                 let element_list: VectorElementList<$value_type>;
-                match self.get_element_list() {
+                match self.element_list() {
                     Err(_error) => return Err(std::fmt::Error),
                     Ok(list) => {
                         element_list = list;
@@ -796,7 +796,7 @@ mod tests {
             element_list.length()
         );
 
-        assert_eq!(vector.get_element_list().unwrap(), element_list);
+        assert_eq!(vector.element_list().unwrap(), element_list);
 
         let empty_element_list = VectorElementList::<u8>::new();
         let _empty_matrix = SparseVector::<u8>::from_element_list(

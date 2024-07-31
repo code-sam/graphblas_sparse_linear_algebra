@@ -115,7 +115,7 @@ macro_rules! implement_apply_binary_operator {
                 mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
+                let context = product.context_ref();
                 let second_argument = second_argument.to_type()?;
 
                 context.call(
@@ -146,7 +146,7 @@ macro_rules! implement_apply_binary_operator {
                 mask: &impl VectorMask,
                 options: &impl GetOperatorOptions,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
+                let context = product.context_ref();
                 let first_argument = first_argument.to_type()?;
 
                 context.call(
@@ -177,7 +177,7 @@ macro_rules! implement_apply_binary_operator {
                 mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
+                let context = product.context_ref();
                 let second_argument = second_argument.to_type()?;
 
                 context.call(
@@ -208,7 +208,7 @@ macro_rules! implement_apply_binary_operator {
                 mask: &impl MatrixMask,
                 options: &impl GetOptionsForOperatorWithMatrixAsSecondArgument,
             ) -> Result<(), SparseLinearAlgebraError> {
-                let context = product.context();
+                let context = product.context_ref();
                 let first_argument = first_argument.to_type()?;
 
                 context.call(

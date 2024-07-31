@@ -72,7 +72,7 @@ macro_rules! vector_conversion {
     ($from_type: ty, $to_type: ty) => {
         fn to_type(self) -> Result<Vec<$to_type>, SparseLinearAlgebraError> {
             let result = catch_unwind(|| {
-                let mut shared_errors = Arc::new(Mutex::new(Vec::new()));
+                let shared_errors = Arc::new(Mutex::new(Vec::new()));
                 let as_type: Vec<$to_type> = self
                     .into_par_iter()
                     .map(|x| x.try_into())

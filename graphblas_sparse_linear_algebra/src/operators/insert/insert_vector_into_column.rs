@@ -62,7 +62,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoColumn<AccumulatorE
         mask_for_column_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_insert_into.context();
+        let context = matrix_to_insert_into.context_ref();
 
         let number_of_indices_to_insert_into = column_indices_to_insert_into
             .number_of_selected_elements(sparse_matrix_row_height(matrix_to_insert_into)?)?

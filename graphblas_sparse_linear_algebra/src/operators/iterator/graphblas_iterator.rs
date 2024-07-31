@@ -9,10 +9,7 @@ use suitesparse_graphblas_sys::{
 
 use crate::context::Context;
 use crate::error::SparseLinearAlgebraError;
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function,
-    implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-};
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::ConvertScalar;
 use crate::value_type::ValueType;
 

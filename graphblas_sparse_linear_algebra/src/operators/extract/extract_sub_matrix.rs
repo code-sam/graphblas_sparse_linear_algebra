@@ -51,7 +51,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = matrix_to_extract_from.context();
+        let context = matrix_to_extract_from.context_ref();
 
         let number_of_rows_to_extract: ElementIndex;
         match rows_to_extract {

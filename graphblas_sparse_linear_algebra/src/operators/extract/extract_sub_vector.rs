@@ -51,7 +51,7 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
         mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = vector_to_extract_from.context();
+        let context = vector_to_extract_from.context_ref();
 
         let number_of_indices_to_extract: ElementIndex;
         match indices_to_extract {

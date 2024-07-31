@@ -12,7 +12,7 @@ use suitesparse_graphblas_sys::{
     GrB_BinaryOp, GrB_BinaryOp_error, GrB_Descriptor, GrB_Descriptor_error, GrB_IndexUnaryOp,
     GrB_IndexUnaryOp_error, GrB_Matrix, GrB_Matrix_error, GrB_Monoid, GrB_Monoid_error, GrB_Scalar,
     GrB_Scalar_error, GrB_Semiring, GrB_Semiring_error, GrB_Type, GrB_Type_error, GrB_UnaryOp,
-    GrB_UnaryOp_error, GrB_Vector, GrB_Vector_error, GrB_finalize, GxB_Iterator,
+    GrB_UnaryOp_error, GrB_Vector, GrB_Vector_error, GrB_finalize,
 };
 
 use crate::graphblas_bindings::{

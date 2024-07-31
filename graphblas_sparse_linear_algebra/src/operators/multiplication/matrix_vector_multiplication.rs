@@ -54,7 +54,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
         mask: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixAsFirstArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = product.context();
+        let context = product.context_ref();
 
         context.call(
             || unsafe {
@@ -120,7 +120,7 @@ mod tests {
                 &OptionsForOperatorWithMatrixAsFirstArgument::new_default(),
             )
             .unwrap();
-        let element_list = product.get_element_list().unwrap();
+        let element_list = product.element_list().unwrap();
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);
@@ -170,7 +170,7 @@ mod tests {
         // Equality checks should be done at a matrix level, since the ordering of the element list is not guaranteed.
         let expected_product =
             VectorElementList::<f32>::from_element_vector(vec![(0, 19.).into(), (1, 22.).into()]);
-        let product_element_list = product.get_element_list().unwrap();
+        let product_element_list = product.element_list().unwrap();
         assert_eq!(expected_product, product_element_list);
 
         // test the use of an accumulator

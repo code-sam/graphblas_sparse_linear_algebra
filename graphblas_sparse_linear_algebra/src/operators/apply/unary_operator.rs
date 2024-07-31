@@ -62,7 +62,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         mask: &impl VectorMask,
         options: &impl GetOperatorOptions,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = argument.context();
+        let context = argument.context_ref();
 
         context.call(
             || unsafe {
@@ -90,7 +90,7 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         mask: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
     ) -> Result<(), SparseLinearAlgebraError> {
-        let context = argument.context();
+        let context = argument.context_ref();
 
         context.call(
             || unsafe {
