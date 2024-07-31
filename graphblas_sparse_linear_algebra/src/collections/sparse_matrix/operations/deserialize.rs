@@ -44,7 +44,7 @@ mod tests {
     use crate::collections::sparse_matrix::{
         GetGraphblasSparseMatrix, MatrixElementList, SparseMatrix,
     };
-    use crate::collections::GraphblasCollectionSerializerUsingZstandardCompression;
+    use crate::collections::LZ4HighCompressionSerializer;
     use crate::operators::binary_operator::First;
 
     use super::*;
@@ -68,9 +68,9 @@ mod tests {
         )
         .unwrap();
 
-        let zstd_serializer = GraphblasCollectionSerializerUsingZstandardCompression::new(
+        let zstd_serializer = LZ4HighCompressionSerializer::new(
             context.clone(),
-            crate::collections::ZstandardCompressionLevel::DEFAULT,
+            crate::collections::LZ4HighCompressionLevel::DEFAULT,
         )
         .unwrap();
 

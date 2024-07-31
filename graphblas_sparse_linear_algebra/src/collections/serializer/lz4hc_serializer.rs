@@ -2,7 +2,7 @@ use std::{mem::MaybeUninit, sync::Arc};
 
 use suitesparse_graphblas_sys::{
     GrB_Desc_Field_GxB_COMPRESSION, GrB_Descriptor, GrB_Descriptor_free, GrB_Descriptor_new,
-    GrB_Matrix, GrB_Vector, GxB_COMPRESSION_ZSTD, GxB_Desc_set,
+    GrB_Matrix, GrB_Vector, GxB_COMPRESSION_LZ4HC, GxB_COMPRESSION_ZSTD, GxB_Desc_set,
 };
 
 use crate::collections::sparse_matrix::operations::{
@@ -20,8 +20,9 @@ use crate::{
 use super::GetGraphblasSerializerDescriptor;
 
 /// Higher levels target higher compression ratios but take increasingly more time.
-pub enum ZstandardCompressionLevel {
+pub enum LZ4HighCompressionLevel {
     DEFAULT,
+    L0,
     L1,
     L2,
     L3,
@@ -31,52 +32,33 @@ pub enum ZstandardCompressionLevel {
     L7,
     L8,
     L9,
-    L10,
-    L11,
-    L12,
-    L13,
-    L14,
-    L15,
-    L16,
-    L17,
-    L18,
-    L19,
 }
 
-impl ZstandardCompressionLevel {
+impl LZ4HighCompressionLevel {
     fn to_graphblas_descriptor_offset(&self) -> u32 {
         match self {
-            ZstandardCompressionLevel::DEFAULT => 1,
-            ZstandardCompressionLevel::L1 => 1,
-            ZstandardCompressionLevel::L2 => 2,
-            ZstandardCompressionLevel::L3 => 3,
-            ZstandardCompressionLevel::L4 => 4,
-            ZstandardCompressionLevel::L5 => 5,
-            ZstandardCompressionLevel::L6 => 6,
-            ZstandardCompressionLevel::L7 => 7,
-            ZstandardCompressionLevel::L8 => 8,
-            ZstandardCompressionLevel::L9 => 9,
-            ZstandardCompressionLevel::L10 => 10,
-            ZstandardCompressionLevel::L11 => 11,
-            ZstandardCompressionLevel::L12 => 12,
-            ZstandardCompressionLevel::L13 => 13,
-            ZstandardCompressionLevel::L14 => 14,
-            ZstandardCompressionLevel::L15 => 15,
-            ZstandardCompressionLevel::L16 => 16,
-            ZstandardCompressionLevel::L17 => 17,
-            ZstandardCompressionLevel::L18 => 18,
-            ZstandardCompressionLevel::L19 => 19,
+            LZ4HighCompressionLevel::DEFAULT => 9,
+            LZ4HighCompressionLevel::L0 => 0,
+            LZ4HighCompressionLevel::L1 => 1,
+            LZ4HighCompressionLevel::L2 => 2,
+            LZ4HighCompressionLevel::L3 => 3,
+            LZ4HighCompressionLevel::L4 => 4,
+            LZ4HighCompressionLevel::L5 => 5,
+            LZ4HighCompressionLevel::L6 => 6,
+            LZ4HighCompressionLevel::L7 => 7,
+            LZ4HighCompressionLevel::L8 => 8,
+            LZ4HighCompressionLevel::L9 => 9,
         }
     }
 }
 
-pub struct ZStandardSerializer {
+pub struct LZ4HighCompressionSerializer {
     context: Arc<Context>,
-    compression_level: ZstandardCompressionLevel,
+    compression_level: LZ4HighCompressionLevel,
     graphblas_descriptor: GrB_Descriptor,
 }
 
-impl GetContext for ZStandardSerializer {
+impl GetContext for LZ4HighCompressionSerializer {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }
@@ -86,7 +68,7 @@ impl GetContext for ZStandardSerializer {
     }
 }
 
-impl GetGraphblasSerializerDescriptor for ZStandardSerializer {
+impl GetGraphblasSerializerDescriptor for LZ4HighCompressionSerializer {
     unsafe fn graphblas_serializer_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
@@ -96,10 +78,10 @@ impl GetGraphblasSerializerDescriptor for ZStandardSerializer {
     }
 }
 
-impl ZStandardSerializer {
+impl LZ4HighCompressionSerializer {
     pub fn new(
         context: Arc<Context>,
-        compression_level: ZstandardCompressionLevel,
+        compression_level: LZ4HighCompressionLevel,
     ) -> Result<Self, SparseLinearAlgebraError> {
         let mut graphblas_descriptor: MaybeUninit<GrB_Descriptor> = MaybeUninit::uninit();
 
@@ -114,7 +96,7 @@ impl ZStandardSerializer {
                 GxB_Desc_set(
                     graphblas_descriptor,
                     GrB_Desc_Field_GxB_COMPRESSION,
-                    GxB_COMPRESSION_ZSTD + compression_level.to_graphblas_descriptor_offset(),
+                    GxB_COMPRESSION_LZ4HC + compression_level.to_graphblas_descriptor_offset(),
                 )
             },
             &graphblas_descriptor,
@@ -128,7 +110,7 @@ impl ZStandardSerializer {
     }
 }
 
-impl Drop for ZStandardSerializer {
+impl Drop for LZ4HighCompressionSerializer {
     fn drop(&mut self) {
         let _ = self
             .context
@@ -138,7 +120,7 @@ impl Drop for ZStandardSerializer {
     }
 }
 
-impl SerializeSuitesparseGraphblasSparseMatrix for ZStandardSerializer {
+impl SerializeSuitesparseGraphblasSparseMatrix for LZ4HighCompressionSerializer {
     unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
         &self,
         suitesparse_graphblas_sparse_matrix: GrB_Matrix,
@@ -147,7 +129,7 @@ impl SerializeSuitesparseGraphblasSparseMatrix for ZStandardSerializer {
     }
 }
 
-impl SerializeSuitesparseGraphblasSparseVector for ZStandardSerializer {
+impl SerializeSuitesparseGraphblasSparseVector for LZ4HighCompressionSerializer {
     unsafe fn serialize_suitesparse_grapblas_sparse_vector(
         &self,
         suitesparse_graphblas_sparse_vector: GrB_Vector,

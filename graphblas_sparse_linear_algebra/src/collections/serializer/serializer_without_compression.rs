@@ -19,12 +19,12 @@ use crate::{
 
 use super::GetGraphblasSerializerDescriptor;
 
-pub struct GraphblasCollectionSerializerWithoutCompression {
+pub struct SerializerWithoutCompression {
     context: Arc<Context>,
     graphblas_descriptor: GrB_Descriptor,
 }
 
-impl GetContext for GraphblasCollectionSerializerWithoutCompression {
+impl GetContext for SerializerWithoutCompression {
     fn context(&self) -> Arc<Context> {
         self.context.to_owned()
     }
@@ -34,7 +34,7 @@ impl GetContext for GraphblasCollectionSerializerWithoutCompression {
     }
 }
 
-impl GetGraphblasSerializerDescriptor for GraphblasCollectionSerializerWithoutCompression {
+impl GetGraphblasSerializerDescriptor for SerializerWithoutCompression {
     unsafe fn graphblas_serializer_descriptor(&self) -> GrB_Descriptor {
         self.graphblas_descriptor
     }
@@ -44,7 +44,7 @@ impl GetGraphblasSerializerDescriptor for GraphblasCollectionSerializerWithoutCo
     }
 }
 
-impl GraphblasCollectionSerializerWithoutCompression {
+impl SerializerWithoutCompression {
     pub fn new(context: Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
         let mut graphblas_descriptor: MaybeUninit<GrB_Descriptor> = MaybeUninit::uninit();
 
@@ -72,7 +72,7 @@ impl GraphblasCollectionSerializerWithoutCompression {
     }
 }
 
-impl Drop for GraphblasCollectionSerializerWithoutCompression {
+impl Drop for SerializerWithoutCompression {
     fn drop(&mut self) {
         let _ = self
             .context
@@ -82,7 +82,7 @@ impl Drop for GraphblasCollectionSerializerWithoutCompression {
     }
 }
 
-impl SerializeSuitesparseGraphblasSparseMatrix for GraphblasCollectionSerializerWithoutCompression {
+impl SerializeSuitesparseGraphblasSparseMatrix for SerializerWithoutCompression {
     unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
         &self,
         suitesparse_graphblas_sparse_matrix: GrB_Matrix,
@@ -91,7 +91,7 @@ impl SerializeSuitesparseGraphblasSparseMatrix for GraphblasCollectionSerializer
     }
 }
 
-impl SerializeSuitesparseGraphblasSparseVector for GraphblasCollectionSerializerWithoutCompression {
+impl SerializeSuitesparseGraphblasSparseVector for SerializerWithoutCompression {
     unsafe fn serialize_suitesparse_grapblas_sparse_vector(
         &self,
         suitesparse_graphblas_sparse_vector: GrB_Vector,
@@ -102,19 +102,13 @@ impl SerializeSuitesparseGraphblasSparseVector for GraphblasCollectionSerializer
 
 #[cfg(test)]
 mod tests {
-    use crate::collections::GraphblasCollectionSerializerUsingZstandardCompression;
-
     use super::*;
 
     #[test]
     fn new_serializer() {
         let context = Context::init_default().unwrap();
 
-        let _zstd_serializer = GraphblasCollectionSerializerUsingZstandardCompression::new(
-            context.clone(),
-            crate::collections::ZstandardCompressionLevel::DEFAULT,
-        )
-        .unwrap();
+        let _serializer = SerializerWithoutCompression::new(context.clone()).unwrap();
 
         assert!(true)
     }

@@ -45,7 +45,7 @@ mod tests {
     use crate::collections::sparse_vector::{
         GetGraphblasSparseVector, SparseVector, VectorElementList,
     };
-    use crate::collections::GraphblasCollectionSerializerUsingZstandardCompression;
+    use crate::collections::LZ4HighCompressionSerializer;
     use crate::operators::binary_operator::First;
 
     use super::*;
@@ -69,9 +69,9 @@ mod tests {
         )
         .unwrap();
 
-        let zstd_serializer = GraphblasCollectionSerializerUsingZstandardCompression::new(
+        let zstd_serializer = LZ4HighCompressionSerializer::new(
             context.clone(),
-            crate::collections::ZstandardCompressionLevel::L2,
+            crate::collections::LZ4HighCompressionLevel::L2,
         )
         .unwrap();
 
