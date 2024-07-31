@@ -2,7 +2,7 @@ use std::{mem::MaybeUninit, sync::Arc};
 
 use suitesparse_graphblas_sys::{
     GrB_Desc_Field_GxB_COMPRESSION, GrB_Descriptor, GrB_Descriptor_free, GrB_Descriptor_new,
-    GrB_Matrix, GrB_Vector, GxB_COMPRESSION_LZ4HC, GxB_COMPRESSION_ZSTD, GxB_Desc_set,
+    GrB_Matrix, GrB_Vector, GxB_COMPRESSION_LZ4HC, GxB_Desc_set,
 };
 
 use crate::collections::sparse_matrix::operations::{
