@@ -349,14 +349,14 @@ mod tests {
             matrix.size().unwrap(),
             Size::new(vector_length, vector_length)
         );
-        assert_eq!(matrix.element_value(&5, &5).unwrap().unwrap(), 5);
+        assert_eq!(matrix.element_value(5, 5).unwrap().unwrap(), 5);
 
         let matrix = SparseMatrix::<isize>::from_diagonal_vector(&vector, &2).unwrap();
         assert_eq!(
             matrix.size().unwrap(),
             Size::new(vector_length + 2, vector_length + 2)
         );
-        assert_eq!(matrix.element_value(&5, &7).unwrap().unwrap(), 5);
+        assert_eq!(matrix.element_value(5, 7).unwrap().unwrap(), 5);
 
         let matrix = SparseMatrix::<isize>::from_diagonal_vector(&vector, &-2).unwrap();
         assert_eq!(
@@ -364,7 +364,7 @@ mod tests {
             Size::new(vector_length + 2, vector_length + 2)
         );
         println!("{}", matrix.clone());
-        assert_eq!(matrix.element_value(&7, &5).unwrap().unwrap(), 5);
+        assert_eq!(matrix.element_value(7, 5).unwrap().unwrap(), 5);
     }
 
     #[test]

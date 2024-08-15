@@ -30,13 +30,13 @@ use crate::graphblas_bindings::{
 pub trait GetSparseMatrixElementValue<T: ValueType> {
     fn element_value(
         &self,
-        row_index: &RowIndex,
-        column_index: &ColumnIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
     fn element_value_or_default(
         &self,
-        row_index: &RowIndex,
-        column_index: &ColumnIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<T, SparseLinearAlgebraError>;
 
     fn element_value_at_coordinate(
@@ -54,15 +54,15 @@ impl<T: ValueType + Default + GetSparseMatrixElementValueTyped<T>> GetSparseMatr
 {
     fn element_value(
         &self,
-        row_index: &RowIndex,
-        column_index: &ColumnIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError> {
         T::element_value(self, row_index, column_index)
     }
     fn element_value_or_default(
         &self,
-        row_index: &RowIndex,
-        column_index: &ColumnIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<T, SparseLinearAlgebraError> {
         T::element_value_or_default(self, row_index, column_index)
     }
@@ -85,13 +85,13 @@ impl<T: ValueType + Default + GetSparseMatrixElementValueTyped<T>> GetSparseMatr
 pub trait GetSparseMatrixElementValueTyped<T: ValueType + Default> {
     fn element_value(
         matrix: &SparseMatrix<T>,
-        row_index: &RowIndex,
-        column_index: &ColumnIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
     fn element_value_or_default(
         matrix: &SparseMatrix<T>,
-        row_index: &RowIndex,
-        column_index: &ColumnIndex,
+        row_index: RowIndex,
+        column_index: ColumnIndex,
     ) -> Result<T, SparseLinearAlgebraError>;
 
     fn element_value_at_coordinate(
@@ -109,8 +109,8 @@ macro_rules! implement_get_element_value {
         impl GetSparseMatrixElementValueTyped<$value_type> for $value_type {
             fn element_value(
                 matrix: &SparseMatrix<$value_type>,
-                row_index: &RowIndex,
-                column_index: &ColumnIndex,
+                row_index: RowIndex,
+                column_index: ColumnIndex,
             ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 let mut value = MaybeUninit::uninit();
                 let row_index_to_get = row_index.as_graphblas_index()?;
@@ -145,8 +145,8 @@ macro_rules! implement_get_element_value {
 
             fn element_value_or_default(
                 matrix: &SparseMatrix<$value_type>,
-                row_index: &RowIndex,
-                column_index: &ColumnIndex,
+                row_index: RowIndex,
+                column_index: ColumnIndex,
             ) -> Result<$value_type, SparseLinearAlgebraError> {
                 match <$value_type>::element_value(matrix, row_index, column_index)? {
                     Some(value) => Ok(value),
@@ -160,8 +160,8 @@ macro_rules! implement_get_element_value {
             ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 <$value_type>::element_value(
                     matrix,
-                    coordinate.row_index_ref(),
-                    coordinate.column_index_ref(),
+                    coordinate.row_index(),
+                    coordinate.column_index(),
                 )
             }
 
@@ -171,8 +171,8 @@ macro_rules! implement_get_element_value {
             ) -> Result<$value_type, SparseLinearAlgebraError> {
                 <$value_type>::element_value_or_default(
                     matrix,
-                    coordinate.row_index_ref(),
-                    coordinate.column_index_ref(),
+                    coordinate.row_index(),
+                    coordinate.column_index(),
                 )
             }
         }
