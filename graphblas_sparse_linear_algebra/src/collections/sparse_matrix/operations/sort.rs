@@ -422,20 +422,20 @@ mod tests {
             .sorted_columns_and_indices(&mut sorted, &mut indices, &larger_than_operator)
             .unwrap();
 
-        assert_eq!(sorted.element_value(&0, &1).unwrap(), Some(6));
-        assert_eq!(sorted.element_value(&1, &1).unwrap(), Some(2));
-        assert_eq!(sorted.element_value(&2, &1).unwrap(), Some(1));
-        assert_eq!(sorted.element_value(&3, &1).unwrap(), None);
+        assert_eq!(sorted.element_value(0, 1).unwrap(), Some(6));
+        assert_eq!(sorted.element_value(1, 1).unwrap(), Some(2));
+        assert_eq!(sorted.element_value(2, 1).unwrap(), Some(1));
+        assert_eq!(sorted.element_value(3, 1).unwrap(), None);
 
-        assert_eq!(sorted.element_value(&0, &4).unwrap(), Some(4));
-        assert_eq!(sorted.element_value(&1, &4).unwrap(), Some(3));
+        assert_eq!(sorted.element_value(0, 4).unwrap(), Some(4));
+        assert_eq!(sorted.element_value(1, 4).unwrap(), Some(3));
 
-        assert_eq!(indices.element_value(&0, &1).unwrap(), Some(4));
-        assert_eq!(indices.element_value(&1, &1).unwrap(), Some(1));
-        assert_eq!(indices.element_value(&2, &1).unwrap(), Some(2));
-        assert_eq!(indices.element_value(&3, &1).unwrap(), None);
+        assert_eq!(indices.element_value(0, 1).unwrap(), Some(4));
+        assert_eq!(indices.element_value(1, 1).unwrap(), Some(1));
+        assert_eq!(indices.element_value(2, 1).unwrap(), Some(2));
+        assert_eq!(indices.element_value(3, 1).unwrap(), None);
 
-        assert_eq!(indices.element_value(&0, &4).unwrap(), Some(6));
-        assert_eq!(indices.element_value(&1, &4).unwrap(), Some(2));
+        assert_eq!(indices.element_value(0, 4).unwrap(), Some(6));
+        assert_eq!(indices.element_value(1, 4).unwrap(), Some(2));
     }
 }

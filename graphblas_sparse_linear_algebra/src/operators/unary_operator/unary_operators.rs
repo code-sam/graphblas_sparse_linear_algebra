@@ -517,6 +517,6 @@ mod tests {
 
         println!("{}", product);
 
-        assert_eq!(product.element_value_or_default(&6).unwrap(), 1u8);
+        assert_eq!(product.element_value_or_default(6).unwrap(), 1u8);
     }
 }

@@ -26,21 +26,21 @@ use crate::{
 use core::mem::MaybeUninit;
 
 pub trait GetSparseVectorElementValue<T: ValueType + Default> {
-    fn element_value(&self, index: &ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn element_value_or_default(&self, index: &ElementIndex)
+    fn element_value(&self, index: ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError>;
+    fn element_value_or_default(&self, index: ElementIndex)
         -> Result<T, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVectorElementValue<T>
     for SparseVector<T>
 {
-    fn element_value(&self, index: &ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError> {
+    fn element_value(&self, index: ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError> {
         T::element_value(self, index)
     }
 
     fn element_value_or_default(
         &self,
-        index: &ElementIndex,
+        index: ElementIndex,
     ) -> Result<T, SparseLinearAlgebraError> {
         T::element_value_or_default(self, index)
     }
@@ -49,11 +49,11 @@ impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVect
 pub trait GetSparseVectorElementValueTyped<T: ValueType + Default> {
     fn element_value(
         vector: &SparseVector<T>,
-        index: &ElementIndex,
+        index: ElementIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
     fn element_value_or_default(
         vector: &SparseVector<T>,
-        index: &ElementIndex,
+        index: ElementIndex,
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
@@ -62,7 +62,7 @@ macro_rules! implement_get_element_value_for_built_in_type {
         impl GetSparseVectorElementValueTyped<$value_type> for $value_type {
             fn element_value(
                 vector: &SparseVector<$value_type>,
-                index: &ElementIndex,
+                index: ElementIndex,
             ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
                 let index_to_get = index.to_graphblas_index()?;
@@ -94,7 +94,7 @@ macro_rules! implement_get_element_value_for_built_in_type {
 
             fn element_value_or_default(
                 vector: &SparseVector<$value_type>,
-                index: &ElementIndex,
+                index: ElementIndex,
             ) -> Result<$value_type, SparseLinearAlgebraError> {
                 Ok(<$value_type>::element_value(vector, index)?.unwrap_or_default())
             }

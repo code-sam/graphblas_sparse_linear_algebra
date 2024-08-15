@@ -155,7 +155,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(sub_vector.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(sub_vector.element_value_or_default(&2).unwrap(), 2);
+        assert_eq!(sub_vector.element_value_or_default(2).unwrap(), 2);
     }
 
     #[test]
@@ -216,8 +216,8 @@ mod tests {
             .unwrap();
 
         assert_eq!(sub_vector.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(sub_vector.element_value_or_default(&1).unwrap(), 1);
-        assert_eq!(sub_vector.element_value_or_default(&2).unwrap(), 2);
-        assert_eq!(sub_vector.element_value_or_default(&3).unwrap(), 3);
+        assert_eq!(sub_vector.element_value_or_default(1).unwrap(), 1);
+        assert_eq!(sub_vector.element_value_or_default(2).unwrap(), 2);
+        assert_eq!(sub_vector.element_value_or_default(3).unwrap(), 3);
     }
 }

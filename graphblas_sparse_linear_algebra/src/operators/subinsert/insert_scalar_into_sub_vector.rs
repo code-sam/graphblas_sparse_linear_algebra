@@ -197,10 +197,10 @@ mod tests {
             .unwrap();
 
         assert_eq!(vector.number_of_stored_elements().unwrap(), 5);
-        assert_eq!(vector.element_value_or_default(&0).unwrap(), 8);
-        assert_eq!(vector.element_value_or_default(&2).unwrap(), 8);
-        assert_eq!(vector.element_value(&3).unwrap(), None);
-        assert_eq!(vector.element_value_or_default(&5).unwrap(), 11);
+        assert_eq!(vector.element_value_or_default(0).unwrap(), 8);
+        assert_eq!(vector.element_value_or_default(2).unwrap(), 8);
+        assert_eq!(vector.element_value(3).unwrap(), None);
+        assert_eq!(vector.element_value_or_default(5).unwrap(), 11);
 
         let mut vector = SparseVector::<u8>::from_element_list(
             context.clone(),
@@ -224,10 +224,10 @@ mod tests {
         // println!("{}", vector);
 
         assert_eq!(vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(vector.element_value(&0).unwrap(), None);
-        assert_eq!(vector.element_value_or_default(&2).unwrap(), 8);
-        assert_eq!(vector.element_value_or_default(&4).unwrap(), 10);
-        assert_eq!(vector.element_value_or_default(&5).unwrap(), 11);
-        assert_eq!(vector.element_value_or_default(&1).unwrap(), 1);
+        assert_eq!(vector.element_value(0).unwrap(), None);
+        assert_eq!(vector.element_value_or_default(2).unwrap(), 8);
+        assert_eq!(vector.element_value_or_default(4).unwrap(), 10);
+        assert_eq!(vector.element_value_or_default(5).unwrap(), 11);
+        assert_eq!(vector.element_value_or_default(1).unwrap(), 1);
     }
 }

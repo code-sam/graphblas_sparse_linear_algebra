@@ -5,7 +5,7 @@ use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
 use crate::operators::options::{
-    GetGraphblasDescriptor, GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
+    GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
 };
 use crate::operators::unary_operator::UnaryOperator;
 use crate::value_type::ValueType;
@@ -167,8 +167,8 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_matrix.element_value_or_default(&2, &1).unwrap(), 1);
-        assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
+        assert_eq!(product_matrix.element_value_or_default(2, 1).unwrap(), 1);
+        assert_eq!(product_matrix.element_value(9, 1).unwrap(), None);
 
         let operator = UnaryOperatorApplier::new();
         operator
@@ -186,8 +186,8 @@ mod tests {
         println!("{}", product_matrix);
 
         assert_eq!(product_matrix.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_matrix.element_value_or_default(&2, &1).unwrap(), 2);
-        assert_eq!(product_matrix.element_value(&9, &1).unwrap(), None);
+        assert_eq!(product_matrix.element_value_or_default(2, 1).unwrap(), 2);
+        assert_eq!(product_matrix.element_value(9, 1).unwrap(), None);
     }
 
     #[test]
@@ -228,8 +228,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 1);
-        assert_eq!(product_vector.element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(2).unwrap(), 1);
+        assert_eq!(product_vector.element_value(9).unwrap(), None);
 
         let operator = UnaryOperatorApplier::new();
         operator
@@ -247,8 +247,8 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 2);
-        assert_eq!(product_vector.element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(2).unwrap(), 2);
+        assert_eq!(product_vector.element_value(9).unwrap(), None);
     }
 
     #[test]
