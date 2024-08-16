@@ -751,10 +751,7 @@ mod tests {
             .unwrap();
 
         println!("{}", product_vector);
-        assert_eq!(
-            product_vector.element_value_or_default(1).unwrap(),
-            u8::MAX
-        );
+        assert_eq!(product_vector.element_value_or_default(1).unwrap(), u8::MAX);
         assert_eq!(product_vector.element_value(2).unwrap(), Some(0));
 
         let operator = BinaryOperatorApplier::new();

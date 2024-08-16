@@ -27,8 +27,7 @@ use core::mem::MaybeUninit;
 
 pub trait GetSparseVectorElementValue<T: ValueType + Default> {
     fn element_value(&self, index: ElementIndex) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn element_value_or_default(&self, index: ElementIndex)
-        -> Result<T, SparseLinearAlgebraError>;
+    fn element_value_or_default(&self, index: ElementIndex) -> Result<T, SparseLinearAlgebraError>;
 }
 
 impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVectorElementValue<T>
@@ -38,10 +37,7 @@ impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVect
         T::element_value(self, index)
     }
 
-    fn element_value_or_default(
-        &self,
-        index: ElementIndex,
-    ) -> Result<T, SparseLinearAlgebraError> {
+    fn element_value_or_default(&self, index: ElementIndex) -> Result<T, SparseLinearAlgebraError> {
         T::element_value_or_default(self, index)
     }
 }
