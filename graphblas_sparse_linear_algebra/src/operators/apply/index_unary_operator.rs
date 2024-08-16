@@ -203,10 +203,7 @@ mod tests {
                 .unwrap_or_default(),
             1.0
         );
-        assert_eq!(
-            product_matrix.element_value_or_default(5, 2).unwrap(),
-            1.0
-        );
+        assert_eq!(product_matrix.element_value_or_default(5, 2).unwrap(), 1.0);
     }
 
     // #[test]

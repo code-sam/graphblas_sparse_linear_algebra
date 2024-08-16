@@ -535,10 +535,7 @@ mod tests {
         assert_eq!(clone_of_sparse_vector.element_value(1).unwrap(), Some(1.0));
 
         assert_eq!(sparse_vector.element_value(2).unwrap(), Some(2.0));
-        assert_eq!(
-            clone_of_sparse_vector.element_value(2).unwrap(),
-            Some(20.0)
-        );
+        assert_eq!(clone_of_sparse_vector.element_value(2).unwrap(), Some(20.0));
     }
 
     #[test]

@@ -4,9 +4,7 @@ use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
 use crate::operators::binary_operator::AccumulatorBinaryOperator;
 use crate::operators::mask::{MatrixMask, VectorMask};
-use crate::operators::options::{
-    GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument,
-};
+use crate::operators::options::{GetOperatorOptions, GetOptionsForOperatorWithMatrixArgument};
 use crate::operators::unary_operator::UnaryOperator;
 use crate::value_type::ValueType;
 

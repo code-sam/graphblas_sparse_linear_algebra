@@ -34,6 +34,7 @@ pub trait GetSparseVectorElementValuesTyped<T: ValueType> {
     fn element_values(vector: &SparseVector<T>) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
 
+// TODO: consider using an iterator - perhaps benchmark performance before switching
 macro_rules! implement_get_element_values {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetSparseVectorElementValuesTyped<$value_type> for $value_type {
