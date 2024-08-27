@@ -9,7 +9,7 @@ use suitesparse_graphblas_sys::{GrB_Type, GxB_Vector_build_Scalar, GxB_Vector_di
 use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
+use crate::collections::sparse_scalar::{GetGraphblasSparseScalar, SparseScalar};
 use crate::collections::sparse_vector::operations::GetSparseVectorElementList;
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;
 use crate::collections::sparse_vector::VectorElementList;

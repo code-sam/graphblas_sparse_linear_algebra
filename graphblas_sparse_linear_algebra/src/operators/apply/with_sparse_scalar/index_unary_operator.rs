@@ -1,5 +1,5 @@
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
+use crate::collections::sparse_scalar::GetGraphblasSparseScalar;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
@@ -20,7 +20,7 @@ where
         &self,
         vector: &impl GetGraphblasSparseVector,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &impl GraphblasSparseScalarTrait,
+        argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
         mask: &impl VectorMask,
@@ -31,7 +31,7 @@ where
         &self,
         matrix: &impl GetGraphblasSparseMatrix,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &impl GraphblasSparseScalarTrait,
+        argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseMatrix,
         mask: &impl MatrixMask,
@@ -46,7 +46,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         &self,
         vector: &impl GetGraphblasSparseVector,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &impl GraphblasSparseScalarTrait,
+        argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
         mask: &impl VectorMask,
@@ -76,7 +76,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         &self,
         matrix: &impl GetGraphblasSparseMatrix,
         operator: &impl IndexUnaryOperator<EvaluationDomain>,
-        argument: &impl GraphblasSparseScalarTrait,
+        argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseMatrix,
         mask: &impl MatrixMask,

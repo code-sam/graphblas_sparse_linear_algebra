@@ -4,7 +4,7 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
-use crate::collections::sparse_scalar::GraphblasSparseScalarTrait;
+use crate::collections::sparse_scalar::GetGraphblasSparseScalar;
 use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::CallGraphBlasContext;
 use crate::error::SparseLinearAlgebraError;
@@ -25,7 +25,7 @@ where
         &self,
         left_argument: &impl GetGraphblasSparseVector,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        right_argument: &impl GraphblasSparseScalarTrait,
+        right_argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
         mask: &impl VectorMask,
@@ -34,7 +34,7 @@ where
 
     fn apply_with_vector_as_right_argument(
         &self,
-        left_argument: &impl GraphblasSparseScalarTrait,
+        left_argument: &impl GetGraphblasSparseScalar,
         operator: &impl BinaryOperator<EvaluationDomain>,
         right_argument: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
@@ -47,7 +47,7 @@ where
         &self,
         left_argument: &impl GetGraphblasSparseMatrix,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        right_argument: &impl GraphblasSparseScalarTrait,
+        right_argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseMatrix,
         mask: &impl MatrixMask,
@@ -56,7 +56,7 @@ where
 
     fn apply_with_matrix_as_right_argument(
         &self,
-        left_argument: &impl GraphblasSparseScalarTrait,
+        left_argument: &impl GetGraphblasSparseScalar,
         operator: &impl BinaryOperator<EvaluationDomain>,
         rigth_argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
@@ -73,7 +73,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         &self,
         first_argument: &impl GetGraphblasSparseVector,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &impl GraphblasSparseScalarTrait,
+        second_argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseVector,
         mask: &impl VectorMask,
@@ -101,7 +101,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 
     fn apply_with_vector_as_right_argument(
         &self,
-        first_argument: &impl GraphblasSparseScalarTrait,
+        first_argument: &impl GetGraphblasSparseScalar,
         operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
@@ -133,7 +133,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         &self,
         first_argument: &impl GetGraphblasSparseMatrix,
         operator: &impl BinaryOperator<EvaluationDomain>,
-        second_argument: &impl GraphblasSparseScalarTrait,
+        second_argument: &impl GetGraphblasSparseScalar,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
         product: &mut impl GetGraphblasSparseMatrix,
         mask: &impl MatrixMask,
@@ -161,7 +161,7 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
 
     fn apply_with_matrix_as_right_argument(
         &self,
-        first_argument: &impl GraphblasSparseScalarTrait,
+        first_argument: &impl GetGraphblasSparseScalar,
         operator: &impl BinaryOperator<EvaluationDomain>,
         second_argument: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<EvaluationDomain>,
