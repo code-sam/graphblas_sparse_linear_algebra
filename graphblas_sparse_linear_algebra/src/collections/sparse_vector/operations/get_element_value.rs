@@ -102,3 +102,27 @@ implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_imp
     implement_get_element_value_for_built_in_type,
     GrB_Vector_extractElement
 );
+
+#[cfg(test)]
+mod tests {
+    // use super::*;
+
+    // use crate::{collections::sparse_vector::{operations::SetSparseVectorElement, SparseVector}, context::Context, index::ElementCount};
+
+    // #[test]
+    // fn get_element_value_with_type_casting() {
+    // let context = Context::init_default().unwrap();
+
+    // let length: ElementCount = 10;
+    // let index = 1;
+    // let element_value = 1_000_000;
+
+    // let mut sparse_vector = SparseVector::<i64>::new(context, length).unwrap();
+
+    // sparse_vector.set_value(index, element_value).unwrap();
+
+    // let value_as_u8 = u8::element_value_or_default(&sparse_vector, index).unwrap();
+
+    // assert_eq!(value_as_u8, u8::MAX);
+    // }
+}
