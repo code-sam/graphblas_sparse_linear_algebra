@@ -141,9 +141,7 @@ macro_rules! implement_get_element_value {
     };
 }
 
-implement_macro_for_all_value_types!(
-    implement_get_element_value
-);
+implement_macro_for_all_value_types!(implement_get_element_value);
 
 /// The value type T and the value type of the matrix argument must match, otherwise the resulting element_value results from undefined behaviour.
 pub trait GetSparseMatrixElementValueUntyped<T: ValueType + Default> {
