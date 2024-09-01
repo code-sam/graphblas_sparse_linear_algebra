@@ -9,6 +9,12 @@ suitesparse_graphblas_sys uses the SuiteSparse:GraphBLAS GraphBLAS implementatio
 
 By default, graphblas_sparse_linear_algebra makes a new build of SuiteSparse:GraphBLAS and links to it as a static dependency.
 
+To install the required packages listed below on Ubuntu 24.04:
+
+```
+sudo apt install git build-essential pkg-config libssl-dev cmake clang
+```
+
 ### Git
 suitesparse_graphblas_sys clones the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) repository upon build. The build system must have Git installed and an internet connection.
 
