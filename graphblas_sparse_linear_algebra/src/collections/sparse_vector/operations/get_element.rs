@@ -1,9 +1,6 @@
 use crate::collections::sparse_vector::operations::get_element_value::GetSparseVectorElementValue;
 use crate::{
-    collections::{
-        sparse_matrix::operations::GetSparseMatrixElementValueTyped,
-        sparse_vector::{SparseVector, VectorElement},
-    },
+    collections::sparse_vector::{SparseVector, VectorElement},
     error::SparseLinearAlgebraError,
     index::ElementIndex,
     value_type::ValueType,
@@ -29,7 +26,7 @@ impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVect
         &self,
         index: ElementIndex,
     ) -> Result<Option<VectorElement<T>>, SparseLinearAlgebraError> {
-        match self.element_value(&index)? {
+        match self.element_value(index)? {
             Some(value) => Ok(Some(VectorElement::new(index, value))),
             None => Ok(None),
         }
@@ -41,7 +38,7 @@ impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVect
     ) -> Result<VectorElement<T>, SparseLinearAlgebraError> {
         Ok(VectorElement::new(
             index,
-            self.element_value_or_default(&index)?,
+            self.element_value_or_default(index)?,
         ))
     }
 }

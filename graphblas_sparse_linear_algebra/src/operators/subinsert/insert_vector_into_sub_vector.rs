@@ -36,7 +36,7 @@ where
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
-        vector_to_insert: &impl GetGraphblasSparseVector,
+        vector_to_insert: impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
         mask_for_vector_to_insert_into: &impl VectorMask,
         options: &impl GetOperatorOptions,
@@ -51,7 +51,7 @@ impl<VectorToInsertInto: ValueType> InsertVectorIntoSubVector<VectorToInsertInto
         &self,
         vector_to_insert_into: &mut SparseVector<VectorToInsertInto>,
         indices_to_insert_into: &ElementIndexSelector,
-        vector_to_insert: &impl GetGraphblasSparseVector,
+        vector_to_insert: impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<VectorToInsertInto>,
         mask_for_vector_to_insert_into: &impl VectorMask,
         options: &impl GetOperatorOptions,
@@ -178,7 +178,7 @@ mod tests {
             .apply(
                 &mut vector,
                 &indices_to_insert,
-                &vector_to_insert,
+                vector_to_insert.clone(),
                 &Assignment::new(),
                 &SelectEntireVector::new(context.clone()),
                 &OperatorOptions::new_default(),
@@ -188,10 +188,10 @@ mod tests {
         println!("{}", vector);
 
         assert_eq!(vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(vector.element_value(&0).unwrap(), None);
-        assert_eq!(vector.element_value_or_default(&2).unwrap(), 3);
-        assert_eq!(vector.element_value_or_default(&4).unwrap(), 11);
-        assert_eq!(vector.element_value_or_default(&5).unwrap(), 12);
+        assert_eq!(vector.element_value(0).unwrap(), None);
+        assert_eq!(vector.element_value_or_default(2).unwrap(), 3);
+        assert_eq!(vector.element_value_or_default(4).unwrap(), 11);
+        assert_eq!(vector.element_value_or_default(5).unwrap(), 12);
 
         let mut vector = SparseVector::<u8>::from_element_list(
             context.clone(),
@@ -205,7 +205,7 @@ mod tests {
             .apply(
                 &mut vector,
                 &indices_to_insert,
-                &vector_to_insert,
+                vector_to_insert,
                 &Assignment::new(),
                 &mask,
                 &OperatorOptions::new_default(),
@@ -215,10 +215,10 @@ mod tests {
         println!("{}", vector);
 
         assert_eq!(vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(vector.element_value(&0).unwrap(), None);
-        assert_eq!(vector.element_value_or_default(&2).unwrap(), 3);
-        assert_eq!(vector.element_value_or_default(&4).unwrap(), 11);
-        assert_eq!(vector.element_value_or_default(&5).unwrap(), 12);
-        assert_eq!(vector.element_value_or_default(&1).unwrap(), 1);
+        assert_eq!(vector.element_value(0).unwrap(), None);
+        assert_eq!(vector.element_value_or_default(2).unwrap(), 3);
+        assert_eq!(vector.element_value_or_default(4).unwrap(), 11);
+        assert_eq!(vector.element_value_or_default(5).unwrap(), 12);
+        assert_eq!(vector.element_value_or_default(1).unwrap(), 1);
     }
 }

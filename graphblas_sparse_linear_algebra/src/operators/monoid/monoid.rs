@@ -284,12 +284,12 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(product.element_value_or_default(&0).unwrap(), false); // operator does not apply on empty
-        assert_eq!(product.element_value_or_default(&1).unwrap(), false); // false unequal to empty
-        assert_eq!(product.element_value_or_default(&2).unwrap(), false); // operator does not apply on empty
-        assert_eq!(product.element_value_or_default(&3).unwrap(), true);
-        assert_eq!(product.element_value_or_default(&4).unwrap(), true); // true and empty => true
-        assert_eq!(product.element_value_or_default(&5).unwrap(), true); // true and false => true
-        assert_eq!(product.element_value_or_default(&6).unwrap(), false); // false and true => false
+        assert_eq!(product.element_value_or_default(0).unwrap(), false); // operator does not apply on empty
+        assert_eq!(product.element_value_or_default(1).unwrap(), false); // false unequal to empty
+        assert_eq!(product.element_value_or_default(2).unwrap(), false); // operator does not apply on empty
+        assert_eq!(product.element_value_or_default(3).unwrap(), true);
+        assert_eq!(product.element_value_or_default(4).unwrap(), true); // true and empty => true
+        assert_eq!(product.element_value_or_default(5).unwrap(), true); // true and false => true
+        assert_eq!(product.element_value_or_default(6).unwrap(), false); // false and true => false
     }
 }

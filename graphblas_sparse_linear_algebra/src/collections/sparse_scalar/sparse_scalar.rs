@@ -2,24 +2,17 @@ use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use suitesparse_graphblas_sys::GrB_Info;
+use suitesparse_graphblas_sys::{GrB_Info, GrB_Type};
 
 use crate::collections::collection::Collection;
+use crate::collections::sparse_scalar::operations::SetScalarValue;
 use crate::context::{CallGraphBlasContext, Context, GetContext};
 use crate::error::{
     GraphblasErrorType, LogicErrorType, SparseLinearAlgebraError, SparseLinearAlgebraErrorType,
 };
 use crate::graphblas_bindings::{
-    GrB_Index, GrB_Scalar, GrB_Scalar_clear, GrB_Scalar_dup, GrB_Scalar_extractElement_BOOL,
-    GrB_Scalar_extractElement_FP32, GrB_Scalar_extractElement_FP64,
-    GrB_Scalar_extractElement_INT16, GrB_Scalar_extractElement_INT32,
-    GrB_Scalar_extractElement_INT64, GrB_Scalar_extractElement_INT8,
-    GrB_Scalar_extractElement_UINT16, GrB_Scalar_extractElement_UINT32,
-    GrB_Scalar_extractElement_UINT64, GrB_Scalar_extractElement_UINT8, GrB_Scalar_free,
-    GrB_Scalar_new, GrB_Scalar_nvals, GrB_Scalar_setElement_BOOL, GrB_Scalar_setElement_FP32,
-    GrB_Scalar_setElement_FP64, GrB_Scalar_setElement_INT16, GrB_Scalar_setElement_INT32,
-    GrB_Scalar_setElement_INT64, GrB_Scalar_setElement_INT8, GrB_Scalar_setElement_UINT16,
-    GrB_Scalar_setElement_UINT32, GrB_Scalar_setElement_UINT64, GrB_Scalar_setElement_UINT8,
+    GrB_Index, GrB_Scalar, GrB_Scalar_clear, GrB_Scalar_dup, GrB_Scalar_free, GrB_Scalar_new,
+    GrB_Scalar_nvals,
 };
 use crate::index::{ElementCount, ElementIndex, IndexConversion};
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
@@ -28,6 +21,8 @@ use crate::value_type::utilities_to_implement_traits_for_all_value_types::{
 };
 use crate::value_type::ConvertScalar;
 use crate::value_type::ValueType;
+
+use crate::collections::sparse_scalar::operations::GetScalarValue;
 
 #[derive(Debug)]
 pub struct SparseScalar<T: ValueType> {
@@ -43,20 +38,39 @@ pub struct SparseScalar<T: ValueType> {
 unsafe impl<T: ValueType> Send for SparseScalar<T> {}
 unsafe impl<T: ValueType> Sync for SparseScalar<T> {}
 
+pub unsafe fn new_graphblas_scalar(
+    context: &Arc<Context>,
+    graphblas_value_type: GrB_Type,
+) -> Result<GrB_Scalar, SparseLinearAlgebraError> {
+    let mut scalar: MaybeUninit<GrB_Scalar> = MaybeUninit::uninit();
+
+    context.call_without_detailed_error_information(|| unsafe {
+        GrB_Scalar_new(scalar.as_mut_ptr(), graphblas_value_type)
+    })?;
+
+    let scalar = unsafe { scalar.assume_init() };
+    return Ok(scalar);
+}
+
 impl<T: ValueType> SparseScalar<T> {
     pub fn new(context: Arc<Context>) -> Result<Self, SparseLinearAlgebraError> {
-        let mut scalar: MaybeUninit<GrB_Scalar> = MaybeUninit::uninit();
-
-        context.call_without_detailed_error_information(|| unsafe {
-            GrB_Scalar_new(scalar.as_mut_ptr(), <T>::to_graphblas_type())
-        })?;
-
-        let scalar = unsafe { scalar.assume_init() };
+        let scalar = unsafe { new_graphblas_scalar(&context, T::to_graphblas_type())? };
         return Ok(SparseScalar {
             context,
             scalar,
             value_type: PhantomData,
         });
+    }
+
+    pub unsafe fn from_graphblas_scalar(
+        context: Arc<Context>,
+        scalar: GrB_Scalar,
+    ) -> Result<SparseScalar<T>, SparseLinearAlgebraError> {
+        Ok(SparseScalar {
+            context: context.clone(),
+            scalar,
+            value_type: PhantomData,
+        })
     }
 
     // pub fn from_value(
@@ -169,13 +183,13 @@ impl<T: ValueType> Clone for SparseScalar<T> {
     }
 }
 
-pub trait GraphblasSparseScalarTrait: GetContext {
+pub trait GetGraphblasSparseScalar: GetContext {
     unsafe fn graphblas_scalar(&self) -> GrB_Scalar;
     unsafe fn graphblas_scalar_ref(&self) -> &GrB_Scalar;
     unsafe fn graphblas_scalar_mut_ref(&mut self) -> &mut GrB_Scalar;
 }
 
-impl<T: ValueType> GraphblasSparseScalarTrait for SparseScalar<T> {
+impl<T: ValueType> GetGraphblasSparseScalar for SparseScalar<T> {
     unsafe fn graphblas_scalar(&self) -> GrB_Scalar {
         self.scalar
     }
@@ -212,7 +226,7 @@ macro_rules! implement_dispay {
         impl std::fmt::Display for SparseScalar<$value_type> {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                 let value: Option<$value_type>;
-                match self.get_value() {
+                match self.value() {
                     Err(_error) => return Err(std::fmt::Error),
                     Ok(inner_value) => {
                         value = inner_value;
@@ -226,128 +240,6 @@ macro_rules! implement_dispay {
     };
 }
 implement_macro_for_all_value_types!(implement_dispay);
-
-pub trait SetScalarValue<T: ValueType> {
-    fn set_value(&mut self, value: T) -> Result<(), SparseLinearAlgebraError>;
-}
-
-// pub trait SetScalarValueGAT {
-//     type SparseScalar<T> where T: ValueType;
-
-//     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError>;
-// }
-
-// impl SetScalarValueGAT for  {
-
-// }
-
-// impl<T: ValueType> SetScalarValue<T> for SparseScalar<T> {
-//     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError> {
-//         let value = value.clone(); // TODO: review if clone can be removed, and if this improves performance
-//         convert_to_target_type!(value, $graphblas_implementation_type);
-//         self.context.call(
-//             || unsafe { GrB_Scalar_setElement(self.scalar, value) },
-//             &self.scalar,
-//         )?;
-//         Ok(())
-//     }
-// }
-
-trait GraphBlasSetElementFunction<T: ValueType, U: ValueType> {
-    fn graphblas_set_element_function() -> unsafe extern "C" fn(GrB_Scalar, U) -> GrB_Info;
-}
-
-macro_rules! implement_graphblas_set_element_function {
-    ($value_type: ty, $graphblas_implementation_type: ty, $graphblas_function: ident) => {
-        impl GraphBlasSetElementFunction<$value_type, $graphblas_implementation_type>
-            for $value_type
-        {
-            fn graphblas_set_element_function(
-            ) -> unsafe extern "C" fn(GrB_Scalar, $graphblas_implementation_type) -> GrB_Info {
-                return $graphblas_function;
-            }
-        }
-    };
-}
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_graphblas_set_element_function,
-    GrB_Scalar_setElement
-);
-
-// impl<T: ValueType + BuiltInValueType + ConvertScalar<T, U>, U: ValueType + BuiltInValueType> SetScalarValue<T> for SparseScalar<T> {
-//     fn set_value(&mut self, value: &T) -> Result<(), SparseLinearAlgebraError> {
-//         let value: U = value.to_type();
-//         self.context.call(
-//             || unsafe { <T>::graphblas_set_element_function()(self.scalar, value) },
-//             &self.scalar,
-//         )?;
-//         Ok(())
-//     }
-// }
-
-macro_rules! implement_set_value_for_built_in_type {
-    ($value_type:ty) => {
-        impl SetScalarValue<$value_type> for SparseScalar<$value_type> {
-            fn set_value(&mut self, value: $value_type) -> Result<(), SparseLinearAlgebraError> {
-                let value = value.to_type()?;
-                self.context.call(
-                    || unsafe {
-                        <$value_type>::graphblas_set_element_function()(self.scalar, value)
-                    },
-                    &self.scalar,
-                )?;
-                Ok(())
-            }
-        }
-    };
-}
-
-implement_macro_for_all_value_types!(implement_set_value_for_built_in_type);
-
-pub trait GetScalarValue<T: ValueType + Default> {
-    fn get_value(&self) -> Result<Option<T>, SparseLinearAlgebraError>;
-    fn get_value_or_default(&self) -> Result<T, SparseLinearAlgebraError>;
-}
-
-macro_rules! implement_get_value_for_built_in_type {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_value_function:ident) => {
-        impl GetScalarValue<$value_type> for SparseScalar<$value_type> {
-            fn get_value(&self) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
-                let mut value: MaybeUninit<$graphblas_implementation_type> = MaybeUninit::uninit();
-
-                let result = self.context.call(
-                    || unsafe { $get_value_function(value.as_mut_ptr(), self.scalar) },
-                    &self.scalar,
-                );
-
-                match result {
-                    Ok(_) => {
-                        let value = unsafe { value.assume_init() };
-                        Ok(Some(<$graphblas_implementation_type>::to_type(value)?))
-                    }
-                    Err(error) => match error.error_type() {
-                        SparseLinearAlgebraErrorType::LogicErrorType(
-                            LogicErrorType::GraphBlas(GraphblasErrorType::NoValue),
-                        ) => Ok(None),
-                        _ => Err(error),
-                    },
-                }
-            }
-
-            fn get_value_or_default(&self) -> Result<$value_type, SparseLinearAlgebraError> {
-                match self.get_value()? {
-                    Some(value) => Ok(value),
-                    None => Ok(<$value_type>::default()),
-                }
-            }
-        }
-    };
-}
-
-implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_value_for_built_in_type,
-    GrB_Scalar_extractElement
-);
 
 #[cfg(test)]
 mod tests {
@@ -403,7 +295,7 @@ mod tests {
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
 
-        assert_eq!(2, sparse_scalar.get_value_or_default().unwrap());
+        assert_eq!(2, sparse_scalar.value_or_default().unwrap());
 
         sparse_scalar.clear().unwrap();
 
@@ -420,6 +312,6 @@ mod tests {
 
         assert_eq!(1, sparse_scalar.number_of_stored_elements().unwrap());
 
-        assert_eq!(2, sparse_scalar.get_value_or_default().unwrap());
+        assert_eq!(2, sparse_scalar.value_or_default().unwrap());
     }
 }

@@ -9,7 +9,7 @@ use suitesparse_graphblas_sys::{GrB_Type, GxB_Vector_build_Scalar, GxB_Vector_di
 use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::operations::GetSparseMatrixSize;
 use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
-use crate::collections::sparse_scalar::{GraphblasSparseScalarTrait, SparseScalar};
+use crate::collections::sparse_scalar::{GetGraphblasSparseScalar, SparseScalar};
 use crate::collections::sparse_vector::operations::GetSparseVectorElementList;
 use crate::collections::sparse_vector::operations::GetSparseVectorLength;
 use crate::collections::sparse_vector::VectorElementList;
@@ -470,7 +470,7 @@ mod tests {
         );
         for index in indices {
             assert_eq!(
-                sparse_vector.element_value_or_default(&index).unwrap(),
+                sparse_vector.element_value_or_default(index).unwrap(),
                 value
             );
         }
@@ -501,19 +501,19 @@ mod tests {
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &0).unwrap();
         assert_eq!(diagonal.length().unwrap(), 10);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(diagonal.element_value_or_default(&0).unwrap(), 0);
-        assert_eq!(diagonal.element_value_or_default(&2).unwrap(), 4);
+        assert_eq!(diagonal.element_value_or_default(0).unwrap(), 0);
+        assert_eq!(diagonal.element_value_or_default(2).unwrap(), 4);
 
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &2).unwrap();
         assert_eq!(diagonal.length().unwrap(), 10);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 2);
-        assert_eq!(diagonal.element_value_or_default(&0).unwrap(), 2);
-        assert_eq!(diagonal.element_value_or_default(&2).unwrap(), 6);
+        assert_eq!(diagonal.element_value_or_default(0).unwrap(), 2);
+        assert_eq!(diagonal.element_value_or_default(2).unwrap(), 6);
 
         let diagonal = SparseVector::from_sparse_matrix_diagonal(&matrix, &-2).unwrap();
         assert_eq!(diagonal.length().unwrap(), 8);
         assert_eq!(diagonal.number_of_stored_elements().unwrap(), 1);
-        assert_eq!(diagonal.element_value_or_default(&1).unwrap(), 4);
+        assert_eq!(diagonal.element_value_or_default(1).unwrap(), 4);
     }
 
     #[test]
@@ -531,14 +531,11 @@ mod tests {
         sparse_vector.set_value(1, 10.0).unwrap();
         clone_of_sparse_vector.set_value(2, 20.0).unwrap();
 
-        assert_eq!(sparse_vector.element_value(&1).unwrap(), Some(10.0));
-        assert_eq!(clone_of_sparse_vector.element_value(&1).unwrap(), Some(1.0));
+        assert_eq!(sparse_vector.element_value(1).unwrap(), Some(10.0));
+        assert_eq!(clone_of_sparse_vector.element_value(1).unwrap(), Some(1.0));
 
-        assert_eq!(sparse_vector.element_value(&2).unwrap(), Some(2.0));
-        assert_eq!(
-            clone_of_sparse_vector.element_value(&2).unwrap(),
-            Some(20.0)
-        );
+        assert_eq!(sparse_vector.element_value(2).unwrap(), Some(2.0));
+        assert_eq!(clone_of_sparse_vector.element_value(2).unwrap(), Some(20.0));
     }
 
     #[test]

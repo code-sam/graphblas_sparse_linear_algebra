@@ -4,6 +4,7 @@ use suitesparse_graphblas_sys::{
     GxB_Vector_Iterator_next, GxB_Vector_Iterator_seek,
 };
 
+use crate::collections::new_graphblas_iterator;
 use crate::context::CallGraphBlasContext;
 use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
 use crate::index::ElementIndex;
@@ -16,8 +17,6 @@ use crate::{
     operators::options::OperatorOptions,
     value_type::ValueType,
 };
-
-use super::new_graphblas_iterator;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());

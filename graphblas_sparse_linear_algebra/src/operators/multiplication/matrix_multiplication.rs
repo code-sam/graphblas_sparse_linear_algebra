@@ -122,7 +122,7 @@ mod tests {
 
         assert_eq!(product.number_of_stored_elements().unwrap(), 0);
         assert_eq!(element_list.length(), 0);
-        assert_eq!(product.element_value(&1, &1).unwrap(), None); // NoValue
+        assert_eq!(product.element_value(1, 1).unwrap(), None); // NoValue
 
         let multiplier_element_list = MatrixElementList::<f32>::from_element_vector(vec![
             (0, 0, 1.0).into(),
@@ -165,10 +165,10 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(product.element_value_or_default(&0, &0).unwrap(), 23.);
-        assert_eq!(product.element_value_or_default(&1, &0).unwrap(), 34.);
-        assert_eq!(product.element_value_or_default(&0, &1).unwrap(), 31.);
-        assert_eq!(product.element_value_or_default(&1, &1).unwrap(), 46.);
+        assert_eq!(product.element_value_or_default(0, 0).unwrap(), 23.);
+        assert_eq!(product.element_value_or_default(1, 0).unwrap(), 34.);
+        assert_eq!(product.element_value_or_default(0, 1).unwrap(), 31.);
+        assert_eq!(product.element_value_or_default(1, 1).unwrap(), 46.);
 
         // TODO: this test is not generic over column/row storage format.
         // Equality checks should be done at a matrix level, since the ordering of the element list is not guaranteed.
@@ -197,10 +197,10 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(product.element_value_or_default(&0, &0).unwrap(), 23. * 2.);
-        assert_eq!(product.element_value_or_default(&1, &0).unwrap(), 34. * 2.);
-        assert_eq!(product.element_value_or_default(&0, &1).unwrap(), 31. * 2.);
-        assert_eq!(product.element_value_or_default(&1, &1).unwrap(), 46. * 2.);
+        assert_eq!(product.element_value_or_default(0, 0).unwrap(), 23. * 2.);
+        assert_eq!(product.element_value_or_default(1, 0).unwrap(), 34. * 2.);
+        assert_eq!(product.element_value_or_default(0, 1).unwrap(), 31. * 2.);
+        assert_eq!(product.element_value_or_default(1, 1).unwrap(), 46. * 2.);
 
         // test the use of a mask
         let mask_element_list = MatrixElementList::<u8>::from_element_vector(vec![
@@ -232,9 +232,9 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(product.element_value_or_default(&0, &0).unwrap(), 23.);
-        assert_eq!(product.element_value(&1, &0).unwrap(), None);
-        assert_eq!(product.element_value(&0, &1).unwrap(), None);
-        assert_eq!(product.element_value_or_default(&1, &1).unwrap(), 46.);
+        assert_eq!(product.element_value_or_default(0, 0).unwrap(), 23.);
+        assert_eq!(product.element_value(1, 0).unwrap(), None);
+        assert_eq!(product.element_value(0, 1).unwrap(), None);
+        assert_eq!(product.element_value_or_default(1, 1).unwrap(), 46.);
     }
 }

@@ -108,21 +108,9 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(
-            matrix_transpose.element_value_or_default(&0, &0).unwrap(),
-            1
-        );
-        assert_eq!(
-            matrix_transpose.element_value_or_default(&1, &0).unwrap(),
-            3
-        );
-        assert_eq!(
-            matrix_transpose.element_value_or_default(&0, &1).unwrap(),
-            2
-        );
-        assert_eq!(
-            matrix_transpose.element_value_or_default(&1, &1).unwrap(),
-            4
-        );
+        assert_eq!(matrix_transpose.element_value_or_default(0, 0).unwrap(), 1);
+        assert_eq!(matrix_transpose.element_value_or_default(1, 0).unwrap(), 3);
+        assert_eq!(matrix_transpose.element_value_or_default(0, 1).unwrap(), 2);
+        assert_eq!(matrix_transpose.element_value_or_default(1, 1).unwrap(), 4);
     }
 }

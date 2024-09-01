@@ -159,9 +159,9 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 4);
-        assert_eq!(product_vector.element_value_or_default(&1).unwrap(), 2);
-        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 2);
-        assert_eq!(product_vector.element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(1).unwrap(), 2);
+        assert_eq!(product_vector.element_value_or_default(2).unwrap(), 2);
+        assert_eq!(product_vector.element_value(9).unwrap(), None);
 
         let mask_element_list = VectorElementList::<u8>::from_element_vector(vec![
             (1, 1).into(),
@@ -196,9 +196,9 @@ mod tests {
         println!("{}", product_vector);
 
         assert_eq!(product_vector.number_of_stored_elements().unwrap(), 3);
-        assert_eq!(product_vector.element_value_or_default(&1).unwrap(), 2);
-        assert_eq!(product_vector.element_value_or_default(&2).unwrap(), 2);
-        assert_eq!(product_vector.element_value(&5).unwrap(), None);
-        assert_eq!(product_vector.element_value(&9).unwrap(), None);
+        assert_eq!(product_vector.element_value_or_default(1).unwrap(), 2);
+        assert_eq!(product_vector.element_value_or_default(2).unwrap(), 2);
+        assert_eq!(product_vector.element_value(5).unwrap(), None);
+        assert_eq!(product_vector.element_value(9).unwrap(), None);
     }
 }

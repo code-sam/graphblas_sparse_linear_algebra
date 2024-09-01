@@ -41,7 +41,7 @@ where
         matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &impl GetGraphblasSparseVector,
+        vector_to_insert: impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
@@ -57,7 +57,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
         matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         row_indices_to_insert_into: &ElementIndexSelector,
         row_to_insert_into: &ElementIndex,
-        vector_to_insert: &impl GetGraphblasSparseVector,
+        vector_to_insert: impl GetGraphblasSparseVector,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_row_to_insert_into: &impl VectorMask,
         options: &impl GetOptionsForOperatorWithMatrixArgument,
@@ -194,7 +194,7 @@ mod tests {
                 &mut matrix,
                 &indices_to_insert,
                 &row_to_insert_into,
-                &vector_to_insert,
+                vector_to_insert.clone(),
                 &Assignment::<u8>::new(),
                 &SelectEntireVector::new(context.clone()),
                 &OptionsForOperatorWithMatrixArgument::new_default(),
@@ -204,11 +204,11 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 6);
-        assert_eq!(matrix.element_value(&0, &0).unwrap(), None);
-        assert_eq!(matrix.element_value_or_default(&1, &2).unwrap(), 1);
-        assert_eq!(matrix.element_value_or_default(&5, &2).unwrap(), 12);
-        assert_eq!(matrix.element_value(&2, &0).unwrap(), None);
-        assert_eq!(matrix.element_value_or_default(&2, &4).unwrap(), 11);
+        assert_eq!(matrix.element_value(0, 0).unwrap(), None);
+        assert_eq!(matrix.element_value_or_default(1, 2).unwrap(), 1);
+        assert_eq!(matrix.element_value_or_default(5, 2).unwrap(), 12);
+        assert_eq!(matrix.element_value(2, 0).unwrap(), None);
+        assert_eq!(matrix.element_value_or_default(2, 4).unwrap(), 11);
 
         let mut matrix = SparseMatrix::<u8>::from_element_list(
             context.clone(),
@@ -223,7 +223,7 @@ mod tests {
                 &mut matrix,
                 &indices_to_insert,
                 &row_to_insert_into,
-                &vector_to_insert,
+                vector_to_insert,
                 &Assignment::<u8>::new(),
                 &mask,
                 &OptionsForOperatorWithMatrixArgument::new_default(),
@@ -233,11 +233,11 @@ mod tests {
         println!("{}", matrix);
 
         assert_eq!(matrix.number_of_stored_elements().unwrap(), 5);
-        assert_eq!(matrix.element_value(&0, &0).unwrap(), None);
-        assert_eq!(matrix.element_value_or_default(&2, &2).unwrap(), 3);
-        assert_eq!(matrix.element_value_or_default(&1, &2).unwrap(), 1);
-        assert_eq!(matrix.element_value_or_default(&5, &2).unwrap(), 12);
-        assert_eq!(matrix.element_value_or_default(&2, &4).unwrap(), 11);
-        assert_eq!(matrix.element_value(&2, &1).unwrap(), None);
+        assert_eq!(matrix.element_value(0, 0).unwrap(), None);
+        assert_eq!(matrix.element_value_or_default(2, 2).unwrap(), 3);
+        assert_eq!(matrix.element_value_or_default(1, 2).unwrap(), 1);
+        assert_eq!(matrix.element_value_or_default(5, 2).unwrap(), 12);
+        assert_eq!(matrix.element_value_or_default(2, 4).unwrap(), 11);
+        assert_eq!(matrix.element_value(2, 1).unwrap(), None);
     }
 }
