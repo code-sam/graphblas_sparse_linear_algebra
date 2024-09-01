@@ -8,11 +8,7 @@ Workspace for a Rust wrapper for SuiteSparse:GraphBLAS. The workspace contains t
 ## Dependencies
 graphblas_sparse_linear_algebra uses the [SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS) GraphBLAS implementation developed by Timothy A. Davis.
 
-To build and test on Ubuntu 24.04, [install Rust](https://www.rust-lang.org/tools/install) and ensure the dependencies are installed:
-
-```
-sudo apt install build-essential pkg-config libssl-dev cmake clang
-```
+See the [suitesparse_graphblas_sys requirements](suitesparse_graphblas_sys/README.md#requirements) for operating system packages to install before compiling this project.
 
 ## Contributing
 Awesome, contributions are welcome. Graphblas_sparse_linear_algebra and your contribution may be relicensed and integrated into commercial software in the future. Therefore, you will be asked to agree to the [Contributor License Agreement](https://github.com/code-sam/graphblas_sparse_linear_algebra/blob/main/Contributor_License_Agreement.md) when you make a pull request.
