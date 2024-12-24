@@ -190,6 +190,14 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
         self.column_index.as_slice()
     }
 
+    pub fn coordinates(&self) -> Vec<Coordinate> {
+        self.row_index
+            .iter()
+            .zip(self.column_index.iter())
+            .map(|(&row_index, &column_index)| Coordinate::new(row_index, column_index))
+            .collect()
+    }
+
     pub fn values_ref(&self) -> &[T] {
         self.value.as_slice()
     }
@@ -197,6 +205,14 @@ impl<T: ValueType + Clone + Copy> MatrixElementList<T> {
     // pub fn values(&self) -> &Vec<T> {
     //     &self.value
     // }
+
+    pub fn matrix_elements(&self) -> Vec<MatrixElement<T>> {
+        self.coordinates()
+            .iter()
+            .zip(self.values_ref())
+            .map(|(&coordinate, &value)| MatrixElement::new(coordinate, value))
+            .collect()
+    }
 
     pub fn length(&self) -> ElementCount {
         self.value.len()
