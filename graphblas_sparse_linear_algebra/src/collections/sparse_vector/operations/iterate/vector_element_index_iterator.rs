@@ -5,18 +5,16 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::new_graphblas_iterator;
+use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
 use crate::context::CallGraphBlasContext;
+use crate::context::GetContext;
+use crate::error::SparseLinearAlgebraError;
 use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
 use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::{
-    collections::sparse_vector::{GetGraphblasSparseVector, SparseVector},
-    context::GetContext,
-    error::SparseLinearAlgebraError,
-    operators::options::OperatorOptions,
-    value_type::ValueType,
-};
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());

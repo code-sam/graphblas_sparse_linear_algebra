@@ -36,3 +36,39 @@ pub fn drop_sparse_vector_element(
     )?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        collections::{
+            sparse_vector::{
+                operations::{DeleteSparseVectorElement, SetSparseVectorElement},
+                SparseVector, VectorElement,
+            },
+            Collection,
+        },
+        context::Context,
+        index::ElementCount,
+    };
+
+    #[test]
+    fn remove_same_element_from_vector_twice() {
+        let context = Context::init_default().unwrap();
+
+        let length: ElementCount = 10;
+
+        let mut sparse_vector = SparseVector::<i64>::new(context, length).unwrap();
+
+        sparse_vector
+            .set_element(VectorElement::from_pair(2, 3))
+            .unwrap();
+        sparse_vector
+            .set_element(VectorElement::from_pair(4, 4))
+            .unwrap();
+
+        sparse_vector.drop_element(2).unwrap();
+        sparse_vector.drop_element(2).unwrap();
+
+        assert_eq!(sparse_vector.number_of_stored_elements().unwrap(), 1)
+    }
+}
