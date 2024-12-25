@@ -22,7 +22,7 @@ static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
 
 pub struct MatrixElementCoordinateIterator<'a> {
     graphblas_context: Arc<Context>,
-    matrix: &'a GrB_Matrix,
+    graphblas_matrix: &'a GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
     next_element: fn(&Arc<Context>, &GrB_Matrix, GxB_Iterator) -> Option<Coordinate>,
 }
@@ -33,7 +33,7 @@ impl<'a> MatrixElementCoordinateIterator<'a> {
 
         Ok(Self {
             graphblas_context: matrix.context(),
-            matrix: unsafe { matrix.graphblas_matrix_ref() },
+            graphblas_matrix: unsafe { matrix.graphblas_matrix_ref() },
             graphblas_iterator,
             next_element: initial_matrix_element_coordinate,
         })
@@ -41,11 +41,11 @@ impl<'a> MatrixElementCoordinateIterator<'a> {
 }
 
 fn initial_matrix_element_coordinate(
-    context: &Arc<Context>,
+    graphblas_context: &Arc<Context>,
     matrix: &GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
 ) -> Option<Coordinate> {
-    match context.call(
+    match graphblas_context.call(
         || unsafe {
             GxB_Matrix_Iterator_attach(
                 graphblas_iterator,
@@ -59,7 +59,7 @@ fn initial_matrix_element_coordinate(
         Err(error) => return match_iterator_error(error),
     }
 
-    match context.call(
+    match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_seek(graphblas_iterator, 0) },
         matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
@@ -68,7 +68,7 @@ fn initial_matrix_element_coordinate(
         Err(error) => return match_iterator_error(error),
     }
 
-    let next_index = match context.call(
+    let next_index = match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_seek(graphblas_iterator, 0) },
         matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
@@ -92,7 +92,7 @@ impl<'a> Iterator for MatrixElementCoordinateIterator<'a> {
 
     fn next(&mut self) -> Option<Coordinate> {
         let next_matrix_element_coordinate =
-            (self.next_element)(&self.graphblas_context, self.matrix, self.graphblas_iterator);
+            (self.next_element)(&self.graphblas_context, self.graphblas_matrix, self.graphblas_iterator);
 
         self.next_element = next_element_coordinate;
 
@@ -102,12 +102,12 @@ impl<'a> Iterator for MatrixElementCoordinateIterator<'a> {
 
 fn next_element_coordinate(
     context: &Arc<Context>,
-    matrix: &GrB_Matrix,
+    graphblas_matrix: &GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
 ) -> Option<Coordinate> {
     match context.call(
         || unsafe { GxB_Matrix_Iterator_next(graphblas_iterator) },
-        matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
+        graphblas_matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => matrix_element_coordinate_at_iterator_position(graphblas_iterator),
         Err(error) => match_iterator_error(error),
