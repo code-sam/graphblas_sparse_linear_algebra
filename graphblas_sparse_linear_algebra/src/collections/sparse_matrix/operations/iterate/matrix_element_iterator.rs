@@ -2,14 +2,15 @@ use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
-    GrB_Matrix, GxB_Iterator, GxB_Iterator_free, GxB_Matrix_Iterator_attach, GxB_Matrix_Iterator_next, GxB_Matrix_Iterator_seek
+    GrB_Matrix, GxB_Iterator, GxB_Iterator_free, GxB_Matrix_Iterator_attach,
+    GxB_Matrix_Iterator_next, GxB_Matrix_Iterator_seek,
 };
 
-use crate::collections::sparse_matrix::MatrixElement;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
+use crate::collections::sparse_matrix::MatrixElement;
 use crate::collections::{new_graphblas_iterator, GetElementValueAtIteratorPosition};
-use crate::context::{CallGraphBlasContext, Context};
 use crate::context::GetContext;
+use crate::context::{CallGraphBlasContext, Context};
 use crate::error::SparseLinearAlgebraError;
 use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
 use crate::operators::options::GetGraphblasDescriptor;
@@ -29,7 +30,9 @@ pub struct MatrixElementIterator<'a, T: ValueType + GetElementValueAtIteratorPos
 }
 
 impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> MatrixElementIterator<'a, T> {
-    pub fn new(graphblas_matrix: &'a (impl GetGraphblasSparseMatrix + GetContext)) -> Result<Self, SparseLinearAlgebraError> {
+    pub fn new(
+        graphblas_matrix: &'a (impl GetGraphblasSparseMatrix + GetContext),
+    ) -> Result<Self, SparseLinearAlgebraError> {
         let graphblas_iterator = unsafe { new_graphblas_iterator(graphblas_matrix.context_ref()) }?;
 
         Ok(Self {
@@ -84,9 +87,11 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Drop
     for MatrixElementIterator<'a, T>
 {
     fn drop(&mut self) {
-        let _ = self.graphblas_context.call_without_detailed_error_information(|| unsafe {
-            GxB_Iterator_free(&mut self.graphblas_iterator)
-        });
+        let _ = self
+            .graphblas_context
+            .call_without_detailed_error_information(|| unsafe {
+                GxB_Iterator_free(&mut self.graphblas_iterator)
+            });
     }
 }
 
@@ -96,7 +101,11 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Iterator
     type Item = MatrixElement<T>;
 
     fn next(&mut self) -> Option<MatrixElement<T>> {
-        let next_matrix_element = (self.next_element)(&self.graphblas_context, self.graphblas_matrix, self.graphblas_iterator);
+        let next_matrix_element = (self.next_element)(
+            &self.graphblas_context,
+            self.graphblas_matrix,
+            self.graphblas_iterator,
+        );
 
         self.next_element = next_element;
 
