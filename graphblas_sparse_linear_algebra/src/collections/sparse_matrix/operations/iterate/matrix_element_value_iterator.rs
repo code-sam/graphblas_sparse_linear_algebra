@@ -1,36 +1,40 @@
+use std::sync::Arc;
+
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
-    GxB_Iterator, GxB_Iterator_free, GxB_Matrix_Iterator_attach, GxB_Matrix_Iterator_next,
-    GxB_Matrix_Iterator_seek,
+    GrB_Matrix, GxB_Iterator, GxB_Iterator_free, GxB_Matrix_Iterator_attach,
+    GxB_Matrix_Iterator_next, GxB_Matrix_Iterator_seek,
 };
 
+use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::{new_graphblas_iterator, GetElementValueAtIteratorPosition};
-use crate::context::CallGraphBlasContext;
+use crate::context::GetContext;
+use crate::context::{CallGraphBlasContext, Context};
+use crate::error::SparseLinearAlgebraError;
 use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
 use crate::operators::options::GetGraphblasDescriptor;
-use crate::{
-    collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
-    context::GetContext,
-    error::SparseLinearAlgebraError,
-    operators::options::OperatorOptions,
-    value_type::ValueType,
-};
+use crate::operators::options::OperatorOptions;
+use crate::value_type::ValueType;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
 pub struct MatrixElementValueIterator<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> {
-    matrix: &'a SparseMatrix<T>,
+    graphblas_context: Arc<Context>,
+    graphblas_matrix: &'a GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
-    next_element: fn(&SparseMatrix<T>, GxB_Iterator) -> Option<T>,
+    next_element: fn(&Arc<Context>, &GrB_Matrix, GxB_Iterator) -> Option<T>,
 }
 
 impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> MatrixElementValueIterator<'a, T> {
-    pub fn new(matrix: &'a SparseMatrix<T>) -> Result<Self, SparseLinearAlgebraError> {
-        let graphblas_iterator = unsafe { new_graphblas_iterator(matrix.context_ref()) }?;
+    pub fn new(
+        graphblas_matrix: &'a (impl GetGraphblasSparseMatrix + GetContext),
+    ) -> Result<Self, SparseLinearAlgebraError> {
+        let graphblas_iterator = unsafe { new_graphblas_iterator(graphblas_matrix.context_ref()) }?;
 
         Ok(Self {
-            matrix,
+            graphblas_context: graphblas_matrix.context(),
+            graphblas_matrix: unsafe { graphblas_matrix.graphblas_matrix_ref() },
             graphblas_iterator,
             next_element: initial_matrix_element_value,
         })
@@ -38,35 +42,36 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> MatrixElementValue
 }
 
 fn initial_matrix_element_value<T: ValueType + GetElementValueAtIteratorPosition<T>>(
-    matrix: &SparseMatrix<T>,
+    graphblas_context: &Arc<Context>,
+    graphblas_matrix: &GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
 ) -> Option<T> {
-    match matrix.context_ref().call(
+    match graphblas_context.call(
         || unsafe {
             GxB_Matrix_Iterator_attach(
                 graphblas_iterator,
-                matrix.graphblas_matrix(),
+                graphblas_matrix.to_owned(),
                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
             )
         },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        graphblas_matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => {}
         Err(error) => return match_iterator_error(error),
     }
 
-    match matrix.context_ref().call(
+    match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_seek(graphblas_iterator, 0) },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        graphblas_matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => {}
         // TODO: attaching may actually fail, this will cause a panic, which is not desired
         Err(error) => return match_iterator_error(error),
     }
 
-    let next_value = match matrix.context_ref().call(
+    let next_value = match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_seek(graphblas_iterator, 0) },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        graphblas_matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => matrix_element_value_at_iterator_position(graphblas_iterator),
         Err(error) => match_iterator_error(error),
@@ -79,10 +84,11 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Drop
     for MatrixElementValueIterator<'a, T>
 {
     fn drop(&mut self) {
-        let context = self.matrix.context_ref();
-        let _ = context.call_without_detailed_error_information(|| unsafe {
-            GxB_Iterator_free(&mut self.graphblas_iterator)
-        });
+        let _ = self
+            .graphblas_context
+            .call_without_detailed_error_information(|| unsafe {
+                GxB_Iterator_free(&mut self.graphblas_iterator)
+            });
     }
 }
 
@@ -92,7 +98,11 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Iterator
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        let next_matrix_element_value = (self.next_element)(self.matrix, self.graphblas_iterator);
+        let next_matrix_element_value = (self.next_element)(
+            &self.graphblas_context,
+            self.graphblas_matrix,
+            self.graphblas_iterator,
+        );
 
         self.next_element = next_element_value;
 
@@ -101,12 +111,13 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Iterator
 }
 
 fn next_element_value<T: ValueType + GetElementValueAtIteratorPosition<T>>(
-    matrix: &SparseMatrix<T>,
+    graphblas_context: &Arc<Context>,
+    graphblas_matrix: &GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
 ) -> Option<T> {
-    match matrix.context_ref().call(
+    match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_next(graphblas_iterator) },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        graphblas_matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => matrix_element_value_at_iterator_position::<T>(graphblas_iterator),
         Err(error) => match_iterator_error(error),
@@ -177,7 +188,7 @@ mod tests {
         )
         .unwrap();
 
-        let matrix_element_iterator = MatrixElementValueIterator::new(&matrix).unwrap();
+        let matrix_element_iterator = MatrixElementValueIterator::<u8>::new(&matrix).unwrap();
 
         for (element_value, expected_element_value) in matrix_element_iterator
             .into_iter()
@@ -202,7 +213,7 @@ mod tests {
         )
         .unwrap();
 
-        let matrix_element_iterator = MatrixElementValueIterator::new(&matrix).unwrap();
+        let matrix_element_iterator = MatrixElementValueIterator::<u8>::new(&matrix).unwrap();
 
         for (element_value, expected_element_value) in matrix_element_iterator
             .into_iter()

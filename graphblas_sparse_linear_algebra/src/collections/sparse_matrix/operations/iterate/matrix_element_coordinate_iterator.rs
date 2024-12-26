@@ -1,74 +1,79 @@
 use std::mem::MaybeUninit;
+use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
-    GxB_Iterator, GxB_Iterator_free, GxB_Matrix_Iterator_attach, GxB_Matrix_Iterator_getIndex,
-    GxB_Matrix_Iterator_next, GxB_Matrix_Iterator_seek,
+    GrB_Matrix, GxB_Iterator, GxB_Iterator_free, GxB_Matrix_Iterator_attach,
+    GxB_Matrix_Iterator_getIndex, GxB_Matrix_Iterator_next, GxB_Matrix_Iterator_seek,
 };
 
 use crate::collections::new_graphblas_iterator;
-use crate::collections::sparse_matrix::{Coordinate, GetGraphblasSparseMatrix, SparseMatrix};
-use crate::context::CallGraphBlasContext;
+use crate::collections::sparse_matrix::{Coordinate, GetGraphblasSparseMatrix};
 use crate::context::GetContext;
+use crate::context::{CallGraphBlasContext, Context};
 use crate::error::SparseLinearAlgebraError;
 use crate::error::{GraphblasErrorType, LogicErrorType, SparseLinearAlgebraErrorType};
 use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::operators::options::GetGraphblasDescriptor;
 use crate::operators::options::OperatorOptions;
-use crate::value_type::ValueType;
 
 static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
-pub struct MatrixElementCoordinateIterator<'a, T: ValueType> {
-    matrix: &'a SparseMatrix<T>,
+pub struct MatrixElementCoordinateIterator<'a> {
+    graphblas_context: Arc<Context>,
+    graphblas_matrix: &'a GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
-    next_element: fn(&SparseMatrix<T>, GxB_Iterator) -> Option<Coordinate>,
+    next_element: fn(&Arc<Context>, &GrB_Matrix, GxB_Iterator) -> Option<Coordinate>,
 }
 
-impl<'a, T: ValueType> MatrixElementCoordinateIterator<'a, T> {
-    pub fn new(matrix: &'a SparseMatrix<T>) -> Result<Self, SparseLinearAlgebraError> {
+impl<'a> MatrixElementCoordinateIterator<'a> {
+    pub fn new(
+        matrix: &'a (impl GetGraphblasSparseMatrix + GetContext),
+    ) -> Result<Self, SparseLinearAlgebraError> {
         let graphblas_iterator = unsafe { new_graphblas_iterator(matrix.context_ref()) }?;
 
         Ok(Self {
-            matrix,
+            graphblas_context: matrix.context(),
+            graphblas_matrix: unsafe { matrix.graphblas_matrix_ref() },
             graphblas_iterator,
             next_element: initial_matrix_element_coordinate,
         })
     }
 }
 
-fn initial_matrix_element_coordinate<T: ValueType>(
-    matrix: &SparseMatrix<T>,
+fn initial_matrix_element_coordinate(
+    graphblas_context: &Arc<Context>,
+    matrix: &GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
 ) -> Option<Coordinate> {
-    match matrix.context_ref().call(
+    match graphblas_context.call(
         || unsafe {
             GxB_Matrix_Iterator_attach(
                 graphblas_iterator,
-                matrix.graphblas_matrix(),
+                matrix.to_owned(),
                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
             )
         },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => {}
         Err(error) => return match_iterator_error(error),
     }
 
-    match matrix.context_ref().call(
+    match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_seek(graphblas_iterator, 0) },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => {}
         // TODO: attaching may actually fail, this will cause a panic, which is not desired
         Err(error) => return match_iterator_error(error),
     }
 
-    let next_index = match matrix.context_ref().call(
+    let next_index = match graphblas_context.call(
         || unsafe { GxB_Matrix_Iterator_seek(graphblas_iterator, 0) },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => matrix_element_coordinate_at_iterator_position(graphblas_iterator),
         Err(error) => match_iterator_error(error),
@@ -77,21 +82,25 @@ fn initial_matrix_element_coordinate<T: ValueType>(
     return next_index;
 }
 
-impl<'a, T: ValueType> Drop for MatrixElementCoordinateIterator<'a, T> {
+impl<'a> Drop for MatrixElementCoordinateIterator<'a> {
     fn drop(&mut self) {
-        let context = self.matrix.context_ref();
-        let _ = context.call_without_detailed_error_information(|| unsafe {
-            GxB_Iterator_free(&mut self.graphblas_iterator)
-        });
+        let _ = self
+            .graphblas_context
+            .call_without_detailed_error_information(|| unsafe {
+                GxB_Iterator_free(&mut self.graphblas_iterator)
+            });
     }
 }
 
-impl<'a, T: ValueType> Iterator for MatrixElementCoordinateIterator<'a, T> {
+impl<'a> Iterator for MatrixElementCoordinateIterator<'a> {
     type Item = Coordinate;
 
     fn next(&mut self) -> Option<Coordinate> {
-        let next_matrix_element_coordinate =
-            (self.next_element)(self.matrix, self.graphblas_iterator);
+        let next_matrix_element_coordinate = (self.next_element)(
+            &self.graphblas_context,
+            self.graphblas_matrix,
+            self.graphblas_iterator,
+        );
 
         self.next_element = next_element_coordinate;
 
@@ -99,13 +108,14 @@ impl<'a, T: ValueType> Iterator for MatrixElementCoordinateIterator<'a, T> {
     }
 }
 
-fn next_element_coordinate<T: ValueType>(
-    matrix: &SparseMatrix<T>,
+fn next_element_coordinate(
+    context: &Arc<Context>,
+    graphblas_matrix: &GrB_Matrix,
     graphblas_iterator: GxB_Iterator,
 ) -> Option<Coordinate> {
-    match matrix.context_ref().call(
+    match context.call(
         || unsafe { GxB_Matrix_Iterator_next(graphblas_iterator) },
-        unsafe { &matrix.graphblas_matrix() }, // TODO: check that error indeed link to the matrix the iterator was attached to
+        graphblas_matrix, // TODO: check that error indeed link to the matrix the iterator was attached to
     ) {
         Ok(_) => matrix_element_coordinate_at_iterator_position(graphblas_iterator),
         Err(error) => match_iterator_error(error),
