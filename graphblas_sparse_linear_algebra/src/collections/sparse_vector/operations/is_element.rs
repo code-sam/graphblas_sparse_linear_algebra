@@ -28,6 +28,12 @@ impl<T: ValueType> IsSparseVectorElement for SparseVector<T> {
                 SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
                     GraphblasErrorType::NoValue,
                 )) => Ok(false),
+                SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
+                    GraphblasErrorType::IndexOutOfBounds,
+                )) => Ok(false),
+                SparseLinearAlgebraErrorType::LogicErrorType(LogicErrorType::GraphBlas(
+                    GraphblasErrorType::InvalidIndex,
+                )) => Ok(false),
                 _ => Err(error),
             },
         }
