@@ -272,13 +272,15 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     let mut build_configuration =
         cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
+    std::env::set_var("CFLAGS", "-DZSTD_NAMESPACE=suitesparse_graphblas_zstd_");
+    std::env::set_var("CPPFLAGS", "-DZSTD_NAMESPACE=suitesparse_graphblas_zstd_");
+
     build_configuration
         .define("BUILD_SHARED_LIBS", "true")
         .define("GRAPHBLAS_BUILD_STATIC_LIBS", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
-        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned())
-        .define("CMAKE_C_FLAGS", "-DZSTD_NAMESPACE=suitesparse_graphblas_zstd_");
+        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned());
         
     if !cfg!(feature = "build-standard-kernels") {
         build_configuration.define("GRAPHBLAS_COMPACT", "true");
