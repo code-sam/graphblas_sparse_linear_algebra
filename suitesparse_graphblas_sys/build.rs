@@ -278,8 +278,8 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
         .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned())
-        .define("ZSTD_NAMESPACE", "suitesparse_graphblas_zstd_");
-
+        .define("CMAKE_C_FLAGS", "-DZSTD_NAMESPACE=suitesparse_graphblas_zstd_");
+        
     if !cfg!(feature = "build-standard-kernels") {
         build_configuration.define("GRAPHBLAS_COMPACT", "true");
     }
