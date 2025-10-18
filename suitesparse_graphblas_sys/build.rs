@@ -10,7 +10,7 @@ extern crate bindgen;
 extern crate cmake;
 
 // NOTE: when updating the version, make sure to delete any existing clones
-const GIT_COMMIT: &str = "9bdf19dea3de59210979a9691807cfabccdf04ea";
+const GIT_COMMIT: &str = "50cca249482611a47b6bf29c34b08bc8d7fc4644";
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -272,7 +272,7 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     let mut build_configuration =
         cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
-    build_configuration
+        build_configuration
         .define("BUILD_SHARED_LIBS", "true")
         .define("GRAPHBLAS_BUILD_STATIC_LIBS", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())

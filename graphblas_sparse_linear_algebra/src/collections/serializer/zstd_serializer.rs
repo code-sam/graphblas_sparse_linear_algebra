@@ -113,7 +113,7 @@ impl ZStandardSerializer {
             || unsafe {
                 GxB_Desc_set(
                     graphblas_descriptor,
-                    GrB_Desc_Field_GxB_COMPRESSION,
+                    GrB_Desc_Field_GxB_COMPRESSION as i32,
                     GxB_COMPRESSION_ZSTD + compression_level.to_graphblas_descriptor_offset(),
                 )
             },
