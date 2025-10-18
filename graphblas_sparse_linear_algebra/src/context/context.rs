@@ -108,6 +108,15 @@ impl Into<GrB_Mode> for Mode {
     }
 }
 
+impl Into<i32> for Mode {
+    fn into(self) -> i32 {
+        match self {
+            Self::Blocking => GrB_Mode_GrB_BLOCKING as i32,
+            Self::NonBlocking => GrB_Mode_GrB_NONBLOCKING as i32,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Context {
     Ready(Ready),

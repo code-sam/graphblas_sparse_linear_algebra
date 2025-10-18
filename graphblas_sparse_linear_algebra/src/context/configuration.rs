@@ -37,7 +37,7 @@ impl SetMatrixFormat for Context {
         self.call_without_detailed_error_information(|| unsafe {
             // TODO: use GrB_set() once it becomes available
             GxB_Global_Option_set(
-                GxB_Option_Field_GxB_FORMAT,
+                GxB_Option_Field_GxB_FORMAT as i32,
                 <MatrixStorageFormat as Into<GxB_Format_Value>>::into(format),
             )
         })?;

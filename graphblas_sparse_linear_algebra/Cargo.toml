@@ -1,6 +1,6 @@
 [package]
 name = "graphblas_sparse_linear_algebra"
-version = "0.54.4"
+version = "0.55.0"
 authors = ["code_sam <mail@samdekker.nl>"]
 description = "Wrapper for SuiteSparse:GraphBLAS"
 edition = "2021"
@@ -13,8 +13,8 @@ repository = "https://github.com/code-sam/graphblas_sparse_linear_algebra"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-suitesparse_graphblas_sys = {path = "../suitesparse_graphblas_sys", version = "0.3.1"}
-graphblas_sparse_linear_algebra_proc_macros = {path = "../graphblas_sparse_linear_algebra_proc_macros", version = "0.3"}
+suitesparse_graphblas_sys = {path = "../suitesparse_graphblas_sys", version = "0.4.0"}
+graphblas_sparse_linear_algebra_proc_macros = {path = "../graphblas_sparse_linear_algebra_proc_macros", version = "0.3.1"}
 once_cell = {version = "1.18"}
 paste = {version = "1.0"}
 rayon = {version = "1.8"}
