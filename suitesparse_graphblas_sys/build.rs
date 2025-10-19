@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::path::Path;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -134,6 +135,8 @@ fn build_and_link_dependencies() {
         &path_with_graphblas_header_file,
         &path_with_suitesparse_graphblas_implementation,
     );
+
+    patch_gb_zstd_header(&cargo_build_directory);
 
     build_static_graphblas_implementation(&cargo_build_directory);
 
@@ -302,6 +305,44 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
         "cargo:rustc-link-search=native={}",
         path_with_graphblas_library().display()
     );
+}
+
+fn patch_gb_zstd_header(cargo_build_directory: &OsString) {
+    let mut path_gb_zstd_header = PathBuf::from(cargo_build_directory);
+    path_gb_zstd_header.push(Path::new("graphblas_implementation/SuiteSparse_GraphBLAS/GB_zstd.h"));
+
+    if !path_gb_zstd_header.exists() {
+        println!("cargo:warning=GB_zstd.h not found; skipping patch");
+        return;
+    }
+
+    let content = fs::read_to_string(&path_gb_zstd_header)
+        .expect("Failed to read GB_zstd.h");
+
+    // Only patch once (idempotent)
+    if content.contains("GB_ZSTD_isError") {
+        println!("cargo:rerun-if-changed=graphblas_implementation/SuiteSparse_GraphBLAS/GB_zstd.h");
+        return;
+    }
+
+    let patch = r#"
+// Added automatically by build.rs to avoid zstd symbol collisions
+#define ZSTD_isError GB_ZSTD_isError
+#define FSE_isError  GB_FSE_isError
+#define HUF_isError  GB_HUF_isError
+"#;
+
+    // Insert before final #endif
+    let patched = if let Some(index) = content.rfind("#endif") {
+        let (head, tail) = content.split_at(index);
+        format!("{head}{patch}\n{tail}")
+    } else {
+        // fallback: append at the end
+        format!("{content}\n{patch}")
+    };
+
+    fs::write(&path_gb_zstd_header, patched).expect("Failed to patch GB_zstd.h");
+    println!("cargo:warning=Patched GB_zstd.h to add ZSTD_isError/FSE_isError/HUF_isError renames");
 }
 
 fn declare_build_invalidation_conditions(
