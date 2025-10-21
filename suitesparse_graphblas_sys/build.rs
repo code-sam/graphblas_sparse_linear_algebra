@@ -1,11 +1,12 @@
 use std::collections::HashSet;
-use std::path::Path;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use git2::{Object, Oid, Repository};
+use regex::Regex;
 
 extern crate bindgen;
 extern crate cmake;
@@ -136,7 +137,8 @@ fn build_and_link_dependencies() {
         &path_with_suitesparse_graphblas_implementation,
     );
 
-    patch_gb_zstd_header(&cargo_build_directory);
+    patch_gb_zstd_header(&path_with_suitesparse_graphblas_implementation);
+    patch_zstd_iserror_symbols(&path_with_suitesparse_graphblas_implementation);
 
     build_static_graphblas_implementation(&cargo_build_directory);
 
@@ -275,13 +277,12 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     let mut build_configuration =
         cmake::Config::new("graphblas_implementation/SuiteSparse_GraphBLAS");
 
-        build_configuration
+    build_configuration
         .define("BUILD_SHARED_LIBS", "true")
         .define("GRAPHBLAS_BUILD_STATIC_LIBS", "true")
         .define("CMAKE_INSTALL_LIBDIR", cargo_build_directory.to_owned())
         .define("CMAKE_INSTALL_INCLUDEDIR", cargo_build_directory.to_owned())
-        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned())
-        .define("ZSTD_NAMESPACE", "suitesparse_graphblas_zstd_");
+        .define("PROJECT_SOURCE_DIR", cargo_build_directory.to_owned());
 
     if !cfg!(feature = "build-standard-kernels") {
         build_configuration.define("GRAPHBLAS_COMPACT", "true");
@@ -307,27 +308,32 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
     );
 }
 
-fn patch_gb_zstd_header(cargo_build_directory: &OsString) {
-    let mut path_gb_zstd_header = PathBuf::from(cargo_build_directory);
-    path_gb_zstd_header.push(Path::new("graphblas_implementation/SuiteSparse_GraphBLAS/GB_zstd.h"));
+fn patch_gb_zstd_header(graphblas_implementation_path: &Path) {
+    let mut header_to_patch = PathBuf::from(graphblas_implementation_path);
+    header_to_patch.push(Path::new(
+        "Source/zstd_wrapper/GB_zstd.h",
+    ));
 
-    if !path_gb_zstd_header.exists() {
-        println!("cargo:warning=GB_zstd.h not found; skipping patch");
+    if !header_to_patch.exists() {
+        println!(
+            "cargo:warning={:?} not found; skipping patch",
+            header_to_patch
+        );
         return;
     }
 
-    let content = fs::read_to_string(&path_gb_zstd_header)
-        .expect("Failed to read GB_zstd.h");
+    let content = fs::read_to_string(&header_to_patch).expect("Failed to read GB_zstd.h");
 
-    // Only patch once (idempotent)
-    if content.contains("GB_ZSTD_isError") {
-        println!("cargo:rerun-if-changed=graphblas_implementation/SuiteSparse_GraphBLAS/GB_zstd.h");
+    // Only patch once (idempotent
+    if content.contains("GB_FSE_isError") {
+        println!("cargo:rerun-if-changed={}", header_to_patch.display());
         return;
     }
+
+    let content = fs::read_to_string(&header_to_patch).expect("Failed to read GB_zstd.h");
 
     let patch = r#"
 // Added automatically by build.rs to avoid zstd symbol collisions
-#define ZSTD_isError GB_ZSTD_isError
 #define FSE_isError  GB_FSE_isError
 #define HUF_isError  GB_HUF_isError
 "#;
@@ -341,8 +347,77 @@ fn patch_gb_zstd_header(cargo_build_directory: &OsString) {
         format!("{content}\n{patch}")
     };
 
-    fs::write(&path_gb_zstd_header, patched).expect("Failed to patch GB_zstd.h");
-    println!("cargo:warning=Patched GB_zstd.h to add ZSTD_isError/FSE_isError/HUF_isError renames");
+    fs::write(&header_to_patch, patched)
+        .expect(&format!("Failed to patch {}", header_to_patch.display()));
+    println!("cargo:warning=Patched GB_zstd.h to add FSE_isError/HUF_isError renames");
+}
+
+fn patch_zstd_iserror_symbols(graphblas_implementation_path: &Path) {
+    let zstd_dir = PathBuf::from(graphblas_implementation_path)
+        .join("zstd/zstd_subset");
+
+    if !zstd_dir.exists() {
+        println!(
+            "cargo:warning=Zstd subset directory not found at {}; skipping patch",
+            zstd_dir.display()
+        );
+        return;
+    }
+
+    println!(
+        "cargo:warning=Patching Zstd subset recursively in {}",
+        zstd_dir.display()
+    );
+
+    // Walk recursively
+    fn walk_and_patch(dir: &Path) {
+        for entry in fs::read_dir(dir).expect("Failed to read directory") {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            let path = entry.path();
+
+            if path.is_dir() {
+                walk_and_patch(&path);
+            } else if path
+                .extension()
+                .map(|e| e == "c" || e == "h")
+                .unwrap_or(false)
+            {
+                patch_file(&path);
+            }
+        }
+    }
+
+    // The actual patch logic
+    fn patch_file(path: &Path) {
+        let Ok(content) = fs::read_to_string(path) else {
+            return;
+        };
+
+        let re = Regex::new(r"\b(ZSTD_isError)\b").unwrap();
+        if !re.is_match(&content) {
+            return; // nothing to do
+        }
+
+        let replaced = re.replace_all(&content, |caps: &regex::Captures| {
+            match &caps[1] {
+                "ZSTD_isError" => "GB_ZSTD_isError",
+                _ => &caps[1],
+            }
+            .to_string()
+        });
+
+        if let Err(e) = fs::write(path, replaced.as_bytes()) {
+            println!("cargo:warning=Failed to write {}: {}", path.display(), e);
+        } else {
+            println!("cargo:warning=Patched {}", path.display());
+        }
+    }
+
+    walk_and_patch(&zstd_dir);
+    println!("cargo:warning=Finished patching Zstd subset symbols.");
 }
 
 fn declare_build_invalidation_conditions(
