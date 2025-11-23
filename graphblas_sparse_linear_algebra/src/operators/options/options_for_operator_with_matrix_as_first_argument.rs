@@ -99,8 +99,8 @@ impl OptionsForOperatorWithMatrixAsFirstArgument {
 
             graphblas_descriptor: graphblas_descriptor(
                 clear_output_before_use,
-                false,
-                false,
+                use_mask_structure_of_stored_values_as_mask,
+                use_mask_complement,
                 transpose_matrix_argument,
                 false,
             ),
@@ -113,20 +113,7 @@ impl OptionsForOperatorWithMatrixAsFirstArgument {
         let use_mask_complement = false;
         let transpose_matrix_argument = false;
 
-        Self {
-            clear_output_before_use,
-            use_mask_structure_of_stored_values_as_mask,
-            use_mask_complement,
-            transpose_matrix_argument,
-
-            graphblas_descriptor: graphblas_descriptor(
-                clear_output_before_use,
-                false,
-                false,
-                transpose_matrix_argument,
-                false,
-            ),
-        }
+        Self::new(clear_output_before_use, use_mask_structure_of_stored_values_as_mask, use_mask_complement, transpose_matrix_argument)
     }
 }
 
