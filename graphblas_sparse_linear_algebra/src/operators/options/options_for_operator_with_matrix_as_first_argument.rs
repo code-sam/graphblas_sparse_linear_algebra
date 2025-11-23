@@ -113,7 +113,12 @@ impl OptionsForOperatorWithMatrixAsFirstArgument {
         let use_mask_complement = false;
         let transpose_matrix_argument = false;
 
-        Self::new(clear_output_before_use, use_mask_structure_of_stored_values_as_mask, use_mask_complement, transpose_matrix_argument)
+        Self::new(
+            clear_output_before_use,
+            use_mask_structure_of_stored_values_as_mask,
+            use_mask_complement,
+            transpose_matrix_argument,
+        )
     }
 }
 

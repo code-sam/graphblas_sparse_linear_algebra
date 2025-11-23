@@ -164,7 +164,13 @@ impl OptionsForOperatorWithMatrixArguments {
         let transpose_second_argument = false;
         let clear_output_before_use = false;
 
-        Self::new(clear_output_before_use, use_mask_structure_of_stored_values_as_mask, use_mask_complement, transpose_first_argument, transpose_second_argument)
+        Self::new(
+            clear_output_before_use,
+            use_mask_structure_of_stored_values_as_mask,
+            use_mask_complement,
+            transpose_first_argument,
+            transpose_second_argument,
+        )
     }
 }
 
