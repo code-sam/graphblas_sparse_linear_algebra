@@ -100,6 +100,8 @@ impl From<GraphblasError> for SparseLinearAlgebraError {
             | GraphblasErrorType::IteratorExhausted => Self::LogicError(error.into()),
             GraphblasErrorType::OutOfMemory
             | GraphblasErrorType::Panic
+            | GraphblasErrorType::JITError
+            | GraphblasErrorType::ReadOnlyOutput
             | GraphblasErrorType::NotImplemented => Self::SystemError(error.into()),
         }
     }
