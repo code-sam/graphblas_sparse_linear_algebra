@@ -310,9 +310,7 @@ fn build_static_graphblas_implementation(cargo_build_directory: &OsString) {
 
 fn patch_gb_zstd_header(graphblas_implementation_path: &Path) {
     let mut header_to_patch = PathBuf::from(graphblas_implementation_path);
-    header_to_patch.push(Path::new(
-        "Source/zstd_wrapper/GB_zstd.h",
-    ));
+    header_to_patch.push(Path::new("Source/zstd_wrapper/GB_zstd.h"));
 
     if !header_to_patch.exists() {
         println!(
@@ -353,8 +351,7 @@ fn patch_gb_zstd_header(graphblas_implementation_path: &Path) {
 }
 
 fn patch_zstd_iserror_symbols(graphblas_implementation_path: &Path) {
-    let zstd_dir = PathBuf::from(graphblas_implementation_path)
-        .join("zstd/zstd_subset");
+    let zstd_dir = PathBuf::from(graphblas_implementation_path).join("zstd/zstd_subset");
 
     if !zstd_dir.exists() {
         println!(

@@ -28,6 +28,8 @@ pub enum GraphblasErrorType {
     InsufficientSpace,
     IndexOutOfBounds,
     IteratorExhausted,
+    JITError,
+    ReadOnlyOutput,
     Panic,
 }
 

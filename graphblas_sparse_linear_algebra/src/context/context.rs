@@ -10,9 +10,10 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use once_cell::sync::Lazy;
 use suitesparse_graphblas_sys::{
     GrB_BinaryOp, GrB_BinaryOp_error, GrB_Descriptor, GrB_Descriptor_error, GrB_IndexUnaryOp,
-    GrB_IndexUnaryOp_error, GrB_Matrix, GrB_Matrix_error, GrB_Monoid, GrB_Monoid_error, GrB_Scalar,
-    GrB_Scalar_error, GrB_Semiring, GrB_Semiring_error, GrB_Type, GrB_Type_error, GrB_UnaryOp,
-    GrB_UnaryOp_error, GrB_Vector, GrB_Vector_error, GrB_finalize,
+    GrB_IndexUnaryOp_error, GrB_Info_GxB_JIT_ERROR, GrB_Info_GxB_OUTPUT_IS_READONLY, GrB_Matrix,
+    GrB_Matrix_error, GrB_Monoid, GrB_Monoid_error, GrB_Scalar, GrB_Scalar_error, GrB_Semiring,
+    GrB_Semiring_error, GrB_Type, GrB_Type_error, GrB_UnaryOp, GrB_UnaryOp_error, GrB_Vector,
+    GrB_Vector_error, GrB_finalize,
 };
 
 use crate::graphblas_bindings::{
@@ -359,6 +360,8 @@ pub enum Status {
     IndexOutOfBounds,
     IteratorExhausted,
     Panic,
+    JITError,
+    ReadOnlyOutput,
     UnknownStatusType,
 }
 
@@ -382,6 +385,8 @@ impl From<GrB_Info> for Status {
             GrB_Info_GrB_INDEX_OUT_OF_BOUNDS => Self::IndexOutOfBounds,
             GrB_Info_GxB_EXHAUSTED => Self::IteratorExhausted,
             GrB_Info_GrB_PANIC => Self::Panic,
+            GrB_Info_GxB_JIT_ERROR => Self::JITError,
+            GrB_Info_GxB_OUTPUT_IS_READONLY => Self::ReadOnlyOutput,
             _ => Self::UnknownStatusType,
         }
     }
@@ -470,6 +475,14 @@ impl Status {
             Status::Panic => {
                 GraphblasError::new(GraphblasErrorType::Panic, detailed_error_information).into()
             }
+            Status::JITError => {
+                GraphblasError::new(GraphblasErrorType::JITError, detailed_error_information).into()
+            }
+            Status::ReadOnlyOutput => GraphblasError::new(
+                GraphblasErrorType::ReadOnlyOutput,
+                detailed_error_information,
+            )
+            .into(),
             Status::UnknownStatusType => SystemError::new(
                 SystemErrorType::UnsupportedGraphBlasErrorValue,
                 String::from("Something went wrong while calling the GrapBLAS implementation"),
