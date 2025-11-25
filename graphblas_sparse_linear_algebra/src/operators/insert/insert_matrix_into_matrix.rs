@@ -38,7 +38,7 @@ where
         matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        matrix_to_insert: impl GetGraphblasSparseMatrix,
+        matrix_to_insert: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
@@ -54,7 +54,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
         matrix_to_insert_into: &mut impl GetGraphblasSparseMatrix,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        matrix_to_insert: impl GetGraphblasSparseMatrix,
+        matrix_to_insert: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<AccumulatorEvaluationDomain>,
         mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
@@ -240,7 +240,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                matrix_to_insert.clone(),
+                &matrix_to_insert,
                 &Assignment::<u8>::new(),
                 &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
@@ -269,7 +269,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                matrix_to_insert,
+                &matrix_to_insert,
                 &Assignment::<u8>::new(),
                 &mask,
                 &OptionsForOperatorWithMatrixArguments::new_default(),
@@ -315,7 +315,7 @@ mod tests {
                 &mut matrix,
                 &ElementIndexSelector::All,
                 &ElementIndexSelector::All,
-                matrix_to_insert.clone(),
+                &matrix_to_insert,
                 &Plus::<f32>::new(),
                 &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
