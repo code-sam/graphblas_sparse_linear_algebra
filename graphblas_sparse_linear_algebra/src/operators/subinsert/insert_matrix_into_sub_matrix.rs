@@ -36,7 +36,7 @@ where
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        matrix_to_insert: impl GetGraphblasSparseMatrix,
+        matrix_to_insert: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
@@ -52,7 +52,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
         matrix_to_insert_into: &mut SparseMatrix<MatrixToInsertInto>,
         rows_to_insert_into: &ElementIndexSelector, // length must equal row_height of matrix_to_insert
         columns_to_insert_into: &ElementIndexSelector, // length must equal column_width of matrix_to_insert
-        matrix_to_insert: impl GetGraphblasSparseMatrix,
+        matrix_to_insert: &impl GetGraphblasSparseMatrix,
         accumulator: &impl AccumulatorBinaryOperator<MatrixToInsertInto>,
         mask_for_matrix_to_insert_into: &impl MatrixMask,
         options: &impl GetOptionsForOperatorWithMatrixArguments,
@@ -239,7 +239,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                matrix_to_insert.clone(),
+                &matrix_to_insert,
                 &Assignment::new(),
                 &SelectEntireMatrix::new(context.clone()),
                 &OptionsForOperatorWithMatrixArguments::new_default(),
@@ -268,7 +268,7 @@ mod tests {
                 &mut matrix,
                 &rows_to_insert,
                 &columns_to_insert,
-                matrix_to_insert,
+                &matrix_to_insert,
                 &Assignment::new(),
                 &mask,
                 &OptionsForOperatorWithMatrixArguments::new_default(),
