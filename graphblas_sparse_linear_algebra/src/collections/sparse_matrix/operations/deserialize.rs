@@ -4,8 +4,32 @@ use std::{mem::MaybeUninit, sync::Arc};
 
 use suitesparse_graphblas_sys::{GrB_Index, GrB_Matrix, GrB_Matrix_deserialize};
 
+use crate::collections::sparse_matrix::SparseMatrix;
 use crate::index::IndexConversion;
+use crate::value_type::ValueType;
 use crate::{context::Context, error::SparseLinearAlgebraError};
+
+pub trait DeserializeSparseMatrix<T: ValueType> {
+    unsafe fn deserialize_suitesparse_graphblas_sparse_matrix(
+        context: Arc<Context>,
+        serialized_suitesparse_graphblas_sparse_matrix: &[u8],
+    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError>;
+}
+
+impl<T: ValueType> DeserializeSparseMatrix<T> for SparseMatrix<T> {
+    unsafe fn deserialize_suitesparse_graphblas_sparse_matrix(
+        context: Arc<Context>,
+        serialized_suitesparse_graphblas_sparse_matrix: &[u8],
+    ) -> Result<SparseMatrix<T>, SparseLinearAlgebraError> {
+        let graphblas_sparse_matrix = unsafe {
+            deserialize_suitesparse_graphblas_sparse_matrix(
+                &context,
+                serialized_suitesparse_graphblas_sparse_matrix,
+            )
+        }?;
+        SparseMatrix::from_graphblas_matrix(context.to_owned(), graphblas_sparse_matrix)
+    }
+}
 
 pub unsafe fn deserialize_suitesparse_graphblas_sparse_matrix(
     context: &Arc<Context>,
@@ -80,13 +104,13 @@ mod tests {
                 .unwrap()
         };
 
-        let deserialized_graphblas_matrix = unsafe {
-            deserialize_suitesparse_graphblas_sparse_matrix(&context, serialized_matrix).unwrap()
-        };
         let deserialized_sparse_matrix = unsafe {
-            SparseMatrix::<u8>::from_graphblas_matrix(context, deserialized_graphblas_matrix)
-                .unwrap()
-        };
+            SparseMatrix::<u8>::deserialize_suitesparse_graphblas_sparse_matrix(
+                context,
+                serialized_matrix,
+            )
+        }
+        .unwrap();
 
         assert_eq!(
             matrix.element_list().unwrap(),
