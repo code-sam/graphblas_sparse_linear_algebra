@@ -4,17 +4,22 @@ use std::sync::Arc;
 
 use suitesparse_graphblas_sys::GrB_Vector;
 
-use crate::collections::sparse_vector::{GetGraphblasSparseVector, SparseVector};
+use crate::collections::sparse_vector::GetGraphblasSparseVector;
 use crate::context::{Context, GetContext};
-use crate::value_type::ValueType;
 
-pub struct SparseVectorView<'a, T: ValueType> {
-    raw_pointer: *const SparseVector<T>,
-    lifetime_marker: PhantomData<&'a SparseVector<T>>,
+pub struct SparseVectorView<'a, T>
+where
+    T: GetGraphblasSparseVector + GetContext,
+{
+    raw_pointer: *const T,
+    lifetime_marker: PhantomData<&'a T>,
 }
 
-impl<'a, T: ValueType> SparseVectorView<'a, T> {
-    pub unsafe fn from_raw_pointer(raw_pointer: *const SparseVector<T>) -> Self {
+impl<'a, T> SparseVectorView<'a, T>
+where
+    T: GetGraphblasSparseVector + GetContext,
+{
+    pub unsafe fn from_raw_pointer(raw_pointer: *const T) -> Self {
         Self {
             raw_pointer,
             lifetime_marker: PhantomData,
@@ -22,14 +27,20 @@ impl<'a, T: ValueType> SparseVectorView<'a, T> {
     }
 }
 
-impl<'a, T: ValueType> Deref for SparseVectorView<'a, T> {
-    type Target = SparseVector<T>;
-    fn deref(&self) -> &SparseVector<T> {
+impl<'a, T> Deref for SparseVectorView<'a, T>
+where
+    T: GetGraphblasSparseVector + GetContext,
+{
+    type Target = T;
+    fn deref(&self) -> &T {
         unsafe { &*self.raw_pointer }
     }
 }
 
-impl<'a, T: ValueType> GetGraphblasSparseVector for SparseVectorView<'a, T> {
+impl<'a, T> GetGraphblasSparseVector for SparseVectorView<'a, T>
+where
+    T: GetGraphblasSparseVector + GetContext,
+{
     unsafe fn graphblas_vector(&self) -> GrB_Vector {
         self.deref().graphblas_vector()
     }
@@ -43,7 +54,10 @@ impl<'a, T: ValueType> GetGraphblasSparseVector for SparseVectorView<'a, T> {
     }
 }
 
-impl<'a, T: ValueType> GetContext for SparseVectorView<'a, T> {
+impl<'a, T> GetContext for SparseVectorView<'a, T>
+where
+    T: GetGraphblasSparseVector + GetContext,
+{
     fn context(&self) -> Arc<Context> {
         self.deref().context()
     }
