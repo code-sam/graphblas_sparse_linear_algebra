@@ -57,16 +57,16 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixMultiplicationSemiring<E
         context.call(
             || unsafe {
                 GrB_Matrix_eWiseMult_Semiring(
-                    product.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
+                    multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_matrix() },
+            unsafe { &product.graphblas_matrix_ptr() },
         )?;
         Ok(())
     }
@@ -119,16 +119,16 @@ impl<EvaluationDomain: ValueType>
         context.call(
             || unsafe {
                 GrB_Matrix_eWiseMult_Monoid(
-                    product.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
+                    multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_matrix() },
+            unsafe { &product.graphblas_matrix_ptr() },
         )?;
 
         Ok(())
@@ -182,16 +182,16 @@ impl<EvaluationDomain: ValueType>
         context.call(
             || unsafe {
                 GrB_Matrix_eWiseMult_BinaryOp(
-                    product.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
+                    multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_matrix() },
+            unsafe { &product.graphblas_matrix_ptr() },
         )?;
 
         Ok(())

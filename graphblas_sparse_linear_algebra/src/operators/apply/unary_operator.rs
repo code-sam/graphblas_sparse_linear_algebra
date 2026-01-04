@@ -93,15 +93,15 @@ impl<EvaluationDomain: ValueType> ApplyUnaryOperator<EvaluationDomain> for Unary
         context.call(
             || unsafe {
                 GrB_Matrix_apply(
-                    product.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    argument.graphblas_matrix(),
+                    argument.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_matrix() },
+            unsafe { &product.graphblas_matrix_ptr() },
         )?;
 
         Ok(())

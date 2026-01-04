@@ -76,7 +76,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
                 context.call(
                     || unsafe {
                         GrB_Row_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
                             mask_for_row_to_insert_into.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
@@ -86,7 +86,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
 
@@ -94,7 +94,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
                 context.call(
                     || unsafe {
                         GrB_Row_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
                             mask_for_row_to_insert_into.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
@@ -104,7 +104,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
         }

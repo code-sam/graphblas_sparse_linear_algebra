@@ -63,7 +63,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrixByVector<EvaluationDomain>
                     mask.graphblas_vector(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
                     multiplicant.graphblas_vector(),
                     options.graphblas_descriptor(),
                 )

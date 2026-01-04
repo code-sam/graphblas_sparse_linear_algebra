@@ -96,7 +96,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    matrix_to_insert_into.graphblas_matrix_ptr(),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -107,7 +107,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                     (
@@ -117,7 +117,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    matrix_to_insert_into.graphblas_matrix_ptr(),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -128,7 +128,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                     (
@@ -138,7 +138,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    matrix_to_insert_into.graphblas_matrix_ptr(),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -149,7 +149,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                     (
@@ -159,7 +159,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    matrix_to_insert_into.graphblas_matrix(),
+                                    matrix_to_insert_into.graphblas_matrix_ptr(),
                                     mask_for_matrix_to_insert_into.graphblas_matrix(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
@@ -170,7 +170,7 @@ macro_rules! implement_insert_scalar_into_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                 }

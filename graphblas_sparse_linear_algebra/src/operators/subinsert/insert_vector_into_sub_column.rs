@@ -75,7 +75,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumn<MatrixToInsertInto
                 context.call(
                     || unsafe {
                         GxB_Col_subassign(
-                            matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
                             mask_for_column_to_insert_into.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
@@ -85,7 +85,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumn<MatrixToInsertInto
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
 
@@ -93,7 +93,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumn<MatrixToInsertInto
                 context.call(
                     || unsafe {
                         GxB_Col_subassign(
-                            matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
                             mask_for_column_to_insert_into.graphblas_vector(),
                             accumulator.accumulator_graphblas_type(),
                             vector_to_insert.graphblas_vector(),
@@ -103,7 +103,7 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumn<MatrixToInsertInto
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
         }

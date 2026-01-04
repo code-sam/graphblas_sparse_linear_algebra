@@ -144,16 +144,16 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         context.call(
             || unsafe {
                 GrB_Matrix_apply_BinaryOp2nd_Scalar(
-                    product.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    first_argument.graphblas_matrix(),
+                    first_argument.graphblas_matrix_ptr(),
                     second_argument.graphblas_scalar(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_matrix() },
+            unsafe { &product.graphblas_matrix_ptr() },
         )?;
 
         Ok(())
@@ -174,16 +174,16 @@ impl<EvaluationDomain: ValueType> ApplyBinaryOperatorWithSparseScalar<Evaluation
         context.call(
             || unsafe {
                 GrB_Matrix_apply_BinaryOp1st_Scalar(
-                    product.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     first_argument.graphblas_scalar(),
-                    second_argument.graphblas_matrix(),
+                    second_argument.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_matrix() },
+            unsafe { &product.graphblas_matrix_ptr() },
         )?;
 
         Ok(())

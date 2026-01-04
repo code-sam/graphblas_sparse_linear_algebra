@@ -74,11 +74,11 @@ pub fn is_sparse_matrix_element(
 
     let result = matrix.context_ref().call(
         || unsafe {
-            GxB_Matrix_isStoredElement(matrix.graphblas_matrix(), row_index, column_index)
+            GxB_Matrix_isStoredElement(matrix.graphblas_matrix_ptr(), row_index, column_index)
         },
-        unsafe { &matrix.graphblas_matrix() },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     );
-    println!("{:?}", result);
+    // println!("{:?}", result);
     match result {
         Ok(_) => Ok(true),
         Err(error) => match error.error_type() {
@@ -113,9 +113,9 @@ pub fn try_is_sparse_matrix_element(
 
     let result = matrix.context_ref().call(
         || unsafe {
-            GxB_Matrix_isStoredElement(matrix.graphblas_matrix(), row_index, column_index)
+            GxB_Matrix_isStoredElement(matrix.graphblas_matrix_ptr(), row_index, column_index)
         },
-        unsafe { &matrix.graphblas_matrix() },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     );
     match result {
         Ok(_) => Ok(()),

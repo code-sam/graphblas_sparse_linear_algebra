@@ -36,8 +36,8 @@ pub fn sparse_matrix_column_width(
 ) -> Result<ColumnIndex, SparseLinearAlgebraError> {
     let mut column_width: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     matrix.context_ref().call(
-        || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), matrix.graphblas_matrix()) },
-        unsafe { &matrix.graphblas_matrix() },
+        || unsafe { GrB_Matrix_ncols(column_width.as_mut_ptr(), matrix.graphblas_matrix_ptr()) },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     )?;
     let column_width = unsafe { column_width.assume_init() };
     Ok(ColumnIndex::from_graphblas_index(column_width)?)
@@ -48,8 +48,8 @@ pub fn sparse_matrix_row_height(
 ) -> Result<RowIndex, SparseLinearAlgebraError> {
     let mut row_height: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     matrix.context_ref().call(
-        || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), matrix.graphblas_matrix()) },
-        unsafe { &matrix.graphblas_matrix() },
+        || unsafe { GrB_Matrix_nrows(row_height.as_mut_ptr(), matrix.graphblas_matrix_ptr()) },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     )?;
     let row_height = unsafe { row_height.assume_init() };
     Ok(RowIndex::from_graphblas_index(row_height)?)

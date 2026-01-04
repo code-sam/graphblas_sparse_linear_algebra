@@ -100,7 +100,7 @@ mod tests {
 
         let serialized_matrix = unsafe {
             zstd_serializer
-                .serialize_suitesparse_grapblas_sparse_matrix(matrix.graphblas_matrix())
+                .serialize_suitesparse_grapblas_sparse_matrix(matrix.graphblas_matrix_ptr())
                 .unwrap()
         };
 

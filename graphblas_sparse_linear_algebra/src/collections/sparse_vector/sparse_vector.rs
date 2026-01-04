@@ -144,7 +144,7 @@ impl<T: ValueType> SparseVector<T> {
         context.call_without_detailed_error_information(|| unsafe {
             GxB_Vector_diag(
                 GetGraphblasSparseVector::graphblas_vector(&diagonal),
-                matrix.graphblas_matrix(),
+                matrix.graphblas_matrix_ptr(),
                 graphblas_diagonal_index,
                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
             )

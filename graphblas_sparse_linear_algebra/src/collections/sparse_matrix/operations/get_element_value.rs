@@ -182,12 +182,12 @@ macro_rules! implement_get_element_value_unsafe {
                     || unsafe {
                         $get_element_function(
                             value.as_mut_ptr(),
-                            matrix.graphblas_matrix(),
+                            matrix.graphblas_matrix_ptr(),
                             row_index_to_get,
                             column_index_to_get,
                         )
                     },
-                    unsafe { &matrix.graphblas_matrix() },
+                    unsafe { &matrix.graphblas_matrix_ptr() },
                 );
 
                 match result {

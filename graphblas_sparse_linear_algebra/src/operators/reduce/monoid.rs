@@ -82,7 +82,7 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
                     mask.graphblas_vector(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    argument.graphblas_matrix(),
+                    argument.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
@@ -152,7 +152,7 @@ macro_rules! implement_monoid_reducer {
                         &mut tmp_product,
                         accumulator.accumulator_graphblas_type(),
                         operator.graphblas_type(),
-                        argument.graphblas_matrix(),
+                        argument.graphblas_matrix_ptr(),
                         options.graphblas_descriptor(),
                     )
                 })?;

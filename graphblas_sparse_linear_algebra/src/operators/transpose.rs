@@ -49,14 +49,14 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
         context.call(
             || unsafe {
                 GrB_transpose(
-                    transpose.graphblas_matrix(),
+                    transpose.graphblas_matrix_ptr(),
                     mask.graphblas_matrix(),
                     accumulator.accumulator_graphblas_type(),
-                    matrix.graphblas_matrix(),
+                    matrix.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { transpose.graphblas_matrix_ref() },
+            unsafe { transpose.graphblas_matrix_ptr_ref() },
         )?;
 
         Ok(())

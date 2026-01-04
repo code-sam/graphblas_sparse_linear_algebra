@@ -8,7 +8,9 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::new_graphblas_iterator;
-use crate::collections::sparse_matrix::{Coordinate, GetGraphblasSparseMatrix};
+use crate::collections::sparse_matrix::{
+    Coordinate, GetGraphblasSparseMatrix, GraphblasMatrixHandleUntyped,
+};
 use crate::context::GetContext;
 use crate::context::{CallGraphBlasContext, Context};
 use crate::error::SparseLinearAlgebraError;
@@ -22,8 +24,7 @@ static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
 pub struct MatrixElementCoordinateIterator<'a> {
-    graphblas_context: Arc<Context>,
-    graphblas_matrix: &'a GrB_Matrix,
+    matrix_handle: GraphblasMatrixHandleUntyped<'a>,
     graphblas_iterator: GxB_Iterator,
     next_element: fn(&Arc<Context>, &GrB_Matrix, GxB_Iterator) -> Option<Coordinate>,
 }
@@ -33,10 +34,10 @@ impl<'a> MatrixElementCoordinateIterator<'a> {
         matrix: &'a (impl GetGraphblasSparseMatrix + GetContext),
     ) -> Result<Self, SparseLinearAlgebraError> {
         let graphblas_iterator = unsafe { new_graphblas_iterator(matrix.context_ref()) }?;
+        let matrix_handle = GraphblasMatrixHandleUntyped::from_sparse_matrix(matrix);
 
         Ok(Self {
-            graphblas_context: matrix.context(),
-            graphblas_matrix: unsafe { matrix.graphblas_matrix_ref() },
+            matrix_handle,
             graphblas_iterator,
             next_element: initial_matrix_element_coordinate,
         })
@@ -85,7 +86,8 @@ fn initial_matrix_element_coordinate(
 impl<'a> Drop for MatrixElementCoordinateIterator<'a> {
     fn drop(&mut self) {
         let _ = self
-            .graphblas_context
+            .matrix_handle
+            .context_ref()
             .call_without_detailed_error_information(|| unsafe {
                 GxB_Iterator_free(&mut self.graphblas_iterator)
             });
@@ -97,8 +99,8 @@ impl<'a> Iterator for MatrixElementCoordinateIterator<'a> {
 
     fn next(&mut self) -> Option<Coordinate> {
         let next_matrix_element_coordinate = (self.next_element)(
-            &self.graphblas_context,
-            self.graphblas_matrix,
+            self.matrix_handle.context_ref(),
+            unsafe { &self.matrix_handle.graphblas_matrix_ptr() },
             self.graphblas_iterator,
         );
 

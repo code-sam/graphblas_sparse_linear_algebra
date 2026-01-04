@@ -80,7 +80,7 @@ impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
             .context_ref()
             .call_without_detailed_error_information(|| unsafe {
                 GrB_Matrix_diag(
-                    matrix.graphblas_matrix_mut_ref(),
+                    matrix.graphblas_matrix_ptr_mut(),
                     diagonal.graphblas_vector(),
                     graphblas_diagonal_index,
                 )
@@ -131,7 +131,7 @@ macro_rules! sparse_matrix_from_element_vector {
                     context.call(
                         || unsafe {
                             $build_function(
-                                matrix.graphblas_matrix(),
+                                matrix.graphblas_matrix_ptr(),
                                 graphblas_row_indices.as_ptr(),
                                 graphblas_column_indices.as_ptr(),
                                 element_values.as_ptr(),
@@ -139,7 +139,7 @@ macro_rules! sparse_matrix_from_element_vector {
                                 reduction_operator_for_duplicates.graphblas_type(),
                             )
                         },
-                        unsafe { matrix.graphblas_matrix_ref() },
+                        unsafe { matrix.graphblas_matrix_ptr_ref() },
                     )?;
                 }
                 Ok(matrix)
