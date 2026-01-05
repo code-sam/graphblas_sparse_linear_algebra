@@ -157,13 +157,14 @@ impl<T: ValueType> IntoGraphblasSparseMatrix for SparseMatrix<T> {
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
-        if !self.matrix.is_null() {
-            let _ = self
-                .context
-                .call_without_detailed_error_information(|| unsafe {
-                    GrB_Matrix_free(&mut self.matrix)
-                });
-        }
+        unsafe { drop_graphblas_matrix(&self.context, &mut self.matrix) };
+    }
+}
+
+pub unsafe fn drop_graphblas_matrix(context: &Arc<Context>, matrix: &mut GrB_Matrix) -> () {
+    if !matrix.is_null() {
+        let _ =
+            context.call_without_detailed_error_information(|| unsafe { GrB_Matrix_free(matrix) });
     }
 }
 
