@@ -58,16 +58,16 @@ impl<EvaluationDomain: ValueType> SemiringKroneckerProduct<EvaluationDomain>
         context.call(
             || unsafe {
                 GrB_Matrix_kronecker_Semiring(
-                    product.graphblas_matrix(),
-                    mask.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     multiplication_operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
+                    multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { product.graphblas_matrix_ref() },
+            unsafe { product.graphblas_matrix_ptr_ref() },
         )?;
 
         Ok(())
@@ -114,16 +114,16 @@ impl<EvaluationDomain: ValueType> MonoidKroneckerProduct<EvaluationDomain>
         context.call(
             || unsafe {
                 GrB_Matrix_kronecker_Monoid(
-                    product.graphblas_matrix(),
-                    mask.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     multiplication_operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
+                    multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { product.graphblas_matrix_ref() },
+            unsafe { product.graphblas_matrix_ptr_ref() },
         )?;
 
         Ok(())
@@ -170,16 +170,16 @@ impl<EvaluationDomain: ValueType> BinaryOperatorKroneckerProduct<EvaluationDomai
         context.call(
             || unsafe {
                 GrB_Matrix_kronecker_BinaryOp(
-                    product.graphblas_matrix(),
-                    mask.graphblas_matrix(),
+                    product.graphblas_matrix_ptr(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     multiplication_operator.graphblas_type(),
-                    multiplier.graphblas_matrix(),
-                    multiplicant.graphblas_matrix(),
+                    multiplier.graphblas_matrix_ptr(),
+                    multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { product.graphblas_matrix_ref() },
+            unsafe { product.graphblas_matrix_ptr_ref() },
         )?;
 
         Ok(())

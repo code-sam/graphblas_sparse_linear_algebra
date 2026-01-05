@@ -72,34 +72,34 @@ impl<Column: ValueType> ExtractMatrixColumn<Column> for MatrixColumnExtractor {
                 context.call(
                     || unsafe {
                         GrB_Col_extract(
-                            GetGraphblasSparseVector::graphblas_vector(column_vector),
-                            mask.graphblas_vector(),
+                            GetGraphblasSparseVector::graphblas_vector_ptr(column_vector),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
+                            matrix_to_extract_from.graphblas_matrix_ptr(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
                             column_index_to_extract,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { column_vector.graphblas_vector_ref() },
+                    unsafe { column_vector.graphblas_vector_ptr_ref() },
                 )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
                 context.call(
                     || unsafe {
                         GrB_Col_extract(
-                            GetGraphblasSparseVector::graphblas_vector(column_vector),
-                            mask.graphblas_vector(),
+                            GetGraphblasSparseVector::graphblas_vector_ptr(column_vector),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
+                            matrix_to_extract_from.graphblas_matrix_ptr(),
                             index,
                             number_of_indices_to_extract,
                             column_index_to_extract,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { column_vector.graphblas_vector_ref() },
+                    unsafe { column_vector.graphblas_vector_ptr_ref() },
                 )?;
             }
         }

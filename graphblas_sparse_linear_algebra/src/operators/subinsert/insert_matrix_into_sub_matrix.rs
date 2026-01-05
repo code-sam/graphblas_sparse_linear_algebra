@@ -78,10 +78,10 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                 context.call(
                     || unsafe {
                         GxB_Matrix_subassign(
-                            GetGraphblasSparseMatrix::graphblas_matrix(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
@@ -89,7 +89,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -99,10 +99,10 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                 context.call(
                     || unsafe {
                         GxB_Matrix_subassign(
-                            GetGraphblasSparseMatrix::graphblas_matrix(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row,
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
@@ -110,7 +110,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -120,10 +120,10 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                 context.call(
                     || unsafe {
                         GxB_Matrix_subassign(
-                            GetGraphblasSparseMatrix::graphblas_matrix(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column,
@@ -131,7 +131,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -141,10 +141,10 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                 context.call(
                     || unsafe {
                         GxB_Matrix_subassign(
-                            GetGraphblasSparseMatrix::graphblas_matrix(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row,
                             number_of_rows_to_insert_into,
                             column,
@@ -152,7 +152,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
         }

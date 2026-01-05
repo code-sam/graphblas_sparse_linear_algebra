@@ -12,19 +12,13 @@ use crate::context::CallGraphBlasContext;
 use crate::context::GetContext;
 use crate::error::GraphblasErrorType;
 use crate::error::LogicErrorType;
+use crate::error::SparseLinearAlgebraError;
 use crate::error::SparseLinearAlgebraErrorType;
+use crate::index::ElementIndex;
 use crate::index::IndexConversion;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_macro_for_all_value_types_and_graphblas_function;
-use crate::value_type::ConvertScalar;
-use crate::{
-    error::SparseLinearAlgebraError,
-    index::ElementIndex,
-    value_type::{
-        utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-        ValueType,
-    },
-};
+use crate::value_type::ValueType;
 use core::mem::MaybeUninit;
 
 pub trait GetSparseVectorElementValue<T: ValueType + Default> {
@@ -103,11 +97,11 @@ macro_rules! implement_get_element_value_unsafe {
                     || unsafe {
                         $get_element_function(
                             value.as_mut_ptr(),
-                            vector.graphblas_vector(),
+                            vector.graphblas_vector_ptr(),
                             index_to_get
                         )
                     },
-                    unsafe { &vector.graphblas_vector() },
+                    unsafe { &vector.graphblas_vector_ptr() },
                 );
 
                 match result {

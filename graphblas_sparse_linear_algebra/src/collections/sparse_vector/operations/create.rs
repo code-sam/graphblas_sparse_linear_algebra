@@ -55,14 +55,14 @@ macro_rules! sparse_matrix_from_element_vector {
                 vector.context_ref().call(
                     || unsafe {
                         $build_function(
-                            vector.graphblas_vector(),
+                            vector.graphblas_vector_ptr(),
                             graphblas_indices.as_ptr(),
                             element_values.as_ptr(),
                             number_of_elements,
                             reduction_operator_for_duplicates.graphblas_type(),
                         )
                     },
-                    unsafe { &vector.graphblas_vector() },
+                    unsafe { &vector.graphblas_vector_ptr() },
                 )?;
                 Ok(vector)
             }

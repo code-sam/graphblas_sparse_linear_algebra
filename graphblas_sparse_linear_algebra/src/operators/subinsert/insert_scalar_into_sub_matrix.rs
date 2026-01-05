@@ -92,10 +92,10 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                    GetGraphblasSparseMatrix::graphblas_matrix_ptr(
                                         matrix_to_insert_into,
                                     ),
-                                    mask_for_matrix_to_insert_into.graphblas_matrix(),
+                                    mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     row.as_ptr(),
@@ -105,7 +105,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                     (
@@ -115,10 +115,10 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                    GetGraphblasSparseMatrix::graphblas_matrix_ptr(
                                         matrix_to_insert_into,
                                     ),
-                                    mask_for_matrix_to_insert_into.graphblas_matrix(),
+                                    mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     row,
@@ -128,7 +128,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                     (
@@ -138,10 +138,10 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                    GetGraphblasSparseMatrix::graphblas_matrix_ptr(
                                         matrix_to_insert_into,
                                     ),
-                                    mask_for_matrix_to_insert_into.graphblas_matrix(),
+                                    mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     row.as_ptr(),
@@ -151,7 +151,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                     (
@@ -161,10 +161,10 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    GetGraphblasSparseMatrix::graphblas_matrix(
+                                    GetGraphblasSparseMatrix::graphblas_matrix_ptr(
                                         matrix_to_insert_into,
                                     ),
-                                    mask_for_matrix_to_insert_into.graphblas_matrix(),
+                                    mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     row,
@@ -174,7 +174,7 @@ macro_rules! implement_insert_scalar_into_sub_matrix_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                            unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                         )?;
                     }
                 }

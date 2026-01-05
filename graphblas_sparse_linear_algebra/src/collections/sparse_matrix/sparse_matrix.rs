@@ -1,5 +1,6 @@
 use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
+use std::ptr::null_mut;
 use std::sync::Arc;
 
 use suitesparse_graphblas_sys::GrB_Type;
@@ -123,32 +124,46 @@ impl<T: ValueType> Collection for SparseMatrix<T> {
 }
 
 pub trait GetGraphblasSparseMatrix: GetContext {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
-    unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix;
-    unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix;
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix;
+    unsafe fn graphblas_matrix_ptr_ref(&self) -> &GrB_Matrix;
+    unsafe fn graphblas_matrix_ptr_mut(&mut self) -> &mut GrB_Matrix;
 }
 
 impl<T: ValueType> GetGraphblasSparseMatrix for SparseMatrix<T> {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
-        self.matrix.clone()
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix {
+        self.matrix
     }
 
-    unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix {
+    unsafe fn graphblas_matrix_ptr_ref(&self) -> &GrB_Matrix {
         &self.matrix
     }
 
-    unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
+    unsafe fn graphblas_matrix_ptr_mut(&mut self) -> &mut GrB_Matrix {
         &mut self.matrix
+    }
+}
+
+pub trait IntoGraphblasSparseMatrix {
+    unsafe fn into_graphblas_matrix(self) -> (GrB_Matrix, Arc<Context>);
+}
+
+impl<T: ValueType> IntoGraphblasSparseMatrix for SparseMatrix<T> {
+    unsafe fn into_graphblas_matrix(mut self) -> (GrB_Matrix, Arc<Context>) {
+        let raw_pointer = self.matrix;
+        self.matrix = null_mut();
+        (raw_pointer, self.context.clone())
     }
 }
 
 impl<T: ValueType> Drop for SparseMatrix<T> {
     fn drop(&mut self) -> () {
-        let _ = self
-            .context
-            .call_without_detailed_error_information(|| unsafe {
-                GrB_Matrix_free(&mut self.matrix)
-            });
+        if !self.matrix.is_null() {
+            let _ = self
+                .context
+                .call_without_detailed_error_information(|| unsafe {
+                    GrB_Matrix_free(&mut self.matrix)
+                });
+        }
     }
 }
 
@@ -157,7 +172,11 @@ impl<T: ValueType> Clone for SparseMatrix<T> {
         SparseMatrix {
             context: self.context.clone(),
             matrix: unsafe {
-                clone_graphblas_matrix(self.context_ref(), self.graphblas_matrix_ref()).unwrap()
+                clone_graphblas_matrix(
+                    self.context_ref(),
+                    GetGraphblasSparseMatrix::graphblas_matrix_ptr(self),
+                )
+                .unwrap()
             },
             value_type: PhantomData,
         }
@@ -166,11 +185,11 @@ impl<T: ValueType> Clone for SparseMatrix<T> {
 
 pub unsafe fn clone_graphblas_matrix(
     context: &Arc<Context>,
-    matrix: &GrB_Matrix,
+    matrix: GrB_Matrix,
 ) -> Result<GrB_Matrix, SparseLinearAlgebraError> {
     let mut matrix_copy: MaybeUninit<GrB_Matrix> = MaybeUninit::uninit();
     context
-        .call(|| GrB_Matrix_dup(matrix_copy.as_mut_ptr(), *matrix), matrix)
+        .call(|| GrB_Matrix_dup(matrix_copy.as_mut_ptr(), matrix), &matrix)
         .unwrap();
     return Ok(matrix_copy.assume_init());
 }
@@ -214,8 +233,8 @@ macro_rules! implement_display {
 implement_macro_for_all_value_types!(implement_display);
 
 impl<T: ValueType> MatrixMask for SparseMatrix<T> {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
-        GetGraphblasSparseMatrix::graphblas_matrix(self)
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix {
+        GetGraphblasSparseMatrix::graphblas_matrix_ptr(self)
     }
 }
 
@@ -574,5 +593,32 @@ mod tests {
                     .contains("Row index 20 out of range; must be < 10"))
             }
         }
+    }
+
+    #[test]
+    fn use_graphblas_matrix_after_dropping_sparse_matrix() {
+        let context = Context::init_default().unwrap();
+        let element_list =
+            MatrixElementList::<u8>::from_element_vector(vec![(1, 1, 1).into(), (2, 2, 2).into()]);
+
+        let graphblas_matrix;
+
+        {
+            let matrix = SparseMatrix::<u8>::from_element_list(
+                context.clone(),
+                (5, 5).into(),
+                element_list,
+                &First::<u8>::new(),
+            )
+            .unwrap();
+
+            (graphblas_matrix, _) = unsafe { matrix.into_graphblas_matrix() };
+        }
+
+        let matrix_copy = unsafe {
+            SparseMatrix::<u8>::from_graphblas_matrix(context, graphblas_matrix).unwrap()
+        };
+
+        assert_eq!(matrix_copy.element_value(1, 1).unwrap(), Some(1u8))
     }
 }

@@ -1,5 +1,5 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 use suitesparse_graphblas_sys::GrB_Matrix;
@@ -37,20 +37,30 @@ where
     }
 }
 
+// impl<'a, T> DerefMut for SparseMatrixView<'a, T>
+// where
+//     T: GetGraphblasSparseMatrix + GetContext,
+// {
+//     fn deref_mut(&mut self) -> &mut T {
+//         unsafe { &mut *self.raw_pointer }
+//     }
+// }
+
 impl<'a, T> GetGraphblasSparseMatrix for SparseMatrixView<'a, T>
 where
     T: GetGraphblasSparseMatrix + GetContext,
 {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
-        self.deref().graphblas_matrix()
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix {
+        self.deref().graphblas_matrix_ptr()
     }
 
-    unsafe fn graphblas_matrix_ref(&self) -> &GrB_Matrix {
-        self.deref().graphblas_matrix_ref()
+    unsafe fn graphblas_matrix_ptr_ref(&self) -> &GrB_Matrix {
+        self.deref().graphblas_matrix_ptr_ref()
     }
 
-    unsafe fn graphblas_matrix_mut_ref(&mut self) -> &mut GrB_Matrix {
-        unimplemented!()
+    unsafe fn graphblas_matrix_ptr_mut(&mut self) -> &mut GrB_Matrix {
+        unimplemented!();
+        // self.deref_mut().graphblas_matrix_ptr_mut()
     }
 }
 

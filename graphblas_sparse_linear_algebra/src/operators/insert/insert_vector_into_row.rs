@@ -76,17 +76,17 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
                 context.call(
                     || unsafe {
                         GrB_Row_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            mask_for_row_to_insert_into.graphblas_vector(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
+                            mask_for_row_to_insert_into.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
+                            vector_to_insert.graphblas_vector_ptr(),
                             row_to_insert_into,
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
 
@@ -94,17 +94,17 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoRow<AccumulatorEval
                 context.call(
                     || unsafe {
                         GrB_Row_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            mask_for_row_to_insert_into.graphblas_vector(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
+                            mask_for_row_to_insert_into.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
+                            vector_to_insert.graphblas_vector_ptr(),
                             row_to_insert_into,
                             index,
                             number_of_indices_to_insert_into,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
         }

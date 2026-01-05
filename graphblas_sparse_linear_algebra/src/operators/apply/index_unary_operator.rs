@@ -83,16 +83,16 @@ macro_rules! implement_apply_index_binary_operator {
                 context.call(
                     || unsafe {
                         $graphblas_function_1(
-                            product.graphblas_vector(),
-                            mask.graphblas_vector(),
+                            product.graphblas_vector_ptr(),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             operator.graphblas_type(),
-                            vector.graphblas_vector(),
+                            vector.graphblas_vector_ptr(),
                             argument,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { &product.graphblas_vector() },
+                    unsafe { &product.graphblas_vector_ptr() },
                 )?;
 
                 Ok(())
@@ -114,16 +114,16 @@ macro_rules! implement_apply_index_binary_operator {
                 context.call(
                     || unsafe {
                         $graphblas_function_2(
-                            product.graphblas_matrix(),
-                            mask.graphblas_matrix(),
+                            product.graphblas_matrix_ptr(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             operator.graphblas_type(),
-                            matrix.graphblas_matrix(),
+                            matrix.graphblas_matrix_ptr(),
                             argument,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { &product.graphblas_matrix() },
+                    unsafe { product.graphblas_matrix_ptr_ref() },
                 )?;
 
                 Ok(())

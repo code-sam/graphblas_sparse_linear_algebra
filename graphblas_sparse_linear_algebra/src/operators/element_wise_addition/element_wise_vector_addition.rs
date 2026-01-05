@@ -57,16 +57,16 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionSemiringOperator
         context.call(
             || unsafe {
                 GrB_Vector_eWiseAdd_Semiring(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_vector(),
-                    multiplicant.graphblas_vector(),
+                    multiplier.graphblas_vector_ptr(),
+                    multiplicant.graphblas_vector_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_vector() },
+            unsafe { &product.graphblas_vector_ptr() },
         )?;
 
         Ok(())
@@ -119,16 +119,16 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionMonoidOperator<E
         context.call(
             || unsafe {
                 GrB_Vector_eWiseAdd_Monoid(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_vector(),
-                    multiplicant.graphblas_vector(),
+                    multiplier.graphblas_vector_ptr(),
+                    multiplicant.graphblas_vector_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_vector() },
+            unsafe { &product.graphblas_vector_ptr() },
         )?;
 
         Ok(())
@@ -181,16 +181,16 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseVectorAdditionBinaryOperator<E
         context.call(
             || unsafe {
                 GrB_Vector_eWiseAdd_BinaryOp(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_vector(),
-                    multiplicant.graphblas_vector(),
+                    multiplier.graphblas_vector_ptr(),
+                    multiplicant.graphblas_vector_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_vector() },
+            unsafe { &product.graphblas_vector_ptr() },
         )?;
 
         Ok(())

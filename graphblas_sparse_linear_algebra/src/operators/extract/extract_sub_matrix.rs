@@ -82,10 +82,10 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
-                            mask.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
+                            matrix_to_extract_from.graphblas_matrix_ptr(),
                             row.as_ptr(),
                             number_of_rows_to_extract,
                             column.as_ptr(),
@@ -93,7 +93,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
+                    unsafe { sub_matrix.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -103,10 +103,10 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
-                            mask.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
+                            matrix_to_extract_from.graphblas_matrix_ptr(),
                             row,
                             number_of_rows_to_extract,
                             column.as_ptr(),
@@ -114,7 +114,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
+                    unsafe { sub_matrix.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -124,10 +124,10 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
-                            mask.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
+                            matrix_to_extract_from.graphblas_matrix_ptr(),
                             row.as_ptr(),
                             number_of_rows_to_extract,
                             column,
@@ -135,7 +135,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
+                    unsafe { sub_matrix.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -145,10 +145,10 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                 context.call(
                     || unsafe {
                         GrB_Matrix_extract(
-                            GetGraphblasSparseMatrix::graphblas_matrix(sub_matrix),
-                            mask.graphblas_matrix(),
+                            GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_extract_from.graphblas_matrix(),
+                            matrix_to_extract_from.graphblas_matrix_ptr(),
                             row,
                             number_of_rows_to_extract,
                             column,
@@ -156,7 +156,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { sub_matrix.graphblas_matrix_ref() },
+                    unsafe { sub_matrix.graphblas_matrix_ptr_ref() },
                 )?;
             }
         }

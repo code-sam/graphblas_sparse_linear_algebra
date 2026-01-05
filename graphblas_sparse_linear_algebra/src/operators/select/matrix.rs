@@ -61,16 +61,16 @@ macro_rules! implement_select_from_matrix {
                 argument.context_ref().call(
                     || unsafe {
                         $graphblas_operator(
-                            product.graphblas_matrix(),
-                            mask.graphblas_matrix(),
+                            product.graphblas_matrix_ptr(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             selector.graphblas_type(),
-                            argument.graphblas_matrix(),
+                            argument.graphblas_matrix_ptr(),
                             selector_argument,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { product.graphblas_matrix_ref() },
+                    unsafe { product.graphblas_matrix_ptr_ref() },
                 )?;
 
                 Ok(())

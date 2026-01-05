@@ -32,9 +32,13 @@ pub fn resize_sparse_matrix(
 
     matrix.context_ref().call(
         || unsafe {
-            GrB_Matrix_resize(matrix.graphblas_matrix(), new_row_height, new_column_width)
+            GrB_Matrix_resize(
+                matrix.graphblas_matrix_ptr(),
+                new_row_height,
+                new_column_width,
+            )
         },
-        unsafe { &matrix.graphblas_matrix() },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     )?;
     Ok(())
 }

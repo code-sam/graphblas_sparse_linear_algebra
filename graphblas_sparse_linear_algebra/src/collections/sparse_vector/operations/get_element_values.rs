@@ -52,8 +52,8 @@ macro_rules! implement_get_element_values {
                         std::ptr::null_mut(),
                         values.as_mut_ptr(),
                         &mut number_of_stored_and_returned_elements,
-                        vector.graphblas_vector())
-                }, unsafe{ &vector.graphblas_vector() })?;
+                        vector.graphblas_vector_ptr())
+                }, unsafe{ &vector.graphblas_vector_ptr() })?;
 
                 let length_of_element_list = ElementIndex::from_graphblas_index(number_of_stored_and_returned_elements)?;
 

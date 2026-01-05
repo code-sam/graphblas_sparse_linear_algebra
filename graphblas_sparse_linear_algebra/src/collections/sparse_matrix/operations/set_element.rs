@@ -80,13 +80,13 @@ macro_rules! implement_set_element_typed {
                 matrix.context_ref().call(
                     || unsafe {
                         $add_element_function(
-                            matrix.graphblas_matrix(),
+                            matrix.graphblas_matrix_ptr(),
                             element_value,
                             row_index_to_set,
                             column_index_to_set,
                         )
                     },
-                    unsafe { &matrix.graphblas_matrix() },
+                    unsafe { &matrix.graphblas_matrix_ptr() },
                 )?;
                 Ok(())
             }

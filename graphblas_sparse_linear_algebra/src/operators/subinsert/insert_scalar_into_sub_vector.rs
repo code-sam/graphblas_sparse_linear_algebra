@@ -82,10 +82,10 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    GetGraphblasSparseVector::graphblas_vector(
+                                    GetGraphblasSparseVector::graphblas_vector_ptr(
                                         vector_to_insert_into,
                                     ),
-                                    mask_for_vector_to_insert_into.graphblas_vector(),
+                                    mask_for_vector_to_insert_into.graphblas_vector_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     index.as_ptr(),
@@ -93,7 +93,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
+                            unsafe { vector_to_insert_into.graphblas_vector_ptr_ref() },
                         )?;
                     }
 
@@ -101,10 +101,10 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    GetGraphblasSparseVector::graphblas_vector(
+                                    GetGraphblasSparseVector::graphblas_vector_ptr(
                                         vector_to_insert_into,
                                     ),
-                                    mask_for_vector_to_insert_into.graphblas_vector(),
+                                    mask_for_vector_to_insert_into.graphblas_vector_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     index,
@@ -112,7 +112,7 @@ macro_rules! implement_insert_scalar_into_sub_vector_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
+                            unsafe { vector_to_insert_into.graphblas_vector_ptr_ref() },
                         )?;
                     }
                 }

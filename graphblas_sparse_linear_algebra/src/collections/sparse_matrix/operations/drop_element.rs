@@ -49,12 +49,12 @@ pub fn drop_sparse_matrix_element(
     matrix.context_ref().call(
         || unsafe {
             GrB_Matrix_removeElement(
-                matrix.graphblas_matrix(),
+                matrix.graphblas_matrix_ptr(),
                 row_index_to_delete,
                 column_index_to_delete,
             )
         },
-        unsafe { &matrix.graphblas_matrix() },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     )?;
     Ok(())
 }
@@ -69,12 +69,12 @@ pub fn drop_sparse_matrix_element_with_coordinate(
     matrix.context_ref().call(
         || unsafe {
             GrB_Matrix_removeElement(
-                matrix.graphblas_matrix(),
+                matrix.graphblas_matrix_ptr(),
                 row_index_to_delete,
                 column_index_to_delete,
             )
         },
-        unsafe { &matrix.graphblas_matrix() },
+        unsafe { &matrix.graphblas_matrix_ptr() },
     )?;
     Ok(())
 }

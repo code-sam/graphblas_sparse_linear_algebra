@@ -80,10 +80,10 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                 context.call(
                     || unsafe {
                         GrB_Matrix_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
@@ -91,7 +91,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -101,10 +101,10 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                 context.call(
                     || unsafe {
                         GrB_Matrix_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row,
                             number_of_rows_to_insert_into,
                             column.as_ptr(),
@@ -112,7 +112,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -122,10 +122,10 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                 context.call(
                     || unsafe {
                         GrB_Matrix_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
                             number_of_rows_to_insert_into,
                             column,
@@ -133,7 +133,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
             (
@@ -143,10 +143,10 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                 context.call(
                     || unsafe {
                         GrB_Matrix_assign(
-                            matrix_to_insert_into.graphblas_matrix(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            matrix_to_insert_into.graphblas_matrix_ptr(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            matrix_to_insert.graphblas_matrix(),
+                            matrix_to_insert.graphblas_matrix_ptr(),
                             row,
                             number_of_rows_to_insert_into,
                             column,
@@ -154,7 +154,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { matrix_to_insert_into.graphblas_matrix_ref() },
+                    unsafe { matrix_to_insert_into.graphblas_matrix_ptr_ref() },
                 )?;
             }
         }

@@ -101,7 +101,7 @@ mod tests {
 
         let serialized_vector = unsafe {
             zstd_serializer
-                .serialize_suitesparse_grapblas_sparse_vector(vector.graphblas_vector())
+                .serialize_suitesparse_grapblas_sparse_vector(vector.graphblas_vector_ptr())
                 .unwrap()
         };
 

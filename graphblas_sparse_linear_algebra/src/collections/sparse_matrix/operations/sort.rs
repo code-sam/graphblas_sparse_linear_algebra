@@ -68,14 +68,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(())
     }
@@ -84,15 +84,15 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
                         .graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(())
     }
@@ -106,14 +106,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
-                    sorted_values.graphblas_matrix(),
-                    indices_to_sort_rows.graphblas_matrix(),
+                    sorted_values.graphblas_matrix_ptr(),
+                    indices_to_sort_rows.graphblas_matrix_ptr(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(())
     }
@@ -127,15 +127,15 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
-                    sorted_values.graphblas_matrix(),
-                    indices_to_sort_columns.graphblas_matrix(),
+                    sorted_values.graphblas_matrix_ptr(),
+                    indices_to_sort_columns.graphblas_matrix_ptr(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
                         .graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(())
     }
@@ -145,14 +145,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
-                    sorted.graphblas_matrix(),
+                    sorted.graphblas_matrix_ptr(),
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(sorted)
     }
@@ -165,15 +165,15 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Matrix_sort(
-                    sorted.graphblas_matrix(),
+                    sorted.graphblas_matrix_ptr(),
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
                         .graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(sorted)
     }
@@ -187,13 +187,13 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
             || unsafe {
                 GxB_Matrix_sort(
                     ptr::null_mut(),
-                    indices_to_sort_self.graphblas_matrix(),
+                    indices_to_sort_self.graphblas_matrix_ptr(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(indices_to_sort_self)
     }
@@ -207,14 +207,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseMatrix<T, B> fo
             || unsafe {
                 GxB_Matrix_sort(
                     ptr::null_mut(),
-                    indices_to_sort_self.graphblas_matrix(),
+                    indices_to_sort_self.graphblas_matrix_ptr(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_matrix(),
+                    self.graphblas_matrix_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS_WITH_TRANSPOSE_ARGUMENT
                         .graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_matrix_ref() },
+            unsafe { self.graphblas_matrix_ptr_ref() },
         )?;
         Ok(indices_to_sort_self)
     }

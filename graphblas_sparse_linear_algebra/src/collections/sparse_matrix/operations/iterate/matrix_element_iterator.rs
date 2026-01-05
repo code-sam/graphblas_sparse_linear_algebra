@@ -7,6 +7,7 @@ use suitesparse_graphblas_sys::{
 };
 
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
+use crate::collections::sparse_matrix::GraphblasMatrixHandleUntyped;
 use crate::collections::sparse_matrix::MatrixElement;
 use crate::collections::{new_graphblas_iterator, GetElementValueAtIteratorPosition};
 use crate::context::GetContext;
@@ -23,8 +24,7 @@ static DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS: Lazy<OperatorOptions> =
     Lazy::new(|| OperatorOptions::new_default());
 
 pub struct MatrixElementIterator<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> {
-    graphblas_context: Arc<Context>,
-    graphblas_matrix: &'a GrB_Matrix,
+    matrix_handle: GraphblasMatrixHandleUntyped<'a>,
     graphblas_iterator: GxB_Iterator,
     next_element: fn(&Arc<Context>, &GrB_Matrix, GxB_Iterator) -> Option<MatrixElement<T>>,
 }
@@ -34,10 +34,10 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> MatrixElementItera
         graphblas_matrix: &'a (impl GetGraphblasSparseMatrix + GetContext),
     ) -> Result<Self, SparseLinearAlgebraError> {
         let graphblas_iterator = unsafe { new_graphblas_iterator(graphblas_matrix.context_ref()) }?;
+        let matrix_handle = GraphblasMatrixHandleUntyped::from_sparse_matrix(graphblas_matrix);
 
         Ok(Self {
-            graphblas_context: graphblas_matrix.context(),
-            graphblas_matrix: unsafe { graphblas_matrix.graphblas_matrix_ref() },
+            matrix_handle,
             graphblas_iterator,
             next_element: initial_matrix_element,
         })
@@ -88,7 +88,8 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Drop
 {
     fn drop(&mut self) {
         let _ = self
-            .graphblas_context
+            .matrix_handle
+            .context_ref()
             .call_without_detailed_error_information(|| unsafe {
                 GxB_Iterator_free(&mut self.graphblas_iterator)
             });
@@ -102,8 +103,8 @@ impl<'a, T: ValueType + GetElementValueAtIteratorPosition<T>> Iterator
 
     fn next(&mut self) -> Option<MatrixElement<T>> {
         let next_matrix_element = (self.next_element)(
-            &self.graphblas_context,
-            self.graphblas_matrix,
+            &self.matrix_handle.context_ref(),
+            unsafe { &self.matrix_handle.graphblas_matrix_ptr() },
             self.graphblas_iterator,
         );
 

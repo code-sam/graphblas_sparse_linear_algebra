@@ -61,16 +61,16 @@ macro_rules! implement_select_from_vector {
                 argument.context_ref().call(
                     || unsafe {
                         $graphblas_operator(
-                            product.graphblas_vector(),
-                            mask.graphblas_vector(),
+                            product.graphblas_vector_ptr(),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             selector.graphblas_type(),
-                            argument.graphblas_vector(),
+                            argument.graphblas_vector_ptr(),
                             selector_argument,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { product.graphblas_vector_ref() },
+                    unsafe { product.graphblas_vector_ptr_ref() },
                 )?;
 
                 Ok(())
