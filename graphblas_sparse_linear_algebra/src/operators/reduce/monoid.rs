@@ -78,15 +78,15 @@ impl<EvaluationDomain: ValueType> MonoidVectorReducer<EvaluationDomain> for Mono
         context.call(
             || unsafe {
                 GrB_Matrix_reduce_Monoid(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     argument.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { product.graphblas_vector_ref() },
+            unsafe { product.graphblas_vector_ptr_ref() },
         )?;
 
         Ok(())
@@ -179,7 +179,7 @@ macro_rules! implement_monoid_reducer {
                         &mut tmp_product,
                         accumulator.accumulator_graphblas_type(),
                         operator.graphblas_type(),
-                        argument.graphblas_vector(),
+                        argument.graphblas_vector_ptr(),
                         options.graphblas_descriptor(),
                     )
                 })?;

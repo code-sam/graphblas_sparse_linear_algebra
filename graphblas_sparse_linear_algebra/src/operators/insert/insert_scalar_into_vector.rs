@@ -83,8 +83,8 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    vector_to_insert_into.graphblas_vector(),
-                                    mask_for_vector_to_insert_into.graphblas_vector(),
+                                    vector_to_insert_into.graphblas_vector_ptr(),
+                                    mask_for_vector_to_insert_into.graphblas_vector_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     index.as_ptr(),
@@ -92,7 +92,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
+                            unsafe { vector_to_insert_into.graphblas_vector_ptr_ref() },
                         )?;
                     }
 
@@ -100,8 +100,8 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                         context.call(
                             || unsafe {
                                 $graphblas_insert_function(
-                                    vector_to_insert_into.graphblas_vector(),
-                                    mask_for_vector_to_insert_into.graphblas_vector(),
+                                    vector_to_insert_into.graphblas_vector_ptr(),
+                                    mask_for_vector_to_insert_into.graphblas_vector_ptr(),
                                     accumulator.accumulator_graphblas_type(),
                                     scalar_to_insert,
                                     index,
@@ -109,7 +109,7 @@ macro_rules! implement_insert_scalar_into_vector_trait {
                                     options.graphblas_descriptor(),
                                 )
                             },
-                            unsafe { vector_to_insert_into.graphblas_vector_ref() },
+                            unsafe { vector_to_insert_into.graphblas_vector_ptr_ref() },
                         )?;
                     }
                 }

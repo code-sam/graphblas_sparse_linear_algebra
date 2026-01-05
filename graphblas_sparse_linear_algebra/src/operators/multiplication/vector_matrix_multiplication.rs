@@ -59,16 +59,16 @@ impl<EvaluationDomain: ValueType> MultiplyVectorByMatrix<EvaluationDomain>
         context.call(
             || unsafe {
                 GrB_vxm(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    multiplier.graphblas_vector(),
+                    multiplier.graphblas_vector_ptr(),
                     multiplicant.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { product.graphblas_vector_ref() },
+            unsafe { product.graphblas_vector_ptr_ref() },
         )?;
 
         Ok(())

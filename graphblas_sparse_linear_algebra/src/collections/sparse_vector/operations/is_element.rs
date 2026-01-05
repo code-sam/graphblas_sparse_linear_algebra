@@ -20,8 +20,8 @@ impl<T: ValueType> IsSparseVectorElement for SparseVector<T> {
         let index = index.to_graphblas_index()?;
 
         match self.context_ref().call(
-            || unsafe { GxB_Vector_isStoredElement(self.graphblas_vector(), index) },
-            unsafe { &self.graphblas_vector() },
+            || unsafe { GxB_Vector_isStoredElement(self.graphblas_vector_ptr(), index) },
+            unsafe { &self.graphblas_vector_ptr() },
         ) {
             Ok(_) => Ok(true),
             Err(error) => match error.error_type() {
@@ -43,8 +43,8 @@ impl<T: ValueType> IsSparseVectorElement for SparseVector<T> {
         let index = index.to_graphblas_index()?;
 
         match self.context_ref().call(
-            || unsafe { GxB_Vector_isStoredElement(self.graphblas_vector(), index) },
-            unsafe { &self.graphblas_vector() },
+            || unsafe { GxB_Vector_isStoredElement(self.graphblas_vector_ptr(), index) },
+            unsafe { &self.graphblas_vector_ptr() },
         ) {
             Ok(_) => Ok(()),
             Err(error) => Err(error),
@@ -59,8 +59,8 @@ pub fn is_element(
     let index = index.to_graphblas_index()?;
 
     match vector.context_ref().call(
-        || unsafe { GxB_Vector_isStoredElement(vector.graphblas_vector(), index) },
-        unsafe { &vector.graphblas_vector() },
+        || unsafe { GxB_Vector_isStoredElement(vector.graphblas_vector_ptr(), index) },
+        unsafe { &vector.graphblas_vector_ptr() },
     ) {
         Ok(_) => Ok(true),
         Err(error) => match error.error_type() {
@@ -79,8 +79,8 @@ pub fn try_is_element(
     let index = index.to_graphblas_index()?;
 
     match vector.context_ref().call(
-        || unsafe { GxB_Vector_isStoredElement(vector.graphblas_vector(), index) },
-        unsafe { &vector.graphblas_vector() },
+        || unsafe { GxB_Vector_isStoredElement(vector.graphblas_vector_ptr(), index) },
+        unsafe { &vector.graphblas_vector_ptr() },
     ) {
         Ok(_) => Ok(()),
         Err(error) => Err(error),

@@ -83,7 +83,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                     || unsafe {
                         GrB_Matrix_extract(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix_ptr(),
                             row.as_ptr(),
@@ -104,7 +104,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                     || unsafe {
                         GrB_Matrix_extract(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix_ptr(),
                             row,
@@ -125,7 +125,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                     || unsafe {
                         GrB_Matrix_extract(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix_ptr(),
                             row.as_ptr(),
@@ -146,7 +146,7 @@ impl<SubMatrix: ValueType> ExtractSubMatrix<SubMatrix> for SubMatrixExtractor {
                     || unsafe {
                         GrB_Matrix_extract(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(sub_matrix),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_extract_from.graphblas_matrix_ptr(),
                             row,

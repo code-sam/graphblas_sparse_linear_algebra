@@ -26,8 +26,8 @@ pub fn sparse_vector_length(
 ) -> Result<ElementIndex, SparseLinearAlgebraError> {
     let mut length: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     vector.context_ref().call(
-        || unsafe { GrB_Vector_size(length.as_mut_ptr(), vector.graphblas_vector()) },
-        unsafe { &vector.graphblas_vector() },
+        || unsafe { GrB_Vector_size(length.as_mut_ptr(), vector.graphblas_vector_ptr()) },
+        unsafe { &vector.graphblas_vector_ptr() },
     )?;
     let length = unsafe { length.assume_init() };
     Ok(ElementIndex::from_graphblas_index(length)?)

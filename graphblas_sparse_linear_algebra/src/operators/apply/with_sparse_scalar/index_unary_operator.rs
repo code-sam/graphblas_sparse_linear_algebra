@@ -57,16 +57,16 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
         context.call(
             || unsafe {
                 GrB_Vector_apply_IndexOp_Scalar(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
-                    vector.graphblas_vector(),
+                    vector.graphblas_vector_ptr(),
                     argument.graphblas_scalar(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { &product.graphblas_vector() },
+            unsafe { &product.graphblas_vector_ptr() },
         )?;
 
         Ok(())
@@ -88,7 +88,7 @@ impl<EvaluationDomain: ValueType> ApplyIndexUnaryOperatorWithSparseScalar<Evalua
             || unsafe {
                 GrB_Matrix_apply_IndexOp_Scalar(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     matrix.graphblas_matrix_ptr(),

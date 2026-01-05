@@ -48,11 +48,11 @@ fn initial_vector_element<T: ValueType + GetElementValueAtIteratorPosition<T>>(
         || unsafe {
             GxB_Vector_Iterator_attach(
                 graphblas_iterator,
-                vector.graphblas_vector(),
+                vector.graphblas_vector_ptr(),
                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
             )
         },
-        unsafe { &vector.graphblas_vector() }, // TODO: check that error indeed link to the vector the iterator was attached to
+        unsafe { &vector.graphblas_vector_ptr() }, // TODO: check that error indeed link to the vector the iterator was attached to
     ) {
         Ok(_) => {}
         Err(error) => return match_iterator_error(error),
@@ -60,7 +60,7 @@ fn initial_vector_element<T: ValueType + GetElementValueAtIteratorPosition<T>>(
 
     match vector.context_ref().call(
         || unsafe { GxB_Vector_Iterator_seek(graphblas_iterator, 0) },
-        unsafe { &vector.graphblas_vector() }, // TODO: check that error indeed link to the vector the iterator was attached to
+        unsafe { &vector.graphblas_vector_ptr() }, // TODO: check that error indeed link to the vector the iterator was attached to
     ) {
         Ok(_) => {}
         // TODO: attaching may actually fail, this will cause a panic, which is not desired
@@ -69,7 +69,7 @@ fn initial_vector_element<T: ValueType + GetElementValueAtIteratorPosition<T>>(
 
     let next_value = match vector.context_ref().call(
         || unsafe { GxB_Vector_Iterator_seek(graphblas_iterator, 0) },
-        unsafe { &vector.graphblas_vector() }, // TODO: check that error indeed link to the vector the iterator was attached to
+        unsafe { &vector.graphblas_vector_ptr() }, // TODO: check that error indeed link to the vector the iterator was attached to
     ) {
         Ok(_) => vector_element_at_iterator_position(graphblas_iterator),
         Err(error) => match_iterator_error(error),
@@ -109,7 +109,7 @@ fn next_element<T: ValueType + GetElementValueAtIteratorPosition<T>>(
 ) -> Option<VectorElement<T>> {
     match vector.context_ref().call(
         || unsafe { GxB_Vector_Iterator_next(graphblas_iterator) },
-        unsafe { &vector.graphblas_vector() }, // TODO: check that error indeed link to the vector the iterator was attached to
+        unsafe { &vector.graphblas_vector_ptr() }, // TODO: check that error indeed link to the vector the iterator was attached to
     ) {
         Ok(_) => vector_element_at_iterator_position::<T>(graphblas_iterator),
         Err(error) => match_iterator_error(error),

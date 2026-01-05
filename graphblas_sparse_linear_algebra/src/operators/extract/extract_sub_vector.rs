@@ -69,32 +69,32 @@ impl<SubVector: ValueType> ExtractSubVector<SubVector> for SubVectorExtractor {
                 context.call(
                     || unsafe {
                         GrB_Vector_extract(
-                            GetGraphblasSparseVector::graphblas_vector(sub_vector),
-                            mask.graphblas_vector(),
+                            GetGraphblasSparseVector::graphblas_vector_ptr(sub_vector),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_extract_from.graphblas_vector(),
+                            vector_to_extract_from.graphblas_vector_ptr(),
                             index.as_ptr(),
                             number_of_indices_to_extract,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { sub_vector.graphblas_vector_ref() },
+                    unsafe { sub_vector.graphblas_vector_ptr_ref() },
                 )?;
             }
             ElementIndexSelectorGraphblasType::All(index) => {
                 context.call(
                     || unsafe {
                         GrB_Vector_extract(
-                            GetGraphblasSparseVector::graphblas_vector(sub_vector),
-                            mask.graphblas_vector(),
+                            GetGraphblasSparseVector::graphblas_vector_ptr(sub_vector),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_extract_from.graphblas_vector(),
+                            vector_to_extract_from.graphblas_vector_ptr(),
                             index,
                             number_of_indices_to_extract,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { sub_vector.graphblas_vector_ref() },
+                    unsafe { sub_vector.graphblas_vector_ptr_ref() },
                 )?;
             }
         }

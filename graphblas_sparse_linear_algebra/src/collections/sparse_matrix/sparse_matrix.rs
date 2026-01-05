@@ -172,7 +172,11 @@ impl<T: ValueType> Clone for SparseMatrix<T> {
         SparseMatrix {
             context: self.context.clone(),
             matrix: unsafe {
-                clone_graphblas_matrix(self.context_ref(), self.graphblas_matrix_ptr()).unwrap()
+                clone_graphblas_matrix(
+                    self.context_ref(),
+                    GetGraphblasSparseMatrix::graphblas_matrix_ptr(self),
+                )
+                .unwrap()
             },
             value_type: PhantomData,
         }
@@ -229,7 +233,7 @@ macro_rules! implement_display {
 implement_macro_for_all_value_types!(implement_display);
 
 impl<T: ValueType> MatrixMask for SparseMatrix<T> {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix {
         GetGraphblasSparseMatrix::graphblas_matrix_ptr(self)
     }
 }

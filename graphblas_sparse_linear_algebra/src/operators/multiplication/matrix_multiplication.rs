@@ -59,7 +59,7 @@ impl<EvaluationDomain: ValueType> MultiplyMatrices<EvaluationDomain>
             || unsafe {
                 GrB_mxm(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),

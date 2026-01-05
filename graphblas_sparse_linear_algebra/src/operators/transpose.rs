@@ -50,7 +50,7 @@ impl<EvaluationDomain: ValueType> TransposeMatrix<EvaluationDomain> for MatrixTr
             || unsafe {
                 GrB_transpose(
                     transpose.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     matrix.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),

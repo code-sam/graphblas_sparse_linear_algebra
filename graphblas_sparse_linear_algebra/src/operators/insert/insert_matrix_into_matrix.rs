@@ -81,7 +81,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                     || unsafe {
                         GrB_Matrix_assign(
                             matrix_to_insert_into.graphblas_matrix_ptr(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
@@ -102,7 +102,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                     || unsafe {
                         GrB_Matrix_assign(
                             matrix_to_insert_into.graphblas_matrix_ptr(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row,
@@ -123,7 +123,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                     || unsafe {
                         GrB_Matrix_assign(
                             matrix_to_insert_into.graphblas_matrix_ptr(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
@@ -144,7 +144,7 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertMatrixIntoMatrix<AccumulatorE
                     || unsafe {
                         GrB_Matrix_assign(
                             matrix_to_insert_into.graphblas_matrix_ptr(),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row,

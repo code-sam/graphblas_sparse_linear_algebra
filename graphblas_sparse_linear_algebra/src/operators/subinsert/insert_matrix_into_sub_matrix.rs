@@ -79,7 +79,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                     || unsafe {
                         GxB_Matrix_subassign(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
@@ -100,7 +100,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                     || unsafe {
                         GxB_Matrix_subassign(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row,
@@ -121,7 +121,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                     || unsafe {
                         GxB_Matrix_subassign(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row.as_ptr(),
@@ -142,7 +142,7 @@ impl<MatrixToInsertInto: ValueType> InsertMatrixIntoSubMatrix<MatrixToInsertInto
                     || unsafe {
                         GxB_Matrix_subassign(
                             GetGraphblasSparseMatrix::graphblas_matrix_ptr(matrix_to_insert_into),
-                            mask_for_matrix_to_insert_into.graphblas_matrix(),
+                            mask_for_matrix_to_insert_into.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             matrix_to_insert.graphblas_matrix_ptr(),
                             row,

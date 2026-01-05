@@ -44,14 +44,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
-                    self.graphblas_vector(),
+                    self.graphblas_vector_ptr(),
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_vector(),
+                    self.graphblas_vector_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_vector_ref() },
+            unsafe { self.graphblas_vector_ptr_ref() },
         )?;
         Ok(())
     }
@@ -65,14 +65,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
-                    sorted_values.graphblas_vector(),
-                    indices_to_sort_self.graphblas_vector(),
+                    sorted_values.graphblas_vector_ptr(),
+                    indices_to_sort_self.graphblas_vector_ptr(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_vector(),
+                    self.graphblas_vector_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_vector_ref() },
+            unsafe { self.graphblas_vector_ptr_ref() },
         )?;
         Ok(())
     }
@@ -85,14 +85,14 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
         self.context_ref().call(
             || unsafe {
                 GxB_Vector_sort(
-                    sorted_values.graphblas_vector(),
+                    sorted_values.graphblas_vector_ptr(),
                     ptr::null_mut(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_vector(),
+                    self.graphblas_vector_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_vector_ref() },
+            unsafe { self.graphblas_vector_ptr_ref() },
         )?;
         Ok(sorted_values)
     }
@@ -107,13 +107,13 @@ impl<T: ValueType, B: BinaryOperator<T> + ReturnsBool> SortSparseVector<T, B> fo
             || unsafe {
                 GxB_Vector_sort(
                     ptr::null_mut(),
-                    indices_to_sort_self.graphblas_vector(),
+                    indices_to_sort_self.graphblas_vector_ptr(),
                     sort_operator.graphblas_type(),
-                    self.graphblas_vector(),
+                    self.graphblas_vector_ptr(),
                     DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
                 )
             },
-            unsafe { self.graphblas_vector_ref() },
+            unsafe { self.graphblas_vector_ptr_ref() },
         )?;
         Ok(indices_to_sort_self)
     }

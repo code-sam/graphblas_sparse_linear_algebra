@@ -27,8 +27,8 @@ pub fn resize_sparse_vector(
     let new_length = new_length.to_graphblas_index()?;
 
     vector.context_ref().call(
-        || unsafe { GrB_Vector_resize(vector.graphblas_vector(), new_length) },
-        unsafe { &vector.graphblas_vector() },
+        || unsafe { GrB_Vector_resize(vector.graphblas_vector_ptr(), new_length) },
+        unsafe { &vector.graphblas_vector_ptr() },
     )?;
     Ok(())
 }

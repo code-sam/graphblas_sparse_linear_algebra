@@ -41,15 +41,15 @@ impl<'a, T> GetGraphblasSparseVector for SparseVectorView<'a, T>
 where
     T: GetGraphblasSparseVector + GetContext,
 {
-    unsafe fn graphblas_vector(&self) -> GrB_Vector {
-        self.deref().graphblas_vector()
+    unsafe fn graphblas_vector_ptr(&self) -> GrB_Vector {
+        self.deref().graphblas_vector_ptr()
     }
 
-    unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector {
-        self.deref().graphblas_vector_ref()
+    unsafe fn graphblas_vector_ptr_ref(&self) -> &GrB_Vector {
+        self.deref().graphblas_vector_ptr_ref()
     }
 
-    unsafe fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector {
+    unsafe fn graphblas_vector_ptr_mut(&mut self) -> &mut GrB_Vector {
         unimplemented!()
     }
 }

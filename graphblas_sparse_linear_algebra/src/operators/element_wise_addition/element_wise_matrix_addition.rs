@@ -58,7 +58,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionSemiring<Evaluat
             || unsafe {
                 GrB_Matrix_eWiseAdd_Semiring(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),
@@ -119,7 +119,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionMonoidOperator<E
             || unsafe {
                 GrB_Matrix_eWiseAdd_Monoid(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),
@@ -181,7 +181,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixAdditionBinaryOperator<E
             || unsafe {
                 GrB_Matrix_eWiseAdd_BinaryOp(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),

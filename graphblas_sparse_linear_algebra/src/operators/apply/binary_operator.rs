@@ -121,16 +121,16 @@ macro_rules! implement_apply_binary_operator {
                 context.call(
                     || unsafe {
                         $graphblas_function_1(
-                            product.graphblas_vector(),
-                            mask.graphblas_vector(),
+                            product.graphblas_vector_ptr(),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             operator.graphblas_type(),
-                            first_argument.graphblas_vector(),
+                            first_argument.graphblas_vector_ptr(),
                             second_argument,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { &product.graphblas_vector() },
+                    unsafe { &product.graphblas_vector_ptr() },
                 )?;
 
                 Ok(())
@@ -152,16 +152,16 @@ macro_rules! implement_apply_binary_operator {
                 context.call(
                     || unsafe {
                         $graphblas_function_2(
-                            product.graphblas_vector(),
-                            mask.graphblas_vector(),
+                            product.graphblas_vector_ptr(),
+                            mask.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             operator.graphblas_type(),
                             first_argument,
-                            second_argument.graphblas_vector(),
+                            second_argument.graphblas_vector_ptr(),
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { &product.graphblas_vector() },
+                    unsafe { &product.graphblas_vector_ptr() },
                 )?;
 
                 Ok(())
@@ -184,7 +184,7 @@ macro_rules! implement_apply_binary_operator {
                     || unsafe {
                         $graphblas_function_3(
                             product.graphblas_matrix_ptr(),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             operator.graphblas_type(),
                             first_argument.graphblas_matrix_ptr(),
@@ -215,7 +215,7 @@ macro_rules! implement_apply_binary_operator {
                     || unsafe {
                         $graphblas_function_4(
                             product.graphblas_matrix_ptr(),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             operator.graphblas_type(),
                             first_argument,

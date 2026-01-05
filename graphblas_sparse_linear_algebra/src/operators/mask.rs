@@ -5,11 +5,11 @@ use suitesparse_graphblas_sys::{GrB_Matrix, GrB_Vector};
 use crate::context::{Context, GetContext};
 
 pub trait MatrixMask: GetContext {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix;
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix;
 }
 
 pub trait VectorMask: GetContext {
-    unsafe fn graphblas_vector(&self) -> GrB_Vector;
+    unsafe fn graphblas_vector_ptr(&self) -> GrB_Vector;
 }
 
 #[derive(Debug, Clone)]
@@ -24,7 +24,7 @@ impl SelectEntireMatrix {
 }
 
 impl MatrixMask for SelectEntireMatrix {
-    unsafe fn graphblas_matrix(&self) -> GrB_Matrix {
+    unsafe fn graphblas_matrix_ptr(&self) -> GrB_Matrix {
         ptr::null_mut()
     }
 }
@@ -51,7 +51,7 @@ impl SelectEntireVector {
 }
 
 impl VectorMask for SelectEntireVector {
-    unsafe fn graphblas_vector(&self) -> GrB_Vector {
+    unsafe fn graphblas_vector_ptr(&self) -> GrB_Vector {
         ptr::null_mut()
     }
 }

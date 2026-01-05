@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
+use std::ptr::null_mut;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
@@ -104,7 +105,7 @@ impl<T: ValueType> SparseVector<T> {
         context.call_without_detailed_error_information(|| unsafe {
             GxB_Vector_build_Scalar(
                 // vector.as_ptr(),
-                GetGraphblasSparseVector::graphblas_vector(&vector),
+                GetGraphblasSparseVector::graphblas_vector_ptr(&vector),
                 graphblas_indices.as_ptr(),
                 value.graphblas_scalar(),
                 graphblas_length,
@@ -143,7 +144,7 @@ impl<T: ValueType> SparseVector<T> {
 
         context.call_without_detailed_error_information(|| unsafe {
             GxB_Vector_diag(
-                GetGraphblasSparseVector::graphblas_vector(&diagonal),
+                GetGraphblasSparseVector::graphblas_vector_ptr(&diagonal),
                 matrix.graphblas_matrix_ptr(),
                 graphblas_diagonal_index,
                 DEFAULT_GRAPHBLAS_OPERATOR_OPTIONS.graphblas_descriptor(),
@@ -239,30 +240,44 @@ impl<T: ValueType> Collection for SparseVector<T> {
 }
 
 pub trait GetGraphblasSparseVector: GetContext {
-    unsafe fn graphblas_vector(&self) -> GrB_Vector;
-    unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector;
-    unsafe fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector;
+    unsafe fn graphblas_vector_ptr(&self) -> GrB_Vector;
+    unsafe fn graphblas_vector_ptr_ref(&self) -> &GrB_Vector;
+    unsafe fn graphblas_vector_ptr_mut(&mut self) -> &mut GrB_Vector;
 }
 
 impl<T: ValueType> GetGraphblasSparseVector for SparseVector<T> {
-    unsafe fn graphblas_vector(&self) -> GrB_Vector {
-        self.vector.clone()
+    unsafe fn graphblas_vector_ptr(&self) -> GrB_Vector {
+        self.vector
     }
-    unsafe fn graphblas_vector_ref(&self) -> &GrB_Vector {
+    unsafe fn graphblas_vector_ptr_ref(&self) -> &GrB_Vector {
         &self.vector
     }
-    unsafe fn graphblas_vector_mut_ref(&mut self) -> &mut GrB_Vector {
+    unsafe fn graphblas_vector_ptr_mut(&mut self) -> &mut GrB_Vector {
         &mut self.vector
+    }
+}
+
+pub trait IntoGraphblasSparseVector {
+    unsafe fn into_graphblas_vector(self) -> (GrB_Vector, Arc<Context>);
+}
+
+impl<T: ValueType> IntoGraphblasSparseVector for SparseVector<T> {
+    unsafe fn into_graphblas_vector(mut self) -> (GrB_Vector, Arc<Context>) {
+        let raw_pointer = self.vector;
+        self.vector = null_mut();
+        (raw_pointer, self.context.clone())
     }
 }
 
 impl<T: ValueType> Drop for SparseVector<T> {
     fn drop(&mut self) -> () {
-        let _ = self
-            .context
-            .call_without_detailed_error_information(|| unsafe {
-                GrB_Vector_free(&mut self.vector)
-            });
+        if !self.vector.is_null() {
+            let _ = self
+                .context
+                .call_without_detailed_error_information(|| unsafe {
+                    GrB_Vector_free(&mut self.vector)
+                });
+        }
     }
 }
 
@@ -271,7 +286,7 @@ impl<T: ValueType> Clone for SparseVector<T> {
         SparseVector {
             context: self.context.clone(),
             vector: unsafe {
-                clone_graphblas_vector(self.context_ref(), self.graphblas_vector_ref()).unwrap()
+                clone_graphblas_vector(self.context_ref(), self.graphblas_vector_ptr_ref()).unwrap()
             },
             value_type: PhantomData,
         }
@@ -372,8 +387,8 @@ implement_macro_for_all_value_types!(implement_dispay);
 // implement_get_element_for_custom_type!(u128);
 
 impl<T: ValueType> VectorMask for SparseVector<T> {
-    unsafe fn graphblas_vector(&self) -> GrB_Vector {
-        GetGraphblasSparseVector::graphblas_vector(self)
+    unsafe fn graphblas_vector_ptr(&self) -> GrB_Vector {
+        GetGraphblasSparseVector::graphblas_vector_ptr(self)
     }
 }
 
@@ -381,7 +396,9 @@ impl<T: ValueType> VectorMask for SparseVector<T> {
 mod tests {
 
     use super::*;
-    use crate::collections::sparse_matrix::operations::FromMatrixElementList;
+    use crate::collections::sparse_matrix::operations::{
+        FromMatrixElementList, GetSparseMatrixElementValue,
+    };
     use crate::collections::sparse_matrix::MatrixElementList;
     use crate::collections::sparse_vector::operations::{
         DeleteSparseVectorElement, FromVectorElementList, GetSparseVectorElement,
@@ -807,5 +824,32 @@ mod tests {
             vector.number_of_stored_elements().unwrap(),
             element_list.length()
         );
+    }
+
+    #[test]
+    fn use_graphblas_vector_after_dropping_vector_matrix() {
+        let context = Context::init_default().unwrap();
+        let element_list =
+            VectorElementList::<u8>::from_element_vector(vec![(1, 1).into(), (2, 2).into()]);
+
+        let graphblas_vector;
+
+        {
+            let vector = SparseVector::<u8>::from_element_list(
+                context.clone(),
+                5,
+                element_list,
+                &First::<u8>::new(),
+            )
+            .unwrap();
+
+            (graphblas_vector, _) = unsafe { vector.into_graphblas_vector() };
+        }
+
+        let vector_copy = unsafe {
+            SparseVector::<u8>::from_graphblas_vector(context, graphblas_vector).unwrap()
+        };
+
+        assert_eq!(vector_copy.element_value(1).unwrap(), Some(1u8))
     }
 }

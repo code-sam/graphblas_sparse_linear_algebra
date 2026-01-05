@@ -62,7 +62,7 @@ macro_rules! implement_select_from_matrix {
                     || unsafe {
                         $graphblas_operator(
                             product.graphblas_matrix_ptr(),
-                            mask.graphblas_matrix(),
+                            mask.graphblas_matrix_ptr(),
                             accumulator.accumulator_graphblas_type(),
                             selector.graphblas_type(),
                             argument.graphblas_matrix_ptr(),

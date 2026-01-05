@@ -65,12 +65,12 @@ macro_rules! implement_set_element_for_built_in_type {
                 vector.context_ref().call(
                     || unsafe {
                         $add_element_function(
-                            vector.graphblas_vector(),
+                            vector.graphblas_vector_ptr(),
                             element_value,
                             index_to_set,
                         )
                     },
-                    unsafe { &vector.graphblas_vector() },
+                    unsafe { &vector.graphblas_vector_ptr() },
                 )?;
                 Ok(())
             }
@@ -85,12 +85,12 @@ macro_rules! implement_set_element_for_built_in_type {
                 vector.context_ref().call(
                     || unsafe {
                         $add_element_function(
-                            vector.graphblas_vector(),
+                            vector.graphblas_vector_ptr(),
                             element_value,
                             index_to_set,
                         )
                     },
-                    unsafe { &vector.graphblas_vector() },
+                    unsafe { &vector.graphblas_vector_ptr() },
                 )?;
                 Ok(())
             }

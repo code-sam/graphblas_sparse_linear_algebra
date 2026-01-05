@@ -70,16 +70,16 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoVector<AccumulatorE
                 context.call(
                     || unsafe {
                         GrB_Vector_assign(
-                            vector_to_insert_into.graphblas_vector(),
-                            mask_for_vector_to_insert_into.graphblas_vector(),
+                            vector_to_insert_into.graphblas_vector_ptr(),
+                            mask_for_vector_to_insert_into.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
+                            vector_to_insert.graphblas_vector_ptr(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { vector_to_insert_into.graphblas_vector_ref() },
+                    unsafe { vector_to_insert_into.graphblas_vector_ptr_ref() },
                 )?;
             }
 
@@ -87,16 +87,16 @@ impl<AccumulatorEvaluationDomain: ValueType> InsertVectorIntoVector<AccumulatorE
                 context.call(
                     || unsafe {
                         GrB_Vector_assign(
-                            vector_to_insert_into.graphblas_vector(),
-                            mask_for_vector_to_insert_into.graphblas_vector(),
+                            vector_to_insert_into.graphblas_vector_ptr(),
+                            mask_for_vector_to_insert_into.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
+                            vector_to_insert.graphblas_vector_ptr(),
                             index,
                             number_of_indices_to_insert_into,
                             options.graphblas_descriptor(),
                         )
                     },
-                    unsafe { vector_to_insert_into.graphblas_vector_ref() },
+                    unsafe { vector_to_insert_into.graphblas_vector_ptr_ref() },
                 )?;
             }
         }

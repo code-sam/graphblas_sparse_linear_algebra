@@ -81,7 +81,7 @@ impl<T: ValueType> FromDiagonalVector<T> for SparseMatrix<T> {
             .call_without_detailed_error_information(|| unsafe {
                 GrB_Matrix_diag(
                     matrix.graphblas_matrix_ptr_mut(),
-                    diagonal.graphblas_vector(),
+                    diagonal.graphblas_vector_ptr(),
                     graphblas_diagonal_index,
                 )
             })?;

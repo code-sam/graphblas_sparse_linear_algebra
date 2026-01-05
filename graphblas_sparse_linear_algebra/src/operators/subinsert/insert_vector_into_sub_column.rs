@@ -76,9 +76,9 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumn<MatrixToInsertInto
                     || unsafe {
                         GxB_Col_subassign(
                             matrix_to_insert_into.graphblas_matrix_ptr(),
-                            mask_for_column_to_insert_into.graphblas_vector(),
+                            mask_for_column_to_insert_into.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
+                            vector_to_insert.graphblas_vector_ptr(),
                             index.as_ptr(),
                             number_of_indices_to_insert_into,
                             column_to_insert_into,
@@ -94,9 +94,9 @@ impl<MatrixToInsertInto: ValueType> InsertVectorIntoSubColumn<MatrixToInsertInto
                     || unsafe {
                         GxB_Col_subassign(
                             matrix_to_insert_into.graphblas_matrix_ptr(),
-                            mask_for_column_to_insert_into.graphblas_vector(),
+                            mask_for_column_to_insert_into.graphblas_vector_ptr(),
                             accumulator.accumulator_graphblas_type(),
-                            vector_to_insert.graphblas_vector(),
+                            vector_to_insert.graphblas_vector_ptr(),
                             index,
                             number_of_indices_to_insert_into,
                             column_to_insert_into,

@@ -66,15 +66,15 @@ impl<EvaluationDomain: ValueType> ReduceWithBinaryOperator<EvaluationDomain>
         context.call(
             || unsafe {
                 GrB_Matrix_reduce_BinaryOp(
-                    product.graphblas_vector(),
-                    mask.graphblas_vector(),
+                    product.graphblas_vector_ptr(),
+                    mask.graphblas_vector_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     argument.graphblas_matrix_ptr(),
                     options.graphblas_descriptor(),
                 )
             },
-            unsafe { product.graphblas_vector_ref() },
+            unsafe { product.graphblas_vector_ptr_ref() },
         )?;
 
         Ok(())

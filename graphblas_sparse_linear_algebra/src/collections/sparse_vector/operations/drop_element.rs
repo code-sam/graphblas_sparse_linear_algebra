@@ -31,8 +31,8 @@ pub fn drop_sparse_vector_element(
     let index_to_delete = index_to_delete.to_graphblas_index()?;
 
     vector.context_ref().call(
-        || unsafe { GrB_Vector_removeElement(vector.graphblas_vector(), index_to_delete) },
-        unsafe { &vector.graphblas_vector() },
+        || unsafe { GrB_Vector_removeElement(vector.graphblas_vector_ptr(), index_to_delete) },
+        unsafe { &vector.graphblas_vector_ptr() },
     )?;
     Ok(())
 }

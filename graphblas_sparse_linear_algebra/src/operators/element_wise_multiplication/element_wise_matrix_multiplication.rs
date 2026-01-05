@@ -58,7 +58,7 @@ impl<EvaluationDomain: ValueType> ApplyElementWiseMatrixMultiplicationSemiring<E
             || unsafe {
                 GrB_Matrix_eWiseMult_Semiring(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),
@@ -120,7 +120,7 @@ impl<EvaluationDomain: ValueType>
             || unsafe {
                 GrB_Matrix_eWiseMult_Monoid(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),
@@ -183,7 +183,7 @@ impl<EvaluationDomain: ValueType>
             || unsafe {
                 GrB_Matrix_eWiseMult_BinaryOp(
                     product.graphblas_matrix_ptr(),
-                    mask.graphblas_matrix(),
+                    mask.graphblas_matrix_ptr(),
                     accumulator.accumulator_graphblas_type(),
                     operator.graphblas_type(),
                     multiplier.graphblas_matrix_ptr(),
