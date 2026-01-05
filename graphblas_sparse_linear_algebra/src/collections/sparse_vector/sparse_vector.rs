@@ -271,13 +271,14 @@ impl<T: ValueType> IntoGraphblasSparseVector for SparseVector<T> {
 
 impl<T: ValueType> Drop for SparseVector<T> {
     fn drop(&mut self) -> () {
-        if !self.vector.is_null() {
-            let _ = self
-                .context
-                .call_without_detailed_error_information(|| unsafe {
-                    GrB_Vector_free(&mut self.vector)
-                });
-        }
+        unsafe { drop_graphblas_vector(&self.context, &mut self.vector) };
+    }
+}
+
+pub unsafe fn drop_graphblas_vector(context: &Arc<Context>, vector: &mut GrB_Vector) -> () {
+    if !vector.is_null() {
+        let _ =
+            context.call_without_detailed_error_information(|| unsafe { GrB_Vector_free(vector) });
     }
 }
 
@@ -286,7 +287,11 @@ impl<T: ValueType> Clone for SparseVector<T> {
         SparseVector {
             context: self.context.clone(),
             vector: unsafe {
-                clone_graphblas_vector(self.context_ref(), self.graphblas_vector_ptr_ref()).unwrap()
+                clone_graphblas_vector(
+                    self.context_ref(),
+                    GetGraphblasSparseVector::graphblas_vector_ptr(self),
+                )
+                .unwrap()
             },
             value_type: PhantomData,
         }
@@ -295,13 +300,13 @@ impl<T: ValueType> Clone for SparseVector<T> {
 
 pub unsafe fn clone_graphblas_vector(
     context: &Arc<Context>,
-    matrix: &GrB_Vector,
+    vector: GrB_Vector,
 ) -> Result<GrB_Vector, SparseLinearAlgebraError> {
-    let mut matrix_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
+    let mut vector_copy: MaybeUninit<GrB_Vector> = MaybeUninit::uninit();
     context
-        .call(|| GrB_Vector_dup(matrix_copy.as_mut_ptr(), *matrix), matrix)
+        .call(|| GrB_Vector_dup(vector_copy.as_mut_ptr(), vector), &vector)
         .unwrap();
-    return Ok(matrix_copy.assume_init());
+    return Ok(vector_copy.assume_init());
 }
 
 // TODO: use standard GrB method
