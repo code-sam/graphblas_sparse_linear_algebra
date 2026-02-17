@@ -166,6 +166,81 @@ pub trait GetSparseMatrixElementValueUntyped<T: ValueType + Default> {
     ) -> Result<T, SparseLinearAlgebraError>;
 }
 
+macro_rules! implement_get_element_value_with_type_casting {
+    ($value_type:ty, $get_element_function:ident) => {
+        impl GetSparseMatrixElementValueUntyped<$value_type> for $value_type {
+            unsafe fn element_value(
+                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+                row_index: RowIndex,
+                column_index: ColumnIndex,
+            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
+                let mut value = MaybeUninit::uninit();
+                let row_index_to_get = row_index.as_graphblas_index()?;
+                let column_index_to_get = column_index.as_graphblas_index()?;
+
+                let result = matrix.context_ref().call(
+                    || unsafe {
+                        $get_element_function(
+                            value.as_mut_ptr(),
+                            matrix.graphblas_matrix_ptr(),
+                            row_index_to_get,
+                            column_index_to_get,
+                        )
+                    },
+                    unsafe { &matrix.graphblas_matrix_ptr() },
+                );
+
+                match result {
+                    Ok(_) => {
+                        let value = unsafe { value.assume_init() };
+                        // Casting to support isize and usize, redundant for other types. TODO: review performance improvements
+                        Ok(Some(value.try_into().unwrap()))
+                    }
+                    Err(error) => match error.error_type() {
+                        SparseLinearAlgebraErrorType::LogicErrorType(
+                            LogicErrorType::GraphBlas(GraphblasErrorType::NoValue),
+                        ) => Ok(None),
+                        _ => Err(error),
+                    },
+                }
+            }
+
+            unsafe fn element_value_or_default(
+                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+                row_index: RowIndex,
+                column_index: ColumnIndex,
+            ) -> Result<$value_type, SparseLinearAlgebraError> {
+                match <$value_type as GetSparseMatrixElementValueUntyped<$value_type>>::element_value(matrix, row_index, column_index)? {
+                    Some(value) => Ok(value),
+                    None => Ok(<$value_type>::default()),
+                }
+            }
+
+            unsafe fn element_value_at_coordinate(
+                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+                coordinate: &impl GetCoordinateIndices,
+            ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
+                <$value_type as GetSparseMatrixElementValueUntyped<$value_type>>::element_value(
+                    matrix,
+                    coordinate.row_index(),
+                    coordinate.column_index(),
+                )
+            }
+
+            unsafe fn element_value_or_default_at_coordinate(
+                matrix: &(impl GetGraphblasSparseMatrix + GetContext),
+                coordinate: &impl GetCoordinateIndices,
+            ) -> Result<$value_type, SparseLinearAlgebraError> {
+                <$value_type as GetSparseMatrixElementValueUntyped<$value_type>>::element_value_or_default(
+                    matrix,
+                    coordinate.row_index(),
+                    coordinate.column_index(),
+                )
+            }
+        }
+    };
+}
+
 macro_rules! implement_get_element_value_unsafe {
     ($value_type:ty, $get_element_function:ident) => {
         impl GetSparseMatrixElementValueUntyped<$value_type> for $value_type {
@@ -245,3 +320,97 @@ implement_macro_for_all_value_types_and_graphblas_function!(
     implement_get_element_value_unsafe,
     GrB_Matrix_extractElement
 );
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::collections::sparse_matrix::operations::{
+        GetSparseMatrixElement, SetSparseMatrixElement,
+    };
+    use crate::collections::sparse_matrix::{GetMatrixElementCoordinate, MatrixElement, Size};
+
+    use crate::context::Context;
+
+    #[test]
+    fn get_element_from_matrix_with_type_casting() {
+        let context = Context::init_default().unwrap();
+
+        let target_height: RowIndex = 10;
+        let target_width: ColumnIndex = 5;
+        let size = Size::new(target_height, target_width);
+
+        let mut sparse_matrix = SparseMatrix::<i32>::new(context, size).unwrap();
+
+        let element_1 = MatrixElement::from_triple(1, 2, 1);
+        let element_2 = MatrixElement::from_triple(2, 3, 2000);
+        let element_3 = MatrixElement::from_triple(3, 4, -10);
+
+        sparse_matrix.set_element(element_1).unwrap();
+        sparse_matrix.set_element(element_2).unwrap();
+        sparse_matrix.set_element(element_3).unwrap();
+
+        assert_eq!(1f32, unsafe {
+            <f32 as GetSparseMatrixElementValueUntyped<f32>>::element_value_at_coordinate(
+                &sparse_matrix,
+                &element_1.coordinate(),
+            )
+            .unwrap()
+            .unwrap()
+        });
+        assert_eq!(2000i32 as u8, unsafe {
+            <u8 as GetSparseMatrixElementValueUntyped<u8>>::element_value_at_coordinate(
+                &sparse_matrix,
+                &element_2.coordinate(),
+            )
+            .unwrap()
+            .unwrap()
+        });
+        assert_eq!(-10i32 as u8, unsafe {
+            <u8 as GetSparseMatrixElementValueUntyped<u8>>::element_value_at_coordinate(
+                &sparse_matrix,
+                &element_3.coordinate(),
+            )
+            .unwrap()
+            .unwrap()
+        });
+        // assert_eq!(
+        //     element_2,
+        //     sparse_matrix
+        //         .element(element_2.coordinate())
+        //         .unwrap()
+        //         .unwrap()
+        // );
+    }
+
+    #[test]
+    fn get_element_from_usize_matrix() {
+        let context = Context::init_default().unwrap();
+
+        let target_height: RowIndex = 10;
+        let target_width: ColumnIndex = 5;
+        let size = Size::new(target_height, target_width);
+
+        let mut sparse_matrix = SparseMatrix::<usize>::new(context, size).unwrap();
+
+        let element_1 = MatrixElement::<usize>::from_triple(1, 2, 1);
+        let element_2 = MatrixElement::<usize>::from_triple(2, 3, 2);
+
+        sparse_matrix.set_element(element_1).unwrap();
+        sparse_matrix.set_element(element_2).unwrap();
+
+        assert_eq!(
+            element_1,
+            sparse_matrix
+                .element(element_1.coordinate())
+                .unwrap()
+                .unwrap()
+        );
+        assert_eq!(
+            element_2,
+            sparse_matrix
+                .element(element_2.coordinate())
+                .unwrap()
+                .unwrap()
+        );
+    }
+}
