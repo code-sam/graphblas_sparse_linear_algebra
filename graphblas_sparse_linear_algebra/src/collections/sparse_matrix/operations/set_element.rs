@@ -2,7 +2,9 @@ use crate::collections::sparse_matrix::element::GetMatrixElementCoordinate;
 use crate::collections::sparse_matrix::element::GetMatrixElementValue;
 use crate::collections::sparse_matrix::ColumnIndex;
 use crate::collections::sparse_matrix::RowIndex;
+use crate::collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix};
 use crate::context::CallGraphBlasContext;
+use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
     GrB_Matrix_setElement_BOOL, GrB_Matrix_setElement_FP32, GrB_Matrix_setElement_FP64,
     GrB_Matrix_setElement_INT16, GrB_Matrix_setElement_INT32, GrB_Matrix_setElement_INT64,
@@ -10,15 +12,9 @@ use crate::graphblas_bindings::{
     GrB_Matrix_setElement_UINT64, GrB_Matrix_setElement_UINT8,
 };
 use crate::index::IndexConversion;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::ConvertScalar;
-use crate::{
-    collections::sparse_matrix::{GetGraphblasSparseMatrix, SparseMatrix},
-    error::SparseLinearAlgebraError,
-    value_type::{
-        utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-        ValueType,
-    },
-};
+use crate::value_type::ValueType;
 
 pub trait SetSparseMatrixElement<T: ValueType> {
     fn set_value(
