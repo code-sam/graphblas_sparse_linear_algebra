@@ -10,7 +10,6 @@ use crate::collections::collection::Collection;
 use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
-use crate::context::GetContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
 use crate::error::SparseLinearAlgebraError;
@@ -33,14 +32,16 @@ impl<T: ValueType + GetSparseMatrixElementValuesTyped<T>> GetSparseMatrixElement
 }
 
 pub trait GetSparseMatrixElementValuesTyped<T: ValueType> {
-    fn get_element_values(matrix: &SparseMatrix<T>) -> Result<Vec<T>, SparseLinearAlgebraError>;
+    fn get_element_values(
+        matrix: &(impl GetGraphblasSparseMatrix + Collection),
+    ) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_element_values {
     ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetSparseMatrixElementValuesTyped<$value_type> for $value_type {
             fn get_element_values(
-                matrix: &SparseMatrix<$value_type>,
+                matrix: &(impl GetGraphblasSparseMatrix + Collection),
             ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = matrix.number_of_stored_elements()?;
 

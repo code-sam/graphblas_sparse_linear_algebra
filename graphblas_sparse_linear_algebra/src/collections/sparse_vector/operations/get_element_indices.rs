@@ -2,7 +2,6 @@ use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::sparse_vector::GetGraphblasSparseVector;
 use crate::collections::sparse_vector::SparseVector;
 use crate::context::CallGraphBlasContext;
-use crate::context::GetContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
 use crate::error::SparseLinearAlgebraError;
@@ -31,7 +30,9 @@ impl<T: ValueType + GetSparseVectorElementValuesTyped<T>> GetSparseVectorElement
 }
 
 pub trait GetSparseVectorElementValuesTyped<T: ValueType> {
-    fn element_values(vector: &SparseVector<T>) -> Result<Vec<T>, SparseLinearAlgebraError>;
+    fn element_values(
+        vector: &(impl GetGraphblasSparseVector + Collection),
+    ) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
 
 // TODO: consider using an iterator - perhaps benchmark performance before switching
@@ -39,7 +40,7 @@ macro_rules! implement_get_element_values {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetSparseVectorElementValuesTyped<$value_type> for $value_type {
             fn element_values(
-                vector: &SparseVector<$value_type>,
+                vector: &(impl GetGraphblasSparseVector + Collection),
             ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = vector.number_of_stored_elements()?;
 

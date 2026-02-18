@@ -1,16 +1,15 @@
-use crate::collections::sparse_vector::SparseVector;
-use crate::error::SparseLinearAlgebraError;
-use crate::index::ElementIndex;
-use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
-use crate::value_type::ValueType;
 use crate::collections::collection::Collection;
-use crate::index::IndexConversion;
-use crate::context::GetContext;
-use crate::context::CallGraphBlasContext;
 use crate::collections::sparse_vector::sparse_vector::GetGraphblasSparseVector;
+use crate::collections::sparse_vector::SparseVector;
+use crate::context::CallGraphBlasContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
+use crate::error::SparseLinearAlgebraError;
+use crate::index::ElementIndex;
+use crate::index::IndexConversion;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::ConvertVector;
+use crate::value_type::ValueType;
 
 use crate::graphblas_bindings::{
     GrB_Vector_extractTuples_BOOL, GrB_Vector_extractTuples_FP32, GrB_Vector_extractTuples_FP64,
@@ -20,12 +19,11 @@ use crate::graphblas_bindings::{
     GrB_Vector_extractTuples_UINT8,
 };
 
-
 pub trait GetSparseVectorElementIndices {
     fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetSparseVectorElementIndicesTyped<T>> GetSparseVectorElementIndices
+impl<T: ValueType + GetSparseVectorElementIndicesTyped> GetSparseVectorElementIndices
     for SparseVector<T>
 {
     fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
@@ -33,16 +31,18 @@ impl<T: ValueType + GetSparseVectorElementIndicesTyped<T>> GetSparseVectorElemen
     }
 }
 
-pub trait GetSparseVectorElementIndicesTyped<T: ValueType> {
-    fn element_indices(vector: &SparseVector<T>) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
+pub trait GetSparseVectorElementIndicesTyped {
+    fn element_indices(
+        vector: &(impl GetGraphblasSparseVector + Collection),
+    ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
 }
 
 // TODO: consider using an iterator - perhaps benchmark performance before switching
 macro_rules! implement_get_element_indices {
     ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetSparseVectorElementIndicesTyped<$value_type> for $value_type {
+        impl GetSparseVectorElementIndicesTyped for $value_type {
             fn element_indices(
-                vector: &SparseVector<$value_type>,
+                vector: &(impl GetGraphblasSparseVector + Collection),
             ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = vector.number_of_stored_elements()?;
 
