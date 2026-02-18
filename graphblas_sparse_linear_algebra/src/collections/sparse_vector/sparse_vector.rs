@@ -223,20 +223,36 @@ impl<T: ValueType> GetContext for SparseVector<T> {
 
 impl<T: ValueType> Collection for SparseVector<T> {
     fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
-        self.context
-            .call(|| unsafe { GrB_Vector_clear(self.vector) }, &self.vector)?;
-        Ok(())
+        clear_sparse_vector(self)
     }
 
     fn number_of_stored_elements(&self) -> Result<ElementCount, SparseLinearAlgebraError> {
-        let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Vector_nvals(number_of_values.as_mut_ptr(), self.vector) },
-            &self.vector,
-        )?;
-        let number_of_values = unsafe { number_of_values.assume_init() };
-        Ok(ElementCount::from_graphblas_index(number_of_values)?)
+        number_of_stored_elements_in_sparse_vector(self)
     }
+}
+
+pub fn clear_sparse_vector(
+    vector: &mut impl GetGraphblasSparseVector,
+) -> Result<(), SparseLinearAlgebraError> {
+    vector.context_ref().call(
+        || unsafe { GrB_Vector_clear(vector.graphblas_vector_ptr()) },
+        unsafe { vector.graphblas_vector_ptr_ref() },
+    )?;
+    Ok(())
+}
+
+pub fn number_of_stored_elements_in_sparse_vector(
+    vector: &impl GetGraphblasSparseVector,
+) -> Result<ElementCount, SparseLinearAlgebraError> {
+    let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+    vector.context_ref().call(
+        || unsafe {
+            GrB_Vector_nvals(number_of_values.as_mut_ptr(), vector.graphblas_vector_ptr())
+        },
+        unsafe { vector.graphblas_vector_ptr_ref() },
+    )?;
+    let number_of_values = unsafe { number_of_values.assume_init() };
+    Ok(ElementCount::from_graphblas_index(number_of_values)?)
 }
 
 pub trait GetGraphblasSparseVector: GetContext {
