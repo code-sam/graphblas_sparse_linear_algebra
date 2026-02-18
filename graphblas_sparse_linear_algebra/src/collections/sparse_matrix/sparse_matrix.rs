@@ -1,3 +1,4 @@
+use core::num;
 use std::marker::{PhantomData, Send, Sync};
 use std::mem::MaybeUninit;
 use std::ptr::null_mut;
@@ -107,20 +108,36 @@ impl<T: ValueType> GetContext for SparseMatrix<T> {
 
 impl<T: ValueType> Collection for SparseMatrix<T> {
     fn clear(&mut self) -> Result<(), SparseLinearAlgebraError> {
-        self.context
-            .call(|| unsafe { GrB_Matrix_clear(self.matrix) }, &self.matrix)?;
-        Ok(())
+        clear_sparse_matrix(self)
     }
 
     fn number_of_stored_elements(&self) -> Result<ElementCount, SparseLinearAlgebraError> {
-        let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
-        self.context.call(
-            || unsafe { GrB_Matrix_nvals(number_of_values.as_mut_ptr(), self.matrix) },
-            &self.matrix,
-        )?;
-        let number_of_values = unsafe { number_of_values.assume_init() };
-        Ok(ElementCount::from_graphblas_index(number_of_values)?)
+        number_of_stored_elements_in_sparse_matrix(self)
     }
+}
+
+pub fn clear_sparse_matrix(
+    matrix: &mut impl GetGraphblasSparseMatrix,
+) -> Result<(), SparseLinearAlgebraError> {
+    matrix.context_ref().call(
+        || unsafe { GrB_Matrix_clear(matrix.graphblas_matrix_ptr()) },
+        unsafe { matrix.graphblas_matrix_ptr_ref() },
+    )?;
+    Ok(())
+}
+
+pub fn number_of_stored_elements_in_sparse_matrix(
+    matrix: &impl GetGraphblasSparseMatrix,
+) -> Result<ElementCount, SparseLinearAlgebraError> {
+    let mut number_of_values: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
+    matrix.context_ref().call(
+        || unsafe {
+            GrB_Matrix_nvals(number_of_values.as_mut_ptr(), matrix.graphblas_matrix_ptr())
+        },
+        unsafe { matrix.graphblas_matrix_ptr_ref() },
+    )?;
+    let number_of_values = unsafe { number_of_values.assume_init() };
+    Ok(ElementCount::from_graphblas_index(number_of_values)?)
 }
 
 pub trait GetGraphblasSparseMatrix: GetContext {
