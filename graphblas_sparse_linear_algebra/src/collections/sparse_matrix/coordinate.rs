@@ -1,10 +1,9 @@
-use crate::index::ElementIndex;
-use crate::{error::SparseLinearAlgebraError, index::ElementCount};
 use crate::error::{GraphblasError, GraphblasErrorType};
 use crate::error::{LogicError, LogicErrorType};
+use crate::index::ElementIndex;
+use crate::{error::SparseLinearAlgebraError, index::ElementCount};
 
 use super::{ColumnIndex, RowIndex};
-
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Coordinate {

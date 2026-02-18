@@ -40,11 +40,11 @@ impl<T: ValueType + Default + GetSparseVectorElementValueTyped<T>> GetSparseVect
 
 pub trait GetSparseVectorElementValueTyped<T: ValueType + Default> {
     fn element_value(
-        vector: &SparseVector<T>,
+        vector: &impl GetGraphblasSparseVector,
         index: ElementIndex,
     ) -> Result<Option<T>, SparseLinearAlgebraError>;
     fn element_value_or_default(
-        vector: &SparseVector<T>,
+        vector: &impl GetGraphblasSparseVector,
         index: ElementIndex,
     ) -> Result<T, SparseLinearAlgebraError>;
 }
@@ -53,14 +53,14 @@ macro_rules! implement_get_element_value {
     ($value_type:ty) => {
         impl GetSparseVectorElementValueTyped<$value_type> for $value_type {
             fn element_value(
-                vector: &SparseVector<$value_type>,
+                vector: &impl GetGraphblasSparseVector,
                 index: ElementIndex
             ) -> Result<Option<$value_type>, SparseLinearAlgebraError> {
                 unsafe { <$value_type as GetSparseVectorElementValueUntyped<$value_type>>::element_value(vector, index) }
             }
 
             fn element_value_or_default(
-                vector: &SparseVector<$value_type>,
+                vector: &impl GetGraphblasSparseVector,
                 index: ElementIndex,
             ) -> Result<$value_type, SparseLinearAlgebraError> {
                 unsafe { <$value_type as GetSparseVectorElementValueUntyped<$value_type>>::element_value_or_default(vector, index) }

@@ -13,7 +13,6 @@ use crate::collections::sparse_matrix::GetGraphblasSparseMatrix;
 use crate::collections::sparse_matrix::RowIndex;
 use crate::collections::sparse_matrix::SparseMatrix;
 use crate::context::CallGraphBlasContext;
-use crate::context::GetContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
 use crate::error::SparseLinearAlgebraError;
@@ -29,33 +28,39 @@ pub trait GetSparseMatrixCoordinates {
     fn element_column_indices(&self) -> Result<Vec<ColumnIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetSparseMatrixCoordinatesTyped<T>> GetSparseMatrixCoordinates
+impl<T: ValueType + GetSparseMatrixCoordinatesTyped> GetSparseMatrixCoordinates
     for SparseMatrix<T>
 {
     fn element_coordinates(&self) -> Result<CoordinateList, SparseLinearAlgebraError> {
         T::get_coordinates(self)
     }
-    
+
     fn element_row_indices(&self) -> Result<Vec<RowIndex>, SparseLinearAlgebraError> {
         T::get_row_indices(self)
     }
-    
+
     fn element_column_indices(&self) -> Result<Vec<ColumnIndex>, SparseLinearAlgebraError> {
         T::get_column_indices(self)
     }
 }
 
-pub trait GetSparseMatrixCoordinatesTyped<T: ValueType> {
-    fn get_coordinates(matrix: &SparseMatrix<T>) -> Result<CoordinateList, SparseLinearAlgebraError>;
-    fn get_row_indices(matrix: &SparseMatrix<T>) -> Result<Vec<RowIndex>, SparseLinearAlgebraError>;
-    fn get_column_indices(matrix: &SparseMatrix<T>) -> Result<Vec<ColumnIndex>, SparseLinearAlgebraError>;
+pub trait GetSparseMatrixCoordinatesTyped {
+    fn get_coordinates(
+        matrix: &(impl GetGraphblasSparseMatrix + Collection),
+    ) -> Result<CoordinateList, SparseLinearAlgebraError>;
+    fn get_row_indices(
+        matrix: &(impl GetGraphblasSparseMatrix + Collection),
+    ) -> Result<Vec<RowIndex>, SparseLinearAlgebraError>;
+    fn get_column_indices(
+        matrix: &(impl GetGraphblasSparseMatrix + Collection),
+    ) -> Result<Vec<ColumnIndex>, SparseLinearAlgebraError>;
 }
 
 macro_rules! implement_get_element_coordinates_typed {
     ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetSparseMatrixCoordinatesTyped<$value_type> for $value_type {
+        impl GetSparseMatrixCoordinatesTyped for $value_type {
             fn get_coordinates(
-                matrix: &SparseMatrix<$value_type>,
+                matrix: &(impl GetGraphblasSparseMatrix + Collection),
             ) -> Result<CoordinateList, SparseLinearAlgebraError> {
                 let number_of_stored_elements = matrix.number_of_stored_elements()?;
 
@@ -96,7 +101,7 @@ macro_rules! implement_get_element_coordinates_typed {
             }
 
             fn get_row_indices(
-                matrix: &SparseMatrix<$value_type>,
+                matrix: &(impl GetGraphblasSparseMatrix + Collection),
             ) -> Result<Vec<RowIndex>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = matrix.number_of_stored_elements()?;
 
@@ -132,7 +137,7 @@ macro_rules! implement_get_element_coordinates_typed {
             }
 
             fn get_column_indices(
-                matrix: &SparseMatrix<$value_type>,
+                matrix: &(impl GetGraphblasSparseMatrix + Collection),
             ) -> Result<Vec<RowIndex>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = matrix.number_of_stored_elements()?;
 

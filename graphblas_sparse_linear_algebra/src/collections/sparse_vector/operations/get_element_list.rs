@@ -1,10 +1,11 @@
 use crate::collections::collection::Collection;
 use crate::collections::sparse_vector::sparse_vector::GetGraphblasSparseVector;
 use crate::collections::sparse_vector::SparseVector;
+use crate::collections::sparse_vector::VectorElementList;
 use crate::context::CallGraphBlasContext;
-use crate::context::GetContext;
 use crate::error::GraphblasError;
 use crate::error::GraphblasErrorType;
+use crate::error::SparseLinearAlgebraError;
 use crate::graphblas_bindings::{
     GrB_Vector_extractTuples_BOOL, GrB_Vector_extractTuples_FP32, GrB_Vector_extractTuples_FP64,
     GrB_Vector_extractTuples_INT16, GrB_Vector_extractTuples_INT32, GrB_Vector_extractTuples_INT64,
@@ -14,15 +15,9 @@ use crate::graphblas_bindings::{
 };
 use crate::index::ElementIndex;
 use crate::index::IndexConversion;
+use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::ConvertVector;
-use crate::{
-    collections::sparse_vector::VectorElementList,
-    error::SparseLinearAlgebraError,
-    value_type::{
-        utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type,
-        ValueType,
-    },
-};
+use crate::value_type::ValueType;
 use suitesparse_graphblas_sys::GrB_Index;
 
 pub trait GetSparseVectorElementList<T: ValueType> {
@@ -39,7 +34,7 @@ impl<T: ValueType + GetVectorElementListTyped<T>> GetSparseVectorElementList<T>
 
 pub trait GetVectorElementListTyped<T: ValueType> {
     fn get_element_list(
-        vector: &SparseVector<T>,
+        vector: &(impl GetGraphblasSparseVector + Collection),
     ) -> Result<VectorElementList<T>, SparseLinearAlgebraError>;
 }
 
@@ -47,7 +42,7 @@ macro_rules! implement_get_element_list {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetVectorElementListTyped<$value_type> for $value_type {
             fn get_element_list(
-                vector: &SparseVector<$value_type>,
+                vector: &(impl GetGraphblasSparseVector + Collection),
             ) -> Result<VectorElementList<$value_type>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = vector.number_of_stored_elements()?;
 
