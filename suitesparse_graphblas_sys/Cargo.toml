@@ -1,7 +1,7 @@
 [package]
 name = "suitesparse_graphblas_sys"
 description = "Rust bindings for SuiteSparse::GraphBLAS"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 license = "CC-BY-NC-4.0"
 authors = ["code_sam <mail@samdekker.nl>"]
@@ -20,5 +20,5 @@ disable-just-in-time-compiler = []
 [build-dependencies]
 bindgen = "0.72"
 cmake = "0.1"
-git2 = "0.18"
+git2 = "0.20.4"
 regex = "1.12"
