@@ -27,12 +27,12 @@ impl<T: ValueType + GetSparseMatrixElementValuesTyped<T>> GetSparseMatrixElement
     for SparseMatrix<T>
 {
     fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError> {
-        T::get_element_values(self)
+        T::element_values(self)
     }
 }
 
 pub trait GetSparseMatrixElementValuesTyped<T: ValueType> {
-    fn get_element_values(
+    fn element_values(
         matrix: &(impl GetGraphblasSparseMatrix + Collection),
     ) -> Result<Vec<T>, SparseLinearAlgebraError>;
 }
@@ -40,7 +40,7 @@ pub trait GetSparseMatrixElementValuesTyped<T: ValueType> {
 macro_rules! implement_get_element_values {
     ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
         impl GetSparseMatrixElementValuesTyped<$value_type> for $value_type {
-            fn get_element_values(
+            fn element_values(
                 matrix: &(impl GetGraphblasSparseMatrix + Collection),
             ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = matrix.number_of_stored_elements()?;

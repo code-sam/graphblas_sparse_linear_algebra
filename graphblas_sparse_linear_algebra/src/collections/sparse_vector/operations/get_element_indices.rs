@@ -17,41 +17,41 @@ use crate::index::IndexConversion;
 use crate::value_type::utilities_to_implement_traits_for_all_value_types::implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type;
 use crate::value_type::{ConvertVector, ValueType};
 
-pub trait GetSparseVectorElementValues<T: ValueType> {
-    fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError>;
+pub trait GetSparseVectorElementIndices<T: ValueType> {
+    fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetSparseVectorElementValuesTyped<T>> GetSparseVectorElementValues<T>
+impl<T: ValueType + GetSparseVectorElementIndicesTyped<T>> GetSparseVectorElementIndices<T>
     for SparseVector<T>
 {
-    fn element_values(&self) -> Result<Vec<T>, SparseLinearAlgebraError> {
-        T::element_values(self)
+    fn element_indices(&self) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
+        T::element_indices(self)
     }
 }
 
-pub trait GetSparseVectorElementValuesTyped<T: ValueType> {
-    fn element_values(
+pub trait GetSparseVectorElementIndicesTyped<T: ValueType> {
+    fn element_indices(
         vector: &(impl GetGraphblasSparseVector + Collection),
-    ) -> Result<Vec<T>, SparseLinearAlgebraError>;
+    ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError>;
 }
 
 // TODO: consider using an iterator - perhaps benchmark performance before switching
-macro_rules! implement_get_element_values {
-    ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetSparseVectorElementValuesTyped<$value_type> for $value_type {
-            fn element_values(
+macro_rules! implement_get_element_indices {
+    ($value_type:ty, $_graphblas_implementation_type:ty, $get_element_function:ident) => {
+        impl GetSparseVectorElementIndicesTyped<$value_type> for $value_type {
+            fn element_indices(
                 vector: &(impl GetGraphblasSparseVector + Collection),
-            ) -> Result<Vec<$value_type>, SparseLinearAlgebraError> {
+            ) -> Result<Vec<ElementIndex>, SparseLinearAlgebraError> {
                 let number_of_stored_elements = vector.number_of_stored_elements()?;
 
-                let mut values: Vec<$graphblas_implementation_type> = Vec::with_capacity(number_of_stored_elements);
+                let mut indices = Vec::with_capacity(number_of_stored_elements);
 
                 let mut number_of_stored_and_returned_elements = number_of_stored_elements.as_graphblas_index()?;
 
                 vector.context_ref().call(|| unsafe {
                     $get_element_function(
+                        indices.as_mut_ptr(),
                         std::ptr::null_mut(),
-                        values.as_mut_ptr(),
                         &mut number_of_stored_and_returned_elements,
                         vector.graphblas_vector_ptr())
                 }, unsafe{ &vector.graphblas_vector_ptr() })?;
@@ -60,22 +60,22 @@ macro_rules! implement_get_element_values {
 
                 unsafe {
                     if length_of_element_list == number_of_stored_elements {
-                        values.set_len(length_of_element_list);
+                        indices.set_len(length_of_element_list);
                     } else {
                         let err: SparseLinearAlgebraError = GraphblasError::new(GraphblasErrorType::IndexOutOfBounds,
-                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}",number_of_stored_elements, length_of_element_list)).into();
+                            format!("matrix.number_of_stored_elements {} unequal to length of returned values {}", number_of_stored_elements, length_of_element_list)).into();
                         return Err(err)
                     }
                 };
 
-                let values = ConvertVector::<$graphblas_implementation_type, $value_type>::to_type(values)?;
-                Ok(values)
+                let indices = indices.to_type()?;
+                Ok(indices)
             }
         }
     };
 }
 
 implement_1_type_macro_for_all_value_types_and_typed_graphblas_function_with_implementation_type!(
-    implement_get_element_values,
+    implement_get_element_indices,
     GrB_Vector_extractTuples
 );
