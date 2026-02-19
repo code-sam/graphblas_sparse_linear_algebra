@@ -417,9 +417,7 @@ impl<T: ValueType> VectorMask for SparseVector<T> {
 mod tests {
 
     use super::*;
-    use crate::collections::sparse_matrix::operations::{
-        FromMatrixElementList, GetSparseMatrixElementValue,
-    };
+    use crate::collections::sparse_matrix::operations::FromMatrixElementList;
     use crate::collections::sparse_matrix::MatrixElementList;
     use crate::collections::sparse_vector::operations::{
         DeleteSparseVectorElement, FromVectorElementList, GetSparseVectorElement,
