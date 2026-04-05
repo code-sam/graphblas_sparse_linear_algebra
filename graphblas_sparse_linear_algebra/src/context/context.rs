@@ -13,9 +13,10 @@ use suitesparse_graphblas_sys::{
     GrB_IndexUnaryOp_error, GrB_Info_GxB_JIT_ERROR, GrB_Info_GxB_OUTPUT_IS_READONLY, GrB_Matrix,
     GrB_Matrix_error, GrB_Monoid, GrB_Monoid_error, GrB_Scalar, GrB_Scalar_error, GrB_Semiring,
     GrB_Semiring_error, GrB_Type, GrB_Type_error, GrB_UnaryOp, GrB_UnaryOp_error, GrB_Vector,
-    GrB_Vector_error, GrB_finalize,
+    GrB_Vector_error, GrB_finalize, GxB_init,
 };
 
+use crate::context::MemoryAllocator;
 use crate::graphblas_bindings::{
     GrB_Info,
     GrB_Info_GrB_DIMENSION_MISMATCH,
@@ -134,7 +135,7 @@ impl Context {
         matrix_storage_format: MatrixStorageFormat,
     ) -> Result<Arc<Self>, SparseLinearAlgebraError> {
         let mut context = Context::new();
-        context.start(mode)?;
+        context.start(mode, MemoryAllocator::SystemDefault)?;
         context.set_matrix_format(matrix_storage_format)?;
         Ok(Arc::new(context))
     }
@@ -142,16 +143,36 @@ impl Context {
     /// Sets MatrixStorageFormat::ByRow
     pub fn init_default() -> Result<Arc<Self>, SparseLinearAlgebraError> {
         let mut context = Context::new();
-        context.start(Mode::NonBlocking)?;
+        context.start(Mode::NonBlocking, MemoryAllocator::SystemDefault)?;
         context.set_matrix_format(MatrixStorageFormat::ByRow)?;
         Ok(Arc::new(context))
     }
 
-    fn start(&mut self, mode: Mode) -> Result<Status, SparseLinearAlgebraError> {
+    /// Initialise GraphBLAS with a custom memory allocator.
+    ///
+    /// # Panics / UB
+    /// The allocator passed here **must** be the same allocator that is set
+    /// as the Rust global allocator. Mixing them will cause heap corruption.
+    pub unsafe fn init_with_allocator(
+        mode: Mode,
+        matrix_storage_format: MatrixStorageFormat,
+        allocator: MemoryAllocator,
+    ) -> Result<Arc<Self>, SparseLinearAlgebraError> {
+        let mut context = Context::new();
+        context.start(mode, allocator)?;
+        context.set_matrix_format(matrix_storage_format)?;
+        Ok(Arc::new(context))
+    }
+
+    fn start(
+        &mut self,
+        mode: Mode,
+        allocator: MemoryAllocator,
+    ) -> Result<Status, SparseLinearAlgebraError> {
         let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         // println!("number_of_ready_contexts before starting: {:?}",number_of_ready_contexts.load(Ordering::SeqCst));
         if number_of_ready_contexts.load(Ordering::SeqCst) == 0 {
-            let status = initialize(mode, number_of_ready_contexts)?;
+            let status = initialize(mode, allocator, number_of_ready_contexts)?;
             *self = Context::Ready(Ready { mode });
             Ok(status)
         } else {
@@ -185,18 +206,29 @@ impl Context {
 
 fn initialize(
     mode: Mode,
+    allocator: MemoryAllocator,
     number_of_ready_contexts: MutexGuard<AtomicIsize>,
 ) -> Result<Status, SparseLinearAlgebraError> {
-    // println!("Trying to initialize a context");
-    // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
-    // println!("Got a lock to initialize a context! {:?}", is_graphblas_busy.load(Ordering::SeqCst));
-    let status = unsafe {
-        graphblas_result(GrB_init(mode.into()), || -> String {
-            String::from("Something went wrong while initializing a GraphBLAS context")
-        })?
+    let status = match allocator.memory_allocator_function_pointers() {
+        None => unsafe {
+            graphblas_result(GrB_init(mode.into()), || {
+                String::from("Failed to initialise GraphBLAS context")
+            })?
+        },
+        Some(pointers) => unsafe {
+            graphblas_result(
+                GxB_init(
+                    mode.into(),
+                    Some(pointers.malloc),
+                    Some(pointers.calloc),
+                    Some(pointers.realloc),
+                    Some(pointers.free),
+                ),
+                || String::from("Failed to initialise GraphBLAS context with custom allocator"),
+            )?
+        },
     };
     number_of_ready_contexts.fetch_add(1, Ordering::SeqCst);
-    // println!("Initialised a context");
     Ok(status)
 }
 
@@ -240,7 +272,7 @@ where
     // thread::sleep(time::Duration::from_secs(2));
     // let _is_graphblas_busy = IS_GRAPHBLAS_BUSY.lock().unwrap();
     graphblas_result(function_to_call(), || -> String {
-        String::from("Something went wrong while calling the GraphBLAS context.")
+        String::from("Failed to execute GraphBLAS function")
     })
 }
 
@@ -302,10 +334,10 @@ macro_rules! implement_CallGraphBlasContext {
                             }
                             match message {
                                 Ok(message) => message.to_owned(),
-                                Err(error) => format!("Something went wrong while calling the GraphBLAS implementation. Unable to parse detailed error message due to: {}", error)
+                                Err(error) => format!("Failed to execute GraphBLAS function. Unable to parse detailed error message due to: {}", error)
                             }
                         }
-                        _ => return String::from("Something went wrong while calling the GraphBLAS implementation. Unable to retrieve more detailed error information.")
+                        _ => return String::from("Failed to execute GraphBLAS function. Unable to retrieve more detailed error information.")
                     }
                 };
             }
@@ -515,7 +547,9 @@ mod tests {
     #[test]
     fn start_and_drop_context() {
         let mut context = Context::new();
-        context.start(Mode::NonBlocking).unwrap();
+        context
+            .start(Mode::NonBlocking, MemoryAllocator::SystemDefault)
+            .unwrap();
 
         // assert_eq!(
         //     context,
@@ -533,7 +567,9 @@ mod tests {
     #[test]
     fn start_and_drop_context_2() {
         let mut context = Context::new();
-        context.start(Mode::NonBlocking).unwrap();
+        context
+            .start(Mode::NonBlocking, MemoryAllocator::SystemDefault)
+            .unwrap();
         // let mut context = Context::init_ready(Mode::NonBlocking).unwrap();
 
         // assert_eq!(

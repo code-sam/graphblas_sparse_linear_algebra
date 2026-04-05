@@ -108,7 +108,7 @@ mod tests {
         let deserialized_sparse_vector = unsafe {
             SparseVector::<u8>::deserialize_suitesparse_graphblas_sparse_vector(
                 context,
-                serialized_vector,
+                &serialized_vector,
             )
         }
         .unwrap();

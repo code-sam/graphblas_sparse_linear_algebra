@@ -24,7 +24,7 @@ pub trait GetSparseVectorElementList<T: ValueType> {
     fn element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError>;
 }
 
-impl<T: ValueType + GetVectorElementListTyped<T>> GetSparseVectorElementList<T>
+impl<T: ValueType + GetSparseVectorElementListTyped<T>> GetSparseVectorElementList<T>
     for SparseVector<T>
 {
     fn element_list(&self) -> Result<VectorElementList<T>, SparseLinearAlgebraError> {
@@ -32,7 +32,7 @@ impl<T: ValueType + GetVectorElementListTyped<T>> GetSparseVectorElementList<T>
     }
 }
 
-pub trait GetVectorElementListTyped<T: ValueType> {
+pub trait GetSparseVectorElementListTyped<T: ValueType> {
     fn element_list(
         vector: &(impl GetGraphblasSparseVector + Collection),
     ) -> Result<VectorElementList<T>, SparseLinearAlgebraError>;
@@ -40,7 +40,7 @@ pub trait GetVectorElementListTyped<T: ValueType> {
 
 macro_rules! implement_get_element_list {
     ($value_type:ty, $graphblas_implementation_type:ty, $get_element_function:ident) => {
-        impl GetVectorElementListTyped<$value_type> for $value_type {
+        impl GetSparseVectorElementListTyped<$value_type> for $value_type {
             fn element_list(
                 vector: &(impl GetGraphblasSparseVector + Collection),
             ) -> Result<VectorElementList<$value_type>, SparseLinearAlgebraError> {
