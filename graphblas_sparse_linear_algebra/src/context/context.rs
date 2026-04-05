@@ -16,7 +16,7 @@ use suitesparse_graphblas_sys::{
     GrB_Vector_error, GrB_finalize, GxB_init,
 };
 
-use crate::context::MemoryAllocator;
+use crate::context::{MemoryAllocator, MemoryAllocatorFuctionPointers};
 use crate::graphblas_bindings::{
     GrB_Info,
     GrB_Info_GrB_DIMENSION_MISMATCH,
@@ -40,7 +40,7 @@ use crate::graphblas_bindings::{
     GrB_Mode_GrB_BLOCKING,
     GrB_Mode_GrB_NONBLOCKING,
     // GrB_error,
-    GrB_init,
+    // GrB_init,
 };
 
 use crate::error::SparseLinearAlgebraError;
@@ -120,30 +120,24 @@ impl Into<i32> for Mode {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Context {
-    Ready(Ready),
-    NotReady(NotReady),
+pub struct Context {
+    pub(crate) mode: Mode,
+    pub(crate) memory_allocator_function_pointers: MemoryAllocatorFuctionPointers
 }
 
 impl Context {
-    fn new() -> Self {
-        Context::NotReady(NotReady {})
-    }
-
     pub fn init(
         mode: Mode,
         matrix_storage_format: MatrixStorageFormat,
     ) -> Result<Arc<Self>, SparseLinearAlgebraError> {
-        let mut context = Context::new();
-        context.start(mode, MemoryAllocator::SystemDefault)?;
+        let mut context = Context::start(mode, MemoryAllocator::SystemDefault)?;
         context.set_matrix_format(matrix_storage_format)?;
         Ok(Arc::new(context))
     }
 
     /// Sets MatrixStorageFormat::ByRow
     pub fn init_default() -> Result<Arc<Self>, SparseLinearAlgebraError> {
-        let mut context = Context::new();
-        context.start(Mode::NonBlocking, MemoryAllocator::SystemDefault)?;
+        let mut context = Context::start(Mode::NonBlocking, MemoryAllocator::SystemDefault)?;
         context.set_matrix_format(MatrixStorageFormat::ByRow)?;
         Ok(Arc::new(context))
     }
@@ -158,41 +152,32 @@ impl Context {
         matrix_storage_format: MatrixStorageFormat,
         allocator: MemoryAllocator,
     ) -> Result<Arc<Self>, SparseLinearAlgebraError> {
-        let mut context = Context::new();
-        context.start(mode, allocator)?;
+        let mut context = Context::start(mode, allocator)?;
         context.set_matrix_format(matrix_storage_format)?;
         Ok(Arc::new(context))
     }
 
     fn start(
-        &mut self,
         mode: Mode,
         allocator: MemoryAllocator,
-    ) -> Result<Status, SparseLinearAlgebraError> {
+    ) -> Result<Self, SparseLinearAlgebraError> {
         let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         // println!("number_of_ready_contexts before starting: {:?}",number_of_ready_contexts.load(Ordering::SeqCst));
+
+        let memory_allocator_function_pointers = allocator.memory_allocator_function_pointers();
+
         if number_of_ready_contexts.load(Ordering::SeqCst) == 0 {
-            let status = initialize(mode, allocator, number_of_ready_contexts)?;
-            *self = Context::Ready(Ready { mode });
-            Ok(status)
+            let _status = initialize(mode, allocator, number_of_ready_contexts)?;
         } else {
             number_of_ready_contexts.fetch_add(1, Ordering::SeqCst);
-            *self = Context::Ready(Ready { mode });
-            Ok(Status::Success)
         }
+
+        Ok(Self {
+            mode,
+            memory_allocator_function_pointers
+        })
     }
 
-    // TODO: make this safe to use. At the moment, the graphblas context is dropped automatically after all contexts have been dropped.
-    // pub fn stop(&mut self) -> () {
-    //     match &*self {
-    //         Context::Ready(ready) => {
-    //             *self = Context::NotReady(NotReady {});
-    //         }
-    //         Context::NotReady(_) => (),
-    //     }
-    // }
-
-    // TODO: check context is Ready
     pub fn call_without_detailed_error_information<F>(
         &self,
         function_to_call: F,
@@ -209,25 +194,20 @@ fn initialize(
     allocator: MemoryAllocator,
     number_of_ready_contexts: MutexGuard<AtomicIsize>,
 ) -> Result<Status, SparseLinearAlgebraError> {
-    let status = match allocator.memory_allocator_function_pointers() {
-        None => unsafe {
-            graphblas_result(GrB_init(mode.into()), || {
-                String::from("Failed to initialise GraphBLAS context")
-            })?
-        },
-        Some(pointers) => unsafe {
+    let memory_allocator_function_pointers = allocator.memory_allocator_function_pointers();
+
+    let status = unsafe {
             graphblas_result(
                 GxB_init(
                     mode.into(),
-                    Some(pointers.malloc),
-                    Some(pointers.calloc),
-                    Some(pointers.realloc),
-                    Some(pointers.free),
+                    Some(memory_allocator_function_pointers.malloc),
+                    Some(memory_allocator_function_pointers.calloc),
+                    Some(memory_allocator_function_pointers.realloc),
+                    Some(memory_allocator_function_pointers.free),
                 ),
                 || String::from("Failed to initialise GraphBLAS context with custom allocator"),
             )?
-        },
-    };
+        };
     number_of_ready_contexts.fetch_add(1, Ordering::SeqCst);
     Ok(status)
 }
@@ -240,27 +220,6 @@ pub trait CallGraphBlasContext<T> {
     ) -> Result<Status, SparseLinearAlgebraError>
     where
         F: FnMut() -> GrB_Info;
-}
-
-#[derive(Debug, PartialEq)]
-pub struct NotReady {}
-
-#[derive(Debug, PartialEq)]
-pub struct Ready {
-    mode: Mode,
-    // version: Version
-}
-
-impl Ready {
-    fn call_without_detailed_error_information<F>(
-        &self,
-        function_to_call: F,
-    ) -> Result<Status, SparseLinearAlgebraError>
-    where
-        F: FnMut() -> GrB_Info,
-    {
-        call_graphblas_implementation_without_detailed_error_information(function_to_call)
-    }
 }
 
 fn call_graphblas_implementation_without_detailed_error_information<F>(
@@ -276,13 +235,13 @@ where
     })
 }
 
-impl Ready {
+impl Context {
     fn finalize_context(&self) -> Result<Status, SparseLinearAlgebraError> {
         Ok(self.call_without_detailed_error_information(|| unsafe { GrB_finalize() })?)
     }
 }
 
-impl Drop for Ready {
+impl Drop for Context {
     fn drop(&mut self) -> () {
         let number_of_ready_contexts = NUMBER_OF_READY_CONTEXTS.lock().unwrap();
         if number_of_ready_contexts.load(Ordering::SeqCst) == 0 {
@@ -546,9 +505,7 @@ mod tests {
 
     #[test]
     fn start_and_drop_context() {
-        let mut context = Context::new();
-        context
-            .start(Mode::NonBlocking, MemoryAllocator::SystemDefault)
+        let _context = Context::start(Mode::NonBlocking, MemoryAllocator::SystemDefault)
             .unwrap();
 
         // assert_eq!(
@@ -566,9 +523,7 @@ mod tests {
 
     #[test]
     fn start_and_drop_context_2() {
-        let mut context = Context::new();
-        context
-            .start(Mode::NonBlocking, MemoryAllocator::SystemDefault)
+        let _context = Context::start(Mode::NonBlocking, MemoryAllocator::SystemDefault)
             .unwrap();
         // let mut context = Context::init_ready(Mode::NonBlocking).unwrap();
 

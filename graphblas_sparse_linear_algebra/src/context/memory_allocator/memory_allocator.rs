@@ -34,6 +34,7 @@ pub enum MemoryAllocator {
     },
 }
 
+#[derive(Debug, PartialEq)]
 pub(crate) struct MemoryAllocatorFuctionPointers {
     pub malloc: unsafe extern "C" fn(usize) -> *mut c_void,
     pub calloc: unsafe extern "C" fn(usize, usize) -> *mut c_void,
@@ -44,37 +45,42 @@ pub(crate) struct MemoryAllocatorFuctionPointers {
 impl MemoryAllocator {
     pub(crate) fn memory_allocator_function_pointers(
         &self,
-    ) -> Option<MemoryAllocatorFuctionPointers> {
+    ) -> MemoryAllocatorFuctionPointers {
         match self {
-            MemoryAllocator::SystemDefault => None,
+            MemoryAllocator::SystemDefault => MemoryAllocatorFuctionPointers { 
+                malloc: libc::malloc, 
+                calloc: libc::calloc, 
+                realloc: libc::realloc, 
+                free: libc::free, 
+            },
 
             #[cfg(feature = "memory-allocator-mimalloc")]
-            MemoryAllocator::MiMalloc => Some(MemoryAllocatorFuctionPointers {
+            MemoryAllocator::MiMalloc => MemoryAllocatorFuctionPointers {
                 malloc: mimalloc_malloc,
                 calloc: mimalloc_calloc,
                 realloc: mimalloc_realloc,
                 free: mimalloc_free,
-            }),
+            },
 
             #[cfg(feature = "memory-allocator-jemalloc")]
-            MemoryAllocator::Jemalloc => Some(MemoryAllocatorFuctionPointers {
+            MemoryAllocator::Jemalloc => MemoryAllocatorFuctionPointers {
                 malloc: jemalloc_malloc,
                 calloc: jemalloc_calloc,
                 realloc: jemalloc_realloc,
                 free: jemalloc_free,
-            }),
+            },
 
             MemoryAllocator::Custom {
                 malloc,
                 calloc,
                 realloc,
                 free,
-            } => Some(MemoryAllocatorFuctionPointers {
+            } => MemoryAllocatorFuctionPointers {
                 malloc: *malloc,
                 calloc: *calloc,
                 realloc: *realloc,
                 free: *free,
-            }),
+            },
         }
     }
 }
