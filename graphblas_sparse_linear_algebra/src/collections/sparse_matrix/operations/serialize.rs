@@ -3,24 +3,23 @@ use std::{ffi::c_void, mem::MaybeUninit};
 
 use suitesparse_graphblas_sys::{GrB_Index, GrB_Matrix, GxB_Matrix_serialize};
 
+use crate::collections::GetGraphblasSerializerDescriptor;
 use crate::context::CallGraphBlasContext;
+use crate::context::GetContext;
 use crate::index::IndexConversion;
-use crate::{
-    collections::GetGraphblasSerializerDescriptor, context::GetContext,
-    error::SparseLinearAlgebraError, index::ElementIndex,
-};
+use crate::{error::SparseLinearAlgebraError, index::ElementIndex};
 
 pub trait SerializeSuitesparseGraphblasSparseMatrix {
     unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
         &self,
         graphblas_sparse_matrix: GrB_Matrix,
-    ) -> Result<&[u8], SparseLinearAlgebraError>;
+    ) -> Result<Vec<u8>, SparseLinearAlgebraError>;
 }
 
 pub unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
     serializer: &(impl GetGraphblasSerializerDescriptor + GetContext),
     suitesparse_graphblas_sparse_matrix: GrB_Matrix,
-) -> Result<&[u8], SparseLinearAlgebraError> {
+) -> Result<Vec<u8>, SparseLinearAlgebraError> {
     let mut size_of_serialized_matrix: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     let mut serialized_matrix_pointer: MaybeUninit<*mut c_void> = MaybeUninit::uninit();
 
@@ -45,7 +44,13 @@ pub unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
             serialized_matrix_pointer as *const u8,
             size_of_serialized_matrix,
         )
+        .to_vec()
     };
+
+    // NOTE: requires memory allocator to be compatibele with libc
+    unsafe {
+        libc::free(serialized_matrix_pointer as *mut c_void);
+    }
 
     Ok(serialized_matrix)
 }

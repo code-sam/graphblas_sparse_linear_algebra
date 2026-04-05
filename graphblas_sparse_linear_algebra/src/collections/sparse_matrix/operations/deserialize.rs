@@ -107,7 +107,7 @@ mod tests {
         let deserialized_sparse_matrix = unsafe {
             SparseMatrix::<u8>::deserialize_suitesparse_graphblas_sparse_matrix(
                 context,
-                serialized_matrix,
+                &serialized_matrix,
             )
         }
         .unwrap();

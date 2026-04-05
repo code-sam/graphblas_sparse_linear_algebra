@@ -86,7 +86,7 @@ impl SerializeSuitesparseGraphblasSparseMatrix for LZ4Serializer {
     unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
         &self,
         suitesparse_graphblas_sparse_matrix: GrB_Matrix,
-    ) -> Result<&[u8], SparseLinearAlgebraError> {
+    ) -> Result<Vec<u8>, SparseLinearAlgebraError> {
         serialize_suitesparse_grapblas_sparse_matrix(self, suitesparse_graphblas_sparse_matrix)
     }
 }
@@ -95,7 +95,7 @@ impl SerializeSuitesparseGraphblasSparseVector for LZ4Serializer {
     unsafe fn serialize_suitesparse_grapblas_sparse_vector(
         &self,
         suitesparse_graphblas_sparse_vector: GrB_Vector,
-    ) -> Result<&[u8], SparseLinearAlgebraError> {
+    ) -> Result<Vec<u8>, SparseLinearAlgebraError> {
         serialize_suitesparse_grapblas_sparse_vector(self, suitesparse_graphblas_sparse_vector)
     }
 }

@@ -14,13 +14,13 @@ pub trait SerializeSuitesparseGraphblasSparseVector {
     unsafe fn serialize_suitesparse_grapblas_sparse_vector(
         &self,
         graphblas_sparse_vector: GrB_Vector,
-    ) -> Result<&[u8], SparseLinearAlgebraError>;
+    ) -> Result<Vec<u8>, SparseLinearAlgebraError>;
 }
 
 pub unsafe fn serialize_suitesparse_grapblas_sparse_vector(
     serializer: &(impl GetGraphblasSerializerDescriptor + GetContext),
     suitesparse_graphblas_sparse_vector: GrB_Vector,
-) -> Result<&[u8], SparseLinearAlgebraError> {
+) -> Result<Vec<u8>, SparseLinearAlgebraError> {
     let mut size_of_serialized_vector: MaybeUninit<GrB_Index> = MaybeUninit::uninit();
     let mut serialized_vector_pointer: MaybeUninit<*mut c_void> = MaybeUninit::uninit();
 
@@ -45,7 +45,13 @@ pub unsafe fn serialize_suitesparse_grapblas_sparse_vector(
             serialized_vector_pointer as *const u8,
             size_of_serialized_vector,
         )
+        .to_vec()
     };
+
+    // NOTE: requires memory allocator to be compatibele with libc
+    unsafe {
+        libc::free(serialized_vector_pointer as *mut c_void);
+    }
 
     Ok(serialized_vector)
 }
