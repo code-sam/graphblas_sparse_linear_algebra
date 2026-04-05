@@ -47,9 +47,8 @@ pub unsafe fn serialize_suitesparse_grapblas_sparse_matrix(
         .to_vec()
     };
 
-    // NOTE: requires memory allocator to be compatibele with libc
     unsafe {
-        libc::free(serialized_matrix_pointer as *mut c_void);
+        (serializer.context_ref().memory_allocator_function_pointers.free)(serialized_matrix_pointer);
     }
 
     Ok(serialized_matrix)
