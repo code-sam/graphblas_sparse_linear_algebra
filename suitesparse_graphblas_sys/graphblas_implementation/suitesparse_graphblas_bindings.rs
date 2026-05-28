@@ -608,9 +608,9 @@ pub const M_SQRT1_2: f64 = 0.7071067811865476;
 pub const _COMPLEX_H: u32 = 1;
 pub const GB_HAS_CMPLX_MACROS: u32 = 0;
 pub const GxB_IMPLEMENTATION_NAME: &[u8; 22] = b"SuiteSparse:GraphBLAS\0";
-pub const GxB_IMPLEMENTATION_DATE: &[u8; 14] = b"July 25, 2025\0";
+pub const GxB_IMPLEMENTATION_DATE: &[u8; 13] = b"Jan 21, 2026\0";
 pub const GxB_IMPLEMENTATION_MAJOR: u32 = 10;
-pub const GxB_IMPLEMENTATION_MINOR: u32 = 1;
+pub const GxB_IMPLEMENTATION_MINOR: u32 = 3;
 pub const GxB_IMPLEMENTATION_SUB: u32 = 1;
 pub const GxB_SPEC_DATE: &[u8; 13] = b"Dec 22, 2023\0";
 pub const GxB_SPEC_MAJOR: u32 = 2;
@@ -620,7 +620,8 @@ pub const GRB_VERSION: u32 = 2;
 pub const GRB_SUBVERSION: u32 = 1;
 pub const GxB_NTHREADS: u32 = 7086;
 pub const GxB_CHUNK: u32 = 7087;
-pub const GxB_GPU_ID: u32 = 7088;
+pub const GxB_GPU_IDS: u32 = 7101;
+pub const GxB_NGPUS: u32 = 7102;
 pub const GxB_MAX_NAME_LEN: u32 = 128;
 pub const GxB_HYPERSPARSE: u32 = 1;
 pub const GxB_SPARSE: u32 = 2;
@@ -7147,7 +7148,9 @@ pub const GxB_Option_Field_GxB_REALLOC_FUNCTION: GxB_Option_Field = 7039;
 pub const GxB_Option_Field_GxB_FREE_FUNCTION: GxB_Option_Field = 7040;
 pub const GxB_Option_Field_GxB_GLOBAL_NTHREADS: GxB_Option_Field = 7086;
 pub const GxB_Option_Field_GxB_GLOBAL_CHUNK: GxB_Option_Field = 7087;
-pub const GxB_Option_Field_GxB_GLOBAL_GPU_ID: GxB_Option_Field = 7088;
+pub const GxB_Option_Field_GxB_GLOBAL_NGPUS: GxB_Option_Field = 7102;
+pub const GxB_Option_Field_GxB_GLOBAL_GPU_IDS: GxB_Option_Field = 7101;
+pub const GxB_Option_Field_GxB_NGPUS_MAX: GxB_Option_Field = 7103;
 pub const GxB_Option_Field_GxB_BURBLE: GxB_Option_Field = 7019;
 pub const GxB_Option_Field_GxB_PRINTF: GxB_Option_Field = 7020;
 pub const GxB_Option_Field_GxB_FLUSH: GxB_Option_Field = 7021;
@@ -7165,6 +7168,7 @@ pub const GxB_Option_Field_GxB_JIT_C_CMAKE_LIBS: GxB_Option_Field = 7031;
 pub const GxB_Option_Field_GxB_JIT_USE_CMAKE: GxB_Option_Field = 7032;
 pub const GxB_Option_Field_GxB_JIT_ERROR_LOG: GxB_Option_Field = 7033;
 pub const GxB_Option_Field_GxB_JIT_CUDA_PREFACE: GxB_Option_Field = 7100;
+pub const GxB_Option_Field_GxB_PRINT_FUNCTION: GxB_Option_Field = 7104;
 pub type GxB_Option_Field = ::std::os::raw::c_uint;
 pub const GxB_JIT_Control_GxB_JIT_OFF: GxB_JIT_Control = 0;
 pub const GxB_JIT_Control_GxB_JIT_PAUSE: GxB_JIT_Control = 1;
@@ -7186,7 +7190,8 @@ unsafe extern "C" {
 }
 pub const GxB_Context_Field_GxB_CONTEXT_NTHREADS: GxB_Context_Field = 7086;
 pub const GxB_Context_Field_GxB_CONTEXT_CHUNK: GxB_Context_Field = 7087;
-pub const GxB_Context_Field_GxB_CONTEXT_GPU_ID: GxB_Context_Field = 7088;
+pub const GxB_Context_Field_GxB_CONTEXT_NGPUS: GxB_Context_Field = 7102;
+pub const GxB_Context_Field_GxB_CONTEXT_GPU_IDS: GxB_Context_Field = 7101;
 pub type GxB_Context_Field = ::std::os::raw::c_uint;
 unsafe extern "C" {
     pub static GrB_GLOBAL: GrB_Global;
@@ -12114,6 +12119,14 @@ pub const GxB_Print_Level_GxB_COMPLETE: GxB_Print_Level = 3;
 pub const GxB_Print_Level_GxB_SHORT_VERBOSE: GxB_Print_Level = 4;
 pub const GxB_Print_Level_GxB_COMPLETE_VERBOSE: GxB_Print_Level = 5;
 pub type GxB_Print_Level = ::std::os::raw::c_uint;
+pub type GxB_print_function = ::std::option::Option<
+    unsafe extern "C" fn(
+        string: *mut ::std::os::raw::c_char,
+        string_size: usize,
+        value: *const ::std::os::raw::c_void,
+        verbose: ::std::os::raw::c_int,
+    ) -> i64,
+>;
 pub const GrB_Format_GrB_CSR_FORMAT: GrB_Format = 0;
 pub const GrB_Format_GrB_CSC_FORMAT: GrB_Format = 1;
 pub const GrB_Format_GrB_COO_FORMAT: GrB_Format = 2;

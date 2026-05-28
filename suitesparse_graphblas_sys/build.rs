@@ -5,6 +5,7 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
+use git2::build::CheckoutBuilder;
 use git2::{Object, Oid, Repository};
 use regex::Regex;
 
@@ -12,7 +13,7 @@ extern crate bindgen;
 extern crate cmake;
 
 // NOTE: when updating the version, make sure to delete any existing clones
-const GIT_COMMIT: &str = "50cca249482611a47b6bf29c34b08bc8d7fc4644";
+const GIT_COMMIT: &str = "1fd54756ca57cae44e8cf91137ba5107824e8e7b";
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -219,7 +220,7 @@ fn clone_and_checkout_repository(
         .find_commit(Oid::from_str(GIT_COMMIT).unwrap())
         .unwrap()
         .into_object();
-    graphblas_repo.checkout_tree(&obj, None).unwrap();
+    graphblas_repo.checkout_tree(&obj,  Some(CheckoutBuilder::new().force())).unwrap();
     graphblas_repo.set_head_detached(obj.id()).unwrap();
 }
 

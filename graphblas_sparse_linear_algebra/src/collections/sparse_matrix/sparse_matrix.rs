@@ -259,6 +259,8 @@ impl<T: ValueType> MatrixMask for SparseMatrix<T> {
 #[cfg(test)]
 mod tests {
 
+    use std::fs;
+
     use super::*;
     use crate::collections::sparse_matrix::operations::{
         DropSparseMatrixElement, FromDiagonalVector, FromMatrixElementList, GetSparseMatrixElement,
@@ -639,4 +641,90 @@ mod tests {
 
         assert_eq!(matrix_copy.element_value(1, 1).unwrap(), Some(1u8))
     }
+
+    // #[test]
+    // fn clone_memory_usage() {
+    //     let context = Context::init_default().unwrap();
+
+    //     let n_element = 1000;
+    //     let n_repeat = 1000;
+
+    //     let mut matrix = SparseMatrix::<usize>::new(
+    //         context.clone(),
+    //         (n_element*10, n_element*2).into(),
+    //     )
+    //     .unwrap();
+
+    //     for i in 0..n_element {
+    //         matrix.set_value(i, i, i).unwrap();
+    //         matrix.set_value(i+1, i, i+1).unwrap();
+    //         matrix.set_value(i+2, i+1, i+2).unwrap();
+    //     }
+
+    //     for i in 0..n_repeat {
+    //         let cloned_matrix = matrix.clone();
+
+    //         assert_eq!(
+    //             matrix.element_list().unwrap(),
+    //             cloned_matrix.element_list().unwrap()
+    //         );
+
+    //         // Read RSS from /proc/self/status (Linux only)
+    //         if let Ok(status) = fs::read_to_string("/proc/self/status") {
+    //             for line in status.lines() {
+    //                 if line.starts_with("VmRSS:") {
+    //                     println!("[{i}] {line}");
+    //                     break;
+    //                 }
+    //             }
+    //         }
+
+    //         // // Read memory map breakdown from /proc/self/smaps_rollup (Linux only)
+    //         // if let Ok(smaps) = fs::read_to_string("/proc/self/smaps_rollup") {
+    //         //     let fields = [
+    //         //         "Rss:",
+    //         //         "Private_Dirty:",
+    //         //         "Private_Clean:",
+    //         //         "Shared_Dirty:",
+    //         //         "Shared_Clean:",
+    //         //         "Anonymous:",
+    //         //     ];
+    //         //     for line in smaps.lines() {
+    //         //         if fields.iter().any(|f| line.starts_with(f)) {
+    //         //             println!("  {line}");
+    //         //         }
+    //         //     }
+    //         // }
+
+    //     }
+
+    //     // Read RSS from /proc/self/status (Linux only)
+    //     if let Ok(status) = fs::read_to_string("/proc/self/status") {
+    //         for line in status.lines() {
+    //             if line.starts_with("VmRSS:") {
+    //                 println!("[END] {line}");
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    //     // // Read memory map breakdown from /proc/self/smaps_rollup (Linux only)
+    //     // if let Ok(smaps) = fs::read_to_string("/proc/self/smaps_rollup") {
+    //     //     let fields = [
+    //     //         "Rss:",
+    //     //         "Private_Dirty:",
+    //     //         "Private_Clean:",
+    //     //         "Shared_Dirty:",
+    //     //         "Shared_Clean:",
+    //     //         "Anonymous:",
+    //     //     ];
+    //     //     for line in smaps.lines() {
+    //     //         if fields.iter().any(|f| line.starts_with(f)) {
+    //     //             println!("  {line}");
+    //     //         }
+    //     //     }
+    //     // }
+
+    //     assert!(false)
+    // }
 }
